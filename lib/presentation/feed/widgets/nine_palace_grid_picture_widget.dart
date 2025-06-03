@@ -2,13 +2,13 @@ import 'dart:io';
 
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/presentation/feed/widgets/preview_image.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/common_image.dart';
-
+import '../../../core/widgets/common_image_gallery.dart';
 
 class NinePalaceGridPictureWidget extends StatefulWidget {
   final int crossAxisCount;

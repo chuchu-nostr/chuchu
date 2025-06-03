@@ -505,80 +505,10 @@ class _CommonImageGalleryState extends State<CommonImageGallery>
   }
 
   Future _widgetShotAndSave() async {
-    if (widget.imageList.isEmpty) return;
 
-    final pageIndex = _pageController.page?.round() ?? 0;
-    final imageUri = widget.imageList[pageIndex].url;
-    final decryptKey = widget.imageList[pageIndex].decryptedKey;
-    final decryptNonce = widget.imageList[pageIndex].decryptedNonce;
-    final fileName = imageUri.split('/').lastOrNull?.split('?').firstOrNull ?? '';
-    final isGIF = fileName.contains('.gif');
-
-    unawaited(ChuChuLoading.show());
-
-    var result;
-    if (imageUri.isRemoteURL) {
-      // Remote image
-      final imageManager = ChuChuFileCacheManager.get(encryptKey: decryptKey, encryptNonce: decryptNonce);
-      try {
-        final imageFile = await imageManager.getSingleFile(imageUri)
-            .timeout(const Duration(seconds: 30), onTimeout: () {
-          throw Exception('time out');
-        });
-
-        if (isGIF) {
-          result = await ImageGallerySaverPlus.saveFile(imageFile.path, isReturnPathOfIOS: true);
-        } else {
-          final imageData = await imageFile.readAsBytes();
-          result = await ImageGallerySaverPlus.saveImage(Uint8List.fromList(imageData));
-        }
-      } catch (e) {
-        unawaited(CommonToast.instance.show(context, e.toString()));
-      }
-    } else {
-      // Local image
-      final imageFile = File(imageUri);
-      if (decryptKey != null) {
-        final completer = Completer();
-        await DecryptedCacheManager.decryptFile(imageFile, decryptKey, nonce: decryptNonce,).then((decryptFile) async {
-          result = await ImageGallerySaverPlus.saveImage(decryptFile.readAsBytesSync());
-          completer.complete();
-        });
-        await completer.future;
-      } else {
-        final imageData = await imageFile.readAsBytes();
-        result = await ImageGallerySaverPlus.saveImage(Uint8List.fromList(imageData));
-      }
-    }
-
-    unawaited(ChuChuLoading.dismiss());
-
-    if (result != null) {
-      unawaited(CommonToast.instance.show(context, 'str_saved_to_album'));
-    } else {
-      unawaited(CommonToast.instance.show(context, 'str_save_failed'));
-    }
   }
 
   Future<void> _identifyQRCode() async {
-    final image = await _screenshotController.capture();
-    if(image == null)return;
-    ChuChuLoading.show();
-    final directory = await getApplicationDocumentsDirectory();
-    final imagePath = '${directory.path}/screenshot.png';
-    final imageFile = File(imagePath);
-    await imageFile.writeAsBytes(image);
-
-    try {
-      String qrcode = await OXCommon.scanPath(imageFile.path);
-      _deleteImage(imageFile.path);
-      ChuChuLoading.dismiss();
-      ChuChuNavigator.pop(context);
-      ScanUtils.analysis(context, qrcode);
-    } catch (e) {
-      ChuChuLoading.dismiss();
-      CommonToast.instance.show(context, "str_invalid_qr_code");
-    }
   }
 
   void _deleteImage(String imagePath) {
