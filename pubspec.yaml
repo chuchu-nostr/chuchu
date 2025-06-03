@@ -49,6 +49,9 @@ dependencies:
   extended_image: ^8.2.1
   screenshot: ^3.0.0
   flutter_easyloading: ^3.0.0
+  isar: ^3.1.0+1
+  isar_flutter_libs: ^3.1.0+1
+  build_runner: ^2.4.9
 
 dev_dependencies:
   flutter_test:
