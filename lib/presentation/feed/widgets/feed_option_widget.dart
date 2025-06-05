@@ -12,7 +12,6 @@ class FeedOptionWidget extends StatefulWidget {
 class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   final List<EFeedOptionType> feedOptionTypeList = [
     EFeedOptionType.reply,
-    EFeedOptionType.repost,
     EFeedOptionType.like,
     EFeedOptionType.zaps,
   ];
