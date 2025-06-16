@@ -1,0 +1,204 @@
+
+
+import 'package:chuchu/core/account/account+relay.dart';
+import 'package:chuchu/core/manager/thread_pool_manager.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+import '../account/notification.dart';
+import '../feed/model/noteDB_isar.dart';
+import '../feed/model/notificationDB_isar.dart';
+import '../nostr_dart/src/nips/nip_005.dart';
+import '../account/account.dart';
+import '../account/model/userDB_isar.dart';
+import '../account/relays.dart';
+import '../account/zaps.dart';
+import '../contacts/contacts.dart';
+import '../database/db_isar.dart';
+import '../feed/feed.dart';
+import '../messages/messages.dart';
+import '../network/connect.dart';
+import '../network/eventCache.dart';
+import '../privateGroups/groups.dart';
+import 'chuchu_feed_manager.dart';
+
+
+abstract mixin class ChuChuUserInfoObserver {
+  void didLoginSuccess(UserDBISAR? userInfo);
+
+  void didSwitchUser(UserDBISAR? userInfo);
+
+  void didLogout();
+
+  void didUpdateUserInfo() {}
+}
+
+enum _ContactType {
+  contacts,
+  channels,
+  // groups
+  relayGroups,
+}
+
+class ChuChuUserInfoManager {
+
+  static final ChuChuUserInfoManager sharedInstance = ChuChuUserInfoManager._internal();
+
+  ChuChuUserInfoManager._internal();
+
+  factory ChuChuUserInfoManager() {
+    return sharedInstance;
+  }
+
+  final List<ChuChuUserInfoObserver> _observers = <ChuChuUserInfoObserver>[];
+
+  final List<VoidCallback> initDataActions = [];
+
+  bool get isLogin => (currentUserInfo != null);
+
+  UserDBISAR? currentUserInfo;
+
+  Map<String, dynamic> settingsMap = {};
+
+  var _contactFinishFlags = {
+    _ContactType.contacts: false,
+    _ContactType.channels: false,
+    _ContactType.relayGroups: false,
+  };
+
+  bool get isFetchContactFinish => _contactFinishFlags.values.every((v) => v);
+
+  bool canVibrate = true;
+  bool canSound = true;
+  bool signatureVerifyFailed = false;
+  //0: top; 1: tabbar; 2: delete.
+  int momentPosition= 0;
+
+  Future initDB(String pubkey) async {
+    if(pubkey.isEmpty) return;
+    await logout(needObserver: false);
+
+    await DBISAR.sharedInstance.open(pubkey);
+    Account.sharedInstance.init();
+
+  }
+
+  void addObserver(ChuChuUserInfoObserver observer) => _observers.add(observer);
+
+  bool removeObserver(ChuChuUserInfoObserver observer) => _observers.remove(observer);
+
+  Future<void> loginSuccess(UserDBISAR userDB, {bool isAmber = false}) async {
+    currentUserInfo = Account.sharedInstance.me;
+    await _initDatas();
+    for (ChuChuUserInfoObserver observer in _observers) {
+      observer.didLoginSuccess(currentUserInfo);
+    }
+  }
+
+  void addChatCallBack() {
+    Feed.sharedInstance.newNotesCallBack = (List<NoteDBISAR> notes) {
+      ChuChuFeedManager.sharedInstance.newNotesCallBackCallBack(notes);
+    };
+
+    Feed.sharedInstance.newNotificationCallBack = (List<NotificationDBISAR> notifications) {
+      ChuChuFeedManager.sharedInstance.newNotificationCallBack(notifications);
+    };
+
+    Feed.sharedInstance.myZapNotificationCallBack = (List<NotificationDBISAR> notifications) {
+      ChuChuFeedManager.sharedInstance.myZapNotificationCallBack(notifications);
+    };
+  }
+
+  void updateUserInfo(UserDBISAR userDB) {}
+
+  void updateSuccess() {
+    for (ChuChuUserInfoObserver observer in _observers) {
+      observer.didUpdateUserInfo();
+    }
+  }
+
+
+  Future<UserDBISAR?> handleSwitchFailures(UserDBISAR? userDB, String currentUserPubKey) async {
+    if (userDB == null && currentUserPubKey.isNotEmpty) {
+      //In the case of failing to add a new account while already logged in, implement the logic to re-login to the current account.
+      await ChuChuUserInfoManager.sharedInstance.initDB(currentUserPubKey);
+      userDB = await Account.sharedInstance.loginWithPubKeyAndPassword(currentUserPubKey);
+    }
+    return userDB;
+  }
+
+  Future logout({bool needObserver = true}) async {
+    if (ChuChuUserInfoManager.sharedInstance.currentUserInfo == null) {
+      return;
+    }
+    await Account.sharedInstance.logout();
+    resetData(needObserver: needObserver);
+  }
+
+  void resetData({bool needObserver = true}) {
+    signatureVerifyFailed = false;
+    currentUserInfo = null;
+    _contactFinishFlags = {
+      _ContactType.contacts: false,
+      _ContactType.channels: false,
+      // _ContactType.groups: false,
+      _ContactType.relayGroups: false,
+    };
+    if (needObserver) {
+      for (ChuChuUserInfoObserver observer in _observers) {
+        observer.didLogout();
+      }
+    }
+  }
+
+  bool isCurrentUser(String userID) {
+    return userID == currentUserInfo?.pubKey;
+  }
+
+
+  Future<bool> checkDNS({required UserDBISAR userDB}) async {
+    String pubKey = userDB.pubKey;
+    String dnsStr = userDB.dns ?? '';
+    if(dnsStr.isEmpty || dnsStr == 'null') {
+      return false;
+    }
+    List<String> relayAddressList = await Account.sharedInstance.getUserGeneralRelayList(pubKey);
+    List<String> temp = dnsStr.split('@');
+    String name = temp[0];
+    String domain = temp[1];
+    DNS dns = DNS(name, domain, pubKey, relayAddressList);
+    try {
+      return await Account.checkDNS(dns);
+    } catch (error, stack) {
+      return false;
+    }
+  }
+
+  Future<void> _initDatas() async {
+    addChatCallBack();
+    initDataActions.forEach((fn) {
+      fn();
+    });
+    await EventCache.sharedInstance.loadAllEventsFromDB();
+    Relays.sharedInstance.init().then((value) {
+      Contacts.sharedInstance.initContacts(Contacts.sharedInstance.contactUpdatedCallBack);
+      Groups.sharedInstance.init(callBack: Groups.sharedInstance.myGroupsUpdatedCallBack);
+      Feed.sharedInstance.init();
+      Zaps.sharedInstance.init();
+      _initMessage();
+    });
+  }
+
+  void _initMessage() {
+    Messages.sharedInstance.init();
+  }
+
+
+  Future<void> resetHeartBeat() async {//eg: backForeground
+    if (isLogin) {
+      await ThreadPoolManager.sharedInstance.initialize();
+      Connect.sharedInstance.startHeartBeat();
+      Account.sharedInstance.startHeartBeat();
+      NotificationHelper.sharedInstance.startHeartBeat();
+    }
+  }
+}
