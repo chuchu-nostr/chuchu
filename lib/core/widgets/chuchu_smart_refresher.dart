@@ -1,4 +1,3 @@
-
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:flutter/material.dart' hide RefreshIndicator, RefreshIndicatorState;
 import 'package:lottie/lottie.dart';
@@ -43,16 +42,16 @@ class ChuChuSmartRefresher extends StatelessWidget {
   Widget build(BuildContext context) {
     return SmartRefresher(
         scrollController:scrollController,
-        controller: this.controller,
-        header: this.header ?? refresherHeader,
-        footer: this.footer ?? refresherFooter,
-        enablePullDown: this.enablePullDown ?? true,
-        enablePullUp: this.enablePullUp ?? false,
-        enableTwoLevel: this.enableTwoLevel ?? false,
-        onRefresh: this.onRefresh,
-        onLoading: this.onLoading,
-        onTwoLevel: this.onTwoLevel,
-        child: this.child
+        controller: controller,
+        header: header ?? refresherHeader,
+        footer: footer ?? refresherFooter,
+        enablePullDown: enablePullDown ?? true,
+        enablePullUp: enablePullUp ?? false,
+        enableTwoLevel: enableTwoLevel ?? false,
+        onRefresh: onRefresh,
+        onLoading: onLoading,
+        onTwoLevel: onTwoLevel,
+        child: child
     );
   }
 
@@ -94,7 +93,7 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
     // TODO: implement initState
     // init frame is 2
     super.initState();
-    _controller = AnimationController(vsync: this,value: 0);
+    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
     _getUpdateTime();
 
   }
@@ -150,13 +149,12 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
       children: [
         Lottie.asset(
           "assets/chuchu_pull_loading.json",
-          package: 'ox_common',
           width: 72.px,
           repeat: true,
           fit: BoxFit.fitWidth,
           controller: _controller,
           onLoaded: (composition) {
-            _controller..duration = Duration(milliseconds: 1500);
+            _controller.duration ??= composition.duration;
           },
         ),
         Container(
