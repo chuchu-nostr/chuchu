@@ -1,15 +1,29 @@
+import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/feed/feed.dart';
+import '../../../core/feed/model/noteDB_isar.dart';
+import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/widgets/common_image.dart';
+import '../../../core/widgets/common_toast.dart';
 import '../../../data/enum/feed_enum.dart';
+import '../../../data/models/feed_extension_model.dart';
+import '../../../data/models/noted_ui_model.dart';
 
 class FeedOptionWidget extends StatefulWidget {
-  const FeedOptionWidget({super.key});
+
+  final NotedUIModel? notedUIModel;
+
+  const FeedOptionWidget({super.key,this.notedUIModel});
   @override
   State createState() => _FeedOptionWidgetState();
 }
 
 class _FeedOptionWidgetState extends State<FeedOptionWidget> {
+  bool _reactionTag = false;
+
+  late NotedUIModel? notedUIModel;
+
   final List<EFeedOptionType> feedOptionTypeList = [
     EFeedOptionType.reply,
     EFeedOptionType.like,
@@ -19,7 +33,18 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   @override
   void initState() {
     super.initState();
+    _init();
   }
+
+  void _init(){
+    notedUIModel = widget.notedUIModel;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -27,13 +52,11 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
       behavior: HitTestBehavior.translucent,
       onTap: () {},
       child: Container(
-        height: 41,
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(8)),
+        margin: EdgeInsets.only(
+          left: 50,
         ),
-        padding: EdgeInsets.symmetric(horizontal: 12),
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children:
               feedOptionTypeList.map((EFeedOptionType type) {
                 return _showItemWidget(type);
@@ -52,11 +75,57 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
       clickNum: _getClickNum(type),
     );
 
-    return Expanded(child: iconTextWidget);
+    return iconTextWidget;
   }
 
   GestureTapCallback _onTapCallback(EFeedOptionType type) {
-    return () => {};
+    NoteDBISAR? noteDB = notedUIModel?.noteDB;
+    if(noteDB == null) return (){};
+    switch (type) {
+      case EFeedOptionType.reply:
+        return () async{
+
+        };
+      case EFeedOptionType.like:
+        return () async {
+          if (noteDB.reactionCountByMe > 0 || _reactionTag) return;
+          bool isSuccess = false;
+          if (noteDB.groupId.isEmpty) {
+            OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
+            isSuccess = event.status;
+          }
+          _dealWithReaction(isSuccess);
+        };
+      case EFeedOptionType.zaps:
+        return (){};
+    }
+  }
+
+  void _dealWithReaction(bool isSuccess){
+    if (isSuccess) {
+      _reactionTag = true;
+      setState(() {});
+      _updateNoteDB();
+      CommonToast.instance.show(context, 'Like success tips');
+    }else{
+      CommonToast.instance.show(context, 'Like fail tips');
+    }
+  }
+
+
+  void _updateNoteDB() async {
+    if(notedUIModel == null)  return;
+    NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
+      notedUIModel!.noteDB.noteId,
+      isUpdateCache: true,
+      notedUIModel: notedUIModel,
+    );
+
+    if(noteNotifier == null) return;
+    if(mounted){
+      notedUIModel = noteNotifier;
+    }
+
   }
 
   GestureLongPressCallback _onLongPress(EFeedOptionType type) {
@@ -102,10 +171,28 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   }
 
   int _getClickNum(EFeedOptionType type) {
-    return 2;
+    NoteDBISAR? noteDB = notedUIModel?.noteDB;
+    if(noteDB == null) return 0;
+    switch(type){
+      case EFeedOptionType.like:
+        return noteDB.reactionCount;
+      case EFeedOptionType.zaps:
+        return noteDB.zapAmount;
+      case EFeedOptionType.reply:
+        return noteDB.replyCount;
+    }
   }
 
   bool _isClickByMe(EFeedOptionType type) {
-    return true;
+    NoteDBISAR? noteDB = notedUIModel?.noteDB;
+    if(noteDB == null) return false;
+    switch(type){
+      case EFeedOptionType.like:
+        return _reactionTag ? _reactionTag : noteDB.reactionCountByMe > 0;
+      case EFeedOptionType.zaps:
+        return noteDB.zapAmountByMe > 0;
+      case EFeedOptionType.reply:
+        return noteDB.replyCountByMe > 0;
+    }
   }
 }
