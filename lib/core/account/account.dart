@@ -329,10 +329,9 @@ class Account {
   }
 
   Future<void> logout() async {
-    await NotificationHelper.sharedInstance.logout();
+    // await NotificationHelper.sharedInstance.logout();
     await Connect.sharedInstance.closeAllConnects();
     Contacts.sharedInstance.allContacts.clear();
-    // Contacts.sharedInstance.secretSessionMap.clear();
     Relays.sharedInstance.relays.clear();
     EventCache.sharedInstance.cacheIds.clear();
     me = null;

@@ -144,9 +144,9 @@ class FeedWidgetsUtils {
       ),
       child: Center(
         child: Text(
-          content ?? 'loading_note',
+          content ?? 'Loading...',
           style: TextStyle(
-            color: Colors.red,
+            color: Colors.black,
             fontSize: 16.px,
           ),
         ),
@@ -205,7 +205,7 @@ class FeedWidgetsUtils {
 
   static Widget badgePlaceholderImage({int size = 24}) {
     return CommonImage(
-      iconName: 'icon_badge_default.png',
+      iconName: 'icon_user_default.png',
       fit: BoxFit.cover,
       width: size.px,
       height: size.px,

@@ -2,9 +2,10 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:chuchu/core/account/relays.dart';
 import 'package:flutter/foundation.dart';
+import '../contacts/contacts.dart';
 import '../network/connect.dart';
 import '../nostr_dart/nostr.dart';
-import '../utils/log_utils.dart';
+import '../privateGroups/groups.dart';
 import 'account.dart';
 import 'model/userDB_isar.dart';
 
@@ -22,9 +23,10 @@ extension AccountProfile on Account {
   }
 
   Future<UserDBISAR> reloadMyProfileFromRelay({String? relay}) async {
+
     Completer<UserDBISAR> completer = Completer<UserDBISAR>();
     Filter f = Filter(
-        kinds: [0, 3, 10000, 10002, 10005, 10009, 10050, 30000, 30001, 30003, 30008],
+        kinds: [0, 3, 10000, 10002, 10005, 10009, 10050, 30000, 30003, 30008],
         authors: [currentPubkey]);
     List<Event> events = [];
     Connect.sharedInstance.addSubscription([f], relays: relay == null ? null : [relay],
@@ -57,9 +59,6 @@ extension AccountProfile on Account {
                   break;
                 case 30000:
                   me = await _handleKind30000Event(me, event);
-                  break;
-                case 30001:
-                  me = await _handleKind30001Event(me, event);
                   break;
                 case 30003:
                   me = await _handleKind30003Event(me, event);
@@ -355,46 +354,30 @@ extension AccountProfile on Account {
 
   // contact list
   Future<UserDBISAR?> _handleKind30000Event(UserDBISAR? db, Event event) async {
-    return null;
-    // if (db == null) return null;
-    // if (db.lastFriendsListUpdatedTime >= event.createdAt) return db;
-    // Lists result = await Nip51.getLists(event, currentPubkey, currentPrivkey);
-    // if (result.identifier == Contacts.identifier) {
-    //   // contact list
-    //   db.lastFriendsListUpdatedTime = event.createdAt;
-    //   db.friendsList = await Nip51.peoplesToContent(result.people, currentPrivkey, currentPubkey);
-    //   contactListUpdateCallback?.call();
-    // }
-    // return db;
-  }
-
-  // old list
-  Future<UserDBISAR?> _handleKind30001Event(UserDBISAR? db, Event event) async {
-    return null;
-    // if (db == null) return null;
-    // if (db.lastChannelsListUpdatedTime >= event.createdAt) return db;
-    // Lists result = await Nip51.getLists(event, currentPubkey, currentPrivkey);
-    // if (result.identifier == Channels.identifier) {
-    //   db.lastChannelsListUpdatedTime = event.createdAt;
-    //   db.channelsList = result.bookmarks;
-    //   channelListUpdateCallback?.call();
-    // }
-    // return db;
+    if (db == null) return null;
+    if (db.lastFriendsListUpdatedTime >= event.createdAt) return db;
+    Lists result = await Nip51.getLists(event, currentPubkey, currentPrivkey);
+    if (result.identifier == Contacts.identifier) {
+      // contact list
+      db.lastFriendsListUpdatedTime = event.createdAt;
+      db.friendsList = await Nip51.peoplesToContent(result.people, currentPrivkey, currentPubkey);
+      contactListUpdateCallback?.call();
+    }
+    return db;
   }
 
   // bookmark list
   Future<UserDBISAR?> _handleKind30003Event(UserDBISAR? db, Event event) async {
-    return null;
-    // if (db == null) return null;
-    // if (db.lastGroupsListUpdatedTime >= event.createdAt) return db;
-    // Lists result = await Nip51.getLists(event, currentPubkey, currentPrivkey);
-    // if (result.identifier == Groups.identifier) {
-    //   // private group list
-    //   db.lastGroupsListUpdatedTime = event.createdAt;
-    //   db.groupsList = result.bookmarks;
-    //   groupListUpdateCallback?.call();
-    // }
-    // return db;
+    if (db == null) return null;
+    if (db.lastGroupsListUpdatedTime >= event.createdAt) return db;
+    Lists result = await Nip51.getLists(event, currentPubkey, currentPrivkey);
+    if (result.identifier == Groups.identifier) {
+      // private group list
+      db.lastGroupsListUpdatedTime = event.createdAt;
+      db.groupsList = result.bookmarks;
+      groupListUpdateCallback?.call();
+    }
+    return db;
   }
 
   // profile badge

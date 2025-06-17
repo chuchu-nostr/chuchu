@@ -1,4 +1,5 @@
 import 'dart:async';
+import '../feed/feed.dart';
 import '../network/connect.dart';
 import '../nostr_dart/nostr.dart';
 import './account.dart';
@@ -75,7 +76,7 @@ extension AccountFollows on Account {
     }
     me?.followingList = followingList;
     syncMe();
-    // Moment.sharedInstance.updateSubscriptions();
+    Feed.sharedInstance.updateSubscriptions();
     return await _syncFollowListToRelay(followingList);
   }
 
@@ -86,7 +87,7 @@ extension AccountFollows on Account {
     }
     me?.followingList = followingList;
     syncMe();
-    // Moment.sharedInstance.updateSubscriptions();
+    Feed.sharedInstance.updateSubscriptions();
     return await _syncFollowListToRelay(followingList);
   }
 }

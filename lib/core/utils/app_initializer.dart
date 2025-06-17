@@ -9,8 +9,8 @@ class ChuChuHttpOverrides extends HttpOverrides {
   HttpClient createHttpClient(SecurityContext? context) {
     final client = createProxyHttpClient(context: context)
       ..findProxy = (Uri uri) {
-        ProxySettings? settings = ProxySettings();
-        if (settings == null) {
+        ProxySettings? settings = Config.sharedInstance.proxySettings;
+        if (settings == null || !settings.turnOnProxy) {
           return 'DIRECT';
         }
         if (settings.turnOnProxy) {

@@ -711,18 +711,18 @@ class Connect {
     if (host != null && host.isNotEmpty) {
       relay = host;
     }
-    // ProxySettings? settings = Config.sharedInstance.proxySettings;
-    // if (settings != null && settings.turnOnProxy) {
-    //   bool onionURI = relay.contains(".onion");
-    //   switch (settings.onionHostOption) {
-    //     case EOnionHostOption.no:
-    //       if (onionURI) return null;
-    //     case EOnionHostOption.required:
-    //       if (!onionURI) return null;
-    //     default:
-    //       break;
-    //   }
-    // }
+    ProxySettings? settings = Config.sharedInstance.proxySettings;
+    if (settings != null && settings.turnOnProxy) {
+      bool onionURI = relay.contains(".onion");
+      switch (settings.onionHostOption) {
+        case EOnionHostOption.no:
+          if (onionURI) return null;
+        case EOnionHostOption.required:
+          if (!onionURI) return null;
+        default:
+          break;
+      }
+    }
     return await WebSocket.connect(relay);
   }
 

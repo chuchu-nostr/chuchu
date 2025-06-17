@@ -1,8 +1,10 @@
+import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/nostr_dart/src/nips/nip_019.dart';
+import '../../relay/pages/relay_pages.dart';
 
 class DrawerMenu extends StatefulWidget {
   final Future<void> Function()? onProfileTap;
@@ -77,7 +79,9 @@ class _DrawerMenuState extends State<DrawerMenu>
             ),
             const SizedBox(height: 20),
             _menuItem(Icons.person_outline, "Profile", onTap: widget.onProfileTap),
-            _menuItem(Icons.link, "Relays"),
+            _menuItem(Icons.link, "Relays",onTap: () {
+              ChuChuNavigator.pushPage(context, (context) => RelaysPage());
+            }),
             _menuItem(Icons.list_alt, "Contacts"),
 
             const SizedBox(height: 30),
