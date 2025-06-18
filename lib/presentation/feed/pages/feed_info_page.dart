@@ -275,18 +275,10 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
       child: Center(
         child: Column(
           children: [
-            Icon(
-              Icons.inbox_outlined,
-              size: Adapt.px(90),
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-            ),
+            CommonImage(iconName: 'no_reply.png'),
             Text(
               'No reply !',
-              style: TextStyle(
-                fontSize: 16.px,
-                fontWeight: FontWeight.w400,
-                color: Theme.of(context).colorScheme.onBackground,
-              ),
+              style: Theme.of(context).textTheme.titleLarge,
             ).setPaddingOnly(
               top: 24.px,
             ),
