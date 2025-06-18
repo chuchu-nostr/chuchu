@@ -68,6 +68,7 @@ dependencies:
   animated_path: ^0.0.2
   path_drawing: ^1.0.1
   vector_math: ^2.1.4
+  shimmer: ^2.0.0
 
 dev_dependencies:
   flutter_test:

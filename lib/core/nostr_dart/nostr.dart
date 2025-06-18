@@ -51,5 +51,4 @@ export 'src/nips/nip_101.dart';
 export 'src/nips/nip_104.dart';
 export 'src/signer/external_signer_tool.dart';
 export 'src/signer/signer_permission_model.dart';
-export 'src/channel/core_method_channel.dart';
 
