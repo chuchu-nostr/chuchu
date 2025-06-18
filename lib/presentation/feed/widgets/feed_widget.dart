@@ -83,7 +83,6 @@ class _FeedWidgetState extends State<FeedWidget> {
         ),
         padding: EdgeInsets.symmetric(
           vertical: 12.px,
-          horizontal: 24.px,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,

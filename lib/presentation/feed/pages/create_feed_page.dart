@@ -1,9 +1,22 @@
 import 'dart:io';
+import 'package:chuchu/core/feed/feed+send.dart';
+import 'package:chuchu/core/nostr_dart/nostr.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/account/model/userDB_isar.dart';
+import '../../../core/feed/feed.dart';
+import '../../../core/feed/model/noteDB_isar.dart';
+import '../../../core/nostr_dart/src/ok.dart';
+import '../../../core/utils/feed_content_analyze_utils.dart';
+import '../../../core/utils/feed_utils.dart';
+import '../../../core/widgets/chuchu_Loading.dart';
+import '../../../core/widgets/common_toast.dart';
+import '../../../data/models/noted_ui_model.dart';
+
 class CreateFeedPage extends StatefulWidget {
-  const CreateFeedPage({super.key});
+  final NotedUIModel? notedUIModel;
+  const CreateFeedPage({super.key,this.notedUIModel});
 
   @override
   State createState() => _CreateFeedPageState();
@@ -12,6 +25,15 @@ class CreateFeedPage extends StatefulWidget {
 class _CreateFeedPageState extends State<CreateFeedPage> {
   final TextEditingController _controller = TextEditingController();
   final List<File> _selectedImages = [];
+  Map<String,UserDBISAR> draftCueUserMap = {};
+
+  bool _postFeedTag = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+  }
 
   Future<void> _pickImages() async {
     final picker = ImagePicker();
@@ -36,14 +58,14 @@ class _CreateFeedPageState extends State<CreateFeedPage> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0.5,
-          leadingWidth: 75,
+        leadingWidth: 75,
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
           child: const Text('Cancel', style: TextStyle(color: Colors.black)),
         ),
         actions: [
           TextButton(
-            onPressed: () {},
+            onPressed: _postMoment,
             child: const Text('Push', style: TextStyle(color: Colors.blue)),
           ),
         ],
@@ -182,10 +204,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 clipBehavior: Clip.hardEdge,
-                child: Image.file(
-                  image,
-                  fit: BoxFit.cover,
-                ),
+                child: Image.file(image, fit: BoxFit.cover),
               ),
 
               Positioned(
@@ -205,5 +224,50 @@ class _CreateFeedPageState extends State<CreateFeedPage> {
         },
       ),
     );
+  }
+
+  void _postMoment() async {
+    String getMediaStr = '';
+    // if (_uploadCompleter != null) {
+    //   getMediaStr = await _uploadCompleter!.future;
+    // }
+    // if (_postFeedTag) return;
+    // _postFeedTag = true;
+    ChuChuLoading.show();
+    // String getMediaStr = await _getUploadMediaContent();
+    final inputText = _controller.text;
+    String content =
+        '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)} $getMediaStr';
+    OKEvent? event;
+
+    NoteDBISAR? noteDB = widget.notedUIModel?.noteDB;
+
+    List<String> hashTags =
+        FeedContentAnalyzeUtils(content).getMomentHashTagList;
+    List<String>? getHashTags = hashTags.isEmpty ? null : hashTags;
+    List<String>? getReplyUser = FeedUtils.getMentionReplyUserList(
+      draftCueUserMap,
+      inputText,
+    );
+
+    if (content.trim().isEmpty) {
+      CommonToast.instance.show(
+        context,
+        'Content empty tips',
+      );
+      return;
+    }
+    OKEvent? eventStatus = await Feed.sharedInstance.sendNoteContacts(
+          content,
+          // mentions: getReplyUser,
+          // hashTags: getHashTags,
+          sendMessageProgressCallBack: (value) {
+          },
+        );
+    ChuChuLoading.dismiss();
+
+    if(eventStatus.status){
+      CommonToast.instance.show(context, 'Sent successfully');
+    }
   }
 }

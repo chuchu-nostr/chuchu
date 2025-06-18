@@ -1,4 +1,5 @@
 import 'package:chuchu/core/utils/adapt.dart';
+import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -89,10 +90,10 @@ class _FeedReplyAbbreviateWidgetState extends State<FeedReplyAbbreviateWidget> {
     if(!widget.isShowReplyWidget || model == null) return const SizedBox();
     if (hasReplyWidget && model == null) return FeedWidgetsUtils.emptyNoteMomentWidget(null,100);
     return Container(
+
       margin: EdgeInsets.only(
         bottom: 10.px,
       ),
-      padding: EdgeInsets.symmetric(horizontal: 15.px),
       decoration: BoxDecoration(
         border: Border.all(
           width: 1.px,
@@ -108,9 +109,8 @@ class _FeedReplyAbbreviateWidgetState extends State<FeedReplyAbbreviateWidget> {
         notedUIModel: model,
         isShowMomentOptionWidget: false,
         clickMomentCallback: (NotedUIModel? notedUIModel) async {
-
         },
-      ),
+      ).setPadding(EdgeInsets.symmetric(horizontal: 12.0)),
     );
   }
 }

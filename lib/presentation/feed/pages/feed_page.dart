@@ -1,4 +1,5 @@
 import 'package:chuchu/core/feed/feed+load.dart';
+import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:flutter/material.dart';
 
@@ -8,6 +9,7 @@ import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_smart_refresher.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../widgets/feed_widget.dart';
+import '../widgets/feed_skeleton_widget.dart';
 import 'feed_info_page.dart';
 
 class FeedPage extends StatefulWidget {
@@ -25,6 +27,8 @@ class _FeedPageState extends State<FeedPage>
 
   final ScrollController feedScrollController = ScrollController();
   final RefreshController refreshController = RefreshController();
+
+  bool _isInitialLoading = true;
 
   @override
   void initState() {
@@ -50,7 +54,17 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Widget _getFeedListWidget() {
-    print('==notesList==$notesList');
+    if (_isInitialLoading) {
+      return ListView.builder(
+        itemCount: 8,
+        itemBuilder: (context, index) => const FeedSkeletonWidget(),
+      );
+    }
+
+    if (notesList.isEmpty) {
+      return const Center(child: Text('No Content'));
+    }
+
     return ListView.builder(
       primary: false,
       controller: null,
@@ -67,7 +81,7 @@ class _FeedPageState extends State<FeedPage>
               (context) => FeedInfoPage(notedUIModel: notedUIModel),
             );
           },
-        );
+        ).setPadding(EdgeInsets.symmetric(horizontal: 16.0));
       },
     );
   }
@@ -78,6 +92,13 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Future<void> updateNotesList(bool isInit) async {
+    // 如果是首次加载，在进入刷新流程前显示骨架屏幕
+    if (isInit && notesList.isEmpty) {
+      setState(() {
+        _isInitialLoading = true;
+      });
+    }
+
     await Feed.sharedInstance.updateSubscriptions();
 
     try {
@@ -86,6 +107,13 @@ class _FeedPageState extends State<FeedPage>
         isInit
             ? refreshController.refreshCompleted()
             : refreshController.loadNoData();
+
+        if (isInit) {
+          setState(() {
+            _isInitialLoading = false;
+          });
+        }
+
         if (!isInit) await _getNotesFromRelay();
         return;
       }
@@ -99,6 +127,9 @@ class _FeedPageState extends State<FeedPage>
     } catch (e) {
       print('Error loading notes: $e');
       refreshController.loadFailed();
+      setState(() {
+        _isInitialLoading = false;
+      });
     }
   }
 
@@ -125,6 +156,9 @@ class _FeedPageState extends State<FeedPage>
 
       if (list.isEmpty) {
         refreshController.loadNoData();
+        setState(() {
+          _isInitialLoading = false;
+        });
         return;
       }
 
@@ -133,6 +167,9 @@ class _FeedPageState extends State<FeedPage>
     } catch (e) {
       print('Error loading notes from relay: $e');
       refreshController.loadFailed();
+      setState(() {
+        _isInitialLoading = false;
+      });
     }
   }
 
@@ -162,6 +199,11 @@ class _FeedPageState extends State<FeedPage>
           ? refreshController.loadNoData()
           : refreshController.loadComplete();
     }
+
+    if (_isInitialLoading) {
+      _isInitialLoading = false;
+    }
+
     setState(() {});
   }
 }
