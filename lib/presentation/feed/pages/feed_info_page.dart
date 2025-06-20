@@ -1,12 +1,8 @@
-import 'dart:ui';
-
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
-
-import 'package:flutter/services.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
@@ -42,7 +38,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
 
   final ScrollController _scrollController = ScrollController();
 
-  bool _isShowMask = false;
+  final bool _isShowMask = false;
 
   List<NotedUIModel?> replyList = [];
 
@@ -155,16 +151,20 @@ class _FeedInfoPageState extends State<FeedInfoPage>
 
   @override
   Widget build(BuildContext context) {
-
+    final theme = Theme.of(context);
+    
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Scaffold(
-        backgroundColor: Colors.white,
+        backgroundColor: theme.colorScheme.surface,
         appBar: AppBar(
           title: Text(''),
+          backgroundColor: theme.colorScheme.surface,
+          foregroundColor: theme.colorScheme.onSurface,
+          elevation: 0,
         ),
         body: Container(
           height: double.infinity,
@@ -204,20 +204,33 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         feedWidgetLayout: EFeedWidgetLayout.fullScreen,
                       ).setPadding(EdgeInsets.symmetric(horizontal: 24.0)),
                       Container(
-                        padding:EdgeInsets.all(8.0),
+                        padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
                         width: double.infinity,
                         decoration: BoxDecoration(
                           border: Border(
-                            bottom: BorderSide(width: 0.5,color: Colors.grey.withOpacity(.5)),
+                            bottom: BorderSide(
+                              width: 0.5,
+                              color: theme.dividerColor,
+                            ),
                           ),
                         ),
-                        child: Text(
-                          'Relevant reply:',
-                          style: TextStyle(
-                            color: Colors.black87,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.chat_bubble_outline,
+                              size: 18,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              'Relevant reply',
+                              style: TextStyle(
+                                color: theme.colorScheme.onSurface,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       // _showContentWidget(),
@@ -385,7 +398,7 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
           );
 
       if (noteNotifier == null) return;
-      noted = noteNotifier as NotedUIModel;
+      noted = noteNotifier;
     }
   }
 
@@ -413,7 +426,7 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
               margin: EdgeInsets.only(left: 20.px),
               width: 1.px,
               height: 20.px,
-              color: Theme.of(context).colorScheme.onBackground,
+              color: Theme.of(context).dividerColor.withOpacity(0.5),
             ),
           ],
         ),
@@ -610,12 +623,16 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
         padding: EdgeInsets.only(left: 12.px, bottom: 24.px),
         child: Row(
           children: [
-            CommonImage(iconName: 'more_vertical_icon.png', size: 16.px),
-            SizedBox(width: 20.px),
+            Icon(
+              Icons.more_vert,
+              size: 16.px,
+              color: Theme.of(context).colorScheme.primary,
+            ),
+            SizedBox(width: 8.px),
             Text(
-              'Show replies',
+              'Show reply',
               style: TextStyle(
-                color: Colors.purple,
+                color: Theme.of(context).colorScheme.primary,
                 fontSize: 12.px,
                 fontWeight: FontWeight.w600,
               ),
@@ -687,7 +704,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           valueListenable: Account.sharedInstance.getUserNotifier(pubKey),
           builder: (context, value, child) {
             return Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Column(
                   children: [
@@ -715,7 +732,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                         child: Container(
                           margin: EdgeInsets.symmetric(vertical: 4.px),
                           width: 1.0,
-                          color:  Colors.grey.withOpacity(.5),
+                          color: Theme.of(context).dividerColor.withOpacity(0.5),
                         ),
                       ),
                   ],
@@ -768,7 +785,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
             Text(
               userDB.name ?? '--',
               style: TextStyle(
-                color: Theme.of(context).colorScheme.onBackground,
+                color: Theme.of(context).colorScheme.onSurface,
                 fontSize: 14.px,
                 fontWeight: FontWeight.w500,
               ),
@@ -781,7 +798,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
             widget.notedUIModel!.createAtStr,
           )[0],
           style: TextStyle(
-            color: Theme.of(context).colorScheme.onBackground,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 12.px,
             fontWeight: FontWeight.w400,
           ),
