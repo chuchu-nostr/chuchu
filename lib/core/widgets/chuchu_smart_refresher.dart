@@ -60,12 +60,203 @@ class ChuChuSmartRefresher extends StatelessWidget {
   }
 
   Widget get refresherFooter {
-    return ClassicFooter(
-        idleText: 'Pull up to load more',
-        loadingText: 'Loading',
-        noDataText: "-------- It's all down to the bottom --------",
-        failedText: "Failure",
-        canLoadingText: "Release and load",
+    return CustomFooter(
+      builder: (BuildContext context, LoadStatus? mode) {
+        final theme = Theme.of(context);
+        Widget body;
+        
+        if (mode == LoadStatus.idle) {
+          body = Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.touch_app,
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                size: 18,
+              ),
+              SizedBox(width: 6),
+              Icon(
+                Icons.keyboard_arrow_up,
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                "Pull up to load more",
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(width: 8),
+              Icon(
+                Icons.keyboard_arrow_up,
+                color: theme.colorScheme.onSurface.withOpacity(0.6),
+                size: 20,
+              ),
+              SizedBox(width: 6),
+              Icon(
+                Icons.touch_app,
+                color: theme.colorScheme.onSurface.withOpacity(0.5),
+                size: 18,
+              ),
+            ],
+          );
+        } else if (mode == LoadStatus.loading) {
+          body = Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.download,
+                color: theme.colorScheme.primary.withOpacity(0.7),
+                size: 16,
+              ),
+              SizedBox(width: 8),
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    theme.colorScheme.primary,
+                  ),
+                ),
+              ),
+              SizedBox(width: 12),
+              Text(
+                "Loading...",
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.8),
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(width: 12),
+              Icon(
+                Icons.cloud_download,
+                color: theme.colorScheme.primary.withOpacity(0.5),
+                size: 16,
+              ),
+            ],
+          );
+        } else if (mode == LoadStatus.failed) {
+          body = Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.wifi_off,
+                color: theme.colorScheme.error.withOpacity(0.7),
+                size: 16,
+              ),
+              SizedBox(width: 6),
+              Icon(
+                Icons.error_outline,
+                color: theme.colorScheme.error,
+                size: 18,
+              ),
+              SizedBox(width: 8),
+              Text(
+                "Load failed, tap to retry",
+                style: TextStyle(
+                  color: theme.colorScheme.error,
+                  fontSize: 14,
+                ),
+              ),
+              SizedBox(width: 8),
+              Icon(
+                Icons.refresh,
+                color: theme.colorScheme.error,
+                size: 16,
+              ),
+            ],
+          );
+        } else if (mode == LoadStatus.canLoading) {
+          body = Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.flash_on,
+                color: theme.colorScheme.primary.withOpacity(0.8),
+                size: 16,
+              ),
+              SizedBox(width: 6),
+              Icon(
+                Icons.keyboard_arrow_down,
+                color: theme.colorScheme.primary,
+                size: 20,
+              ),
+              SizedBox(width: 8),
+              Text(
+                "Release to load",
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              SizedBox(width: 8),
+              Icon(
+                Icons.keyboard_arrow_down,
+                color: theme.colorScheme.primary,
+                size: 20,
+              ),
+              SizedBox(width: 6),
+              Icon(
+                Icons.flash_on,
+                color: theme.colorScheme.primary.withOpacity(0.8),
+                size: 16,
+              ),
+            ],
+          );
+        } else {
+          body = Container(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(
+                  Icons.star,
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  size: 12,
+                ),
+                SizedBox(width: 8),
+                Container(
+                  width: 20,
+                  height: 1,
+                  color: theme.dividerColor,
+                ),
+                SizedBox(width: 8),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    "No more data",
+                    style: TextStyle(
+                      color: theme.colorScheme.onSurface.withOpacity(0.5),
+                      fontSize: 12,
+                    ),
+                  ),
+                ),
+                SizedBox(width: 8),
+                Container(
+                  width: 20,
+                  height: 1,
+                  color: theme.dividerColor,
+                ),
+                SizedBox(width: 8),
+                Icon(
+                  Icons.star,
+                  color: theme.colorScheme.onSurface.withOpacity(0.3),
+                  size: 12,
+                ),
+              ],
+            ),
+          );
+        }
+        
+        return Container(
+          height: 55.0,
+          child: Center(child: body),
+        );
+      },
     );
   }
 
@@ -159,10 +350,13 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
         ),
         Container(
           margin: EdgeInsets.only(top: 4.px),
-          child: Text(_getRefreshTimeString(),style: TextStyle(
-              color: Colors.black,
+          child: Text(
+            _getRefreshTimeString(),
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
               fontSize: 12.px,
-          ),),
+            ),
+          ),
         )
       ],
     );
@@ -172,13 +366,11 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
   _getRefreshTimeString(){
 
     if(refreshTime != null){
-      String lastFresh = 'Last updated:';
       if(DateUtils.isSameDay(DateTime.fromMillisecondsSinceEpoch(refreshTime!), DateTime.now())){
-        lastFresh = lastFresh + 'Today' + FeedUtils.formatTimestamp(refreshTime!);
+        return 'Last updated: Today ${FeedUtils.formatTimestamp(refreshTime!)}';
       }else{
-        lastFresh = lastFresh + FeedUtils.formatTimestamp(refreshTime!);
+        return 'Last updated: ${FeedUtils.formatTimestamp(refreshTime!)}';
       }
-      return lastFresh;
     }
 
 
