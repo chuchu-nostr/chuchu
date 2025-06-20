@@ -155,6 +155,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
+    ChuChuNavigator.popToRoot(context);
   }
 
   void _showSnack(String msg) {

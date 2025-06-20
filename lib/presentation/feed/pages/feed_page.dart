@@ -1,5 +1,8 @@
+import 'package:flutter/material.dart';
+
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:flutter/material.dart';
 
@@ -54,6 +57,7 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Widget _getFeedListWidget() {
+
     if (_isInitialLoading) {
       return ListView.builder(
         itemCount: 8,
@@ -62,7 +66,17 @@ class _FeedPageState extends State<FeedPage>
     }
 
     if (notesList.isEmpty) {
-      return const Center(child: Text('No Content'));
+      return Column(
+        children: [
+          SizedBox(
+            height: 100,
+          ),
+          CommonImage(iconName: 'no_feed.png', size: 350),
+          Text('No Content',
+            style: Theme.of(context).textTheme.titleLarge,
+          ),
+        ],
+      );
     }
 
     return ListView.builder(
@@ -92,7 +106,6 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Future<void> updateNotesList(bool isInit) async {
-    // 如果是首次加载，在进入刷新流程前显示骨架屏幕
     if (isInit && notesList.isEmpty) {
       setState(() {
         _isInitialLoading = true;

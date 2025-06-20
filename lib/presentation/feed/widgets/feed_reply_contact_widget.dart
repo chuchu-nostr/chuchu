@@ -103,7 +103,7 @@ class _FeedReplyContactWidgetState extends State<FeedReplyContactWidget> {
   @override
   Widget build(BuildContext context) {
     if (!isShowReplyContactWidget) return const SizedBox();
-    if(noteAuthor == null) return  _emptyNoteAuthorWidget();
+    if(noteAuthor == null) return  _emptyNoteAuthorWidget().setPaddingOnly(bottom: 6.0);;
     return ValueListenableBuilder<UserDBISAR>(
       valueListenable: Account.sharedInstance.getUserNotifier(noteAuthor!),
       builder: (context, value, child) {
@@ -118,7 +118,9 @@ class _FeedReplyContactWidgetState extends State<FeedReplyContactWidget> {
               fontWeight: FontWeight.w400,
             ),
             children: [
-              TextSpan(text: 'Reply to '),
+              TextSpan(text: 'Reply to ',
+                  style: Theme.of(context).textTheme.labelLarge,
+              ),
               TextSpan(
                 text: ' @${value.name ?? ''}',
                 style: TextStyle(
@@ -136,7 +138,7 @@ class _FeedReplyContactWidgetState extends State<FeedReplyContactWidget> {
           ),
         );
       },
-    );
+    ).setPaddingOnly(bottom: 6.0);
   }
 
   Widget _emptyNoteAuthorWidget(){
@@ -149,7 +151,9 @@ class _FeedReplyContactWidgetState extends State<FeedReplyContactWidget> {
           fontWeight: FontWeight.w400,
         ),
         children: [
-          TextSpan(text: 'Reply to '),
+          TextSpan(text: 'Reply to ',
+            style: Theme.of(context).textTheme.labelLarge
+          ),
           TextSpan(
             text: ' @ ',
             style: TextStyle(

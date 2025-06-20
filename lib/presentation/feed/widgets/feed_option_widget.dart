@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/nostr_dart/src/ok.dart';
-import '../../../core/widgets/common_image.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/enum/feed_enum.dart';
 import '../../../data/models/feed_extension_model.dart';
@@ -52,9 +51,6 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
       behavior: HitTestBehavior.translucent,
       onTap: () {},
       child: Container(
-        margin: EdgeInsets.only(
-          left: 50,
-        ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children:
@@ -141,7 +137,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   }) {
     final content =
         clickNum == null || clickNum == 0 ? '' : clickNum.toString();
-    Color textColors = isSelect ? Colors.black : Colors.black26;
+    Color textColors = isSelect ? Color(0xFFA84F4F) : Colors.black54;
     return GestureDetector(
       onLongPress: onLongPress,
       behavior: HitTestBehavior.translucent,
@@ -149,11 +145,11 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Container(
-            padding: EdgeInsets.only(right: 4),
-            child: CommonImage(
-              iconName: type.getIconName,
-              size: 16,
+          Padding(
+            padding: const EdgeInsets.only(right: 4.0),
+            child: Icon(
+              _mapIconData(type, isSelect),
+              size: 18,
               color: textColors,
             ),
           ),
@@ -193,6 +189,17 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
         return noteDB.zapAmountByMe > 0;
       case EFeedOptionType.reply:
         return noteDB.replyCountByMe > 0;
+    }
+  }
+
+  IconData _mapIconData(EFeedOptionType type, bool isSelect) {
+    switch (type) {
+      case EFeedOptionType.reply:
+        return isSelect ? Icons.chat_bubble : Icons.chat_bubble_outline;
+      case EFeedOptionType.like:
+        return isSelect ? Icons.favorite : Icons.favorite_border;
+      case EFeedOptionType.zaps:
+        return isSelect ? Icons.bolt : Icons.bolt_outlined;
     }
   }
 }

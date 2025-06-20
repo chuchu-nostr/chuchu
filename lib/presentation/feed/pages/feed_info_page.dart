@@ -4,6 +4,7 @@ import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 
 import 'package:flutter/services.dart';
 
@@ -21,19 +22,21 @@ import '../../../data/models/feed_extension_model.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../widgets/feed_widget.dart';
 
-
 class FeedInfoPage extends StatefulWidget {
   final bool isShowReply;
   final NotedUIModel? notedUIModel;
-  const FeedInfoPage(
-      {Key? key, required this.notedUIModel, this.isShowReply = true})
-      : super(key: key);
+  const FeedInfoPage({
+    Key? key,
+    required this.notedUIModel,
+    this.isShowReply = true,
+  }) : super(key: key);
 
   @override
   State<FeedInfoPage> createState() => _FeedInfoPageState();
 }
 
-class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin {
+class _FeedInfoPageState extends State<FeedInfoPage>
+    with NavigatorObserverMixin {
   final GlobalKey _replyListContainerKey = GlobalKey();
   final GlobalKey _containerKey = GlobalKey();
 
@@ -58,11 +61,13 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
   }
 
   void _scrollToPosition(double offset) {
-    if(!scrollTag){
+    if (!scrollTag) {
       scrollTag = true;
-      _scrollController.jumpTo(
-        offset,
-      );
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _scrollController.hasClients) {
+          _scrollController.jumpTo(offset);
+        }
+      });
     }
   }
 
@@ -72,15 +77,16 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
   }
 
   void _updateNoted() async {
-    if(widget.notedUIModel == null) return;
+    if (widget.notedUIModel == null) return;
     NotedUIModel notedUIModel = widget.notedUIModel!;
     String noteId = notedUIModel.noteDB.noteId;
 
-    NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
-      noteId,
-      isUpdateCache: true,
-      notedUIModel: notedUIModel,
-    );
+    NotedUIModel? noteNotifier =
+        await ChuChuFeedCacheManager.getValueNotifierNoted(
+          noteId,
+          isUpdateCache: true,
+          notedUIModel: notedUIModel,
+        );
 
     if (noteNotifier == null) return;
     int newReplyNum = noteNotifier.noteDB.replyEventIds?.length ?? 0;
@@ -95,31 +101,36 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
   }
 
   void _getReplyFromRelay() async {
-    if(widget.notedUIModel == null) return;
+    if (widget.notedUIModel == null) return;
     String notedId = widget.notedUIModel!.noteDB.noteId;
-    await Feed.sharedInstance.loadNoteActions(notedId, actionsCallBack: (result) async {
-      NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
-        notedId,
-        isUpdateCache: true,
-        notedUIModel: widget.notedUIModel,
-      );
-      if(noteNotifier == null) return;
-      _getReplyFromDB();
-    });
+    await Feed.sharedInstance.loadNoteActions(
+      notedId,
+      actionsCallBack: (result) async {
+        NotedUIModel? noteNotifier =
+            await ChuChuFeedCacheManager.getValueNotifierNoted(
+              notedId,
+              isUpdateCache: true,
+              notedUIModel: widget.notedUIModel,
+            );
+        if (noteNotifier == null) return;
+        _getReplyFromDB();
+      },
+    );
   }
 
   void _getReplyFromDB() async {
-    if(widget.notedUIModel == null) return;
+    if (widget.notedUIModel == null) return;
     String noteId = widget.notedUIModel!.noteDB.noteId;
 
-    NotedUIModel? preNoteNotifier = ChuChuFeedCacheManager.getValueNotifierNoteToCache(noteId);
+    NotedUIModel? preNoteNotifier =
+        ChuChuFeedCacheManager.getValueNotifierNoteToCache(noteId);
 
-    if(preNoteNotifier == null){
+    if (preNoteNotifier == null) {
       preNoteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
         noteId,
         isUpdateCache: true,
       );
-      if(preNoteNotifier == null) return;
+      if (preNoteNotifier == null) return;
     }
 
     List<String>? replyEventIds = preNoteNotifier.noteDB.replyEventIds;
@@ -127,10 +138,11 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
 
     List<NotedUIModel?> resultList = [];
     for (String noteId in replyEventIds) {
-      NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
-        noteId,
-        isUpdateCache: true,
-      );
+      NotedUIModel? noteNotifier =
+          await ChuChuFeedCacheManager.getValueNotifierNoted(
+            noteId,
+            isUpdateCache: true,
+          );
       if (noteNotifier != null) resultList.add(noteNotifier);
     }
 
@@ -143,6 +155,7 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
 
   @override
   Widget build(BuildContext context) {
+
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -151,7 +164,7 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
       child: Scaffold(
         backgroundColor: Colors.white,
         appBar: AppBar(
-          title: Text('Feed'),
+          title: Text(''),
         ),
         body: Container(
           height: double.infinity,
@@ -161,8 +174,6 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
                 controller: _scrollController,
                 child: Container(
                   padding: EdgeInsets.only(
-                    left: 24.px,
-                    right: 24.px,
                     bottom: 100.px,
                   ),
                   child: Column(
@@ -184,12 +195,30 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
                             ),
                           ),
                         ),
-                      ),
+                      ).setPadding(EdgeInsets.symmetric(horizontal: 24.0)),
                       FeedWidget(
                         isShowAllContent: true,
                         isShowInteractionData: true,
                         isShowReply: false,
                         notedUIModel: widget.notedUIModel,
+                        feedWidgetLayout: EFeedWidgetLayout.fullScreen,
+                      ).setPadding(EdgeInsets.symmetric(horizontal: 24.0)),
+                      Container(
+                        padding:EdgeInsets.all(8.0),
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          border: Border(
+                            bottom: BorderSide(width: 0.5,color: Colors.grey.withOpacity(.5)),
+                          ),
+                        ),
+                        child: Text(
+                          'Relevant reply:',
+                          style: TextStyle(
+                            color: Colors.black87,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
                       ),
                       // _showContentWidget(),
                       _showReplyList(),
@@ -209,30 +238,12 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
       ),
     );
   }
-  //
-  // Widget _showSimpleReplyWidget() {
-  //   NotedUIModel? model = widget.notedUIModel;
-  //   if (model == null) return const SizedBox();
-  //   return Positioned(
-  //     left: 0,
-  //     right: 0,
-  //     bottom: 20,
-  //     child: SimpleMomentReplyWidget(
-  //       notedUIModel: model,
-  //       postNotedCallback: _updateNoted,
-  //       isFocusedCallback: (focusStatus) {
-  //         if (focusStatus == _isShowMask) return;
-  //         setState(() {
-  //           _isShowMask = focusStatus;
-  //         });
-  //       },
-  //     ),
-  //   );
-  // }
 
   Widget _showReplyList() {
+    if (replyList.isEmpty) return const SizedBox();
+    
     List<Widget> list = replyList.map((NotedUIModel? notedUIModelDraft) {
-      if(notedUIModelDraft == null) {
+      if (notedUIModelDraft == null) {
         return const SizedBox();
       }
       int index = replyList.indexOf(notedUIModelDraft);
@@ -254,7 +265,19 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
     return Container(
       key: _replyListContainerKey,
       child: Column(
-        children: list,
+        children: list.map((widget) {
+          return Container(
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  width: 0.5,
+                  color: Theme.of(context).dividerColor.withOpacity(0.3),
+                ),
+              ),
+            ),
+            child: widget,
+          );
+        }).toList(),
       ),
     );
   }
@@ -279,9 +302,7 @@ class _FeedInfoPageState extends State<FeedInfoPage> with NavigatorObserverMixin
             Text(
               'No reply !',
               style: Theme.of(context).textTheme.titleLarge,
-            ).setPaddingOnly(
-              top: 24.px,
-            ),
+            ).setPaddingOnly(top: 24.px),
           ],
         ),
       ),
@@ -315,51 +336,55 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
   void _dealWithNoted() async {
     if (widget.notedUIModel == null || widget.notedUIModel == null) return;
     await Future.delayed(Duration.zero);
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
 
     notedReplyList = [];
     await _getReplyNoted(widget.notedUIModel!);
-
   }
 
   Future _getReplyNoted(NotedUIModel? model) async {
     String replyId = model?.noteDB.getReplyId ?? '';
     if (replyId.isNotEmpty) {
-      NotedUIModel? replyNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
-        replyId,
-        isUpdateCache: true,
-        notedUIModel: model,
-      );
+      NotedUIModel? replyNotifier =
+          await ChuChuFeedCacheManager.getValueNotifierNoted(
+            replyId,
+            isUpdateCache: true,
+            notedUIModel: model,
+          );
       notedReplyList = [
         ...[replyNotifier],
-        ...notedReplyList!
+        ...notedReplyList!,
       ];
       _getReplyNoted(replyNotifier);
-    }else{
+    } else {
       _updateReply(notedReplyList ?? []);
-      if(mounted){
+      if (mounted) {
         setState(() {});
       }
     }
   }
 
   void _updateReply(List<NotedUIModel?> notedReplyList) async {
-    if(notedReplyList.isEmpty) return;
-    for(NotedUIModel? noted in notedReplyList){
-      if(noted == null) {
+    if (notedReplyList.isEmpty) return;
+    for (NotedUIModel? noted in notedReplyList) {
+      if (noted == null) {
         continue;
       }
       String notedId = noted.noteDB.noteId;
-      await Feed.sharedInstance.loadNoteActions(notedId, actionsCallBack: (result) async {});
-      NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
+      await Feed.sharedInstance.loadNoteActions(
         notedId,
-        isUpdateCache: true,
-        notedUIModel: noted,
+        actionsCallBack: (result) async {},
       );
+      NotedUIModel? noteNotifier =
+          await ChuChuFeedCacheManager.getValueNotifierNoted(
+            notedId,
+            isUpdateCache: true,
+            notedUIModel: noted,
+          );
 
-      if(noteNotifier == null ) return;
+      if (noteNotifier == null) return;
       noted = noteNotifier as NotedUIModel;
     }
   }
@@ -371,7 +396,12 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
   }
 
   Widget _showContentWidget() {
-    if(widget.notedUIModel == null || widget.notedUIModel == null || notedReplyList == null) return const SizedBox();
+    if (widget.notedUIModel == null ||
+        widget.notedUIModel == null ||
+        notedReplyList == null) {
+      return const SizedBox();
+    }
+
     String replyId = widget.notedUIModel?.noteDB.getReplyId ?? '';
     if (notedReplyList!.isEmpty && replyId.isNotEmpty) {
       return Container(
@@ -384,7 +414,7 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
               width: 1.px,
               height: 20.px,
               color: Theme.of(context).colorScheme.onBackground,
-            )
+            ),
           ],
         ),
       );
@@ -392,40 +422,44 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
 
     return Container(
       child: Column(
-        children: notedReplyList!.map((model) {
-          return Container(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _showMomentWidget(model),
-                Container(
-                  margin: EdgeInsets.only(left: 20.px),
-                  width: 1.px,
-                  height: 20.px,
-                  color: Theme.of(context).colorScheme.onBackground,
-                )
-              ],
-            ),
-          );
-        }).toList(),
+        children:
+            notedReplyList!.map((model) {
+              return Container(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _showMomentWidget(model),
+                    // Container(
+                    //   margin: EdgeInsets.only(left: 20.px),
+                    //   width: 1.px,
+                    //   height: 20.px,
+                    //   color: Theme.of(context).colorScheme.onBackground,
+                    // )
+                  ],
+                ),
+              );
+            }).toList(),
       ),
     );
   }
 
-  Widget _showMomentWidget(NotedUIModel? modelNotifier){
-    if(modelNotifier == null) return  FeedWidgetsUtils.emptyNoteMomentWidget(null, 100);
+  Widget _showMomentWidget(NotedUIModel? modelNotifier) {
+    if (modelNotifier == null) {
+      return FeedWidgetsUtils.emptyNoteMomentWidget(null, 100);
+    }
+
     return FeedWidget(
       isShowAllContent: true,
       isShowInteractionData: true,
       isShowReply: false,
-      clickMomentCallback:
-          (NotedUIModel? notedUIModel) async {
-        await ChuChuNavigator.pushPage(context,
-                (context) => FeedInfoPage(notedUIModel: notedUIModel));
+      clickMomentCallback: (NotedUIModel? notedUIModel) async {
+        await ChuChuNavigator.pushPage(
+          context,
+          (context) => FeedInfoPage(notedUIModel: notedUIModel),
+        );
       },
       notedUIModel: modelNotifier,
     );
-
   }
 }
 
@@ -464,40 +498,42 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
 
   void _getReplyFromRelay(NotedUIModel? notedUIModelDraft, int index) async {
     String? noteId = notedUIModelDraft?.noteDB.noteId;
-    if(noteId == null) return;
-    await Feed.sharedInstance.loadNoteActions(noteId, actionsCallBack: (result) async {
+    if (noteId == null) return;
+    await Feed.sharedInstance.loadNoteActions(
+      noteId,
+      actionsCallBack: (result) async {
+        NotedUIModel? noteNotifier =
+            await ChuChuFeedCacheManager.getValueNotifierNoted(
+              noteId,
+              isUpdateCache: true,
+              notedUIModel: notedUIModelDraft,
+            );
 
-      NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
-        noteId,
-        isUpdateCache: true,
-        notedUIModel: notedUIModelDraft,
-      );
+        if (noteNotifier == null) return;
 
-
-      if (noteNotifier == null) return;
-
-      if (mounted) {
-        setState(() {});
-      }
-      _getReplyFromDB(noteNotifier, index);
-    });
+        if (mounted) {
+          setState(() {});
+        }
+        _getReplyFromDB(noteNotifier, index);
+      },
+    );
   }
 
   void _getReplyFromDB(NotedUIModel? notedUIModelDraft, int index) async {
     List<String>? replyEventIds = notedUIModelDraft?.noteDB.replyEventIds;
     if (replyEventIds == null || replyEventIds.isEmpty) return;
 
-
     String noteId = replyEventIds[0];
 
-    NotedUIModel? replyNotifier = ChuChuFeedCacheManager.getValueNotifierNoteToCache(noteId);
+    NotedUIModel? replyNotifier =
+        ChuChuFeedCacheManager.getValueNotifierNoteToCache(noteId);
 
     replyNotifier ??= await ChuChuFeedCacheManager.getValueNotifierNoted(
-        noteId,
-        isUpdateCache: true,
-      );
+      noteId,
+      isUpdateCache: true,
+    );
 
-    if(replyNotifier == null) return;
+    if (replyNotifier == null) return;
 
     if (index == 0) {
       firstReplyNoted = replyNotifier;
@@ -548,7 +584,7 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
   }
 
   Widget _secondReplyWidget() {
-    if (secondReplyNoted == null || isShowRepliesWidget){
+    if (secondReplyNoted == null || isShowRepliesWidget) {
       return const SizedBox();
     }
 
@@ -571,19 +607,11 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
         setState(() {});
       },
       child: Container(
-        padding: EdgeInsets.only(
-          left: 12.px,
-          bottom: 24.px,
-        ),
+        padding: EdgeInsets.only(left: 12.px, bottom: 24.px),
         child: Row(
           children: [
-            CommonImage(
-              iconName: 'more_vertical_icon.png',
-              size: 16.px,
-            ),
-            SizedBox(
-              width: 20.px,
-            ),
+            CommonImage(iconName: 'more_vertical_icon.png', size: 16.px),
+            SizedBox(width: 20.px),
             Text(
               'Show replies',
               style: TextStyle(
@@ -635,21 +663,24 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
   }
 
   void _getMomentUserInfo() async {
-    if( widget.notedUIModel == null) return;
+    if (widget.notedUIModel == null) return;
     String pubKey = widget.notedUIModel!.noteDB.author;
     await Account.sharedInstance.getUserInfo(pubKey);
   }
 
   Widget _momentItemWidget() {
-    if(widget.notedUIModel == null) return const SizedBox();
+    if (widget.notedUIModel == null) return const SizedBox();
     String pubKey = widget.notedUIModel!.noteDB.author;
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () async {
         ChuChuNavigator.pushPage(
-            context,
-                (context) => FeedInfoPage(
-                notedUIModel: widget.notedUIModel, isShowReply: false));
+          context,
+          (context) => FeedInfoPage(
+            notedUIModel: widget.notedUIModel,
+            isShowReply: false,
+          ),
+        );
       },
       child: IntrinsicHeight(
         child: ValueListenableBuilder<UserDBISAR>(
@@ -664,16 +695,16 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                       borderRadius: 40.px,
                       imageSize: 40.px,
                       child: GestureDetector(
-                        onTap: () {
-
-                        },
+                        onTap: () {},
                         child: ChuChuCachedNetworkImage(
                           imageUrl: value.picture ?? '',
                           fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              FeedWidgetsUtils.badgePlaceholderImage(),
-                          errorWidget: (context, url, error) =>
-                              FeedWidgetsUtils.badgePlaceholderImage(),
+                          placeholder:
+                              (context, url) =>
+                                  FeedWidgetsUtils.badgePlaceholderImage(),
+                          errorWidget:
+                              (context, url, error) =>
+                                  FeedWidgetsUtils.badgePlaceholderImage(),
                           width: 40.px,
                           height: 40.px,
                         ),
@@ -682,38 +713,35 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                     if (widget.isShowLink)
                       Expanded(
                         child: Container(
-                          margin: EdgeInsets.symmetric(
-                            vertical: 4.px,
-                          ),
+                          margin: EdgeInsets.symmetric(vertical: 4.px),
                           width: 1.0,
-                          color: Theme.of(context).colorScheme.onBackground,
+                          color:  Colors.grey.withOpacity(.5),
                         ),
                       ),
                   ],
-                ),
+                ).setPaddingOnly(right: 8.0),
                 Expanded(
                   child: Container(
-                    padding: EdgeInsets.only(
-                      bottom: 16.px,
-                    ),
-                    margin: EdgeInsets.all(8.px),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         _momentUserInfoWidget(value),
                         FeedWidget(
+                          feedWidgetLayout: EFeedWidgetLayout.fullScreen,
                           isShowAllContent: false,
                           isShowReply: false,
                           notedUIModel: widget.notedUIModel,
                           isShowUserInfo: false,
-                          clickMomentCallback:
-                              (NotedUIModel? notedUIModel) async {
+                          clickMomentCallback: (
+                            NotedUIModel? notedUIModel,
+                          ) async {
                             await ChuChuNavigator.pushPage(
                               context,
-                                  (context) => FeedInfoPage(
-                                  notedUIModel: widget.notedUIModel,
-                                  isShowReply: false),
+                              (context) => FeedInfoPage(
+                                notedUIModel: widget.notedUIModel,
+                                isShowReply: false,
+                              ),
                             );
                           },
                         ),
@@ -726,11 +754,11 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           },
         ),
       ),
-    );
+    ).setPaddingOnly(top: 12.0,left: 18.0,right:18.0);
   }
 
   Widget _momentUserInfoWidget(UserDBISAR userDB) {
-    if(widget.notedUIModel == null) return const SizedBox();
+    if (widget.notedUIModel == null) return const SizedBox();
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -748,7 +776,10 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           ],
         ),
         Text(
-          FeedUtils.getUserMomentInfo(userDB, widget.notedUIModel!.createAtStr)[0],
+          FeedUtils.getUserMomentInfo(
+            userDB,
+            widget.notedUIModel!.createAtStr,
+          )[0],
           style: TextStyle(
             color: Theme.of(context).colorScheme.onBackground,
             fontSize: 12.px,
@@ -758,5 +789,4 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
       ],
     );
   }
-
 }

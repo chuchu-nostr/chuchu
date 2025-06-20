@@ -31,9 +31,10 @@ class _DrawerMenuState extends State<DrawerMenu>
     if (nikName == null || nikName.isEmpty) {
       nikName = _getUserNupbStr;
     }
+    final theme = Theme.of(context);
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12),
-      color: Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      color: theme.colorScheme.background,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -52,7 +53,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           fontSize: 18,
-                          color: Colors.black,
+                          color: theme.colorScheme.onBackground,
                         ),
                       ),
                       Row(
@@ -63,7 +64,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                             style: TextStyle(
                               fontWeight: FontWeight.bold,
                               fontSize: 12,
-                              color: Colors.grey,
+                              color: theme.colorScheme.onBackground.withOpacity(0.6),
                             ),
                           ),
                           const SizedBox(
@@ -78,22 +79,23 @@ class _DrawerMenuState extends State<DrawerMenu>
               ],
             ),
             const SizedBox(height: 20),
-            _menuItem(Icons.person_outline, "Profile", onTap: widget.onProfileTap),
-            _menuItem(Icons.link, "Relays",onTap: () {
+            _menuItem(context, Icons.person_outline, "Profile", onTap: widget.onProfileTap),
+            _menuItem(context, Icons.link, "Relays",onTap: () {
               ChuChuNavigator.pushPage(context, (context) => RelaysPage());
             }),
-            _menuItem(Icons.list_alt, "Contacts"),
+            _menuItem(context, Icons.list_alt, "Contacts"),
 
             const SizedBox(height: 30),
-            Divider(),
-            _menuItem(Icons.settings_outlined, "Settings"),
+            Divider(color: theme.dividerColor),
+            _menuItem(context, Icons.settings_outlined, "Settings"),
           ],
         ),
       ),
     );
   }
 
-  static Widget _menuItem(
+  Widget _menuItem(
+    BuildContext context,
     IconData icon,
     String title, {
     bool bold = false,
@@ -106,13 +108,14 @@ class _DrawerMenuState extends State<DrawerMenu>
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            Icon(icon, size: 24),
+            Icon(icon, size: 24, color: Theme.of(context).iconTheme.color),
             const SizedBox(width: 18),
             Text(
               title,
               style: TextStyle(
                 fontWeight: bold ? FontWeight.bold : FontWeight.normal,
                 fontSize: 16,
+                color: Theme.of(context).textTheme.bodyLarge?.color,
               ),
             ),
             if (tag != null)
@@ -120,12 +123,12 @@ class _DrawerMenuState extends State<DrawerMenu>
                 margin: const EdgeInsets.only(left: 6),
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 decoration: BoxDecoration(
-                  color: Colors.blue[100],
+                  color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   tag,
-                  style: const TextStyle(fontSize: 10, color: Colors.blue),
+                  style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.primary),
                 ),
               ),
           ],

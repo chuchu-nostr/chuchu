@@ -1,4 +1,5 @@
 import 'package:chuchu/core/utils/adapt.dart';
+import 'package:chuchu/core/utils/num_utils.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
@@ -15,6 +16,11 @@ import 'feed_rich_text_widget.dart';
 import 'feed_url_widget.dart';
 import 'nine_palace_grid_picture_widget.dart';
 
+enum EFeedWidgetLayout{
+  fullScreen,
+  halfScreen
+}
+
 class FeedWidget extends StatefulWidget {
   final bool isShowInteractionData;
   final bool isShowReply;
@@ -24,6 +30,7 @@ class FeedWidget extends StatefulWidget {
   final bool isShowAllContent;
   final Function(NotedUIModel? notedUIModel)? clickMomentCallback;
   final NotedUIModel? notedUIModel;
+  final EFeedWidgetLayout? feedWidgetLayout;
   const FeedWidget({
     super.key,
     required this.notedUIModel,
@@ -34,6 +41,7 @@ class FeedWidget extends StatefulWidget {
     this.isShowReplyWidget = false,
     this.isShowMomentOptionWidget = true,
     this.isShowInteractionData = false,
+    this.feedWidgetLayout = EFeedWidgetLayout.halfScreen
   });
 
   @override
@@ -52,7 +60,8 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return _feedItemWidget();
+    return widget.feedWidgetLayout == EFeedWidgetLayout.halfScreen ? _feedHalfItemWidget() : _feedFullItemWidget();
+
   }
 
   @override
@@ -65,41 +74,107 @@ class _FeedWidgetState extends State<FeedWidget> {
     }
   }
 
-  Widget _feedItemWidget() {
+  Widget _feedFullItemWidget() {
     NotedUIModel? modelNotifier = notedUIModel;
+    Border? border = widget.feedWidgetLayout == EFeedWidgetLayout.fullScreen ? null : Border(bottom: BorderSide(color: Colors.grey.withOpacity(.5), width: .5));
     if (modelNotifier == null) return const SizedBox();
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => widget.clickMomentCallback?.call(modelNotifier),
       child: Container(
         width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12.px),
         decoration: BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              color: Colors.grey.withOpacity(0.5),
-              width: 0.5,
-            ),
+          border: border,
+        ),
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _feedUserInfoWidget(),
+                    _showReplyContactWidget(),
+                    _showFeedContent(),
+                    _showFeedMediaWidget(),
+                    FeedReplyAbbreviateWidget(
+                      notedUIModel: modelNotifier,
+                      isShowReplyWidget: widget.isShowReplyWidget,
+                    ),
+                    FeedOptionWidget(notedUIModel: notedUIModel),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
-        padding: EdgeInsets.symmetric(
-          vertical: 12.px,
+      ),
+    );
+  }
+
+  Widget _feedHalfItemWidget() {
+    NotedUIModel? modelNotifier = notedUIModel;
+    Border? border = widget.isShowAllContent ? null : Border(bottom: BorderSide(color: Colors.grey.withOpacity(.5), width: .5));
+    if (modelNotifier == null) return const SizedBox();
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: () => widget.clickMomentCallback?.call(modelNotifier),
+      child: Container(
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: 12.px),
+        decoration: BoxDecoration(
+          border: border,
         ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _feedUserInfoWidget(),
-            _showReplyContactWidget().setPaddingOnly(left: 50.0),
-            _showFeedContent(),
-            _showFeedMediaWidget().setPaddingOnly(left: 50.0),
-            FeedReplyAbbreviateWidget(
-                notedUIModel: modelNotifier,
-                isShowReplyWidget: widget.isShowReplyWidget,
-            ),
-            // _FeedInteractionDataWidget(),
-            FeedOptionWidget(
-              notedUIModel: notedUIModel,
-            ),
-          ],
+        child: IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+             Padding(
+                padding: const EdgeInsets.only(right: 8.0),
+                child: Column(
+                  children: [
+                    FeedWidgetsUtils.clipImage(
+                      borderRadius: 40.px,
+                      imageSize: 40.px,
+                      child: ChuChuCachedNetworkImage(
+                        imageUrl: '',
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                        errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+                        width: 40.px,
+                        height: 40.px,
+                      ),
+                    ),
+                    widget.isShowAllContent ? Expanded(
+                      child: Container(
+                        margin: EdgeInsets.only(top: 8),
+                        width: 1,
+                        color: Colors.grey.withOpacity(.5),
+                      ),
+                    ) : const SizedBox(),
+                  ],
+                ),
+              ) ,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _feedUserInfoWidget(),
+                    _showReplyContactWidget(),
+                    _showFeedContent(),
+                    _showFeedMediaWidget(),
+                    FeedReplyAbbreviateWidget(
+                      notedUIModel: modelNotifier,
+                      isShowReplyWidget: widget.isShowReplyWidget,
+                    ),
+                    FeedOptionWidget(notedUIModel: notedUIModel),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -114,9 +189,6 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     List<String> contentList = FeedUtils.momentContentSplit(model.noteDB.content);
     return Container(
-      margin: EdgeInsets.only(
-        left: 50.px,
-      ),
       child: Column(
         children: contentList.map((String content) {
           if(getNddrlList.contains(content)){
@@ -195,7 +267,7 @@ class _FeedWidgetState extends State<FeedWidget> {
               builder: (context, value, child) {
                 return Row(
                   children: [
-                    GestureDetector(
+                   widget.feedWidgetLayout == EFeedWidgetLayout.fullScreen ? GestureDetector(
                       onTap: () async {
                       },
                       child: FeedWidgetsUtils.clipImage(
@@ -212,11 +284,8 @@ class _FeedWidgetState extends State<FeedWidget> {
                           height: 40.px,
                         ),
                       ),
-                    ),
+                    ).setPaddingOnly(right: 8.0) : const SizedBox(),
                     Container(
-                      margin: EdgeInsets.only(
-                        left: 10.px,
-                      ),
                       constraints: BoxConstraints(
                         maxWidth: maxWidth,
                       ),
@@ -230,7 +299,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                                 value.name ?? '--',
                                 style: TextStyle(
                                   color: Colors.black,
-                                  fontSize: 14.px,
+                                  fontSize: 16.px,
                                   fontWeight: FontWeight.w500,
                                 ),
                               ),
