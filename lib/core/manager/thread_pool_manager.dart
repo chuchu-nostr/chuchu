@@ -10,6 +10,9 @@ class ThreadPoolManager {
   late SendPort _algorithmSendPort;
   late SendPort _otherSendPort;
   final RootIsolateToken _rootIsolateToken;
+  
+  bool _isInitialized = false;
+  final Completer<void> _initializationCompleter = Completer<void>();
 
   /// singleton
   ThreadPoolManager._internal(this._rootIsolateToken);
@@ -17,19 +20,33 @@ class ThreadPoolManager {
   static final ThreadPoolManager sharedInstance =
   ThreadPoolManager._internal(RootIsolateToken.instance!);
 
+  bool get isInitialized => _isInitialized;
+
   Future<void> initialize() async {
-    _databaseSendPort = await _createIsolate((sendPort) {
-      _databaseIsolate = sendPort.isolate;
-      return sendPort.sendPort;
-    });
-    _algorithmSendPort = await _createIsolate((sendPort) {
-      _algorithmIsolate = sendPort.isolate;
-      return sendPort.sendPort;
-    });
-    _otherSendPort = await _createIsolate((sendPort) {
-      _otherIsolate = sendPort.isolate;
-      return sendPort.sendPort;
-    });
+    if (_isInitialized) {
+      return;
+    }
+    
+    try {
+      _databaseSendPort = await _createIsolate((sendPort) {
+        _databaseIsolate = sendPort.isolate;
+        return sendPort.sendPort;
+      });
+      _algorithmSendPort = await _createIsolate((sendPort) {
+        _algorithmIsolate = sendPort.isolate;
+        return sendPort.sendPort;
+      });
+      _otherSendPort = await _createIsolate((sendPort) {
+        _otherIsolate = sendPort.isolate;
+        return sendPort.sendPort;
+      });
+      
+      _isInitialized = true;
+      _initializationCompleter.complete();
+    } catch (error) {
+      _initializationCompleter.completeError(error);
+      rethrow;
+    }
   }
 
   Future<SendPort> _createIsolate(Function(IsolateConfig) isolateConfig) async {
@@ -52,16 +69,26 @@ class ThreadPoolManager {
     return completer.future;
   }
 
-  Future<dynamic> runDatabaseTask(Future<dynamic> Function() task) {
+  Future<dynamic> runDatabaseTask(Future<dynamic> Function() task) async {
+    await _ensureInitialized();
     return _runTask(task, _databaseSendPort);
   }
 
-  Future<dynamic> runAlgorithmTask(Future<dynamic> Function() task) {
+  Future<dynamic> runAlgorithmTask(Future<dynamic> Function() task) async {
+    await _ensureInitialized();
     return _runTask(task, _algorithmSendPort);
   }
 
-  Future<dynamic> runOtherTask(Future<dynamic> Function() task) {
+  Future<dynamic> runOtherTask(Future<dynamic> Function() task) async {
+    await _ensureInitialized();
     return _runTask(task, _otherSendPort);
+  }
+
+  Future<void> _ensureInitialized() async {
+    if (!_isInitialized) {
+      print('ThreadPoolManager not initialized. Waiting for the initialization to complete...');
+      await _initializationCompleter.future;
+    }
   }
 
   void dispose() {

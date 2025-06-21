@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:flutter_socks_proxy/socks_proxy.dart';
-
 import '../config/config.dart';
-
 
 class ChuChuHttpOverrides extends HttpOverrides {
   @override
@@ -13,6 +11,7 @@ class ChuChuHttpOverrides extends HttpOverrides {
         if (settings == null || !settings.turnOnProxy) {
           return 'DIRECT';
         }
+        
         if (settings.turnOnProxy) {
           bool onionURI = uri.host.contains(".onion");
           switch (settings.onionHostOption) {
@@ -32,7 +31,9 @@ class ChuChuHttpOverrides extends HttpOverrides {
       }
       ..badCertificateCallback = (X509Certificate cert, String host, int port) {
         return true;
-      }; // add your localhost detection logic here if you want;
+      };
     return client;
   }
 }
+
+

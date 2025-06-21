@@ -44,9 +44,18 @@ class DBISAR {
   ];
 
   Future open(String pubkey) async {
+    if (pubkey.isEmpty) {
+      throw ArgumentError('pubkey cannot be empty');
+    }
+    
     bool isOS = Platform.isIOS || Platform.isMacOS;
     Directory directory = isOS ? await getLibraryDirectory() : await getApplicationDocumentsDirectory();
     var dbPath = directory.path;
+    
+    if (!await directory.exists()) {
+      await directory.create(recursive: true);
+    }
+    
     print(() => 'DBISAR open: $dbPath, pubkey: $pubkey');
     isar = Isar.getInstance(pubkey) ??
         await Isar.open(
