@@ -1,13 +1,14 @@
+import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
-import 'package:flutter/material.dart';
 
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
+import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_smart_refresher.dart';
 import '../../../data/models/noted_ui_model.dart';
@@ -22,8 +23,7 @@ class FeedPage extends StatefulWidget {
   State<FeedPage> createState() => _FeedPageState();
 }
 
-class _FeedPageState extends State<FeedPage>
-    with SingleTickerProviderStateMixin {
+class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin, ChuChuUserInfoObserver{
   List<NotedUIModel?> notesList = [];
   final int _limit = 1000;
   int? _allNotesFromDBLastTimestamp;
@@ -36,9 +36,22 @@ class _FeedPageState extends State<FeedPage>
   @override
   void initState() {
     super.initState();
+    ChuChuUserInfoManager.sharedInstance.addObserver(this);
+    _initData();
+  }
+
+  void _initData(){
     Future.delayed(Duration(milliseconds: 5000), () {
       updateNotesList(true);
     });
+  }
+
+  void _resetData(){
+    notesList = [];
+    _allNotesFromDBLastTimestamp = null;
+    if(mounted){
+      setState(() {});
+    }
   }
 
   @override
@@ -216,5 +229,24 @@ class _FeedPageState extends State<FeedPage>
     }
 
     setState(() {});
+  }
+
+
+
+  @override
+  void didLoginSuccess(UserDBISAR? userInfo) {
+    // TODO: implement didLoginSuccess
+    _initData();
+  }
+
+  @override
+  void didLogout() {
+    // TODO: implement didLogout
+    _resetData();
+  }
+
+  @override
+  void didSwitchUser(UserDBISAR? userInfo) {
+    // TODO: implement didSwitchUser
   }
 }

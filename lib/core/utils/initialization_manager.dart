@@ -35,19 +35,12 @@ class InitializationManager {
     if (_isInitialized) {
       return;
     }
-
-    
     try {
       await _initializeCore();
-
       await _initializeBasicServices();
-      
 
       _initializePlatformSpecificAsync();
-      
-
       _initializeUserServicesAsync();
-
       _initializeBackgroundServicesAsync();
       
       _isInitialized = true;

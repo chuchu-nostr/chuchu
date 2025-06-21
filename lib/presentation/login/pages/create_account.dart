@@ -8,6 +8,7 @@ import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/nostr_dart/src/keychain.dart';
 import '../../../core/nostr_dart/src/nips/nip_019.dart';
+import '../../home/pages/home_page.dart';
 
 
 class CreateAccount extends StatefulWidget {
@@ -109,9 +110,8 @@ class CreateAccountState extends State<CreateAccount> {
 
     Account.sharedInstance.updateProfile(userDB);
     await ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
-    ChuChuNavigator.popToRoot(context);
+    ChuChuNavigator.pushReplacement(context, const HomePage());
   }
-
 
   void _init(){
     _keychain = Account.generateNewKeychain();

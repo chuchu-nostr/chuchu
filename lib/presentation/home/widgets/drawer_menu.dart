@@ -1,7 +1,10 @@
 import 'package:chuchu/core/utils/navigator/navigator.dart';
+import 'package:chuchu/presentation/login/pages/login_page.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/account/model/userDB_isar.dart';
+import '../../../core/config/storage_key_tool.dart';
+import '../../../core/manager/cache/chuchu_cache_manager.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/nostr_dart/src/nips/nip_019.dart';
 import '../../drawerMenu/follows/pages/follows_pages.dart';
@@ -71,7 +74,19 @@ class _DrawerMenuState extends State<DrawerMenu>
                           const SizedBox(
                             height: 12,
                           ),
-                          Icon(Icons.person_add_alt_1_outlined,size: 18),
+                          GestureDetector(
+                            onTap: ()async{
+                            bool? status = await ChuChuCacheManager.defaultOXCacheManager.saveForeverData(StorageKeyTool.CHUCHU_USER_PUBKEY,'');
+
+                            if(status){
+                              await ChuChuUserInfoManager.sharedInstance.logout(needObserver: true);
+                              widget.onProfileTap?.call();
+                              ChuChuNavigator.pushReplacement(context,  const LoginPage());
+                            }
+
+                            },
+                            child: Icon(Icons.logout, size: 18),
+                          ),
                         ],
                       ),
                     ],

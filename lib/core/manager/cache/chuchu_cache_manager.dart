@@ -35,10 +35,8 @@ class ChuChuCacheManager {
     switch (cacheType) {
       case EChuChuCacheType.Simple:
         return await _simpleCache.saveData(key, data);
-        break;
       case EChuChuCacheType.File:
         return await _fileCache.saveData(key, data);
-        break;
     }
   }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../home/pages/home_page.dart';
+import '../login/pages/login_page.dart';
+import '../../core/manager/chuchu_user_info_manager.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -36,9 +38,12 @@ class _SplashPageState extends State<SplashPage>
       if (status == AnimationStatus.completed) {
         Future.delayed(const Duration(milliseconds: 600), () {
           if (mounted) {
+            final bool isLogin = ChuChuUserInfoManager.sharedInstance.isLogin;
+            final Widget targetPage = isLogin ? const HomePage() : const LoginPage();
+            
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
-                pageBuilder: (context, animation, secondaryAnimation) => const HomePage(),
+                pageBuilder: (context, animation, secondaryAnimation) => targetPage,
                 transitionDuration: Duration.zero, //
                 reverseTransitionDuration: Duration.zero, //
                 transitionsBuilder: (context, animation, secondaryAnimation, child) {
