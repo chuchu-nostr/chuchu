@@ -117,8 +117,8 @@ class _HomePageState extends State<HomePage>
                             body: const FeedPage(),
                             floatingActionButton: FloatingActionButton(
                               onPressed: () {
-                                // ChuChuNavigator.pushPage(context, (context) => CreateFeedPage());
-                                ChuChuNavigator.pushPage(context, (context) => LoginPage());
+                                ChuChuNavigator.pushPage(context, (context) => CreateFeedPage());
+                                // ChuChuNavigator.pushPage(context, (context) => LoginPage());
                               },
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
