@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/nostr_dart/src/nips/nip_019.dart';
+import '../../drawerMenu/follows/pages/follows_pages.dart';
 import '../../relay/pages/relay_pages.dart';
 
 class DrawerMenu extends StatefulWidget {
@@ -83,7 +84,11 @@ class _DrawerMenuState extends State<DrawerMenu>
             _menuItem(context, Icons.link, "Relays",onTap: () {
               ChuChuNavigator.pushPage(context, (context) => RelaysPage());
             }),
-            _menuItem(context, Icons.list_alt, "Contacts"),
+            _menuItem(context, Icons.list_alt, "Follows",onTap: () {
+              ChuChuNavigator.pushPage(context, (context) => FollowsPages());
+
+
+            }),
 
             const SizedBox(height: 30),
             Divider(color: theme.dividerColor),

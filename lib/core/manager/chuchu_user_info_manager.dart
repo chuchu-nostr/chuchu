@@ -1,10 +1,9 @@
-
-
 import 'package:chuchu/core/account/account+relay.dart';
 import 'package:chuchu/core/manager/thread_pool_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../account/notification.dart';
+import '../config/storage_key_tool.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../feed/model/notificationDB_isar.dart';
 import '../nostr_dart/src/nips/nip_005.dart';
@@ -19,8 +18,8 @@ import '../messages/messages.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
 import '../privateGroups/groups.dart';
+import 'cache/chuchu_cache_manager.dart';
 import 'chuchu_feed_manager.dart';
-
 
 abstract mixin class ChuChuUserInfoObserver {
   void didLoginSuccess(UserDBISAR? userInfo);
@@ -40,8 +39,8 @@ enum _ContactType {
 }
 
 class ChuChuUserInfoManager {
-
-  static final ChuChuUserInfoManager sharedInstance = ChuChuUserInfoManager._internal();
+  static final ChuChuUserInfoManager sharedInstance =
+      ChuChuUserInfoManager._internal();
 
   ChuChuUserInfoManager._internal();
 
@@ -71,23 +70,42 @@ class ChuChuUserInfoManager {
   bool canSound = true;
   bool signatureVerifyFailed = false;
   //0: top; 1: tabbar; 2: delete.
-  int momentPosition= 0;
+  int momentPosition = 0;
 
   Future initDB(String pubkey) async {
-    if(pubkey.isEmpty) return;
+    if (pubkey.isEmpty) return;
     await logout(needObserver: false);
 
     await DBISAR.sharedInstance.open(pubkey);
     Account.sharedInstance.init();
-
   }
 
   void addObserver(ChuChuUserInfoObserver observer) => _observers.add(observer);
 
-  bool removeObserver(ChuChuUserInfoObserver observer) => _observers.remove(observer);
+  bool removeObserver(ChuChuUserInfoObserver observer) =>
+      _observers.remove(observer);
+
+  Future initLocalData() async {
+    ///account auto-login
+    final String? localPubKey = await ChuChuCacheManager.defaultOXCacheManager.getForeverData(StorageKeyTool.CHUCHU_USER_PUBKEY);
+    if (localPubKey != null && localPubKey.isNotEmpty) {
+        await initDB(localPubKey);
+        final UserDBISAR? tempUserDB = await Account.sharedInstance.loginWithPubKeyAndPassword(localPubKey);
+        if (tempUserDB != null) {
+          currentUserInfo = tempUserDB;
+          _initDatas();
+          return;
+        }
+    }
+  }
 
   Future<void> loginSuccess(UserDBISAR userDB, {bool isAmber = false}) async {
     currentUserInfo = Account.sharedInstance.me;
+    ChuChuCacheManager.defaultOXCacheManager.saveForeverData(
+      StorageKeyTool.CHUCHU_USER_PUBKEY,
+      userDB.pubKey,
+    );
+
     await _initDatas();
     for (ChuChuUserInfoObserver observer in _observers) {
       observer.didLoginSuccess(currentUserInfo);
@@ -99,11 +117,15 @@ class ChuChuUserInfoManager {
       ChuChuFeedManager.sharedInstance.newNotesCallBackCallBack(notes);
     };
 
-    Feed.sharedInstance.newNotificationCallBack = (List<NotificationDBISAR> notifications) {
+    Feed.sharedInstance.newNotificationCallBack = (
+      List<NotificationDBISAR> notifications,
+    ) {
       ChuChuFeedManager.sharedInstance.newNotificationCallBack(notifications);
     };
 
-    Feed.sharedInstance.myZapNotificationCallBack = (List<NotificationDBISAR> notifications) {
+    Feed.sharedInstance.myZapNotificationCallBack = (
+      List<NotificationDBISAR> notifications,
+    ) {
       ChuChuFeedManager.sharedInstance.myZapNotificationCallBack(notifications);
     };
   }
@@ -116,12 +138,16 @@ class ChuChuUserInfoManager {
     }
   }
 
-
-  Future<UserDBISAR?> handleSwitchFailures(UserDBISAR? userDB, String currentUserPubKey) async {
+  Future<UserDBISAR?> handleSwitchFailures(
+    UserDBISAR? userDB,
+    String currentUserPubKey,
+  ) async {
     if (userDB == null && currentUserPubKey.isNotEmpty) {
       //In the case of failing to add a new account while already logged in, implement the logic to re-login to the current account.
       await ChuChuUserInfoManager.sharedInstance.initDB(currentUserPubKey);
-      userDB = await Account.sharedInstance.loginWithPubKeyAndPassword(currentUserPubKey);
+      userDB = await Account.sharedInstance.loginWithPubKeyAndPassword(
+        currentUserPubKey,
+      );
     }
     return userDB;
   }
@@ -154,14 +180,14 @@ class ChuChuUserInfoManager {
     return userID == currentUserInfo?.pubKey;
   }
 
-
   Future<bool> checkDNS({required UserDBISAR userDB}) async {
     String pubKey = userDB.pubKey;
     String dnsStr = userDB.dns ?? '';
-    if(dnsStr.isEmpty || dnsStr == 'null') {
+    if (dnsStr.isEmpty || dnsStr == 'null') {
       return false;
     }
-    List<String> relayAddressList = await Account.sharedInstance.getUserGeneralRelayList(pubKey);
+    List<String> relayAddressList = await Account.sharedInstance
+        .getUserGeneralRelayList(pubKey);
     List<String> temp = dnsStr.split('@');
     String name = temp[0];
     String domain = temp[1];
@@ -180,8 +206,12 @@ class ChuChuUserInfoManager {
     });
     await EventCache.sharedInstance.loadAllEventsFromDB();
     Relays.sharedInstance.init().then((value) {
-      Contacts.sharedInstance.initContacts(Contacts.sharedInstance.contactUpdatedCallBack);
-      Groups.sharedInstance.init(callBack: Groups.sharedInstance.myGroupsUpdatedCallBack);
+      Contacts.sharedInstance.initContacts(
+        Contacts.sharedInstance.contactUpdatedCallBack,
+      );
+      Groups.sharedInstance.init(
+        callBack: Groups.sharedInstance.myGroupsUpdatedCallBack,
+      );
       Feed.sharedInstance.init();
       Zaps.sharedInstance.init();
       _initMessage();
@@ -192,8 +222,8 @@ class ChuChuUserInfoManager {
     Messages.sharedInstance.init();
   }
 
-
-  Future<void> resetHeartBeat() async {//eg: backForeground
+  Future<void> resetHeartBeat() async {
+    //eg: backForeground
     if (isLogin) {
       await ThreadPoolManager.sharedInstance.initialize();
       Connect.sharedInstance.startHeartBeat();
