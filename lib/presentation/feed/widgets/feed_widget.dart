@@ -1,5 +1,4 @@
 import 'package:chuchu/core/utils/adapt.dart';
-import 'package:chuchu/core/utils/num_utils.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
@@ -16,7 +15,7 @@ import 'feed_rich_text_widget.dart';
 import 'feed_url_widget.dart';
 import 'nine_palace_grid_picture_widget.dart';
 
-enum EFeedWidgetLayout{
+enum EFeedWidgetLayout {
   fullScreen,
   halfScreen
 }
@@ -28,9 +27,11 @@ class FeedWidget extends StatefulWidget {
   final bool isShowReplyWidget;
   final bool isShowMomentOptionWidget;
   final bool isShowAllContent;
+  final bool isShowBottomBorder;
   final Function(NotedUIModel? notedUIModel)? clickMomentCallback;
   final NotedUIModel? notedUIModel;
   final EFeedWidgetLayout? feedWidgetLayout;
+
   const FeedWidget({
     super.key,
     required this.notedUIModel,
@@ -41,6 +42,7 @@ class FeedWidget extends StatefulWidget {
     this.isShowReplyWidget = false,
     this.isShowMomentOptionWidget = true,
     this.isShowInteractionData = false,
+    this.isShowBottomBorder = true,
     this.feedWidgetLayout = EFeedWidgetLayout.halfScreen
   });
 
@@ -49,19 +51,28 @@ class FeedWidget extends StatefulWidget {
 }
 
 class _FeedWidgetState extends State<FeedWidget> {
+  static const double _avatarSize = 40.0;
+  static const double _borderWidth = 0.5;
+  static const double _verticalPadding = 12.0;
+  static const double _rightPadding = 8.0;
+  static const double _bottomSpacing = 12.0;
+  static const int _imageSpacing = 4;
+  static const double _mediaWidthRatio = 0.64;
+  static const double _maxUserNameWidth = 170.0;
+  
   NotedUIModel? notedUIModel;
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _dataInit();
   }
 
   @override
   Widget build(BuildContext context) {
-    return widget.feedWidgetLayout == EFeedWidgetLayout.halfScreen ? _feedHalfItemWidget() : _feedFullItemWidget();
-
+    return widget.feedWidgetLayout == EFeedWidgetLayout.halfScreen 
+        ? _feedHalfItemWidget() 
+        : _feedFullItemWidget();
   }
 
   @override
@@ -74,171 +85,171 @@ class _FeedWidgetState extends State<FeedWidget> {
     }
   }
 
-  Widget _feedFullItemWidget() {
-    NotedUIModel? modelNotifier = notedUIModel;
-    Border? border = widget.feedWidgetLayout == EFeedWidgetLayout.fullScreen ? null : Border(bottom: BorderSide(color: Colors.grey.withOpacity(.5), width: .5));
-    if (modelNotifier == null) return const SizedBox();
+  Border? get _bottomBorder => widget.isShowBottomBorder
+      ? Border(bottom: BorderSide(color: Colors.grey.withOpacity(.5), width: _borderWidth)) 
+      : null;
+
+  Widget _buildFeedContainer({required Widget child, EdgeInsets? padding}) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTap: () => widget.clickMomentCallback?.call(modelNotifier),
+      onTap: () => widget.clickMomentCallback?.call(notedUIModel),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 12.px),
-        decoration: BoxDecoration(
-          border: border,
+        padding: padding,
+        decoration: BoxDecoration(border: _bottomBorder),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _buildContentColumn() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _feedUserInfoWidget(),
+        _showReplyContactWidget(),
+        _showFeedContent(),
+        _showFeedMediaWidget(),
+        FeedReplyAbbreviateWidget(
+          notedUIModel: notedUIModel,
+          isShowReplyWidget: widget.isShowReplyWidget,
         ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _feedUserInfoWidget(),
-                    _showReplyContactWidget(),
-                    _showFeedContent(),
-                    _showFeedMediaWidget(),
-                    FeedReplyAbbreviateWidget(
-                      notedUIModel: modelNotifier,
-                      isShowReplyWidget: widget.isShowReplyWidget,
-                    ),
-                    FeedOptionWidget(notedUIModel: notedUIModel),
-                  ],
-                ),
+        FeedOptionWidget(notedUIModel: notedUIModel),
+      ],
+    );
+  }
+
+  Widget _feedFullItemWidget() {
+    if (notedUIModel == null) return const SizedBox();
+    
+    return _buildFeedContainer(
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _buildContentColumn()),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAvatarWidget({String? imageUrl}) {
+    return FeedWidgetsUtils.clipImage(
+      borderRadius: _avatarSize.px,
+      imageSize: _avatarSize.px,
+      child: ChuChuCachedNetworkImage(
+        imageUrl: imageUrl ?? '',
+        fit: BoxFit.cover,
+        placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+        errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+        width: _avatarSize.px,
+        height: _avatarSize.px,
+      ),
+    );
+  }
+
+  Widget _buildAvatarColumn() {
+    return Padding(
+      padding: const EdgeInsets.only(right: _rightPadding),
+      child: Column(
+        children: [
+          _buildAvatarWidget(),
+          if (widget.isShowAllContent)
+            Expanded(
+              child: Container(
+                margin: const EdgeInsets.only(top: _rightPadding),
+                width: 1,
+                color: Colors.grey.withOpacity(.5),
               ),
-            ],
-          ),
-        ),
+            ),
+        ],
       ),
     );
   }
 
   Widget _feedHalfItemWidget() {
-    NotedUIModel? modelNotifier = notedUIModel;
-    Border? border = widget.isShowAllContent ? null : Border(bottom: BorderSide(color: Colors.grey.withOpacity(.5), width: .5));
-    if (modelNotifier == null) return const SizedBox();
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () => widget.clickMomentCallback?.call(modelNotifier),
-      child: Container(
-        width: double.infinity,
-        padding: EdgeInsets.symmetric(vertical: 12.px),
-        decoration: BoxDecoration(
-          border: border,
-        ),
-        child: IntrinsicHeight(
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-             Padding(
-                padding: const EdgeInsets.only(right: 8.0),
-                child: Column(
-                  children: [
-                    FeedWidgetsUtils.clipImage(
-                      borderRadius: 40.px,
-                      imageSize: 40.px,
-                      child: ChuChuCachedNetworkImage(
-                        imageUrl: '',
-                        fit: BoxFit.cover,
-                        placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-                        errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-                        width: 40.px,
-                        height: 40.px,
-                      ),
-                    ),
-                    widget.isShowAllContent ? Expanded(
-                      child: Container(
-                        margin: EdgeInsets.only(top: 8),
-                        width: 1,
-                        color: Colors.grey.withOpacity(.5),
-                      ),
-                    ) : const SizedBox(),
-                  ],
-                ),
-              ) ,
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _feedUserInfoWidget(),
-                    _showReplyContactWidget(),
-                    _showFeedContent(),
-                    _showFeedMediaWidget(),
-                    FeedReplyAbbreviateWidget(
-                      notedUIModel: modelNotifier,
-                      isShowReplyWidget: widget.isShowReplyWidget,
-                    ),
-                    FeedOptionWidget(notedUIModel: notedUIModel),
-                  ],
-                ),
-              ),
-            ],
-          ),
+    if (notedUIModel == null) return const SizedBox();
+    
+    return _buildFeedContainer(
+      padding: EdgeInsets.symmetric(vertical: _verticalPadding.px),
+      child: IntrinsicHeight(
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAvatarColumn(),
+            Expanded(child: _buildContentColumn()),
+          ],
         ),
       ),
     );
+  }
+
+  Widget _buildContentItem(String content, NotedUIModel model, List<String> nddrlList) {
+    if (nddrlList.contains(content)) {
+      return MomentArticleWidget(naddr: content);
+    }
+    
+    return FeedRichTextWidget(
+      isShowAllContent: widget.isShowAllContent,
+      clickBlankCallback: () => widget.clickMomentCallback?.call(model),
+      showMoreCallback: () async {
+        // await ChuChuNavigator.pushPage(context, (context) => MomentsPage(notedUIModel: model,isShowReply: widget.isShowReply));
+      },
+      text: content,
+    ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px));
   }
 
   Widget _showFeedContent() {
-    NotedUIModel? model = notedUIModel;
-    NotedUIModel? draftNotedUIModel = model;
-    if(model == null || draftNotedUIModel == null) return const SizedBox();
+    final model = notedUIModel;
+    if (model == null) return const SizedBox();
 
-    List<String> getNddrlList = draftNotedUIModel.getNddrlList;
-
-    List<String> contentList = FeedUtils.momentContentSplit(model.noteDB.content);
-    return Container(
-      child: Column(
-        children: contentList.map((String content) {
-          if(getNddrlList.contains(content)){
-            return MomentArticleWidget(naddr: content);
-          } else {
-          return FeedRichTextWidget(
-            isShowAllContent: widget.isShowAllContent,
-            clickBlankCallback: () => widget.clickMomentCallback?.call(model),
-            showMoreCallback: () async {
-              // await ChuChuNavigator.pushPage(context, (context) => MomentsPage(notedUIModel: model,isShowReply: widget.isShowReply));
-            },
-            text: content,
-          ).setPadding(EdgeInsets.only(bottom: 12.px));
-          }
-        }).toList(),
-
-      ),
+    final nddrlList = model.getNddrlList;
+    final contentList = FeedUtils.momentContentSplit(model.noteDB.content);
+    
+    return Column(
+      children: contentList
+          .map((content) => _buildContentItem(content, model, nddrlList))
+          .toList(),
     );
   }
 
+  Widget _buildImageGrid(List<String> imageList) {
+    final width = MediaQuery.of(context).size.width * _mediaWidthRatio;
+    return NinePalaceGridPictureWidget(
+      crossAxisCount: _calculateColumnsForPictures(imageList.length),
+      width: width.px,
+      axisSpacing: _imageSpacing,
+      imageList: imageList,
+    ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px));
+  }
+
+  Widget _buildVideoWidget(String videoUrl) {
+    final isYoutube = videoUrl.contains('youtube.com') || videoUrl.contains('youtu.be');
+    return isYoutube 
+        ? FeedWidgetsUtils.youtubeSurfaceMoment(context, videoUrl)
+        : const SizedBox();
+  }
+
   Widget _showFeedMediaWidget() {
-    NotedUIModel? model = notedUIModel;
+    final model = notedUIModel;
     if (model == null) return const SizedBox();
 
-    List<String> getImageList = model.getImageList;
-    if (getImageList.isNotEmpty) {
-      double width = MediaQuery.of(context).size.width * 0.64;
-      return NinePalaceGridPictureWidget(
-        crossAxisCount: _calculateColumnsForPictures(getImageList.length),
-        width: width.px,
-        axisSpacing: 4,
-        imageList: getImageList,
-      ).setPadding(EdgeInsets.only(bottom: 12.px));
+    final imageList = model.getImageList;
+    if (imageList.isNotEmpty) {
+      return _buildImageGrid(imageList);
     }
 
-    List<String> getVideoList = model.getVideoList;
-    if (getVideoList.isNotEmpty) {
-      String videoUrl = getVideoList[0];
-      bool isHasYoutube =
-          videoUrl.contains('youtube.com') || videoUrl.contains('youtu.be');
-      return isHasYoutube
-          ? FeedWidgetsUtils.youtubeSurfaceMoment(context,videoUrl)
-          : const SizedBox();
+    final videoList = model.getVideoList;
+    if (videoList.isNotEmpty) {
+      return _buildVideoWidget(videoList[0]);
     }
 
-    List<String> getFeedExternalLink = model.getMomentExternalLink;
-    if (getFeedExternalLink.isNotEmpty) {
-      String url = getFeedExternalLink[0];
-      return MomentUrlWidget(url: url);
+    final externalLinks = model.getMomentExternalLink;
+    if (externalLinks.isNotEmpty) {
+      return MomentUrlWidget(url: externalLinks[0]);
     }
+    
     return const SizedBox();
   }
 
@@ -247,104 +258,90 @@ class _FeedWidgetState extends State<FeedWidget> {
     return FeedReplyContactWidget(notedUIModel: notedUIModel);
   }
 
-  Widget _feedUserInfoWidget() {
-    NotedUIModel? model = notedUIModel;
-    if (model == null || !widget.isShowUserInfo) return const SizedBox();
-    String pubKey = model.noteDB.author;
-
-    double width = MediaQuery.of(context).size.width;
-    double maxWidth = width - 170;
-
+  Widget _buildUserNameAndTime(UserDBISAR user, NotedUIModel model, double maxWidth) {
     return Container(
-      padding: EdgeInsets.only(bottom: 12.px),
-      child: Row(
+      constraints: BoxConstraints(maxWidth: maxWidth),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            child: ValueListenableBuilder<UserDBISAR>(
-              valueListenable: Account.sharedInstance.getUserNotifier(pubKey),
-              builder: (context, value, child) {
-                return Row(
-                  children: [
-                   widget.feedWidgetLayout == EFeedWidgetLayout.fullScreen ? GestureDetector(
-                      onTap: () async {
-                      },
-                      child: FeedWidgetsUtils.clipImage(
-                        borderRadius: 40.px,
-                        imageSize: 40.px,
-                        child: ChuChuCachedNetworkImage(
-                          imageUrl: value.picture ?? '',
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              FeedWidgetsUtils.badgePlaceholderImage(),
-                          errorWidget: (context, url, error) =>
-                              FeedWidgetsUtils.badgePlaceholderImage(),
-                          width: 40.px,
-                          height: 40.px,
-                        ),
-                      ),
-                    ).setPaddingOnly(right: 8.0) : const SizedBox(),
-                    Container(
-                      constraints: BoxConstraints(
-                        maxWidth: maxWidth,
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              Text(
-                                value.name ?? '--',
-                                style: TextStyle(
-                                  color: Colors.black,
-                                  fontSize: 16.px,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              // _checkIsPrivate(),
-                            ],
-                          ),
-                          Text(
-                            FeedUtils.getUserMomentInfo(
-                                value, model.createAtStr)[0],
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 12.px,
-                              fontWeight: FontWeight.w400,
-                            ),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                );
-              },
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                user.name ?? '--',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 16.px,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              // _checkIsPrivate(),
+            ],
+          ),
+          Text(
+            FeedUtils.getUserMomentInfo(user, model.createAtStr)[0],
+            style: TextStyle(
+              color: Colors.black,
+              fontSize: 12.px,
+              fontWeight: FontWeight.w400,
             ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
     );
   }
 
-  void _dataInit() async {
-    NotedUIModel? model = widget.notedUIModel;
-
-    if(model == null) return;
-
-
-    notedUIModel = model;
-    _getFeedUserInfo(model);
-    setState(() {});
+  Widget _buildUserInfoRow(UserDBISAR user, NotedUIModel model, double maxWidth) {
+    return Row(
+      children: [
+        if (widget.feedWidgetLayout == EFeedWidgetLayout.fullScreen)
+          GestureDetector(
+            onTap: () async {},
+            child: _buildAvatarWidget(imageUrl: user.picture),
+          ).setPaddingOnly(right: _rightPadding),
+        _buildUserNameAndTime(user, model, maxWidth),
+      ],
+    );
   }
 
+  Widget _feedUserInfoWidget() {
+    final model = notedUIModel;
+    if (model == null || !widget.isShowUserInfo) return const SizedBox();
+    
+    final pubKey = model.noteDB.author;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final maxWidth = screenWidth - _maxUserNameWidth;
 
-  void _getFeedUserInfo(NotedUIModel model) async {
-    String pubKey = model.noteDB.author;
+    return Container(
+      padding: EdgeInsets.only(bottom: _bottomSpacing.px),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          ValueListenableBuilder<UserDBISAR>(
+            valueListenable: Account.sharedInstance.getUserNotifier(pubKey),
+            builder: (context, user, child) {
+              return _buildUserInfoRow(user, model, maxWidth);
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _dataInit() async {
+    final model = widget.notedUIModel;
+    if (model == null) return;
+
+    notedUIModel = model;
+    await _getFeedUserInfo(model);
+    if (mounted) setState(() {});
+  }
+
+  Future<void> _getFeedUserInfo(NotedUIModel model) async {
+    final pubKey = model.noteDB.author;
     await Account.sharedInstance.getUserInfo(pubKey);
   }
 
