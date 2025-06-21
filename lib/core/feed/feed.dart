@@ -1,11 +1,14 @@
 
 import 'package:chuchu/core/contacts/contacts+blocklist.dart';
 import 'package:chuchu/core/feed/feed+load.dart';
+import 'package:flutter/foundation.dart';
 
 import '../account/account.dart';
 import '../account/model/relayDB_isar.dart';
 import '../account/relays.dart';
 import '../contacts/contacts.dart';
+import '../database/db_isar.dart';
+import '../manager/chuchu_user_info_manager.dart';
 import '../network/connect.dart';
 import '../nostr_dart/src/filter.dart';
 import '../nostr_dart/src/utils.dart';
@@ -44,6 +47,21 @@ class Feed {
   Future<void> init() async {
     privkey = Account.sharedInstance.currentPrivkey;
     pubkey = Account.sharedInstance.currentPubkey;
+    
+    Connect.sharedInstance.addConnectStatusListener((relay, status, relayKinds) async {
+      if (status == 1 && 
+          Account.sharedInstance.me != null && 
+          relayKinds.contains(RelayKind.general) &&
+          ChuChuUserInfoManager.sharedInstance.isLogin) {
+        updateSubscriptions(relay: relay);
+      }
+    });
+    
+    if (ChuChuUserInfoManager.sharedInstance.isLogin) {
+      updateSubscriptions();
+    } else {
+      debugPrint('If the user is not logged in, skip the Moments and subscribe to the updates');
+    }
   }
 
   void closeSubscriptions({String? relay}) {

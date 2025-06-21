@@ -44,6 +44,7 @@ class _HomePageState extends State<HomePage>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final drawerWidth = MediaQuery.of(context).size.width * maxSlide;
     return Scaffold(
       body: GestureDetector(
@@ -84,7 +85,7 @@ class _HomePageState extends State<HomePage>
                             boxShadow: [
                               if (_controller.value > 0)
                                 BoxShadow(
-                                  color: Colors.black.withOpacity(
+                                  color: theme.shadowColor.withOpacity(
                                     0.15 * _controller.value,
                                   ),
                                   blurRadius: 16,
@@ -93,13 +94,22 @@ class _HomePageState extends State<HomePage>
                           ),
                           child: Scaffold(
                             appBar: AppBar(
+                              backgroundColor: theme.colorScheme.surface,
+                              foregroundColor: theme.colorScheme.onSurface,
+                              elevation: 0,
                               leading: IconButton(
-                                icon: const Icon(Icons.menu),
+                                icon: Icon(
+                                  Icons.menu,
+                                  color: theme.colorScheme.onSurface,
+                                ),
                                 onPressed: toggle,
                               ),
                               actions: [
                                 IconButton(
-                                  icon: const Icon(Icons.settings),
+                                  icon: Icon(
+                                    Icons.settings,
+                                    color: theme.colorScheme.onSurface,
+                                  ),
                                   onPressed: () {},
                                 ),
                               ],
@@ -109,16 +119,15 @@ class _HomePageState extends State<HomePage>
                               onPressed: () {
                                 // ChuChuNavigator.pushPage(context, (context) => CreateFeedPage());
                                 ChuChuNavigator.pushPage(context, (context) => LoginPage());
-
-
                               },
-                              backgroundColor: const Color(0xFF0C58CB),
+                              backgroundColor: theme.colorScheme.primary,
+                              foregroundColor: theme.colorScheme.onPrimary,
                               elevation: 0,
                               mini: true,
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(100),
                               ),
-                              child: const Icon(Icons.add, color: Colors.white),
+                              child: const Icon(Icons.add),
                             ),
                           ),
                         ),
@@ -132,7 +141,7 @@ class _HomePageState extends State<HomePage>
                               child: GestureDetector(
                                 onTap: close,
                                 child: Container(
-                                  color: Colors.black,
+                                  color: theme.colorScheme.scrim,
                                 ),
                               ),
                             ),

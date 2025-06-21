@@ -201,6 +201,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         isShowInteractionData: true,
                         isShowReply: false,
                         notedUIModel: widget.notedUIModel,
+                        isShowBottomBorder: false,
                         feedWidgetLayout: EFeedWidgetLayout.fullScreen,
                       ).setPadding(EdgeInsets.symmetric(horizontal: 24.0)),
                       Container(
@@ -409,9 +410,7 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
   }
 
   Widget _showContentWidget() {
-    if (widget.notedUIModel == null ||
-        widget.notedUIModel == null ||
-        notedReplyList == null) {
+    if (widget.notedUIModel == null || notedReplyList == null) {
       return const SizedBox();
     }
 
@@ -465,6 +464,7 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
       isShowAllContent: true,
       isShowInteractionData: true,
       isShowReply: false,
+      isShowBottomBorder: false,
       clickMomentCallback: (NotedUIModel? notedUIModel) async {
         await ChuChuNavigator.pushPage(
           context,

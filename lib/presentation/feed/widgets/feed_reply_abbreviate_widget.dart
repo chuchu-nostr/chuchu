@@ -97,7 +97,7 @@ class _FeedReplyAbbreviateWidgetState extends State<FeedReplyAbbreviateWidget> {
       decoration: BoxDecoration(
         border: Border.all(
           width: 1.px,
-          color: Colors.black,
+          color: Theme.of(context).dividerColor.withAlpha(50),
         ),
         borderRadius: BorderRadius.all(
           Radius.circular(
@@ -108,6 +108,7 @@ class _FeedReplyAbbreviateWidgetState extends State<FeedReplyAbbreviateWidget> {
       child: FeedWidget(
         notedUIModel: model,
         isShowMomentOptionWidget: false,
+        isShowBottomBorder: false,
         clickMomentCallback: (NotedUIModel? notedUIModel) async {
         },
       ).setPadding(EdgeInsets.symmetric(horizontal: 12.0)),

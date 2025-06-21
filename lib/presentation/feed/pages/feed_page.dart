@@ -112,8 +112,6 @@ class _FeedPageState extends State<FeedPage>
       });
     }
 
-    await Feed.sharedInstance.updateSubscriptions();
-
     try {
       List<NoteDBISAR> list = await _getNoteTypeToDB(isInit);
       if (list.isEmpty) {

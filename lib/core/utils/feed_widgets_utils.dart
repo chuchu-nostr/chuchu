@@ -134,7 +134,7 @@ class FeedWidgetsUtils {
       decoration: BoxDecoration(
         border: Border.all(
           width: 1.px,
-          color: Colors.black,
+          color: Colors.black38,
         ),
         borderRadius: BorderRadius.all(
           Radius.circular(
@@ -146,7 +146,7 @@ class FeedWidgetsUtils {
         child: Text(
           content ?? 'Loading...',
           style: TextStyle(
-            color: Colors.black,
+            color: Colors.black38,
             fontSize: 16.px,
           ),
         ),
