@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
-import '../../home/pages/home_page.dart';
 import 'create_account.dart';
 
 class LoginPage extends StatefulWidget {
@@ -156,7 +155,7 @@ class _LoginPageState extends State<LoginPage> {
     }
 
     ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
-    ChuChuNavigator.pushReplacement(context, const HomePage());
+    ChuChuNavigator.popToRoot(context);
   }
 
   void _showSnack(String msg) {

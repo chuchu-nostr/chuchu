@@ -353,7 +353,7 @@ class _RelaysPageState extends State<RelaysPage> with WidgetsBindingObserver, Na
         relayList.length > 1 && relayList.length - 1 != index
             ? Divider(
           height: Adapt.px(0.5),
-          color: Theme.of(context).dividerColor,
+          color: Colors.red,
         )
             : Container(),
       ],
