@@ -1,4 +1,3 @@
-
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -120,34 +119,41 @@ extension ChuChuCachedImageProviderEx on CachedNetworkImageProvider {
   }) {
     final pixelRatio = Adapt.devicePixelRatio;
 
-    // uri = ' https://nostr-chat-bucket.oss-cn-hongkong.aliyuncs.com/images/bdaa9320-f02a-11ef-b7a0-6125491236fb.jpeg';
-    // Initialize value
-    final defaultWidth = Adapt.screenW;
-    final defaultHeight = Adapt.screenH;
-    if (!width!.isValid() && maxWidth != null) {
+    final double defaultWidth = Adapt.screenW;
+    final double defaultHeight = Adapt.screenH;
+
+    bool widthValid = width?.isValid() ?? false;
+    bool heightValid = height?.isValid() ?? false;
+
+    if (!widthValid && maxWidth != null) {
       width = defaultWidth;
-    } else if (!height.isValid() && maxHeight != null) {
+      widthValid = true;
+    } else if (!heightValid && maxHeight != null) {
       height = defaultHeight;
-    } else if (!width.isValid() && !height.isValid()) {
+      heightValid = true;
+    } else if (!widthValid && !heightValid) {
       width = defaultWidth;
+      widthValid = true;
     }
 
-    final maxPixelWidth = maxWidth * pixelRatio;
-    final maxPixelHeight = maxHeight * pixelRatio;
+    final double? maxPixelWidth = maxWidth != null ? maxWidth * pixelRatio : null;
+    final double? maxPixelHeight = maxHeight != null ? maxHeight * pixelRatio : null;
 
     int? resizeWidth;
     int? resizeHeight;
     double? widthFactor;
     double? heightFactor;
 
-    if (width != null && width.isValid()) {
-      resizeWidth = (width * pixelRatio).round();
+    if (widthValid && width != null) {
+      final int tempWidth = (width * pixelRatio).round();
+      resizeWidth = tempWidth;
       if (maxPixelWidth != null) {
         widthFactor = maxPixelWidth / resizeWidth;
       }
     }
-    if (height != null && height != double.infinity) {
-      resizeHeight = (height * pixelRatio).round();
+    if (heightValid && height != null && height != double.infinity) {
+      final int tempHeight = (height * pixelRatio).round();
+      resizeHeight = tempHeight;
       if (maxPixelHeight != null) {
         heightFactor = maxPixelHeight / resizeHeight;
       }

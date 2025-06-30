@@ -289,16 +289,17 @@ class _CommonImageGalleryState extends State<CommonImageGallery>
               width: 35.px,
               height: 35.px,
               decoration: BoxDecoration(
-                color: Colors.red,
+                color: Theme.of(context).colorScheme.primary,
                 borderRadius: BorderRadius.all(
                   Radius.circular(35.px),
                 ),
               ),
               child: Center(
                 child: GestureDetector(
-                  child: CommonImage(
-                    iconName: 'icon_download.png',
+                  child: Icon(
+                    Icons.download,
                     size: 24,
+                    color: Colors.white,
                   ),
                   onTap: _widgetShotAndSave,
                 ),
