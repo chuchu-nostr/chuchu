@@ -211,7 +211,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                           border: Border(
                             bottom: BorderSide(
                               width: 0.5,
-                              color: theme.dividerColor,
+                              color: Colors.grey.withOpacity(.5),
                             ),
                           ),
                         ),
@@ -281,6 +281,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
       child: Column(
         children: list.map((widget) {
           return Container(
+            padding: EdgeInsets.only(bottom: 12.0),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -425,7 +426,7 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
               margin: EdgeInsets.only(left: 20.px),
               width: 1.px,
               height: 20.px,
-              color: Theme.of(context).dividerColor.withOpacity(0.5),
+              color: Colors.grey.withOpacity(.5),
             ),
           ],
         ),
@@ -572,19 +573,17 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
-    return Container(
-      child: Column(
-        children: [
-          MomentReplyWidget(
-            notedUIModel: widget.notedUIModel,
-            isShowLink: firstReplyNoted != null,
-          ),
-          _firstReplyWidget(),
-          _secondReplyWidget(),
-          _thirdReplyWidget(),
-          _showRepliesWidget(),
-        ],
-      ),
+    return Column(
+      children: [
+        MomentReplyWidget(
+          notedUIModel: widget.notedUIModel,
+          isShowLink: firstReplyNoted != null,
+        ),
+        _firstReplyWidget(),
+        _secondReplyWidget(),
+        _thirdReplyWidget(),
+        _showRepliesWidget(),
+      ],
     );
   }
 
@@ -738,32 +737,31 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                   ],
                 ).setPaddingOnly(right: 8.0),
                 Expanded(
-                  child: Container(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _momentUserInfoWidget(value),
-                        FeedWidget(
-                          feedWidgetLayout: EFeedWidgetLayout.fullScreen,
-                          isShowAllContent: false,
-                          isShowReply: false,
-                          notedUIModel: widget.notedUIModel,
-                          isShowUserInfo: false,
-                          clickMomentCallback: (
-                            NotedUIModel? notedUIModel,
-                          ) async {
-                            await ChuChuNavigator.pushPage(
-                              context,
-                              (context) => FeedInfoPage(
-                                notedUIModel: widget.notedUIModel,
-                                isShowReply: false,
-                              ),
-                            );
-                          },
-                        ),
-                      ],
-                    ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _momentUserInfoWidget(value),
+                      FeedWidget(
+                        feedWidgetLayout: EFeedWidgetLayout.fullScreen,
+                        isShowAllContent: false,
+                        isShowBottomBorder: false,
+                        isShowReply: false,
+                        notedUIModel: widget.notedUIModel,
+                        isShowUserInfo: false,
+                        clickMomentCallback: (
+                          NotedUIModel? notedUIModel,
+                        ) async {
+                          await ChuChuNavigator.pushPage(
+                            context,
+                            (context) => FeedInfoPage(
+                              notedUIModel: widget.notedUIModel,
+                              isShowReply: false,
+                            ),
+                          );
+                        },
+                      ),
+                    ],
                   ),
                 ),
               ],
