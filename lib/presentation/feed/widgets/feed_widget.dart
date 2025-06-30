@@ -150,11 +150,17 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildAvatarColumn() {
+    if(notedUIModel == null) return const SizedBox();
     return Padding(
       padding: const EdgeInsets.only(right: _rightPadding),
       child: Column(
         children: [
-          _buildAvatarWidget(),
+          ValueListenableBuilder<UserDBISAR>(
+            valueListenable: Account.sharedInstance.getUserNotifier(notedUIModel!.noteDB.author),
+            builder: (context, user, child) {
+              return _buildAvatarWidget(imageUrl:user.picture);
+            },
+          ),
           if (widget.isShowAllContent)
             Expanded(
               child: Container(
