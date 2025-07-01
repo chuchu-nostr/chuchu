@@ -76,7 +76,7 @@ class FeedUtils {
     if (dns.length > 20) {
       dns = dns.substring(0, 7) + '...' + dns.substring(dns.length - 7);
     }
-    return ['$dns · $time', dns];
+    return ['$dns · $time', dns, time];
   }
 
   static List<String> momentContentSplit(String input) {

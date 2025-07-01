@@ -84,7 +84,7 @@ class MomentUrlWidgetState extends State<MomentUrlWidget> {
           borderRadius: BorderRadius.all(Radius.circular(10.px)),
           border: Border.all(
             width: 1.px,
-            color: Colors.grey,
+            color: Theme.of(context).dividerColor.withAlpha(50),
           ),
         ),
         child: Column(

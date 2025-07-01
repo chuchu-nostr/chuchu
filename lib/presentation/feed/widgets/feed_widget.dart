@@ -58,8 +58,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   static const double _bottomSpacing = 12.0;
   static const int _imageSpacing = 4;
   static const double _mediaWidthRatio = 0.64;
-  static const double _maxUserNameWidth = 170.0;
-  
+
   NotedUIModel? notedUIModel;
 
   @override
@@ -86,7 +85,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Border? get _bottomBorder => widget.isShowBottomBorder
-      ? Border(bottom: BorderSide(color: Colors.grey.withOpacity(.5), width: _borderWidth)) 
+      ? Border(bottom: BorderSide(color: Theme.of(context).dividerColor.withAlpha(80), width: _borderWidth))
       : null;
 
   Widget _buildFeedContainer({required Widget child, EdgeInsets? padding}) {
@@ -264,28 +263,41 @@ class _FeedWidgetState extends State<FeedWidget> {
     return FeedReplyContactWidget(notedUIModel: notedUIModel);
   }
 
-  Widget _buildUserNameAndTime(UserDBISAR user, NotedUIModel model, double maxWidth) {
-    return Container(
-      constraints: BoxConstraints(maxWidth: maxWidth),
+  Widget _buildUserNameAndTime(UserDBISAR user, NotedUIModel model) {
+    return Flexible(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              Text(
-                user.name ?? '--',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 16.px,
-                  fontWeight: FontWeight.w500,
+          Container(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  user.name ?? '--',
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              // _checkIsPrivate(),
-            ],
+                Text(
+                  FeedUtils.getUserMomentInfo(user, model.createAtStr)[2],
+                  style: TextStyle(
+                    color: Colors.black,
+                    fontSize: 12.px,
+                    fontWeight: FontWeight.w400,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                // _checkIsPrivate(),
+              ],
+            ),
           ),
           Text(
-            FeedUtils.getUserMomentInfo(user, model.createAtStr)[0],
+            FeedUtils.getUserMomentInfo(user, model.createAtStr)[1],
             style: TextStyle(
               color: Colors.black,
               fontSize: 12.px,
@@ -299,15 +311,16 @@ class _FeedWidgetState extends State<FeedWidget> {
     );
   }
 
-  Widget _buildUserInfoRow(UserDBISAR user, NotedUIModel model, double maxWidth) {
+  Widget _buildUserInfoRow(UserDBISAR user, NotedUIModel model) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.feedWidgetLayout == EFeedWidgetLayout.fullScreen)
           GestureDetector(
             onTap: () async {},
             child: _buildAvatarWidget(imageUrl: user.picture),
           ).setPaddingOnly(right: _rightPadding),
-        _buildUserNameAndTime(user, model, maxWidth),
+        _buildUserNameAndTime(user, model),
       ],
     );
   }
@@ -317,22 +330,14 @@ class _FeedWidgetState extends State<FeedWidget> {
     if (model == null || !widget.isShowUserInfo) return const SizedBox();
     
     final pubKey = model.noteDB.author;
-    final screenWidth = MediaQuery.of(context).size.width;
-    final maxWidth = screenWidth - _maxUserNameWidth;
 
     return Container(
       padding: EdgeInsets.only(bottom: _bottomSpacing.px),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          ValueListenableBuilder<UserDBISAR>(
-            valueListenable: Account.sharedInstance.getUserNotifier(pubKey),
-            builder: (context, user, child) {
-              return _buildUserInfoRow(user, model, maxWidth);
-            },
-          ),
-        ],
+      child: ValueListenableBuilder<UserDBISAR>(
+        valueListenable: Account.sharedInstance.getUserNotifier(pubKey),
+        builder: (context, user, child) {
+          return _buildUserInfoRow(user, model);
+        },
       ),
     );
   }

@@ -140,7 +140,7 @@ class _FeedRichTextWidgetState extends State<FeedRichTextWidget>
       } else if (matchText == 'show more') {
         spans.add(TextSpan(
           text: '... show more',
-          style: TextStyle(color: Colors.purple),
+          style: TextStyle(color: Theme.of(context).colorScheme.primary),
           recognizer: TapGestureRecognizer()
             ..onTap = () {
               widget.showMoreCallback?.call();
@@ -165,7 +165,7 @@ class _FeedRichTextWidgetState extends State<FeedRichTextWidget>
     bool hasClickInfo = list[1].isNotEmpty;
     return TextSpan(
       text: list[0],
-      style: TextStyle(color: hasClickInfo ? Colors.purple : Colors.white),
+      style: TextStyle(color: hasClickInfo ? Theme.of(context).colorScheme.primary : Colors.white),
       recognizer: TapGestureRecognizer()
         ..onTap = () {
           _onTextTap(list[1], context);

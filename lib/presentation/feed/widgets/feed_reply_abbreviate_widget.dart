@@ -96,7 +96,7 @@ class _FeedReplyAbbreviateWidgetState extends State<FeedReplyAbbreviateWidget> {
       ),
       decoration: BoxDecoration(
         border: Border.all(
-          width: 1.px,
+          width: 0.5.px,
           color: Theme.of(context).dividerColor.withAlpha(50),
         ),
         borderRadius: BorderRadius.all(
