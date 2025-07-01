@@ -1,5 +1,6 @@
 import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../feed/pages/create_feed_page.dart';
 import '../../login/pages/login_page.dart';
 import '../widgets/drawer_menu.dart';
@@ -146,6 +147,9 @@ class _HomePageState extends State<HomePage>
                                   ),
                                 ),
                               ],
+                              systemOverlayStyle: _isScrolled
+                                  ? SystemUiOverlayStyle.light
+                                  : SystemUiOverlayStyle.dark,
                             ),
                             body: FeedPage(scrollController: _scrollController),
                             floatingActionButton: FloatingActionButton(
