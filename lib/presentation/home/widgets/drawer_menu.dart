@@ -38,7 +38,7 @@ class _DrawerMenuState extends State<DrawerMenu>
     final theme = Theme.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
-      color: theme.colorScheme.background,
+      color: Colors.white,
       child: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -66,7 +66,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                           Text(
                             _getUserNupbStr,
                             style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                              fontWeight: FontWeight.normal,
                               fontSize: 12,
                               color: theme.colorScheme.onBackground.withOpacity(0.6),
                             ),
@@ -106,7 +106,7 @@ class _DrawerMenuState extends State<DrawerMenu>
             }),
 
             const SizedBox(height: 30),
-            Divider(color: theme.dividerColor),
+            Divider(color: theme.dividerColor.withAlpha(50)),
             _menuItem(context, Icons.settings_outlined, "Settings"),
           ],
         ),

@@ -17,7 +17,9 @@ import '../widgets/feed_skeleton_widget.dart';
 import 'feed_info_page.dart';
 
 class FeedPage extends StatefulWidget {
-  const FeedPage({super.key});
+  final ScrollController? scrollController;
+  
+  const FeedPage({super.key, this.scrollController});
 
   @override
   State<FeedPage> createState() => _FeedPageState();
@@ -58,7 +60,7 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   Widget build(BuildContext context) {
     return SafeArea(
       child: ChuChuSmartRefresher(
-        scrollController: feedScrollController,
+        scrollController: widget.scrollController ?? feedScrollController,
         controller: refreshController,
         enablePullDown: true,
         enablePullUp: true,

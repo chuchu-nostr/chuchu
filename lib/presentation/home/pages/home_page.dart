@@ -16,6 +16,8 @@ class _HomePageState extends State<HomePage>
     with SingleTickerProviderStateMixin {
   final double maxSlide = 0.75;
   late final AnimationController _controller;
+  late final ScrollController _scrollController;
+  bool _isScrolled = false;
 
   bool get isOpen => _controller.value == 1.0;
 
@@ -26,6 +28,18 @@ class _HomePageState extends State<HomePage>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
+    
+    _scrollController = ScrollController();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  void _scrollListener() {
+    final isScrolled = _scrollController.hasClients && _scrollController.offset > 0;
+    if (isScrolled != _isScrolled) {
+      setState(() {
+        _isScrolled = isScrolled;
+      });
+    }
   }
 
   void open() => _controller.forward();
@@ -39,6 +53,8 @@ class _HomePageState extends State<HomePage>
   @override
   void dispose() {
     _controller.dispose();
+    _scrollController.removeListener(_scrollListener);
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -94,27 +110,44 @@ class _HomePageState extends State<HomePage>
                           ),
                           child: Scaffold(
                             appBar: AppBar(
-                              backgroundColor: theme.colorScheme.surface,
-                              foregroundColor: theme.colorScheme.onSurface,
-                              elevation: 0,
-                              leading: IconButton(
-                                icon: Icon(
-                                  Icons.menu,
-                                  color: theme.colorScheme.onSurface,
+                              backgroundColor: _isScrolled 
+                                  ? theme.colorScheme.primary 
+                                  : theme.colorScheme.surface,
+                              foregroundColor: _isScrolled 
+                                  ? theme.colorScheme.onPrimary 
+                                  : theme.colorScheme.primary,
+                              elevation: _isScrolled ? 4 : 0,
+                              surfaceTintColor: Colors.transparent,
+                              leading: AnimatedSwitcher(
+                                duration: const Duration(milliseconds: 200),
+                                child: IconButton(
+                                  key: ValueKey(_isScrolled),
+                                  icon: Icon(
+                                    Icons.menu,
+                                    color: _isScrolled 
+                                        ? theme.colorScheme.onPrimary 
+                                        : theme.colorScheme.onSurface,
+                                  ),
+                                  onPressed: toggle,
                                 ),
-                                onPressed: toggle,
                               ),
                               actions: [
-                                IconButton(
-                                  icon: Icon(
-                                    Icons.settings,
-                                    color: theme.colorScheme.onSurface,
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  child: IconButton(
+                                    key: ValueKey(_isScrolled),
+                                    icon: Icon(
+                                      Icons.settings,
+                                      color: _isScrolled 
+                                          ? theme.colorScheme.onPrimary 
+                                          : theme.colorScheme.onSurface,
+                                    ),
+                                    onPressed: () {},
                                   ),
-                                  onPressed: () {},
                                 ),
                               ],
                             ),
-                            body: const FeedPage(),
+                            body: FeedPage(scrollController: _scrollController),
                             floatingActionButton: FloatingActionButton(
                               onPressed: () {
                                 // ChuChuNavigator.pushPage(context, (context) => CreateFeedPage());
