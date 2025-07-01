@@ -174,7 +174,6 @@ extension ChuChuCachedImageProviderEx on CachedNetworkImageProvider {
         headers: headers,
         cacheManager: cacheManager ?? ChuChuFileCacheManager.get(encryptKey: decryptedKey, encryptNonce: decryptedNonce),
       );
-      print('===provider===$provider');
     } else {
       provider = FileImage(File(uri));
     }

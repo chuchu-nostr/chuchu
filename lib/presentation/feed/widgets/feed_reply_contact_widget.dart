@@ -157,7 +157,7 @@ class _FeedReplyContactWidgetState extends State<FeedReplyContactWidget> {
           TextSpan(
             text: ' @ ',
             style: TextStyle(
-              color: Colors.purple,
+              color: Theme.of(context).colorScheme.primary,
               fontSize: 12.px,
               fontWeight: FontWeight.w400,
             ),

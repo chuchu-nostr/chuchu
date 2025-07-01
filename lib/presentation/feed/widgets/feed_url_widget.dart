@@ -1,5 +1,6 @@
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
@@ -8,37 +9,22 @@ import '../../../core/utils/web_url_helper_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../data/models/feed_extension_model.dart';
 
-class MomentUrlWidget extends StatefulWidget {
+class FeedUrlWidget extends StatefulWidget {
   final String url;
-  const MomentUrlWidget({super.key, required this.url});
+  const FeedUrlWidget({super.key, required this.url});
 
   @override
-  MomentUrlWidgetState createState() => MomentUrlWidgetState();
+  FeedUrlWidgetState createState() => FeedUrlWidgetState();
 }
 
-class MomentUrlWidgetState extends State<MomentUrlWidget> {
+class FeedUrlWidgetState extends State<FeedUrlWidget> {
   PreviewData? urlData;
-
-  final GlobalKey<MomentUrlWidgetState> _containerKey = GlobalKey<MomentUrlWidgetState>();
-
-  double? containerHeight;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
     _getUrlInfo();
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      RenderObject? renderBox = _containerKey.currentContext?.findRenderObject();
-      if(renderBox != null){
-        if(mounted){
-          setState(() {
-            containerHeight = (renderBox as RenderBox).size.height;
-          });
-        }
-      }
-    });
   }
 
   @override
@@ -92,18 +78,29 @@ class MomentUrlWidgetState extends State<MomentUrlWidget> {
             Text(
               urlData!.title ?? '',
               style: TextStyle(
-                fontSize: 15.px,
-                color: Colors.white,
+                fontSize: 18.px,
+                color: Colors.black,
+                fontWeight: FontWeight.w500,
               ),
-            ).setPaddingOnly(bottom: 20.px),
-            Text(
-              getDescription(urlData!.description ?? ''),
-              style: TextStyle(
-                fontSize: 15.px,
-                color: Colors.white,
-              ),
-            ).setPaddingOnly(bottom: 20.px),
-            _showPicWidget(urlData!),
+            ).setPaddingOnly(bottom: 10.px),
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(
+                  child: Text(
+                    getDescription(urlData!.description ?? ''),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontSize: 15.px,
+                      color: Colors.black87,
+                    ),
+                  ).setPaddingOnly(bottom: 20.px),
+                ),
+                SizedBox(width: 8.px),
+                _showPicWidget(urlData!),
+              ],
+            ),
           ],
         ),
       ),
@@ -111,18 +108,34 @@ class MomentUrlWidgetState extends State<MomentUrlWidget> {
   }
 
   Widget _showPicWidget(PreviewData urlData){
-    if(urlData.image == null || urlData.image?.url == null) return const SizedBox();
-    return Container(
-      key:_containerKey,
-      height: containerHeight,
-      width: double.infinity,
+    const Widget defaultPic = Center(
+      child: CommonImage(
+        iconName: 'website_icon.png',
+        size: 40,
+      ),
+    );
+
+    final String? imageUrl = urlData.image?.url;
+
+    Widget imageWidget;
+    if (imageUrl == null || imageUrl.isEmpty) {
+      imageWidget = defaultPic;
+    } else {
+      imageWidget = ChuChuCachedNetworkImage(
+        width: double.infinity,
+        imageUrl: imageUrl,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => defaultPic,
+        errorWidget: (context, url, error) => defaultPic,
+      );
+    }
+
+    return SizedBox(
+      height: 100,
+      width: 100,
       child: FeedWidgetsUtils.clipImage(
         borderRadius: 10.px,
-        child: ChuChuCachedNetworkImage(
-          width: double.infinity,
-          imageUrl: urlData.image?.url ?? '',
-          fit: BoxFit.cover,
-        ),
+        child: imageWidget,
       ),
     );
   }
@@ -130,7 +143,7 @@ class MomentUrlWidgetState extends State<MomentUrlWidget> {
 
   String getDescription(String description){
     if(description.length > 200){
-      return description.substring(0,200) + '...';
+      return '${description.substring(0,200)}...';
     }
     return description;
   }

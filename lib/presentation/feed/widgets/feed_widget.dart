@@ -252,7 +252,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     final externalLinks = model.getMomentExternalLink;
     if (externalLinks.isNotEmpty) {
-      return MomentUrlWidget(url: externalLinks[0]);
+      return FeedUrlWidget(url: externalLinks[0]);
     }
     
     return const SizedBox();
