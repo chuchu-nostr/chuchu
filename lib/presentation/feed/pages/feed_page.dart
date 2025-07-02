@@ -110,7 +110,7 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
               (context) => FeedInfoPage(notedUIModel: notedUIModel),
             );
           },
-        ).setPadding(EdgeInsets.symmetric(horizontal: 16.0));
+        ).setPadding(EdgeInsets.only(left: 16.0,right: 16.0, bottom: 12.0));
       },
     );
   }

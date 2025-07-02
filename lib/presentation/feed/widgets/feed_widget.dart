@@ -113,7 +113,7 @@ class _FeedWidgetState extends State<FeedWidget> {
           notedUIModel: notedUIModel,
           isShowReplyWidget: widget.isShowReplyWidget,
         ),
-        FeedOptionWidget(notedUIModel: notedUIModel),
+        FeedOptionWidget(notedUIModel: notedUIModel).setPaddingOnly(bottom:  _verticalPadding.px),
       ],
     );
   }
@@ -177,7 +177,6 @@ class _FeedWidgetState extends State<FeedWidget> {
     if (notedUIModel == null) return const SizedBox();
     
     return _buildFeedContainer(
-      padding: EdgeInsets.symmetric(vertical: _verticalPadding.px),
       child: IntrinsicHeight(
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,

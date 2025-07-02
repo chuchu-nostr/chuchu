@@ -203,7 +203,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         notedUIModel: widget.notedUIModel,
                         isShowBottomBorder: false,
                         feedWidgetLayout: EFeedWidgetLayout.fullScreen,
-                      ).setPadding(EdgeInsets.symmetric(horizontal: 24.0)),
+                      ).setPadding(EdgeInsets.only(left: 24.0,right: 24.0, top: 8.0)),
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
                         width: double.infinity,
@@ -277,11 +277,11 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     }).toList();
 
     return Container(
+      padding: EdgeInsets.only(top:12.0),
       key: _replyListContainerKey,
       child: Column(
         children: list.map((widget) {
           return Container(
-            padding: EdgeInsets.only(bottom: 12.0),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -460,7 +460,6 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
     if (modelNotifier == null) {
       return FeedWidgetsUtils.emptyNoteMomentWidget(null, 100);
     }
-
     return FeedWidget(
       isShowAllContent: true,
       isShowInteractionData: true,
@@ -473,7 +472,7 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
         );
       },
       notedUIModel: modelNotifier,
-    );
+    ).setPaddingOnly(top: 8.0);
   }
 }
 
@@ -619,7 +618,7 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
         setState(() {});
       },
       child: Container(
-        padding: EdgeInsets.only(left: 12.px, bottom: 24.px),
+        padding: EdgeInsets.only(left: 30.px, bottom: 24.px,top: 8.px),
         child: Row(
           children: [
             Icon(
@@ -769,7 +768,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           },
         ),
       ),
-    ).setPaddingOnly(top: 12.0,left: 18.0,right:18.0);
+    ).setPaddingOnly(left: 18.0,right:18.0);
   }
 
   Widget _momentUserInfoWidget(UserDBISAR userDB) {
