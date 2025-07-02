@@ -16,17 +16,17 @@ class FeedUtils {
     if (diff.inDays >= 1) {
       return formatTimestamp(timestamp * 1000);
     } else if (diff.inHours >= 12) {
-      return '12 hour_age_tips';
+      return '12 hours ago';
     } else if (diff.inHours >= 1) {
-      return '${diff.inHours} hour_age_tips';
+      return '${diff.inHours} hours ago';
     } else if (diff.inMinutes >= 30) {
-      return '30 minute_age_tips';
+      return '30 minutes ago';
     } else if (diff.inMinutes >= 15) {
-      return '15 minute_age_tips';
+      return '15 minutes ago';
     } else if (diff.inMinutes >= 1) {
-      return '${diff.inMinutes} minute_age_tips';
+      return '${diff.inMinutes} minutes ago';
     } else {
-      return 'just_now';
+      return 'Just now';
     }
   }
 
