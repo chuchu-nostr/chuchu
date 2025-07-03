@@ -91,9 +91,10 @@ class _FeedReplyAbbreviateWidgetState extends State<FeedReplyAbbreviateWidget> {
     if (hasReplyWidget && model == null) return FeedWidgetsUtils.emptyNoteMomentWidget(null,100);
     return Container(
 
-      margin: EdgeInsets.only(
-        bottom: 10.px,
+      padding: EdgeInsets.only(
+        top: 10.px,
       ),
+      margin: EdgeInsets.only(bottom: 10),
       decoration: BoxDecoration(
         border: Border.all(
           width: 0.5.px,

@@ -1,12 +1,16 @@
+import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:chuchu/presentation/login/pages/login_page.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/config/storage_key_tool.dart';
 import '../../../core/manager/cache/chuchu_cache_manager.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/nostr_dart/src/nips/nip_019.dart';
+import '../../../core/utils/feed_widgets_utils.dart';
+import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../drawerMenu/follows/pages/follows_pages.dart';
 import '../../relay/pages/relay_pages.dart';
 
@@ -46,7 +50,24 @@ class _DrawerMenuState extends State<DrawerMenu>
             const SizedBox(height: 30),
             Row(
               children: [
-                const CircleAvatar(radius: 24),
+                ValueListenableBuilder<UserDBISAR>(
+                  valueListenable: Account.sharedInstance.getUserNotifier(ChuChuUserInfoManager.sharedInstance.currentUserInfo?.pubKey ?? ''),
+                  builder: (context, user, child) {
+                    final avatarSize = 40;
+                    return FeedWidgetsUtils.clipImage(
+                      borderRadius: avatarSize.px,
+                      imageSize: avatarSize.px,
+                      child: ChuChuCachedNetworkImage(
+                        imageUrl: user.picture ?? '',
+                        fit: BoxFit.cover,
+                        placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                        errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+                        width: avatarSize.px,
+                        height: avatarSize.px,
+                      ),
+                    );
+                  },
+                ),
                 const SizedBox(width: 6),
                 Expanded(
                   child: Column(

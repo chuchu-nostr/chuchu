@@ -5,8 +5,10 @@ import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
+import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../data/models/noted_ui_model.dart';
+import '../pages/feed_info_page.dart';
 import 'feed_article_widget.dart';
 import 'feed_option_widget.dart';
 import 'feed_reply_abbreviate_widget.dart';
@@ -198,7 +200,8 @@ class _FeedWidgetState extends State<FeedWidget> {
       isShowAllContent: widget.isShowAllContent,
       clickBlankCallback: () => widget.clickMomentCallback?.call(model),
       showMoreCallback: () async {
-        // await ChuChuNavigator.pushPage(context, (context) => MomentsPage(notedUIModel: model,isShowReply: widget.isShowReply));
+        await ChuChuNavigator.pushPage(context, (context) => FeedInfoPage(notedUIModel: model,isShowReply: widget.isShowReply));
+
       },
       text: content,
     ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px));
