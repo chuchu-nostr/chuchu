@@ -131,24 +131,20 @@ class FeedWidgetsUtils {
     return Container(
       margin: EdgeInsets.symmetric(vertical: 10.px),
       height: height.px,
-      decoration: BoxDecoration(
-        border: Border.all(
-          width: 1.px,
-          color: Colors.black38,
-        ),
-        borderRadius: BorderRadius.all(
-          Radius.circular(
-            11.5.px,
-          ),
-        ),
-      ),
       child: Center(
-        child: Text(
-          content ?? 'Loading...',
-          style: TextStyle(
-            color: Colors.black38,
-            fontSize: 16.px,
-          ),
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.0, end: 1.0),
+          duration: const Duration(seconds: 2),
+          builder: (context, value, child) {
+            return Transform.rotate(
+              angle: value * 2 * 3.14159, // 2π radians = 360 degrees
+              child: Icon(
+                Icons.refresh,
+                size: 50.px,
+                color: Colors.black38,
+              ),
+            );
+          },
         ),
       ),
     );

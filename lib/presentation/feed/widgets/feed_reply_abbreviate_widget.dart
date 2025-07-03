@@ -5,7 +5,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/utils/feed_widgets_utils.dart';
+import '../../../core/utils/navigator/navigator.dart';
 import '../../../data/models/noted_ui_model.dart';
+import '../pages/feed_info_page.dart';
 import 'feed_widget.dart';
 
 class FeedReplyAbbreviateWidget extends StatefulWidget {
@@ -111,6 +113,8 @@ class _FeedReplyAbbreviateWidgetState extends State<FeedReplyAbbreviateWidget> {
         isShowMomentOptionWidget: false,
         isShowBottomBorder: false,
         clickMomentCallback: (NotedUIModel? notedUIModel) async {
+          await ChuChuNavigator.pushPage(
+              context, (context) => FeedInfoPage(notedUIModel: notedUIModel));
         },
       ).setPadding(EdgeInsets.symmetric(horizontal: 12.0)),
     );

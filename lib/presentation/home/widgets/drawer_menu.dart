@@ -118,12 +118,12 @@ class _DrawerMenuState extends State<DrawerMenu>
             const SizedBox(height: 20),
             _menuItem(context, Icons.person_outline, "Profile", onTap: widget.onProfileTap),
             _menuItem(context, Icons.link, "Relays",onTap: () {
+              widget.onProfileTap?.call();
               ChuChuNavigator.pushPage(context, (context) => RelaysPage());
             }),
             _menuItem(context, Icons.list_alt, "Follows",onTap: () {
+              widget.onProfileTap?.call();
               ChuChuNavigator.pushPage(context, (context) => FollowsPages());
-
-
             }),
 
             const SizedBox(height: 30),

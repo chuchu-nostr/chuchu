@@ -124,14 +124,7 @@ class _FeedWidgetState extends State<FeedWidget> {
     if (notedUIModel == null) return const SizedBox();
     
     return _buildFeedContainer(
-      child: IntrinsicHeight(
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Expanded(child: _buildContentColumn()),
-          ],
-        ),
-      ),
+      child: _buildContentColumn(),
     );
   }
 

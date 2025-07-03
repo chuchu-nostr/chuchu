@@ -234,7 +234,6 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                           ],
                         ),
                       ),
-                      // _showContentWidget(),
                       _showReplyList(),
                       _noDataWidget(),
                       SizedBox(
@@ -277,11 +276,11 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     }).toList();
 
     return Container(
-      padding: EdgeInsets.only(top:12.0),
       key: _replyListContainerKey,
       child: Column(
         children: list.map((widget) {
           return Container(
+            padding: EdgeInsets.only(top:12.0),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
