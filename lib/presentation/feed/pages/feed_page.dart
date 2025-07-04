@@ -161,7 +161,7 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
 
   Future<List<NoteDBISAR>> _getNoteTypeToDB(bool isInit) async {
     int? until = isInit ? null : _allNotesFromDBLastTimestamp;
-    return await Feed.sharedInstance.loadContactsNotesFromDB(
+    return await Feed.sharedInstance.loadAllNotesFromDB(
           until: until,
           limit: _limit,
         ) ??

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:chuchu/core/feed/feed+notification.dart';
 import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:chuchu/core/nostr_dart/nostr.dart';
 import 'package:flutter/material.dart';
@@ -7,6 +8,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
+import '../../../core/feed/model/notificationDB_isar.dart';
+import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/utils/feed_content_analyze_utils.dart';
 import '../../../core/utils/feed_utils.dart';
@@ -22,7 +25,7 @@ class CreateFeedPage extends StatefulWidget {
   State createState() => _CreateFeedPageState();
 }
 
-class _CreateFeedPageState extends State<CreateFeedPage> {
+class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver {
   final TextEditingController _controller = TextEditingController();
   final List<File> _selectedImages = [];
   Map<String,UserDBISAR> draftCueUserMap = {};
@@ -66,7 +69,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> {
         actions: [
           TextButton(
             onPressed: _postMoment,
-            child: const Text('Push', style: TextStyle(color: Colors.blue)),
+            child: const Text('Push'),
           ),
         ],
       ),
@@ -227,6 +230,8 @@ class _CreateFeedPageState extends State<CreateFeedPage> {
   }
 
   void _postMoment() async {
+
+
     String getMediaStr = '';
     // if (_uploadCompleter != null) {
     //   getMediaStr = await _uploadCompleter!.future;
@@ -265,9 +270,13 @@ class _CreateFeedPageState extends State<CreateFeedPage> {
           },
         );
     ChuChuLoading.dismiss();
-
     if(eventStatus.status){
       CommonToast.instance.show(context, 'Sent successfully');
+      List<NotificationDBISAR> notificationList = await Feed.sharedInstance.loadNotificationsFromDB(0  ,limit: 30) ?? [];
     }
+  }
+
+  @override
+  didNewNotesCallBackCallBack(List<NoteDBISAR> notes) {
   }
 }
