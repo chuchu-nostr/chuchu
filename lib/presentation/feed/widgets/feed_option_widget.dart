@@ -1,4 +1,5 @@
 import 'package:chuchu/core/feed/feed+send.dart';
+import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/feed/feed.dart';
@@ -20,6 +21,7 @@ class FeedOptionWidget extends StatefulWidget {
 
 class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   bool _reactionTag = false;
+  bool _bookmarkTag = false;
 
   late NotedUIModel? notedUIModel;
 
@@ -50,14 +52,26 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {},
-      child: Container(
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children:
-              feedOptionTypeList.map((EFeedOptionType type) {
-                return _showItemWidget(type);
-              }).toList(),
-        ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: feedOptionTypeList.map((EFeedOptionType type) {
+              return _showItemWidget(type);
+            }).toList(),
+          ),
+          GestureDetector(
+            onTap: _onBookmarkTap,
+            child: Padding(
+              padding: const EdgeInsets.only(left: 8.0),
+              child: Icon(
+                _bookmarkTag ? Icons.bookmark : Icons.bookmark_border,
+                size: 20,
+                color: _bookmarkTag ? Theme.of(context).colorScheme.primary : Colors.black54,
+              ),
+            ),
+          ),
+        ]
       ),
     );
   }
@@ -105,6 +119,18 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
       CommonToast.instance.show(context, 'Like success tips');
     }else{
       CommonToast.instance.show(context, 'Like fail tips');
+    }
+  }
+
+  void _onBookmarkTap() {
+    setState(() {
+      _bookmarkTag = !_bookmarkTag;
+    });
+    
+    if (_bookmarkTag) {
+      CommonToast.instance.show(context, 'Bookmarked');
+    } else {
+      CommonToast.instance.show(context, 'Bookmark removed');
     }
   }
 
@@ -163,7 +189,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
           ),
         ],
       ),
-    );
+    ).setPaddingOnly(right: 70.0);
   }
 
   int _getClickNum(EFeedOptionType type) {
