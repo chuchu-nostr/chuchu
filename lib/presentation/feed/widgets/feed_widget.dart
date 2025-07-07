@@ -9,6 +9,7 @@ import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../pages/feed_info_page.dart';
+import '../pages/feed_personal_page.dart';
 import 'feed_article_widget.dart';
 import 'feed_option_widget.dart';
 import 'feed_reply_abbreviate_widget.dart';
@@ -53,7 +54,7 @@ class FeedWidget extends StatefulWidget {
 }
 
 class _FeedWidgetState extends State<FeedWidget> {
-  static const double _avatarSize = 40.0;
+  static const double _avatarSize = 50.0;
   static const double _borderWidth = 0.5;
   static const double _verticalPadding = 12.0;
   static const double _rightPadding = 8.0;
@@ -129,18 +130,26 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildAvatarWidget({String? imageUrl}) {
-    return FeedWidgetsUtils.clipImage(
-      borderRadius: _avatarSize.px,
-      imageSize: _avatarSize.px,
-      child: ChuChuCachedNetworkImage(
-        imageUrl: imageUrl ?? '',
-        fit: BoxFit.cover,
-        placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-        errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-        width: _avatarSize.px,
-        height: _avatarSize.px,
+    return GestureDetector(
+      onTap: (){
+        if(notedUIModel != null){
+          ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author,));
+        }
+      },
+      child: FeedWidgetsUtils.clipImage(
+        borderRadius: _avatarSize.px,
+        imageSize: _avatarSize.px,
+        child: ChuChuCachedNetworkImage(
+          imageUrl: imageUrl ?? '',
+          fit: BoxFit.cover,
+          placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+          errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+          width: _avatarSize.px,
+          height: _avatarSize.px,
+        ),
       ),
     );
+
   }
 
   Widget _buildAvatarColumn() {
@@ -272,7 +281,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                   user.name ?? '--',
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 18,
+                    fontSize: 18.px,
                     fontWeight: FontWeight.w500,
                   ),
                   overflow: TextOverflow.ellipsis,
@@ -281,7 +290,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                   FeedUtils.getUserMomentInfo(user, model.createAtStr)[2],
                   style: TextStyle(
                     color: Colors.black,
-                    fontSize: 12.px,
+                    fontSize: 16.px,
                     fontWeight: FontWeight.w400,
                   ),
                   maxLines: 1,
@@ -295,7 +304,7 @@ class _FeedWidgetState extends State<FeedWidget> {
             FeedUtils.getUserMomentInfo(user, model.createAtStr)[1],
             style: TextStyle(
               color: Colors.black,
-              fontSize: 12.px,
+              fontSize: 16.px,
               fontWeight: FontWeight.w400,
             ),
             maxLines: 1,

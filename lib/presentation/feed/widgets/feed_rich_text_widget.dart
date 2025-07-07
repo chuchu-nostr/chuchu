@@ -93,7 +93,7 @@ class _FeedRichTextWidgetState extends State<FeedRichTextWidget>
             TextSpan(
               style: TextStyle(
                 color: widget.defaultTextColor ?? Colors.black,
-                fontSize: widget.textSize ?? 16.px,
+                fontSize: widget.textSize ?? 18.px,
               ),
               children: textSpans,
             ),

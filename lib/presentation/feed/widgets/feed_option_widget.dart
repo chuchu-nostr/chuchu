@@ -53,21 +53,30 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
       behavior: HitTestBehavior.translucent,
       onTap: () {},
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: feedOptionTypeList.map((EFeedOptionType type) {
-              return _showItemWidget(type);
-            }).toList(),
+          Flexible(
+            flex: 1,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: feedOptionTypeList.map((EFeedOptionType type) {
+                return _showItemWidget(type);
+              }).toList(),
+            ),
           ),
-          GestureDetector(
-            onTap: _onBookmarkTap,
-            child: Padding(
-              padding: const EdgeInsets.only(left: 8.0),
-              child: Icon(
-                _bookmarkTag ? Icons.bookmark : Icons.bookmark_border,
-                size: 20,
-                color: _bookmarkTag ? Theme.of(context).colorScheme.primary : Colors.black54,
+          Flexible(
+            flex: 1, // 25%
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: GestureDetector(
+                onTap: _onBookmarkTap,
+                child: Padding(
+                  padding: const EdgeInsets.only(left: 8.0),
+                  child: Icon(
+                    _bookmarkTag ? Icons.bookmark : Icons.bookmark_border,
+                    size: 20,
+                    color: _bookmarkTag ? Theme.of(context).colorScheme.primary : Colors.black54,
+                  ),
+                ),
               ),
             ),
           ),
@@ -189,7 +198,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
           ),
         ],
       ),
-    ).setPaddingOnly(right: 70.0);
+    );
   }
 
   int _getClickNum(EFeedOptionType type) {
