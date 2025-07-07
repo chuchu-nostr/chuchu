@@ -1,17 +1,16 @@
+import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../../../../core/account/account.dart';
 import '../../../../core/account/model/userDB_isar.dart';
 
-import '../../../../core/contacts/contacts.dart';
-import '../../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../../core/utils/adapt.dart';
+import '../../../../core/utils/navigator/navigator.dart';
 import '../../../../core/widgets/common_image.dart';
 
-enum FollowsFriendStatus {
-  hasFollows,
-  selectFollows,
-  unSelectFollows,
-}
+import 'package:flutter/cupertino.dart';
+
+enum FollowsFriendStatus { hasFollows, selectFollows, unSelectFollows }
 
 class DiyUserDB {
   bool isSelect;
@@ -19,39 +18,19 @@ class DiyUserDB {
   DiyUserDB(this.isSelect, this.db);
 }
 
-extension GetFollowsFriendStatusIcon on FollowsFriendStatus {
-  IconData get iconData {
-    switch (this) {
-      case FollowsFriendStatus.hasFollows:
-        return Icons.check_circle;
-      case FollowsFriendStatus.selectFollows:
-        return Icons.check_circle;
-      case FollowsFriendStatus.unSelectFollows:
-        return Icons.radio_button_unchecked;
-    }
-  }
-  
-  Color getIconColor(BuildContext context) {
-    final theme = Theme.of(context);
-    switch (this) {
-      case FollowsFriendStatus.hasFollows:
-        return Colors.green;
-      case FollowsFriendStatus.selectFollows:
-        return theme.colorScheme.primary;
-      case FollowsFriendStatus.unSelectFollows:
-        return theme.colorScheme.onSurface.withOpacity(0.5);
-    }
-  }
-}
-
 class FollowsPages extends StatefulWidget {
+  const FollowsPages({super.key});
+
   @override
-  _FollowsPagesState createState() => new _FollowsPagesState();
+  FollowsPagesState createState() => FollowsPagesState();
 }
 
-class _FollowsPagesState extends State<FollowsPages> {
+class FollowsPagesState extends State<FollowsPages> {
   List<DiyUserDB> userMapList = [];
-  bool isSelectAll = false;
+  final TextEditingController _searchController = TextEditingController();
+  bool _isSearching = false;
+  UserDBISAR? _searchedUser;
+  String? _searchError;
 
   @override
   void initState() {
@@ -61,31 +40,38 @@ class _FollowsPagesState extends State<FollowsPages> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     super.dispose();
-  }
-
-  List<DiyUserDB> getSelectFollowsNum() {
-    List<DiyUserDB> selectFollowsList = [];
-    userMapList.forEach((DiyUserDB info) => {
-      if (info.isSelect) {selectFollowsList.add(info)}
-    });
-    return selectFollowsList;
   }
 
   //
   void _getFollowList() async {
-    String pubKey = ChuChuUserInfoManager.sharedInstance.currentUserInfo!.pubKey!;
+    final List<String> followings = List<String>.from(
+      Account.sharedInstance.me?.followingList ?? [],
+    );
 
-    String decodePubKey = UserDBISAR.decodePubkey(pubKey) ?? '';
+    if (followings.isEmpty) {
+      if (mounted) setState(() => userMapList = []);
+      return;
+    }
 
-    // List userMap = await Account.syncFollowListFromRelay(decodePubKey);
-    final user = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
-    List userMap = [user,user,user,user,user,user,user,user,user];
-    List<DiyUserDB> db = [];
+    final List<UserDBISAR?> results = await Future.wait(
+      followings.map(
+        (pk) async => await Account.sharedInstance.getUserInfo(pk),
+      ),
+    );
 
-    userMap.forEach((info) => {db.add(new DiyUserDB(false, info))});
-    userMapList = db;
-    setState(() {});
+    final List<DiyUserDB> temp =
+        results
+            .whereType<UserDBISAR>()
+            .map((u) => DiyUserDB(false, u))
+            .toList();
+
+    if (mounted) {
+      setState(() {
+        userMapList = temp;
+      });
+    }
   }
 
   @override
@@ -94,118 +80,30 @@ class _FollowsPagesState extends State<FollowsPages> {
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
-        title: Text('Import Follows'),
         backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.onSurface,
-        elevation: 0,
-        actions: [
-          _appBarActionWidget(context),
-          SizedBox(
-            width: Adapt.px(24),
+        leadingWidth: 50.px,
+        titleSpacing: 0,
+        leading: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () => Navigator.pop(context),
+          child: Container(
+            alignment: Alignment.centerLeft,
+            padding: EdgeInsets.only(left: 24.px),
+            child: Icon(
+              Icons.arrow_back_ios,
+              size: 20,
+              color: theme.colorScheme.onSurface,
+            ),
           ),
-        ],
+        ),
+        title: _buildSearchBar(theme),
+        actions: [SizedBox(width: Adapt.px(24))],
       ),
       body: SafeArea(
-        child: Container(
-          height: double.infinity,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: Adapt.px(24),
-                  vertical: Adapt.px(12),
-                ),
-                child: Text(
-                  'Select users to import as contacts',
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface,
-                    fontSize: Adapt.px(14),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              Expanded(
-                child: Stack(
-                  children: [
-                    userMapList.length > 0
-                        ? ListView.builder(
-                      padding: EdgeInsets.only(
-                        left: Adapt.px(24),
-                        right: Adapt.px(24),
-                        bottom: Adapt.px(100),
-                      ),
-                      primary: false,
-                      itemCount: userMapList.length,
-                      itemBuilder: (context, index) {
-                        return _followsFriendWidget(index);
-                      },
-                    )
-                        : _emptyWidget(),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: Adapt.px(37),
-                      child: _addContactBtnView(),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _appBarActionWidget(BuildContext context) {
-    final theme = Theme.of(context);
-    if(userMapList.length == 0 ) return Container();
-    return GestureDetector(
-      onTap: () {
-        isSelectAll = !isSelectAll;
-        userMapList.forEach((DiyUserDB useDB) {
-          useDB.isSelect = isSelectAll;
-        });
-        setState(() {});
-      },
-      child: Center(
-        child: Text(
-          !isSelectAll ? 'All' : 'None',
-          style: TextStyle(
-            fontSize: Adapt.px(16),
-            color: theme.colorScheme.primary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _followsFriendWidget(int index) {
-    DiyUserDB userInfo = userMapList[index];
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () => {},
-      child: Container(
-        padding: EdgeInsets.symmetric(
-          vertical: Adapt.px(4),
-        ),
-        width: double.infinity,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Expanded(
-              child: Row(
-                children: [
-                  _followsUserPicWidget(userInfo),
-                  Expanded(
-                    child: _followsUserInfoWidget(userInfo),
-                  ),
-                ],
-              ),
-            ),
-            _followsStatusView(index),
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: [
+            _isSearching ? _buildSearchResult(theme) : _buildFollowList(theme),
           ],
         ),
       ),
@@ -221,199 +119,265 @@ class _FollowsPagesState extends State<FollowsPages> {
         fit: BoxFit.contain,
         // placeholder: (context, url) => _badgePlaceholderImage,
         // errorWidget: (context, url, error) => _badgePlaceholderImage,
-        width: Adapt.px(40),
-        height: Adapt.px(40),
+        width: Adapt.px(80),
+        height: Adapt.px(80),
       );
     } else {
       picWidget = CommonImage(
         iconName: 'icon_user_default.png',
-        width: Adapt.px(40),
-        height: Adapt.px(40),
+        width: Adapt.px(80),
+        height: Adapt.px(80),
       );
     }
 
     return GestureDetector(
       onTap: () {
-        // OXNavigator.pushPage(
-        //     context, (context) => ContactUserInfoPage(userDB: userDB));
       },
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(
-          Adapt.px(40),
+      child: Container(
+        width: Adapt.px(80),
+        height: Adapt.px(80),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 3),
         ),
-        child: picWidget,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(Adapt.px(40)),
+          child: picWidget,
+        ),
       ),
     );
 
     //
   }
 
-  Widget _followsUserInfoWidget(DiyUserDB userInfo) {
-    final theme = Theme.of(context);
-    UserDBISAR userDB = userInfo.db;
-    String? nickName = userDB.nickName;
-    String name = (nickName != null && nickName.isNotEmpty)
-        ? nickName
-        : userDB.name ?? '';
-    String encodedPubKey = userDB.encodedPubkey ?? '';
-    int pubKeyLength = encodedPubKey.length;
-    String encodedPubKeyShow =
-        '${encodedPubKey.substring(0, 7)}...${encodedPubKey.substring(pubKeyLength - 4, pubKeyLength)}';
-
+  Widget _buildSearchBar(ThemeData theme) {
     return Container(
-      padding: EdgeInsets.only(
-        left: Adapt.px(16),
+      height: Adapt.px(36),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceVariant,
+        borderRadius: BorderRadius.circular(12),
       ),
+      padding: EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              controller: _searchController,
+              decoration: InputDecoration(
+                hintText: 'Search by npub...',
+                border: InputBorder.none,
+                isCollapsed: true,
+              ),
+              onChanged: (value) {
+                if (value.isEmpty) {
+                  setState(() {
+                    _isSearching = false;
+                    _searchedUser = null;
+                    _searchError = null;
+                  });
+                }
+              },
+            ),
+          ),
+          GestureDetector(
+            onTap: _search,
+            child: Icon(Icons.search, size: 24, color: theme.hintColor),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildFollowList(ThemeData theme) {
+    if (userMapList.isEmpty) return SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: Adapt.px(24),
+            vertical: Adapt.px(12),
+          ),
+          child: Row(
+            children: [
+              Icon(Icons.list, color: theme.colorScheme.primary),
+              SizedBox(width: 8),
+              Text('Follows', style: theme.textTheme.titleMedium),
+            ],
+          ),
+        ),
+        ...userMapList.map(
+          (e) => Padding(
+            padding: EdgeInsets.only(
+              bottom: Adapt.px(12),
+              right: Adapt.px(24),
+              left: Adapt.px(24),
+            ),
+            child: _userCard(e),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _userCard(DiyUserDB info) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: () {
+        ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: info.db.pubKey));
+      },
+      child: SizedBox(
+        height: Adapt.px(140),
+        width: double.infinity,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child:
+                    info.db.banner != null && info.db.banner!.isNotEmpty
+                        ? CachedNetworkImage(
+                          imageUrl: info.db.picture!,
+                          fit: BoxFit.cover,
+                        )
+                        : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                theme.colorScheme.primary,
+                                theme.colorScheme.primaryContainer,
+                              ],
+                            ),
+                          ),
+                        ),
+              ),
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.transparent, Colors.black.withOpacity(0.4)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 12,
+                bottom: 12,
+                right: 12,
+                child: Row(
+                  children: [
+                    _followsUserPicWidget(info),
+                    SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          info.db.name ?? '',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 24,
+                          ),
+                        ),
+                        Text(
+                          '@${info.db.dns ?? info.db.dns ?? ''}',
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _search() async {
+    final query = _searchController.text.trim();
+    if (query.isEmpty) return;
+
+    setState(() {
+      _isSearching = true;
+      _searchedUser = null;
+      _searchError = null;
+    });
+
+    try {
+      String? pubkey;
+      if (query.startsWith('npub')) {
+        pubkey = UserDBISAR.decodePubkey(query);
+      } else {
+        pubkey = query;
+      }
+
+      if (pubkey == null || pubkey.isEmpty) {
+        setState(() {
+          _searchError = 'Invalid npub format';
+        });
+        return;
+      }
+
+      UserDBISAR? user = await Account.sharedInstance.getUserInfo(pubkey);
+
+      if (mounted) {
+        setState(() {
+          if (user != null) {
+            _searchedUser = user;
+            _searchError = null;
+          } else {
+            _searchedUser = null;
+            _searchError = 'User not found';
+          }
+        });
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _searchError = 'Search failed: ${e.toString()}';
+        });
+      }
+    }
+  }
+
+  Widget _buildSearchResult(ThemeData theme) {
+    return Padding(
+      padding: EdgeInsets.all(Adapt.px(24)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            name,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
-              fontSize: Adapt.px(16),
-              fontWeight: FontWeight.w600,
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-          Text(
-            encodedPubKeyShow,
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
-              fontSize: Adapt.px(14),
-              fontWeight: FontWeight.w400,
-            ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _addContactBtnView() {
-    final theme = Theme.of(context);
-    if (userMapList.length == 0) return Container();
-    return GestureDetector(
-      child: Container(
-        margin: EdgeInsets.symmetric(
-          horizontal: Adapt.px(24),
-        ),
-        width: double.infinity,
-        height: Adapt.px(48),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          color: theme.colorScheme.primary,
-        ),
-        alignment: Alignment.center,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              'Add',
-              style: TextStyle(
-                color: theme.colorScheme.onPrimary,
-                fontSize: Adapt.px(14),
-                fontWeight: FontWeight.w400,
-              ),
-            ),
+          Text('Search Result', style: theme.textTheme.titleMedium),
+          SizedBox(height: Adapt.px(16)),
+          if (_searchError != null)
             Container(
-              padding: EdgeInsets.symmetric(horizontal: Adapt.px(5)),
-              child: Text(
-                getSelectFollowsNum().length.toString(),
-                style: TextStyle(
-                  color: theme.colorScheme.onPrimary,
-                  fontSize: Adapt.px(14),
-                  fontWeight: FontWeight.w400,
-                ),
+              padding: EdgeInsets.all(Adapt.px(16)),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.errorContainer,
+                borderRadius: BorderRadius.circular(12),
               ),
-            ),
-            Text(
-              'contacts',
-              style: TextStyle(
-                color: theme.colorScheme.onPrimary,
-                fontSize: Adapt.px(14),
-                fontWeight: FontWeight.w400,
+              child: Row(
+                children: [
+                  Icon(Icons.error_outline, color: theme.colorScheme.error),
+                  SizedBox(width: 8),
+                  Text(
+                    _searchError!,
+                    style: TextStyle(color: theme.colorScheme.error),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-      ),
-      onTap: _addContactsFn,
-    );
-  }
-
-  Widget _followsStatusView(int index) {
-    DiyUserDB userDB = userMapList[index];
-    Map<String, UserDBISAR> allContacts = Contacts.sharedInstance.allContacts;
-    bool isContacts = allContacts[userDB.db.pubKey] != null;
-    
-    FollowsFriendStatus status;
-    if (isContacts) {
-      status = FollowsFriendStatus.hasFollows;
-    } else {
-      status = userDB.isSelect
-          ? FollowsFriendStatus.selectFollows
-          : FollowsFriendStatus.unSelectFollows;
-    }
-
-    return GestureDetector(
-      onTap: () {
-        if (isContacts) return;
-        userMapList[index].isSelect = !userDB.isSelect;
-        setState(() {});
-      },
-      child: Container(
-        padding: EdgeInsets.all(Adapt.px(8)),
-        child: Icon(
-          status.iconData,
-          size: 24.0,
-          color: status.getIconColor(context),
-        ),
-      ),
-    );
-  }
-
-  Widget _emptyWidget() {
-    return Container(
-      alignment: Alignment.topCenter,
-      margin: EdgeInsets.only(top: 87.0),
-      child: Column(
-        children: <Widget>[
-          CommonImage(
-            iconName: 'icon_no_login.png',
-            width: Adapt.px(90),
-            height: Adapt.px(90),
-          ),
-          Padding(
-            padding: EdgeInsets.only(top: 20.0),
-            child: Text(
-              'No follows yet',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                fontSize: Adapt.px(16),
-              ),
-            ),
-          ),
+            )
+          else if (_searchedUser != null)
+            _userCard(DiyUserDB(false, _searchedUser!))
+          else
+            Center(child: CircularProgressIndicator()),
         ],
       ),
     );
-  }
-
-  void _addContactsFn() async {
-    // await OXLoading.show();
-    // List<String> selectFollowPubKey = [];
-    // getSelectFollowsNum().forEach((DiyUserDB info) {
-    //   selectFollowPubKey.add(info.db.pubKey ?? '');
-    // });
-    // final OKEvent okEvent =
-    // await Contacts.sharedInstance.addToContact(selectFollowPubKey);
-    // await OXLoading.dismiss();
-    // if (okEvent.status) {
-    //   OXNavigator.pop(context, true);
-    // } else {
-    //   CommonToast.instance.show(context, okEvent.message);
-    // }
   }
 }
