@@ -50,18 +50,20 @@ class FeedUtils {
     return {'isOver': isOver, 'lineCount': lineCount};
   }
 
-  static Future<String> getAvatar(String pubkey) async {
+  static Future<UserDBISAR?> getUser(String pubkey) async {
     UserDBISAR? user = await Account.sharedInstance.getUserInfo(pubkey);
-    return user?.picture ?? '';
+    return user;
   }
 
-  static Future<List<String>> getAvatarBatch(List<String> pubkeys) async {
-    List<String> avatars = [];
+  static Future<List<UserDBISAR>> getUserList(List<String> pubkeys) async {
+    List<UserDBISAR> users = [];
     for (var element in pubkeys) {
-      String avatar = await getAvatar(element);
-      avatars.add(avatar);
+      UserDBISAR? user = await getUser(element);
+      if(user != null){
+        users.add(user);
+      }
     }
-    return avatars;
+    return users;
   }
 
   // [fullName,dns]
