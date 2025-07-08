@@ -12,7 +12,6 @@ import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import 'feed_personal_page.dart';
 
-
 class AggregatedNotification {
   String notificationId;
   int kind;
@@ -34,7 +33,9 @@ class AggregatedNotification {
     this.likeCount = 0,
   });
 
-  factory AggregatedNotification.fromNotificationDB(NotificationDBISAR notificationDB) {
+  factory AggregatedNotification.fromNotificationDB(
+    NotificationDBISAR notificationDB,
+  ) {
     return AggregatedNotification(
       notificationId: notificationDB.notificationId,
       kind: notificationDB.kind,
@@ -54,7 +55,8 @@ class FeedNotificationsPage extends StatefulWidget {
   State<FeedNotificationsPage> createState() => _FeedNotificationsPageState();
 }
 
-class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuChuFeedObserver {
+class _FeedNotificationsPageState extends State<FeedNotificationsPage>
+    with ChuChuFeedObserver {
   bool _isLoading = true;
   final ScrollController _scrollController = ScrollController();
   final int _limit = 50;
@@ -76,9 +78,15 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
   }
 
   _loadNotificationData() async {
-    List<NotificationDBISAR> notificationList = await Feed.sharedInstance.loadNotificationsFromDB(_lastTimestamp ?? 0,limit: _limit) ?? [];
+    List<NotificationDBISAR> notificationList =
+        await Feed.sharedInstance.loadNotificationsFromDB(
+          _lastTimestamp ?? 0,
+          limit: _limit,
+        ) ??
+        [];
 
-    List<AggregatedNotification> aggregatedNotifications = _getAggregatedNotifications(notificationList);
+    List<AggregatedNotification> aggregatedNotifications =
+        _getAggregatedNotifications(notificationList);
     _aggregatedNotifications.addAll(aggregatedNotifications);
     _lastTimestamp = notificationList.last.createAt;
     // notificationList.length < _limit ? _refreshController.loadNoData() : _refreshController.loadComplete();
@@ -86,7 +94,9 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
     setState(() {});
   }
 
-  List<AggregatedNotification> _getAggregatedNotifications(List<NotificationDBISAR> notifications) {
+  List<AggregatedNotification> _getAggregatedNotifications(
+    List<NotificationDBISAR> notifications,
+  ) {
     List<NotificationDBISAR> likeTypeNotification = [];
     List<NotificationDBISAR> otherTypeNotification = [];
     Set<String> groupedItems = {};
@@ -102,18 +112,28 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
 
     Map<String, List<NotificationDBISAR>> grouped = {};
     for (var groupedItem in groupedItems) {
-      grouped[groupedItem] = likeTypeNotification.where((notification) => notification.associatedNoteId == groupedItem).toList();
+      grouped[groupedItem] =
+          likeTypeNotification
+              .where(
+                (notification) => notification.associatedNoteId == groupedItem,
+              )
+              .toList();
     }
 
     List<AggregatedNotification> aggregatedNotifications = [];
     grouped.forEach((key, value) {
       value.sort((a, b) => b.createAt.compareTo(a.createAt)); // sort each group
-      AggregatedNotification groupedNotification = AggregatedNotification.fromNotificationDB(value.first);
+      AggregatedNotification groupedNotification =
+          AggregatedNotification.fromNotificationDB(value.first);
       groupedNotification.likeCount = value.length;
       aggregatedNotifications.add(groupedNotification);
     });
 
-    aggregatedNotifications.addAll(otherTypeNotification.map((element) => AggregatedNotification.fromNotificationDB(element)));
+    aggregatedNotifications.addAll(
+      otherTypeNotification.map(
+        (element) => AggregatedNotification.fromNotificationDB(element),
+      ),
+    );
     aggregatedNotifications.sort((a, b) => b.createAt.compareTo(a.createAt));
 
     return aggregatedNotifications;
@@ -122,7 +142,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
@@ -188,7 +208,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
 
   Widget _buildNotificationItem(AggregatedNotification notification) {
     final theme = Theme.of(context);
-    
+
     return GestureDetector(
       // onTap: () => _handleNotificationTap(notification),
       child: Container(
@@ -203,7 +223,8 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
           ),
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+
           children: [
             _buildNotificationAvatar(notification),
             SizedBox(width: 12.px),
@@ -211,13 +232,12 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildNotificationContent(notification),
+                  _buildNotificationTitle(notification),
                   SizedBox(height: 8.px),
-                  _buildNotificationTime(notification),
+                  _buildNotificationContent(notification),
                 ],
               ),
             ),
-            _buildNotificationTypeIcon(notification),
           ],
         ),
       ),
@@ -239,15 +259,16 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
             }
           },
           child: FeedWidgetsUtils.clipImage(
-            borderRadius: 40.px,
-            imageSize: 40.px,
+            borderRadius: 50.px,
+            imageSize: 50.px,
             child: ChuChuCachedNetworkImage(
               imageUrl: user?.picture ?? '',
               fit: BoxFit.cover,
               placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-              errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-              width: 40.px,
-              height: 40.px,
+              errorWidget:
+                  (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+              width: 50.px,
+              height: 50.px,
             ),
           ),
         );
@@ -255,47 +276,67 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
     );
   }
 
-  Widget _buildNotificationContent(AggregatedNotification notification) {
+  Widget _buildNotificationTitle(AggregatedNotification notification) {
     final theme = Theme.of(context);
-    
-    return FutureBuilder<UserDBISAR?>(
-      future: _getUserInfo(notification.author),
-      builder: (context, snapshot) {
-        final user = snapshot.data;
-        final userName = user?.name ?? 'Someone';
-        
-        String actionText = _getActionText(notification.kind);
-        
-        return RichText(
-          text: TextSpan(
-            children: [
-              TextSpan(
-                text: userName,
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: theme.colorScheme.onSurface,
-                ),
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        FutureBuilder<UserDBISAR?>(
+          future: _getUserInfo(notification.author),
+          builder: (context, snapshot) {
+            final user = snapshot.data;
+            final userName = user?.name ?? '--';
+
+            String actionText = _getActionText(notification.kind);
+
+            return RichText(
+              text: TextSpan(
+                children: [
+                  TextSpan(
+                    text: userName,
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 18.px,
+                      fontWeight: FontWeight.bold,
+                      color: theme.colorScheme.onSurface,
+                    ),
+                  ),
+                  TextSpan(
+                    text: ' $actionText',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontSize: 16.px,
+                      color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                    ),
+                  ),
+                ],
               ),
-              TextSpan(
-                text: ' $actionText',
-                style: theme.textTheme.bodyMedium?.copyWith(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+            );
+          },
+        ),
+        _buildNotificationTypeIcon(notification),
+      ],
     );
   }
 
-  Widget _buildNotificationTime(AggregatedNotification notification) {
+  Widget _buildNotificationContent(AggregatedNotification notification) {
     final theme = Theme.of(context);
-    return Text(
-      _formatTime(notification.createAt),
-      style: theme.textTheme.bodySmall?.copyWith(
-        color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
-      ),
+    String content = notification.kind == 7 ? '' : notification.content;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          content,
+          style: theme.textTheme.bodySmall?.copyWith(
+            fontSize: 18,
+          ),
+        ),
+        Text(
+          _formatTime(notification.createAt),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+          ),
+        ),
+      ],
     );
   }
 
@@ -303,7 +344,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
     final theme = Theme.of(context);
     IconData icon;
     Color color;
-    
+
     switch (notification.kind) {
       case 7: // reaction/like
         icon = Icons.favorite;
@@ -329,7 +370,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
         icon = Icons.notifications;
         color = theme.colorScheme.onSurface;
     }
-    
+
     return Container(
       width: 32.px,
       height: 32.px,
@@ -337,11 +378,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
         color: color.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        icon,
-        size: 16.px,
-        color: color,
-      ),
+      child: Icon(icon, size: 16.px, color: color),
     );
   }
 
@@ -364,11 +401,11 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
 
   String _formatTime(int? timestamp) {
     if (timestamp == null) return '';
-    
+
     final now = DateTime.now();
     final time = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
     final difference = now.difference(time);
-    
+
     if (difference.inMinutes < 1) {
       return 'Just now';
     } else if (difference.inMinutes < 60) {
@@ -388,11 +425,11 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage> with ChuC
       if (user != null) {
         return user;
       }
-      
-      return  null;
+
+      return null;
     } catch (e) {
       print('Error getting user info: $e');
-      return  null;
+      return null;
     }
   }
 }

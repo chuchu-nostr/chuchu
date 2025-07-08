@@ -52,16 +52,6 @@ class FeedWidgetsUtils {
       }
 
       return const SizedBox();
-
-      // return ChuChuCachedNetworkImage(
-      //   imageUrl: videoImagePath ?? UplodAliyun.getSnapshot(videoUrl),
-      //   fit: BoxFit.fill,
-      //   placeholder: (context, url) =>
-      //       MomentWidgetsUtils.badgePlaceholderContainer(size: 210),
-      //   errorWidget: (context, url, error) =>
-      //       MomentWidgetsUtils.badgePlaceholderContainer(size: 210),
-      //   width: 210.px,
-      // );
     }
 
     return GestureDetector(

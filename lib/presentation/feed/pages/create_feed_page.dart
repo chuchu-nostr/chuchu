@@ -272,7 +272,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     ChuChuLoading.dismiss();
     if(eventStatus.status){
       CommonToast.instance.show(context, 'Sent successfully');
-      List<NotificationDBISAR> notificationList = await Feed.sharedInstance.loadNotificationsFromDB(0  ,limit: 30) ?? [];
     }
   }
 
