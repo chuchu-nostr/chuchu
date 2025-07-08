@@ -22,10 +22,10 @@ class FeedInfoPage extends StatefulWidget {
   final bool isShowReply;
   final NotedUIModel? notedUIModel;
   const FeedInfoPage({
-    Key? key,
+    super.key,
     required this.notedUIModel,
     this.isShowReply = true,
-  }) : super(key: key);
+  });
 
   @override
   State<FeedInfoPage> createState() => _FeedInfoPageState();
@@ -166,7 +166,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
           foregroundColor: theme.colorScheme.onSurface,
           elevation: 0,
         ),
-        body: Container(
+        body: SizedBox(
           height: double.infinity,
           child: Stack(
             children: [
@@ -183,7 +183,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         onNotification: (notification) {
                           final RenderBox renderBox = _containerKey.currentContext?.findRenderObject() as RenderBox;
                           final size = renderBox.size;
-                          _scrollToPosition(size.height - 10);
+                          _scrollToPosition(size.height - 15);
                           return true;
                         },
                         child: SizeChangedLayoutNotifier(
@@ -198,7 +198,6 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                       ).setPadding(EdgeInsets.symmetric(horizontal: 24.0)),
                       FeedWidget(
                         isShowAllContent: true,
-                        isShowInteractionData: true,
                         isShowReply: false,
                         notedUIModel: widget.notedUIModel,
                         isShowBottomBorder: false,
@@ -416,42 +415,25 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
 
     String replyId = widget.notedUIModel?.noteDB.getReplyId ?? '';
     if (notedReplyList!.isEmpty && replyId.isNotEmpty) {
-      return Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            FeedWidgetsUtils.emptyNoteMomentWidget(null, 100),
-            Container(
-              margin: EdgeInsets.only(left: 20.px),
-              width: 1.px,
-              height: 20.px,
-              color: Colors.grey.withOpacity(.5),
-            ),
-          ],
-        ),
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FeedWidgetsUtils.emptyNoteMomentWidget(null, 100),
+          Container(
+            margin: EdgeInsets.only(left: 20.px),
+            width: 1.px,
+            height: 20.px,
+            color: Colors.grey.withOpacity(.5),
+          ),
+        ],
       );
     }
 
-    return Container(
-      child: Column(
-        children:
-            notedReplyList!.map((model) {
-              return Container(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _showMomentWidget(model),
-                    // Container(
-                    //   margin: EdgeInsets.only(left: 20.px),
-                    //   width: 1.px,
-                    //   height: 20.px,
-                    //   color: Theme.of(context).colorScheme.onBackground,
-                    // )
-                  ],
-                ),
-              );
-            }).toList(),
-      ),
+    return Column(
+      children:
+          notedReplyList!.map((model) {
+            return _showMomentWidget(model);
+          }).toList(),
     );
   }
 
@@ -461,7 +443,6 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
     }
     return FeedWidget(
       isShowAllContent: true,
-      isShowInteractionData: true,
       isShowReply: false,
       isShowBottomBorder: false,
       clickMomentCallback: (NotedUIModel? notedUIModel) async {

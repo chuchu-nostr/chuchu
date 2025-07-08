@@ -101,8 +101,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
   }
 
   Widget _momentItemWidget() {
-    if (widget.notedUIModel == null) return const SizedBox();
-    String pubKey = widget.notedUIModel!.noteDB.author;
+    String pubKey = widget.notedUIModel.noteDB.author;
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () async {

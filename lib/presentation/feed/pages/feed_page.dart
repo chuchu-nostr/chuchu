@@ -43,6 +43,8 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   bool _isInitialLoading = true;
   List<UserDBISAR> _showNotedToUserList = [];
   int _newNotesCount = 0;
+  
+  ThemeData? _cachedTheme;
 
   @override
   void initState() {
@@ -70,10 +72,13 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
+    _cachedTheme ??= Theme.of(context);
+    
     return SafeArea(
       child: Column(
         children: [
-          if (notesList.isNotEmpty && _showNotedToUserList.isNotEmpty) _buildTopStoriesSection(),
+          if (notesList.isNotEmpty && _showNotedToUserList.isNotEmpty) 
+            _buildTopStoriesSection(),
           Expanded(
             child: ChuChuSmartRefresher(
               scrollController: widget.scrollController ?? feedScrollController,
@@ -91,25 +96,27 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   }
 
   Widget _getFeedListWidget() {
-
     if (_isInitialLoading) {
       return ListView.builder(
         itemCount: 8,
-        itemBuilder: (context, index) => const FeedSkeletonWidget(),
+        itemBuilder: (context, index) => RepaintBoundary(
+          child: const FeedSkeletonWidget(),
+        ),
       );
     }
 
     if (notesList.isEmpty) {
-      return Column(
-        children: [
-          SizedBox(
-            height: 100,
-          ),
-          CommonImage(iconName: 'no_feed.png', size: 350),
-          Text('No Content',
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-        ],
+      return RepaintBoundary(
+        child: Column(
+          children: [
+            SizedBox(height: 100),
+            CommonImage(iconName: 'no_feed.png', size: 350),
+            Text(
+              'No Content',
+              style: Theme.of(context).textTheme.titleLarge,
+            ),
+          ],
+        ),
       );
     }
 
@@ -118,48 +125,59 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
       controller: null,
       shrinkWrap: false,
       itemCount: notesList.length,
+      cacheExtent: 1000,
+      addAutomaticKeepAlives: true,
+      addRepaintBoundaries: true,
       itemBuilder: (context, index) {
-        NotedUIModel? notedUIModel = notesList[index];
-        return FeedWidget(
-          isShowReplyWidget: true,
-          notedUIModel: notedUIModel,
-          clickMomentCallback: (NotedUIModel? notedUIModel) async {
-            await ChuChuNavigator.pushPage(
-              context,
-              (context) => FeedInfoPage(notedUIModel: notedUIModel),
-            );
-          },
-        ).setPadding(EdgeInsets.only(left: 16.0,right: 16.0, bottom: 12.0));
+        final notedUIModel = notesList[index];
+        return RepaintBoundary(
+          key: ValueKey('feed_$index'),
+          child: FeedWidget(
+            isShowReplyWidget: true,
+            notedUIModel: notedUIModel,
+            clickMomentCallback: (NotedUIModel? notedUIModel) async {
+              await ChuChuNavigator.pushPage(
+                context,
+                (context) => FeedInfoPage(notedUIModel: notedUIModel),
+              );
+            },
+          ).setPadding(EdgeInsets.only(left: 16.0, right: 16.0, bottom: 12.0)),
+        );
       },
     );
   }
 
   Widget _buildTopStoriesSection() {
-    return GestureDetector(
-      behavior: HitTestBehavior.translucent,
-      onTap: () {
-        _handleNewNotesClick();
-      },
-      child: Container(
-        width: double.infinity,
-        height: 121,
-        padding: EdgeInsets.symmetric(vertical: 16),
-        margin: EdgeInsets.only(bottom: 12.0),
-        decoration: BoxDecoration(
+    return RepaintBoundary(
+      child: GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTap: _handleNewNotesClick,
+        child: Container(
+          width: double.infinity,
+          height: 121,
+          padding: EdgeInsets.symmetric(vertical: 16),
+          margin: EdgeInsets.only(bottom: 12.0),
+          decoration: BoxDecoration(
             border: Border(
-                bottom: BorderSide(
-                    color: Theme.of(context).dividerColor.withAlpha(80),
-                    width: 0.5,
-                ),
+              bottom: BorderSide(
+                color: Theme.of(context).dividerColor.withAlpha(80),
+                width: 0.5,
+              ),
             ),
-        ),
-        child: ListView.builder(
-          scrollDirection: Axis.horizontal,
-          padding: EdgeInsets.symmetric(horizontal: 16),
-          itemCount: _showNotedToUserList.length,
-          itemBuilder: (context, index) {
-           return _buildNewNotesIndicator(index);
-          },
+          ),
+          child: ListView.builder(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            itemCount: _showNotedToUserList.length,
+            cacheExtent: 500,
+            addRepaintBoundaries: true,
+            itemBuilder: (context, index) {
+              return RepaintBoundary(
+                key: ValueKey('story_${_showNotedToUserList[index].pubKey}'),
+                child: _buildNewNotesIndicator(index),
+              );
+            },
+          ),
         ),
       ),
     );
@@ -220,23 +238,23 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildAvatarWidget({String? imageUrl}) {
-    return GestureDetector(
-      onTap: (){
-      },
-      child: FeedWidgetsUtils.clipImage(
-        borderRadius: 64.px,
-        imageSize: 64.px,
-        child: ChuChuCachedNetworkImage(
-          imageUrl: imageUrl ?? '',
-          fit: BoxFit.cover,
-          placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-          errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-          width: 64.px,
-          height: 64.px,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: () {},
+        child: FeedWidgetsUtils.clipImage(
+          borderRadius: 64.px,
+          imageSize: 64.px,
+          child:             ChuChuCachedNetworkImage(
+              imageUrl: imageUrl ?? '',
+              fit: BoxFit.cover,
+              placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+              errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+              width: 64.px,
+              height: 64.px,
+            ),
         ),
       ),
     );
-
   }
 
   void _handleNewNotesClick() {
@@ -244,7 +262,6 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
     _newNotesCount = 0;
     setState(() {});
 
-    // 滚动到顶部
     final scrollController = widget.scrollController ?? feedScrollController;
     scrollController.animateTo(
       0,
@@ -351,29 +368,38 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   }
 
   void _updateUI(List<NoteDBISAR> showList, bool isInit, int fetchedCount) {
-    List<NotedUIModel?> list =
-        showList.map((item) => NotedUIModel(noteDB: item)).toList();
-    if (isInit) {
-      notesList = list;
-    } else {
-      notesList.addAll(list);
-    }
+    Future.microtask(() {
+      if (!mounted) return;
+      
+      final List<NotedUIModel?> list =
+          showList.map((item) => NotedUIModel(noteDB: item)).toList();
+      
+      if (isInit) {
+        notesList = list;
+      } else {
+        notesList.addAll(list);
+      }
 
-    _allNotesFromDBLastTimestamp = showList.last.createAt;
+      if (showList.isNotEmpty) {
+        _allNotesFromDBLastTimestamp = showList.last.createAt;
+      }
 
-    if (isInit) {
-      refreshController.refreshCompleted();
-    } else {
-      fetchedCount < _limit
-          ? refreshController.loadNoData()
-          : refreshController.loadComplete();
-    }
+      if (isInit) {
+        refreshController.refreshCompleted();
+      } else {
+        fetchedCount < _limit
+            ? refreshController.loadNoData()
+            : refreshController.loadComplete();
+      }
 
-    if (_isInitialLoading) {
-      _isInitialLoading = false;
-    }
+      if (_isInitialLoading) {
+        _isInitialLoading = false;
+      }
 
-    setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
+    });
   }
 
   @override
@@ -382,14 +408,23 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   }
 
   void _notificationUpdateNotes(List<NoteDBISAR> notes) async {
-    if (notes.isEmpty) return;
+    if (notes.isEmpty || !mounted) return;
 
-    List<UserDBISAR> users = await FeedUtils.getUserList(
-        notes.map((e) => e.author).toSet().toList());
+    try {
+      final List<UserDBISAR> users = await FeedUtils.getUserList(
+          notes.map((e) => e.author).toSet().toList());
 
-    _showNotedToUserList = users;
-    if(mounted){
-      setState(() {});
+      if (mounted) {
+        Future.microtask(() {
+          if (mounted) {
+            _showNotedToUserList = users;
+            _newNotesCount = notes.length;
+            setState(() {});
+          }
+        });
+      }
+    } catch (e) {
+      print('Error updating notification notes: $e');
     }
   }
 

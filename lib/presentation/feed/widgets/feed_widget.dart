@@ -24,13 +24,14 @@ enum EFeedWidgetLayout {
 }
 
 class FeedWidget extends StatefulWidget {
-  final bool isShowInteractionData;
   final bool isShowReply;
   final bool isShowUserInfo;
   final bool isShowReplyWidget;
   final bool isShowMomentOptionWidget;
   final bool isShowAllContent;
   final bool isShowBottomBorder;
+  final bool isShowOption;
+
   final Function(NotedUIModel? notedUIModel)? clickMomentCallback;
   final NotedUIModel? notedUIModel;
   final EFeedWidgetLayout? feedWidgetLayout;
@@ -41,10 +42,10 @@ class FeedWidget extends StatefulWidget {
     this.clickMomentCallback,
     this.isShowAllContent = false,
     this.isShowReply = true,
+    this.isShowOption = true,
     this.isShowUserInfo = true,
     this.isShowReplyWidget = false,
     this.isShowMomentOptionWidget = true,
-    this.isShowInteractionData = false,
     this.isShowBottomBorder = true,
     this.feedWidgetLayout = EFeedWidgetLayout.halfScreen
   });
@@ -63,6 +64,9 @@ class _FeedWidgetState extends State<FeedWidget> {
   static const double _mediaWidthRatio = 0.64;
 
   NotedUIModel? notedUIModel;
+  
+  ThemeData? _cachedTheme;
+  MediaQueryData? _cachedMediaQuery;
 
   @override
   void initState() {
@@ -72,9 +76,14 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return widget.feedWidgetLayout == EFeedWidgetLayout.halfScreen 
-        ? _feedHalfItemWidget() 
-        : _feedFullItemWidget();
+    _cachedTheme ??= Theme.of(context);
+    _cachedMediaQuery ??= MediaQuery.of(context);
+    
+    return RepaintBoundary(
+      child: widget.feedWidgetLayout == EFeedWidgetLayout.halfScreen 
+          ? _feedHalfItemWidget() 
+          : _feedFullItemWidget(),
+    );
   }
 
   @override
@@ -88,7 +97,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Border? get _bottomBorder => widget.isShowBottomBorder
-      ? Border(bottom: BorderSide(color: Theme.of(context).dividerColor.withAlpha(80), width: _borderWidth))
+      ? Border(bottom: BorderSide(color: (_cachedTheme ?? Theme.of(context)).dividerColor.withAlpha(80), width: _borderWidth))
       : null;
 
   Widget _buildFeedContainer({required Widget child, EdgeInsets? padding}) {
@@ -112,11 +121,16 @@ class _FeedWidgetState extends State<FeedWidget> {
         _showReplyContactWidget(),
         _showFeedContent(),
         _showFeedMediaWidget(),
-        FeedReplyAbbreviateWidget(
-          notedUIModel: notedUIModel,
-          isShowReplyWidget: widget.isShowReplyWidget,
+        RepaintBoundary(
+          child: FeedReplyAbbreviateWidget(
+            notedUIModel: notedUIModel,
+            isShowReplyWidget: widget.isShowReplyWidget,
+          ),
         ),
-        FeedOptionWidget(notedUIModel: notedUIModel).setPaddingOnly(bottom:  _verticalPadding.px),
+        if(widget.isShowOption)
+        RepaintBoundary(
+          child: FeedOptionWidget(notedUIModel: notedUIModel).setPaddingOnly(bottom:  _verticalPadding.px),
+        ),
       ],
     );
   }
@@ -130,49 +144,52 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildAvatarWidget({String? imageUrl}) {
-    return GestureDetector(
-      onTap: (){
-        if(notedUIModel != null){
-          ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author,));
-        }
-      },
-      child: FeedWidgetsUtils.clipImage(
-        borderRadius: _avatarSize.px,
-        imageSize: _avatarSize.px,
-        child: ChuChuCachedNetworkImage(
-          imageUrl: imageUrl ?? '',
-          fit: BoxFit.cover,
-          placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-          errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-          width: _avatarSize.px,
-          height: _avatarSize.px,
+    return RepaintBoundary(
+      child: GestureDetector(
+        onTap: (){
+          if(notedUIModel != null){
+            ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author,));
+          }
+        },
+        child: FeedWidgetsUtils.clipImage(
+          borderRadius: _avatarSize.px,
+          imageSize: _avatarSize.px,
+          child: ChuChuCachedNetworkImage(
+            imageUrl: imageUrl ?? '',
+            fit: BoxFit.cover,
+            placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+            errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+            width: _avatarSize.px,
+            height: _avatarSize.px,
+          ),
         ),
       ),
     );
-
   }
 
   Widget _buildAvatarColumn() {
     if(notedUIModel == null) return const SizedBox();
-    return Padding(
-      padding: const EdgeInsets.only(right: _rightPadding),
-      child: Column(
-        children: [
-          ValueListenableBuilder<UserDBISAR>(
-            valueListenable: Account.sharedInstance.getUserNotifier(notedUIModel!.noteDB.author),
-            builder: (context, user, child) {
-              return _buildAvatarWidget(imageUrl:user.picture);
-            },
-          ),
-          if (widget.isShowAllContent)
-            Expanded(
-              child: Container(
-                margin: const EdgeInsets.only(top: _rightPadding),
-                width: 1,
-                color: Colors.grey.withOpacity(.5),
-              ),
+    return RepaintBoundary(
+      child: Padding(
+        padding: const EdgeInsets.only(right: _rightPadding),
+        child: Column(
+          children: [
+            ValueListenableBuilder<UserDBISAR>(
+              valueListenable: Account.sharedInstance.getUserNotifier(notedUIModel!.noteDB.author),
+              builder: (context, user, child) {
+                return _buildAvatarWidget(imageUrl:user.picture);
+              },
             ),
-        ],
+            if (widget.isShowAllContent)
+              Expanded(
+                child: Container(
+                  margin: const EdgeInsets.only(top: _rightPadding),
+                  width: 1,
+                  color: Colors.grey.withOpacity(.5),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -194,19 +211,18 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildContentItem(String content, NotedUIModel model, List<String> nddrlList) {
-    if (nddrlList.contains(content)) {
-      return MomentArticleWidget(naddr: content);
-    }
-    
-    return FeedRichTextWidget(
-      isShowAllContent: widget.isShowAllContent,
-      clickBlankCallback: () => widget.clickMomentCallback?.call(model),
-      showMoreCallback: () async {
-        await ChuChuNavigator.pushPage(context, (context) => FeedInfoPage(notedUIModel: model,isShowReply: widget.isShowReply));
-
-      },
-      text: content,
-    ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px));
+    return RepaintBoundary(
+      child: nddrlList.contains(content) 
+          ? MomentArticleWidget(naddr: content)
+          : FeedRichTextWidget(
+              isShowAllContent: widget.isShowAllContent,
+              clickBlankCallback: () => widget.clickMomentCallback?.call(model),
+              showMoreCallback: () async {
+                await ChuChuNavigator.pushPage(context, (context) => FeedInfoPage(notedUIModel: model,isShowReply: widget.isShowReply));
+              },
+              text: content,
+            ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px)),
+    );
   }
 
   Widget _showFeedContent() {
@@ -224,20 +240,24 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildImageGrid(List<String> imageList) {
-    final width = MediaQuery.of(context).size.width * _mediaWidthRatio;
-    return NinePalaceGridPictureWidget(
-      crossAxisCount: _calculateColumnsForPictures(imageList.length),
-      width: width.px,
-      axisSpacing: _imageSpacing,
-      imageList: imageList,
-    ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px));
+    final width = (_cachedMediaQuery ?? MediaQuery.of(context)).size.width * _mediaWidthRatio;
+    return RepaintBoundary(
+      child: NinePalaceGridPictureWidget(
+        crossAxisCount: _calculateColumnsForPictures(imageList.length),
+        width: width.px,
+        axisSpacing: _imageSpacing,
+        imageList: imageList,
+      ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px)),
+    );
   }
 
   Widget _buildVideoWidget(String videoUrl) {
     final isYoutube = videoUrl.contains('youtube.com') || videoUrl.contains('youtu.be');
-    return isYoutube 
-        ? FeedWidgetsUtils.youtubeSurfaceMoment(context, videoUrl)
-        : const SizedBox();
+    return RepaintBoundary(
+      child: isYoutube 
+          ? FeedWidgetsUtils.youtubeSurfaceMoment(context, videoUrl)
+          : const SizedBox(),
+    );
   }
 
   Widget _showFeedMediaWidget() {
@@ -256,7 +276,9 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     final externalLinks = model.getMomentExternalLink;
     if (externalLinks.isNotEmpty) {
-      return FeedUrlWidget(url: externalLinks[0]);
+      return RepaintBoundary(
+        child: FeedUrlWidget(url: externalLinks[0]),
+      );
     }
     
     return const SizedBox();
@@ -264,53 +286,57 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   Widget _showReplyContactWidget() {
     if (!widget.isShowReply) return const SizedBox();
-    return FeedReplyContactWidget(notedUIModel: notedUIModel);
+    return RepaintBoundary(
+      child: FeedReplyContactWidget(notedUIModel: notedUIModel),
+    );
   }
 
   Widget _buildUserNameAndTime(UserDBISAR user, NotedUIModel model) {
     return Flexible(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  user.name ?? '--',
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 18.px,
-                    fontWeight: FontWeight.w500,
+      child: RepaintBoundary(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    user.name ?? '--',
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 18.px,
+                      fontWeight: FontWeight.w500,
+                    ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  FeedUtils.getUserMomentInfo(user, model.createAtStr)[2],
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 16.px,
-                    fontWeight: FontWeight.w400,
+                  Text(
+                    FeedUtils.getUserMomentInfo(user, model.createAtStr)[2],
+                    style: TextStyle(
+                      color: Colors.black,
+                      fontSize: 16.px,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                // _checkIsPrivate(),
-              ],
+                  // _checkIsPrivate(),
+                ],
+              ),
             ),
-          ),
-          Text(
-            FeedUtils.getUserMomentInfo(user, model.createAtStr)[1],
-            style: TextStyle(
-              color: Colors.black,
-              fontSize: 16.px,
-              fontWeight: FontWeight.w400,
+            Text(
+              FeedUtils.getUserMomentInfo(user, model.createAtStr)[1],
+              style: TextStyle(
+                color: Colors.black,
+                fontSize: 16.px,
+                fontWeight: FontWeight.w400,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -335,13 +361,15 @@ class _FeedWidgetState extends State<FeedWidget> {
     
     final pubKey = model.noteDB.author;
 
-    return Container(
-      padding: EdgeInsets.only(bottom: _bottomSpacing.px),
-      child: ValueListenableBuilder<UserDBISAR>(
-        valueListenable: Account.sharedInstance.getUserNotifier(pubKey),
-        builder: (context, user, child) {
-          return _buildUserInfoRow(user, model);
-        },
+    return RepaintBoundary(
+      child: Container(
+        padding: EdgeInsets.only(bottom: _bottomSpacing.px),
+        child: ValueListenableBuilder<UserDBISAR>(
+          valueListenable: Account.sharedInstance.getUserNotifier(pubKey),
+          builder: (context, user, child) {
+            return _buildUserInfoRow(user, model);
+          },
+        ),
       ),
     );
   }
@@ -352,7 +380,10 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     notedUIModel = model;
     await _getFeedUserInfo(model);
-    if (mounted) setState(() {});
+    
+    Future.microtask(() {
+      if (mounted) setState(() {});
+    });
   }
 
   Future<void> _getFeedUserInfo(NotedUIModel model) async {

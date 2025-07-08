@@ -1,5 +1,4 @@
 import 'package:chuchu/core/feed/feed+send.dart';
-import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/feed/feed.dart';
@@ -9,6 +8,7 @@ import '../../../core/widgets/common_toast.dart';
 import '../../../data/enum/feed_enum.dart';
 import '../../../data/models/feed_extension_model.dart';
 import '../../../data/models/noted_ui_model.dart';
+import '../pages/feed_reply_page.dart';
 
 class FeedOptionWidget extends StatefulWidget {
 
@@ -102,8 +102,27 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
     if(noteDB == null) return (){};
     switch (type) {
       case EFeedOptionType.reply:
-        return () async{
+        return () async {
+          Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, secondaryAnimation) => FeedReplyPage(notedUIModel:notedUIModel!),
+              transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                const begin = Offset(0.0, 1.0);
+                const end = Offset.zero;
+                const curve = Curves.easeInOut;
 
+                var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                var offsetAnimation = animation.drive(tween);
+
+                return SlideTransition(
+                  position: offsetAnimation,
+                  child: child,
+                );
+              },
+              transitionDuration: const Duration(milliseconds: 300),
+              reverseTransitionDuration: const Duration(milliseconds: 250),
+            ),
+          );
         };
       case EFeedOptionType.like:
         return () async {
