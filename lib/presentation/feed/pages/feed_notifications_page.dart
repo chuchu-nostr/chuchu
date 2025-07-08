@@ -282,37 +282,42 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        FutureBuilder<UserDBISAR?>(
-          future: _getUserInfo(notification.author),
-          builder: (context, snapshot) {
-            final user = snapshot.data;
-            final userName = user?.name ?? '--';
+        Expanded(
+          child: FutureBuilder<UserDBISAR?>(
+            future: _getUserInfo(notification.author),
+            builder: (context, snapshot) {
+              final user = snapshot.data;
+              final userName = user?.name ?? '--';
 
-            String actionText = _getActionText(notification.kind);
+              String actionText = _getActionText(notification.kind);
 
-            return RichText(
-              text: TextSpan(
-                children: [
-                  TextSpan(
-                    text: userName,
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontSize: 18.px,
-                      fontWeight: FontWeight.bold,
-                      color: theme.colorScheme.onSurface,
+              return RichText(
+                text: TextSpan(
+                  children: [
+                    TextSpan(
+                      text: userName,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 18.px,
+                        fontWeight: FontWeight.bold,
+                        color: theme.colorScheme.onSurface,
+                      ),
                     ),
-                  ),
-                  TextSpan(
-                    text: ' $actionText',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontSize: 16.px,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                    TextSpan(
+                      text: ' $actionText',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontSize: 16.px,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            );
-          },
+                  ],
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              );
+            },
+          ),
         ),
+        SizedBox(width: 8.px),
         _buildNotificationTypeIcon(notification),
       ],
     );
@@ -324,10 +329,14 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(
-          content,
-          style: theme.textTheme.bodySmall?.copyWith(
-            fontSize: 18,
+        Expanded(
+          child: Text(
+            content,
+            style: theme.textTheme.bodySmall?.copyWith(
+              fontSize: 18,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
           ),
         ),
         Text(
