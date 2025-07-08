@@ -1,10 +1,17 @@
+import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/navigator/navigator.dart';
+import 'package:chuchu/core/utils/widget_tool_utils.dart';
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../feed/pages/create_feed_page.dart';
-import '../../login/pages/login_page.dart';
+import '../../feed/pages/feed_notifications_page.dart';
+
 import '../widgets/drawer_menu.dart';
 import '../../feed/pages/feed_page.dart';
+import '../../../core/manager/chuchu_feed_manager.dart';
+import '../../../core/feed/model/notificationDB_isar.dart';
+import '../../../core/feed/model/noteDB_isar.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,12 +20,12 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage>
-    with SingleTickerProviderStateMixin {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin, ChuChuFeedObserver {
   final double maxSlide = 0.75;
   late final AnimationController _controller;
   late final ScrollController _scrollController;
   bool _isScrolled = false;
+  bool _hasNotifications = false;
 
   bool get isOpen => _controller.value == 1.0;
 
@@ -29,13 +36,16 @@ class _HomePageState extends State<HomePage>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
-    
+
     _scrollController = ScrollController();
     _scrollController.addListener(_scrollListener);
+
+    ChuChuFeedManager.sharedInstance.addObserver(this);
   }
 
   void _scrollListener() {
-    final isScrolled = _scrollController.hasClients && _scrollController.offset > 0;
+    final isScrolled =
+        _scrollController.hasClients && _scrollController.offset > 0;
     if (isScrolled != _isScrolled) {
       setState(() {
         _isScrolled = isScrolled;
@@ -56,6 +66,7 @@ class _HomePageState extends State<HomePage>
     _controller.dispose();
     _scrollController.removeListener(_scrollListener);
     _scrollController.dispose();
+    ChuChuFeedManager.sharedInstance.removeObserver(this);
     super.dispose();
   }
 
@@ -102,8 +113,8 @@ class _HomePageState extends State<HomePage>
                             boxShadow: [
                               if (_controller.value > 0)
                                 BoxShadow(
-                                  color: theme.shadowColor.withOpacity(
-                                    0.15 * _controller.value,
+                                  color: theme.shadowColor.withValues(
+                                    alpha: 0.15 * _controller.value,
                                   ),
                                   blurRadius: 16,
                                 ),
@@ -111,51 +122,97 @@ class _HomePageState extends State<HomePage>
                           ),
                           child: Scaffold(
                             appBar: AppBar(
-                              backgroundColor: _isScrolled 
-                                  ? theme.colorScheme.primary 
-                                  : theme.colorScheme.surface,
-                              foregroundColor: _isScrolled 
-                                  ? theme.colorScheme.onPrimary 
-                                  : theme.colorScheme.primary,
+                              backgroundColor:
+                                  _isScrolled
+                                      ? theme.colorScheme.primary
+                                      : theme.colorScheme.surface,
+                              foregroundColor:
+                                  _isScrolled
+                                      ? theme.colorScheme.onPrimary
+                                      : theme.colorScheme.primary,
                               elevation: _isScrolled ? 4 : 0,
                               surfaceTintColor: Colors.transparent,
-                              leading: AnimatedSwitcher(
-                                duration: const Duration(milliseconds: 200),
-                                child: IconButton(
-                                  key: ValueKey(_isScrolled),
-                                  icon: Icon(
-                                    Icons.menu,
-                                    color: _isScrolled 
-                                        ? theme.colorScheme.onPrimary 
-                                        : theme.colorScheme.onSurface,
-                                  ),
-                                  onPressed: toggle,
+                              leadingWidth: 144.px,
+                              leading: GestureDetector(
+                                onTap: toggle,
+                                child: CommonImage(
+                                  iconName:
+                                      _isScrolled
+                                          ? 'logo_text_white.png'
+                                          : 'logo_text_primary.png',
+                                  width: 120,
                                 ),
+                              ).setPaddingOnly(left: 18.px),
+                              bottom: PreferredSize(
+                                preferredSize: Size.fromHeight(12.px),
+                                child: const SizedBox(),
                               ),
                               actions: [
                                 AnimatedSwitcher(
                                   duration: const Duration(milliseconds: 200),
-                                  child: IconButton(
+                                  child: Stack(
                                     key: ValueKey(_isScrolled),
-                                    icon: Icon(
-                                      Icons.settings,
-                                      color: _isScrolled 
-                                          ? theme.colorScheme.onPrimary 
-                                          : theme.colorScheme.onSurface,
-                                    ),
-                                    onPressed: () {},
+                                    children: [
+                                      IconButton(
+                                        icon: Icon(
+                                          Icons.notifications_outlined,
+                                          color:
+                                              _isScrolled
+                                                  ? theme.colorScheme.onPrimary
+                                                  : theme.colorScheme.onSurface,
+                                        ),
+                                        onPressed: () {
+                                          setState(() {
+                                            _hasNotifications = false;
+                                          });
+                                          ChuChuNavigator.pushPage(
+                                            context,
+                                            (context) =>
+                                                FeedNotificationsPage(),
+                                          );
+                                        },
+                                      ),
+                                      if (_hasNotifications)
+                                        Positioned(
+                                          right: 8,
+                                          top: 8,
+                                          child: Container(
+                                            width: 12,
+                                            height: 12,
+                                            decoration: BoxDecoration(
+                                              color: Colors.red,
+                                              shape: BoxShape.circle,
+                                              border: Border.all(
+                                                color:
+                                                    _isScrolled
+                                                        ? theme
+                                                            .colorScheme
+                                                            .primary
+                                                        : theme
+                                                            .colorScheme
+                                                            .surface,
+                                                width: 2,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ],
-                              systemOverlayStyle: _isScrolled
-                                  ? SystemUiOverlayStyle.light
-                                  : SystemUiOverlayStyle.dark,
+                              systemOverlayStyle:
+                                  _isScrolled
+                                      ? SystemUiOverlayStyle.light
+                                      : SystemUiOverlayStyle.dark,
                             ),
                             body: FeedPage(scrollController: _scrollController),
                             floatingActionButton: FloatingActionButton(
                               onPressed: () {
-                                // ChuChuNavigator.pushPage(context, (context) => CreateFeedPage());
-                                ChuChuNavigator.pushPage(context, (context) => LoginPage());
+                                ChuChuNavigator.pushPage(
+                                  context,
+                                  (context) => CreateFeedPage(),
+                                );
+                                // ChuChuNavigator.pushPage(context, (context) => LoginPage());
                               },
                               backgroundColor: theme.colorScheme.primary,
                               foregroundColor: theme.colorScheme.onPrimary,
@@ -193,5 +250,17 @@ class _HomePageState extends State<HomePage>
         ),
       ),
     );
+  }
+
+  @override
+  didNewNotesCallBackCallBack(List<NoteDBISAR> notes) {}
+
+  @override
+  didNewNotificationCallBack(List<NotificationDBISAR> notifications) {
+    if (notifications.isNotEmpty && mounted) {
+      setState(() {
+        _hasNotifications = true;
+      });
+    }
   }
 }
