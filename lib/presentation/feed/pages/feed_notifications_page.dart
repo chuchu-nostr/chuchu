@@ -1,15 +1,20 @@
+import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/feed/feed+notification.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import '../../../core/feed/feed.dart';
+import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
+import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
+import '../../../data/models/noted_ui_model.dart';
+import 'feed_info_page.dart';
 import 'feed_personal_page.dart';
 
 class AggregatedNotification {
@@ -158,7 +163,26 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
 
   Widget _buildBody() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(
+              strokeWidth: 2,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                Theme.of(context).colorScheme.primary,
+              ),
+            ),
+            SizedBox(height: 16.px),
+            Text(
+              'Loading notifications...',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
     if (_aggregatedNotifications.isEmpty) {
@@ -167,7 +191,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
 
     return ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.symmetric(vertical: 16.px),
+      padding: EdgeInsets.symmetric(vertical: 8.px),
       itemCount: _aggregatedNotifications.length,
       itemBuilder: (context, index) {
         return _buildNotificationItem(_aggregatedNotifications[index]);
@@ -181,24 +205,33 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.notifications_none,
-            size: 80,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.3),
-          ),
-          SizedBox(height: 16),
-          Text(
-            'No Notifications',
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+          Container(
+            padding: EdgeInsets.all(24.px),
+            decoration: BoxDecoration(
+              color: theme.colorScheme.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.notifications_none,
+              size: 64.px,
+              color: theme.colorScheme.primary,
             ),
           ),
-          SizedBox(height: 8),
+          SizedBox(height: 24.px),
+          Text(
+            'No Notifications',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: theme.colorScheme.onSurface,
+            ),
+          ),
+          SizedBox(height: 12.px),
           Text(
             'You\'ll see notifications here when someone\ninteracts with your posts',
             textAlign: TextAlign.center,
             style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+              height: 1.4,
             ),
           ),
         ],
@@ -210,30 +243,32 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     final theme = Theme.of(context);
 
     return GestureDetector(
-      // onTap: () => _handleNotificationTap(notification),
+      onTap: () => _handleNotificationTap(notification),
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 16.px, vertical: 4.px),
+        margin: EdgeInsets.symmetric(horizontal: 16.px, vertical: 6.px),
         padding: EdgeInsets.all(16.px),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: theme.dividerColor.withValues(alpha: 0.1),
-            width: 1,
-          ),
+          borderRadius: BorderRadius.circular(16.px),
+          boxShadow: [
+            BoxShadow(
+              color: theme.shadowColor.withValues(alpha: 0.05),
+              blurRadius: 8.px,
+              offset: Offset(0, 2.px),
+            ),
+          ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             _buildNotificationAvatar(notification),
-            SizedBox(width: 12.px),
+            SizedBox(width: 16.px),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildNotificationTitle(notification),
-                  SizedBox(height: 8.px),
+                  SizedBox(height: 12.px),
                   _buildNotificationContent(notification),
                 ],
               ),
@@ -258,17 +293,26 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
               );
             }
           },
-          child: FeedWidgetsUtils.clipImage(
-            borderRadius: 50.px,
-            imageSize: 50.px,
-            child: ChuChuCachedNetworkImage(
-              imageUrl: user?.picture ?? '',
-              fit: BoxFit.cover,
-              placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-              errorWidget:
-                  (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-              width: 50.px,
-              height: 50.px,
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                width: 2.px,
+              ),
+            ),
+            child: FeedWidgetsUtils.clipImage(
+              borderRadius: 48.px,
+              imageSize: 48.px,
+              child: ChuChuCachedNetworkImage(
+                imageUrl: user?.picture ?? '',
+                fit: BoxFit.cover,
+                placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                errorWidget:
+                    (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+                width: 48.px,
+                height: 48.px,
+              ),
             ),
           ),
         );
@@ -297,16 +341,16 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
                     TextSpan(
                       text: userName,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 18.px,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 16.px,
+                        fontWeight: FontWeight.w600,
                         color: theme.colorScheme.onSurface,
                       ),
                     ),
                     TextSpan(
                       text: ' $actionText',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 16.px,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+                        fontSize: 14.px,
+                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
                   ],
@@ -317,7 +361,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             },
           ),
         ),
-        SizedBox(width: 8.px),
+        SizedBox(width: 12.px),
         _buildNotificationTypeIcon(notification),
       ],
     );
@@ -333,20 +377,71 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           child: Text(
             content,
             style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 18,
+              fontSize: 14.px,
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+              height: 1.3,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),
         ),
+        SizedBox(width: 12.px),
         Text(
-          _formatTime(notification.createAt),
+          FeedUtils.formatTimeAgo(notification.createAt),
           style: theme.textTheme.bodySmall?.copyWith(
+            fontSize: 12.px,
             color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            fontWeight: FontWeight.w500,
           ),
         ),
       ],
     );
+  }
+
+  void _handleNotificationTap(AggregatedNotification notification)async {
+    String noteId;
+    if(notification.kind == 1 || notification.kind == 2) {
+      noteId = notification.notificationId;
+    } else {
+      noteId = notification.associatedNoteId;
+    }
+
+    NotedUIModel? noteNotifier = await getValueNotifierNoted(
+      noteId,
+      isUpdateCache: true,
+    );
+
+    if(noteNotifier != null){
+      ChuChuNavigator.pushPage(context, (context) => FeedInfoPage(isShowReply: true, notedUIModel: noteNotifier));
+    }
+  }
+
+  static Future<NotedUIModel?> getValueNotifierNoted(
+      String noteId,
+      {
+        bool isUpdateCache = false,
+        String? rootRelay,
+        String? replyRelay,
+        List<String>? setRelay,
+        NotedUIModel? notedUIModel,
+      }) async {
+    Map<String, NoteDBISAR> notesCache = Feed.sharedInstance.notesCache;
+    NoteDBISAR? noteNotifier = notesCache[noteId];
+
+    if(!isUpdateCache && noteNotifier != null){
+      return NotedUIModel(noteDB: noteNotifier);
+    }
+
+    List<String>? relaysList = setRelay;
+    if(relaysList == null){
+      String? relayStr = (notedUIModel?.noteDB.replyRelay ?? replyRelay) ?? (notedUIModel?.noteDB.rootRelay ?? rootRelay);
+      relaysList = relayStr != null ? [relayStr] : null;
+    }
+
+    NoteDBISAR? note = await Feed.sharedInstance.loadNoteWithNoteId(noteId, relays: relaysList);
+    if(note == null) return null;
+
+    return NotedUIModel(noteDB: note);
   }
 
   Widget _buildNotificationTypeIcon(AggregatedNotification notification) {
@@ -381,13 +476,17 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     }
 
     return Container(
-      width: 32.px,
-      height: 32.px,
+      width: 36.px,
+      height: 36.px,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
+        border: Border.all(
+          color: color.withValues(alpha: 0.2),
+          width: 1.px,
+        ),
       ),
-      child: Icon(icon, size: 16.px, color: color),
+      child: Icon(icon, size: 18.px, color: color),
     );
   }
 
@@ -408,25 +507,6 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     }
   }
 
-  String _formatTime(int? timestamp) {
-    if (timestamp == null) return '';
-
-    final now = DateTime.now();
-    final time = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-    final difference = now.difference(time);
-
-    if (difference.inMinutes < 1) {
-      return 'Just now';
-    } else if (difference.inMinutes < 60) {
-      return '${difference.inMinutes}m ago';
-    } else if (difference.inHours < 24) {
-      return '${difference.inHours}h ago';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays}d ago';
-    } else {
-      return '${time.day}/${time.month}/${time.year}';
-    }
-  }
 
   Future<UserDBISAR?> _getUserInfo(String pubkey) async {
     try {
