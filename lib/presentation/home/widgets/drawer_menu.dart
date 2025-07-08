@@ -11,7 +11,9 @@ import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/nostr_dart/src/nips/nip_019.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
+import '../../backup/pages/backup_page.dart';
 import '../../drawerMenu/follows/pages/follows_pages.dart';
+import '../../feed/pages/feed_personal_page.dart';
 import '../../relay/pages/relay_pages.dart';
 
 class DrawerMenu extends StatefulWidget {
@@ -30,6 +32,114 @@ class _DrawerMenuState extends State<DrawerMenu>
     String pubkey = userInfo.pubKey;
     String nupKey = Nip19.encodePubkey(pubkey);
     return '${nupKey.substring(0, 8)}:${nupKey.substring(nupKey.length - 8)}';
+  }
+
+  void _showLogoutConfirmDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          title: Row(
+            children: [
+              Icon(
+                Icons.logout,
+                color: theme.colorScheme.error,
+                size: 24,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Confirm Logout',
+                style: theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ],
+          ),
+          content: Text(
+            'Are you sure you want to logout? You will need to re-enter your credentials to access your account.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop();
+              },
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              ),
+              child: Text(
+                'Cancel',
+                style: TextStyle(
+                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            ElevatedButton(
+              onPressed: () async {
+                Navigator.of(dialogContext).pop();
+                await _performLogout();
+              },
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.error,
+                foregroundColor: theme.colorScheme.onError,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(8),
+                ),
+              ),
+              child: const Text(
+                'Logout',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _performLogout() async {
+    try {
+      bool? status = await ChuChuCacheManager
+          .defaultOXCacheManager
+          .saveForeverData(
+            StorageKeyTool.CHUCHU_USER_PUBKEY,
+            '',
+          );
+
+      if (status) {
+        await ChuChuUserInfoManager.sharedInstance
+            .logout(needObserver: true);
+        widget.onProfileTap?.call();
+        if (mounted) {
+          ChuChuNavigator.pushReplacement(
+            context,
+            const LoginPage(),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Logout failed. Please try again.'),
+            backgroundColor: Theme.of(context).colorScheme.error,
+          ),
+        );
+      }
+    }
   }
 
   @override
@@ -51,7 +161,13 @@ class _DrawerMenuState extends State<DrawerMenu>
             Row(
               children: [
                 ValueListenableBuilder<UserDBISAR>(
-                  valueListenable: Account.sharedInstance.getUserNotifier(ChuChuUserInfoManager.sharedInstance.currentUserInfo?.pubKey ?? ''),
+                  valueListenable: Account.sharedInstance.getUserNotifier(
+                    ChuChuUserInfoManager
+                            .sharedInstance
+                            .currentUserInfo
+                            ?.pubKey ??
+                        '',
+                  ),
                   builder: (context, user, child) {
                     final avatarSize = 40;
                     return FeedWidgetsUtils.clipImage(
@@ -60,8 +176,11 @@ class _DrawerMenuState extends State<DrawerMenu>
                       child: ChuChuCachedNetworkImage(
                         imageUrl: user.picture ?? '',
                         fit: BoxFit.cover,
-                        placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-                        errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+                        placeholder:
+                            (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                        errorWidget:
+                            (_, __, ___) =>
+                                FeedWidgetsUtils.badgePlaceholderImage(),
                         width: avatarSize.px,
                         height: avatarSize.px,
                       ),
@@ -89,23 +208,14 @@ class _DrawerMenuState extends State<DrawerMenu>
                             style: TextStyle(
                               fontWeight: FontWeight.normal,
                               fontSize: 12,
-                              color: theme.colorScheme.onBackground.withOpacity(0.6),
+                              color: theme.colorScheme.onBackground.withOpacity(
+                                0.6,
+                              ),
                             ),
                           ),
-                          const SizedBox(
-                            height: 12,
-                          ),
+                          const SizedBox(height: 12),
                           GestureDetector(
-                            onTap: ()async{
-                            bool? status = await ChuChuCacheManager.defaultOXCacheManager.saveForeverData(StorageKeyTool.CHUCHU_USER_PUBKEY,'');
-
-                            if(status){
-                              await ChuChuUserInfoManager.sharedInstance.logout(needObserver: true);
-                              widget.onProfileTap?.call();
-                              ChuChuNavigator.pushReplacement(context,  const LoginPage());
-                            }
-
-                            },
+                            onTap: () => _showLogoutConfirmDialog(context),
                             child: Icon(Icons.logout, size: 18),
                           ),
                         ],
@@ -116,19 +226,49 @@ class _DrawerMenuState extends State<DrawerMenu>
               ],
             ),
             const SizedBox(height: 20),
-            _menuItem(context, Icons.person_outline, "Profile", onTap: widget.onProfileTap),
-            _menuItem(context, Icons.link, "Relays",onTap: () {
-              widget.onProfileTap?.call();
-              ChuChuNavigator.pushPage(context, (context) => RelaysPage());
-            }),
-            _menuItem(context, Icons.list_alt, "Follows",onTap: () {
-              widget.onProfileTap?.call();
-              ChuChuNavigator.pushPage(context, (context) => FollowsPages());
-            }),
+            _menuItem(
+              context,
+              Icons.person_outline,
+              "My Posts",
+              onTap: () {
+                widget.onProfileTap?.call();
+                ChuChuNavigator.pushPage(
+                  context,
+                      (context) => FeedPersonalPage(
+                    userPubkey: Account.sharedInstance.currentPubkey ?? '',
+                  ),
+                );
+              }
+            ),
+            _menuItem(
+              context,
+              Icons.link,
+              "Relays",
+              onTap: () {
+                widget.onProfileTap?.call();
+                ChuChuNavigator.pushPage(context, (context) => RelaysPage());
+              },
+            ),
+            _menuItem(
+              context,
+              Icons.list_alt,
+              "Follows",
+              onTap: () {
+                widget.onProfileTap?.call();
+                ChuChuNavigator.pushPage(context, (context) => FollowsPages());
+              },
+            ),
 
-            const SizedBox(height: 30),
             Divider(color: theme.dividerColor.withAlpha(50)),
-            _menuItem(context, Icons.settings_outlined, "Settings"),
+            _menuItem(
+              context, 
+              Icons.lock_outline, 
+              "Back Up",
+              onTap: () {
+                widget.onProfileTap?.call();
+                ChuChuNavigator.pushPage(context, (context) => const BackupPage());
+              },
+            ),
           ],
         ),
       ),
@@ -169,7 +309,10 @@ class _DrawerMenuState extends State<DrawerMenu>
                 ),
                 child: Text(
                   tag,
-                  style: TextStyle(fontSize: 10, color: Theme.of(context).colorScheme.primary),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
                 ),
               ),
           ],
