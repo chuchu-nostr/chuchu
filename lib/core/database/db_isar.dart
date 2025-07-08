@@ -9,7 +9,6 @@ import '../account/model/userDB_isar.dart';
 import '../account/model/zapRecordsDB_isar.dart';
 import '../account/model/zapsDB_isar.dart';
 import '../config/configDB_isar.dart';
-import '../contacts/model/secretSessionDB_isar.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../feed/model/notificationDB_isar.dart';
 import '../messages/model/messageDB_isar.dart';
@@ -34,7 +33,6 @@ class DBISAR {
     RelayDBISARSchema,
     ZapRecordsDBISARSchema,
     ZapsDBISARSchema,
-    SecretSessionDBISARSchema,
     GroupDBISARSchema,
     NoteDBISARSchema,
     NotificationDBISARSchema,

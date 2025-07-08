@@ -25,26 +25,36 @@ class RelayCommendWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
           width: double.infinity,
-          height: Adapt.px(58),
+          padding: EdgeInsets.symmetric(vertical: 16.px),
           alignment: Alignment.centerLeft,
           child: Text(
             'Recommend relay',
             style: TextStyle(
-              color: Colors.black,
-              fontSize: Adapt.px(16),
+              color: theme.colorScheme.onSurface,
+              fontSize: 16.px,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
             ),
           ),
         ),
         Container(
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(Adapt.px(16)),
-            color: Colors.white,
+            borderRadius: BorderRadius.circular(16.px),
+            color: theme.colorScheme.surface,
+            boxShadow: [
+              BoxShadow(
+                color: theme.shadowColor.withValues(alpha: 0.05),
+                blurRadius: 8.px,
+                offset: Offset(0, 2.px),
+              ),
+            ],
           ),
           child: ListView.builder(
             physics: const NeverScrollableScrollPhysics(),
@@ -59,6 +69,7 @@ class RelayCommendWidget extends StatelessWidget {
   }
 
   Widget _itemBuild(BuildContext context, int index) {
+    final theme = Theme.of(context);
     RelayRecommendModule _model = commendRelayList[index];
     final controller = PingInheritedWidget.of(context)?.controller ?? PingLifecycleController();
     final host = _model.relayDB.url.split('//').last;
@@ -72,54 +83,63 @@ class RelayCommendWidget extends StatelessWidget {
           },
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.symmetric(horizontal: 12.px, vertical: 10.px),
+            padding: EdgeInsets.symmetric(horizontal: 20.px, vertical: 16.px),
             child: Row(
               children: [
                 Expanded(child:
                 Row(
                   children: [
-                    Icon(
-                      Icons.settings,
-                      size: Adapt.px(32),
-                      color: Colors.black,
+                    Container(
+                      padding: EdgeInsets.all(8.px),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.secondary.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12.px),
+                      ),
+                      child: Icon(
+                        Icons.settings,
+                        size: 24.px,
+                        color: theme.colorScheme.secondary,
+                      ),
                     ),
                     Container(
-                      margin: EdgeInsets.symmetric(horizontal: 12.px),
+                      margin: EdgeInsets.symmetric(horizontal: 16.px),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
                             _model.relayDB.url,
                             style: TextStyle(
-                              color: Colors.black,
-                              fontSize: Adapt.px(16),
+                              color: theme.colorScheme.onSurface,
+                              fontSize: 16.px,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           PingDelayTimeWidget(
                             host: host,
                             controller: controller,
-                          ).setPaddingOnly(top: 4.px)
+                          ).setPaddingOnly(top: 6.px)
                         ],
                       ),
                     ),
                   ],
                 ),),
-                _relayStateImage(_model),
+                _relayStateImage(context,_model),
               ],
             ),
           ),
         ),
-        // commendRelayList.length > 1 && commendRelayList.length - 1 != index
-        //     ? Divider(
-        //   height: Adapt.px(0.5),
-        //   color: Colors.black,
-        // )
-        //     : SizedBox(width: Adapt.px(24)),
+        commendRelayList.length > 1 && commendRelayList.length - 1 != index
+            ? Divider(
+          height: 1.px,
+          color: theme.dividerColor.withValues(alpha: 0.1),
+        )
+            : Container(),
       ],
     );
   }
 
-  Widget _relayStateImage(RelayRecommendModule relayModel) {
+  Widget _relayStateImage(context,RelayRecommendModule relayModel) {
+    final theme = Theme.of(context);
     return relayModel.isAddedCommend
         ? const SizedBox()
         : GestureDetector(
@@ -127,10 +147,17 @@ class RelayCommendWidget extends StatelessWidget {
       onTap: () {
         onTapCall(relayModel.relayDB);
       },
-      child: Icon(
-        Icons.add,
-        size: Adapt.px(24),
-        color: Colors.black,
+      child: Container(
+        padding: EdgeInsets.all(8.px),
+        decoration: BoxDecoration(
+          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8.px),
+        ),
+        child: Icon(
+          Icons.add,
+          size: 20.px,
+          color: theme.colorScheme.primary,
+        ),
       ),
     );
   }

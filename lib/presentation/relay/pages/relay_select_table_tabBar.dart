@@ -42,28 +42,45 @@ class _RelaySelectTableTabBarState extends State<RelaySelectTableTabBar>
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     final tabs = widget.tabs;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        TabBar(
-          isScrollable: true,
-          controller: _tabController,
-          overlayColor: MaterialStateProperty.all(Colors.transparent),
-          labelPadding: EdgeInsets.only(right: 12.px),
-          labelColor: Colors.black,
-          unselectedLabelColor: Colors.grey,
-          indicator: const UnderlineTabIndicator(
-            borderSide: BorderSide(width: 0),
+        Container(
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(16.px),
+            boxShadow: [
+              BoxShadow(
+                color: theme.shadowColor.withValues(alpha: 0.05),
+                blurRadius: 8.px,
+                offset: Offset(0, 2.px),
+              ),
+            ],
           ),
-          tabs: [
-            for (int index = 0; index < tabs.length; index++)
-              _buildTabItem(tabs[index], index),
-          ],
+          child: TabBar(
+            isScrollable: true,
+            controller: _tabController,
+            overlayColor: MaterialStateProperty.all(Colors.transparent),
+            labelPadding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 8.px),
+            labelColor: theme.colorScheme.onPrimary,
+            unselectedLabelColor: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+            indicator: BoxDecoration(
+              borderRadius: BorderRadius.circular(12.px),
+              color: theme.colorScheme.primary,
+            ),
+            indicatorSize: TabBarIndicatorSize.tab,
+            dividerColor: Colors.transparent,
+            tabs: [
+              for (int index = 0; index < tabs.length; index++)
+                _buildTabItem(tabs[index], index),
+            ],
+          ),
         ),
         if (widget.tabTips != null)
-          _buildTabTips().setPaddingOnly(top: 10.px)
+          _buildTabTips().setPaddingOnly(top: 16.px)
       ],
     );
   }
@@ -71,7 +88,7 @@ class _RelaySelectTableTabBarState extends State<RelaySelectTableTabBar>
   Widget _buildTabItem(String tab, int index) {
     return Container(
       alignment: Alignment.center,
-      padding: EdgeInsets.symmetric(horizontal: 24.px, vertical: 10.px),
+      padding: EdgeInsets.symmetric(horizontal: 20.px, vertical: 12.px),
       child: Text(
         tab,
         style: TextStyle(
@@ -83,13 +100,26 @@ class _RelaySelectTableTabBarState extends State<RelaySelectTableTabBar>
   }
 
   Widget _buildTabTips() {
+    final theme = Theme.of(context);
     final tips = widget.tabTips?[_currentIndex] ?? '';
-    return Text(
-      tips,
-      style: TextStyle(
-        fontSize: 12.px,
-        fontWeight: FontWeight.w400,
-        color: Colors.black,
+    return Container(
+      padding: EdgeInsets.all(16.px),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.primary.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12.px),
+        border: Border.all(
+          color: theme.colorScheme.primary.withValues(alpha: 0.1),
+          width: 1.px,
+        ),
+      ),
+      child: Text(
+        tips,
+        style: TextStyle(
+          fontSize: 13.px,
+          fontWeight: FontWeight.w400,
+          color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
+          height: 1.4,
+        ),
       ),
     );
   }

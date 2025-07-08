@@ -15,13 +15,7 @@ import '../network/connect.dart';
 import '../network/eventCache.dart';
 import '../nostr_dart/nostr.dart';
 import '../utils/log_utils.dart';
-import 'model/secretSessionDB_isar.dart';
 
-typedef SecretChatRequestCallBack = void Function(SecretSessionDBISAR);
-typedef SecretChatAcceptCallBack = void Function(SecretSessionDBISAR);
-typedef SecretChatRejectCallBack = void Function(SecretSessionDBISAR);
-typedef SecretChatUpdateCallBack = void Function(SecretSessionDBISAR);
-typedef SecretChatCloseCallBack = void Function(SecretSessionDBISAR);
 typedef ContactUpdatedCallBack = void Function();
 typedef OfflinePrivateMessageFinishCallBack = void Function();
 
@@ -53,7 +47,6 @@ class Contacts {
   String pubkey = '';
   String privkey = '';
   Map<String, UserDBISAR> allContacts = {};
-  Map<String, SecretSessionDBISAR> secretSessionMap = {};
   String secretSessionSubscription = '';
   String friendMessageSubscription = '';
   int lastFriendListUpdateTime = 0;
@@ -63,11 +56,6 @@ class Contacts {
   int offset2 = 24 * 60 * 60 * 3;
 
   /// callbacks
-  SecretChatRequestCallBack? secretChatRequestCallBack;
-  SecretChatAcceptCallBack? secretChatAcceptCallBack;
-  SecretChatRejectCallBack? secretChatRejectCallBack;
-  SecretChatUpdateCallBack? secretChatUpdateCallBack;
-  SecretChatCloseCallBack? secretChatCloseCallBack;
   ContactUpdatedCallBack? contactUpdatedCallBack;
   OfflinePrivateMessageFinishCallBack? offlinePrivateMessageFinishCallBack;
   OfflinePrivateMessageFinishCallBack? offlineSecretMessageFinishCallBack;

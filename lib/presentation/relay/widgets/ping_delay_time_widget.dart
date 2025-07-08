@@ -80,7 +80,7 @@ class _PingDelayTimeWidgetState extends State<PingDelayTimeWidget> {
 
   Color _getPingDelayColor(int pingDelay) {
     if (pingDelay <= 0) {
-      return Colors.white;
+      return Colors.grey;
     } else if (pingDelay <= 300) {
       return Colors.green;
     } else if (pingDelay <= 500) {
@@ -93,13 +93,25 @@ class _PingDelayTimeWidgetState extends State<PingDelayTimeWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     String text = _delayTime > 0 ? '${_delayTime.toString()}ms' : '--';
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 14.px,
-        fontWeight: FontWeight.w400,
-        color: _getPingDelayColor(_delayTime),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 4.px),
+      decoration: BoxDecoration(
+        color: _getPingDelayColor(_delayTime).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6.px),
+        border: Border.all(
+          color: _getPingDelayColor(_delayTime).withValues(alpha: 0.2),
+          width: 1.px,
+        ),
+      ),
+      child: Text(
+        text,
+        style: TextStyle(
+          fontSize: 12.px,
+          fontWeight: FontWeight.w500,
+          color: _getPingDelayColor(_delayTime),
+        ),
       ),
     );
   }
