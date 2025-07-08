@@ -729,7 +729,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                         child: Container(
                           margin: EdgeInsets.symmetric(vertical: 4.px),
                           width: 1.0,
-                          color: Theme.of(context).dividerColor.withOpacity(0.5),
+                          color: Theme.of(context).dividerColor.withOpacity(0.3),
                         ),
                       ),
                   ],
