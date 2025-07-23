@@ -100,6 +100,7 @@ class _ModeSelectorState extends State<ModeSelector> with SingleTickerProviderSt
             children: [
               Expanded(
                 child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
                   onTap: () {
                     if (!widget.isLoginMode) {
                       widget.onModeChanged(true);
@@ -121,6 +122,7 @@ class _ModeSelectorState extends State<ModeSelector> with SingleTickerProviderSt
               ),
               Expanded(
                 child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
                   onTap: () {
                     if (widget.isLoginMode) {
                       widget.onModeChanged(false);

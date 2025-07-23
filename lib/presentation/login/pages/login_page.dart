@@ -62,12 +62,28 @@ class _LoginPageState extends State<LoginPage> {
 
                     SizedBox(height: 51),
 
-                    // Conditional content based on mode
-                    if (_isLoginMode) ...[
-                      LoginForm(),
-                    ] else ...[
-                      RegisterForm(),
-                    ],
+                    // Conditional content based on mode with animation
+                    AnimatedSwitcher(
+                      duration: Duration(milliseconds: 300),
+                      transitionBuilder: (Widget child, Animation<double> animation) {
+                        return SlideTransition(
+                          position: Tween<Offset>(
+                            begin: Offset(0.3, 0.0),
+                            end: Offset.zero,
+                          ).animate(CurvedAnimation(
+                            parent: animation,
+                            curve: Curves.easeInOut,
+                          )),
+                          child: FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          ),
+                        );
+                      },
+                      child: _isLoginMode 
+                        ? LoginForm(key: ValueKey('login'))
+                        : RegisterForm(key: ValueKey('register')),
+                    ),
                   ],
                 ),
                 
