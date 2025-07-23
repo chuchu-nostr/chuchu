@@ -73,7 +73,7 @@ class _SplashPageState extends State<SplashPage>
           child: ScaleTransition(
             scale: _scale,
             child: Image.asset(
-              'assets/images/logo.png',
+              'assets/images/logo_text_primary.png',
               width: 300,
               fit: BoxFit.contain,
             ),
