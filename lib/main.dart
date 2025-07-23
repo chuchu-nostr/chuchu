@@ -102,7 +102,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
       navigatorKey: ChuChuNavigator.navigatorKey,
       title: 'ChuChu',
       theme: lightTheme,
-      darkTheme: darkTheme,
+      darkTheme: lightTheme,
       themeMode: ThemeMode.light,
       home: const SplashPage(),
       onGenerateRoute: (settings) {
