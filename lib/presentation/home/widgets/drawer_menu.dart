@@ -34,114 +34,6 @@ class _DrawerMenuState extends State<DrawerMenu>
     return '${nupKey.substring(0, 8)}:${nupKey.substring(nupKey.length - 8)}';
   }
 
-  void _showLogoutConfirmDialog(BuildContext context) {
-    final theme = Theme.of(context);
-    
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.logout,
-                color: theme.colorScheme.error,
-                size: 24,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Confirm Logout',
-                style: theme.textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-          content: Text(
-            'Are you sure you want to logout? You will need to re-enter your credentials to access your account.',
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(dialogContext).pop();
-              },
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-              ),
-              child: Text(
-                'Cancel',
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ),
-            const SizedBox(width: 8),
-            ElevatedButton(
-              onPressed: () async {
-                Navigator.of(dialogContext).pop();
-                await _performLogout();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.error,
-                foregroundColor: theme.colorScheme.onError,
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-              ),
-              child: const Text(
-                'Logout',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  Future<void> _performLogout() async {
-    try {
-      bool? status = await ChuChuCacheManager
-          .defaultOXCacheManager
-          .saveForeverData(
-            StorageKeyTool.CHUCHU_USER_PUBKEY,
-            '',
-          );
-
-      if (status) {
-        await ChuChuUserInfoManager.sharedInstance
-            .logout(needObserver: true);
-        widget.onProfileTap?.call();
-        if (mounted) {
-          ChuChuNavigator.pushReplacement(
-            context,
-            const LoginPage(),
-          );
-        }
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Logout failed. Please try again.'),
-            backgroundColor: Theme.of(context).colorScheme.error,
-          ),
-        );
-      }
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     String? nikName =
@@ -215,7 +107,24 @@ class _DrawerMenuState extends State<DrawerMenu>
                           ),
                           const SizedBox(height: 12),
                           GestureDetector(
-                            onTap: () => _showLogoutConfirmDialog(context),
+                            onTap: () async {
+                              bool? status = await ChuChuCacheManager
+                                  .defaultOXCacheManager
+                                  .saveForeverData(
+                                    StorageKeyTool.CHUCHU_USER_PUBKEY,
+                                    '',
+                                  );
+
+                              if (status) {
+                                await ChuChuUserInfoManager.sharedInstance
+                                    .logout(needObserver: true);
+                                widget.onProfileTap?.call();
+                                ChuChuNavigator.pushReplacement(
+                                  context,
+                                  const LoginPage(),
+                                );
+                              }
+                            },
                             child: Icon(Icons.logout, size: 18),
                           ),
                         ],

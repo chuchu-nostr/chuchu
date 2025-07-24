@@ -14,9 +14,6 @@ import '../../feed/pages/feed_page.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
-import 'search_page.dart';
-import 'messages_page.dart';
-import 'profile_page.dart';
 
 
 enum BottomNavItem {
@@ -101,6 +98,38 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     await _controller.reverse();
   }
 
+  void _showProfileDrawer() {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: '',
+      barrierColor: Colors.black54,
+      transitionDuration: Duration(milliseconds: 300),
+      pageBuilder: (context, animation1, animation2) {
+        return Container();
+      },
+      transitionBuilder: (context, animation1, animation2, child) {
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).animate(CurvedAnimation(
+            parent: animation1,
+            curve: Curves.easeInOut,
+          )),
+          child: Align(
+            alignment: Alignment.centerRight,
+            child: Container(
+              width: MediaQuery.of(context).size.width * 0.8,
+              height: MediaQuery.of(context).size.height,
+              child: DrawerMenu(onProfileTap: _onProfileTap),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -115,155 +144,158 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final theme = Theme.of(context);
     final drawerWidth = MediaQuery.of(context).size.width * maxSlide;
     return Scaffold(
-      body: GestureDetector(
-        onHorizontalDragUpdate: (details) {
-          double delta = details.primaryDelta! / drawerWidth;
-          _controller.value += delta;
-        },
-        onHorizontalDragEnd: (details) {
-          if (_controller.value >= 0.5) {
-            open();
-          } else {
-            close();
-          }
-        },
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, _) {
-            final slide = drawerWidth * _controller.value;
-            final menuSlide = -drawerWidth * (1 - _controller.value);
+      appBar: _buildAppBar(context),
+      body: _buildCurrentPage(),
+      bottomNavigationBar: _buildBottomNavigationBar(),
+    );
+  }
 
-            return Stack(
-              children: [
-                Transform.translate(
-                  offset: Offset(menuSlide, 0),
-                  child: SizedBox(
-                    width: drawerWidth,
-                    child: DrawerMenu(onProfileTap: _onProfileTap),
-                  ),
-                ),
-                Transform.translate(
-                  offset: Offset(slide, 0),
-                  child: Stack(
-                    children: [
-                      AbsorbPointer(
-                        absorbing: isOpen,
-                        child: Container(
-                          decoration: BoxDecoration(
-                            boxShadow: [
-                              if (_controller.value > 0)
-                                BoxShadow(
-                                  color: theme.shadowColor.withValues(
-                                    alpha: 0.15 * _controller.value,
-                                  ),
-                                  blurRadius: 16,
-                                ),
-                            ],
-                          ),
-                          child: Scaffold(
-                            appBar: AppBar(
-                              backgroundColor:
-                              theme.colorScheme.surface,
-                              foregroundColor:
-                              theme.colorScheme.primary,
-                              elevation: _isScrolled ? 4 : 0,
-                              surfaceTintColor: Colors.transparent,
-                              leadingWidth: 164.px,
-                              leading: GestureDetector(
-                                onTap: toggle,
-                                child: CommonImage(
-                                  iconName: 'logo_text_primary.png',
-                                  width: 140,
-                                ),
-                              ).setPaddingOnly(left: 18.px),
-                              bottom: PreferredSize(
-                                preferredSize: Size.fromHeight(12.px),
-                                child: const SizedBox(),
-                              ),
-                              actions: [
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 200),
-                                  child: Stack(
-                                    key: ValueKey(_isScrolled),
-                                    children: [
-                                      GestureDetector(
-                                        onTap: (){
-                                          setState(() {
-                                            _hasNotifications = false;
-                                          });
-                                          ChuChuNavigator.pushPage(
-                                            context,
-                                                (context) =>
-                                                FeedNotificationsPage(),
-                                          );
-                                        },
-                                        child: CommonImage(
-                                          iconName: 'notification.png',
-                                          size: 24,
-                                        ),
-                                      ).setPaddingOnly(right: 12.0),
-                                      if (_hasNotifications)
-                                        Positioned(
-                                          right: 8,
-                                          top: 8,
-                                          child: Container(
-                                            width: 12,
-                                            height: 12,
-                                            decoration: BoxDecoration(
-                                              color: Colors.red,
-                                              shape: BoxShape.circle,
-                                              border: Border.all(
-                                                color:
-                                                    _isScrolled
-                                                        ? theme
-                                                            .colorScheme
-                                                            .primary
-                                                        : theme
-                                                            .colorScheme
-                                                            .surface,
-                                                width: 2,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                              systemOverlayStyle:
-                                  _isScrolled
-                                      ? SystemUiOverlayStyle.light
-                                      : SystemUiOverlayStyle.dark,
-                            ),
-                            body: _buildCurrentPage(),
-                            bottomNavigationBar: _buildBottomNavigationBar(),
+  PreferredSizeWidget? _buildAppBar(BuildContext context) {
+    final theme = Theme.of(context);
+    
+    switch (_currentTab) {
+      case BottomNavItem.home:
+        return AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          foregroundColor: theme.colorScheme.primary,
+          elevation: _isScrolled ? 4 : 0,
+          surfaceTintColor: Colors.transparent,
+          leadingWidth: 164.px,
+          leading: GestureDetector(
+            onTap: toggle,
+            child: CommonImage(
+              iconName: 'logo_text_primary.png',
+              width: 140,
+            ),
+          ).setPaddingOnly(left: 18.px),
+          bottom: PreferredSize(
+            preferredSize: Size.fromHeight(12.px),
+            child: const SizedBox(),
+          ),
+          actions: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Stack(
+                key: ValueKey(_isScrolled),
+                children: [
+                  GestureDetector(
+                    onTap: (){
+                      setState(() {
+                        _hasNotifications = false;
+                      });
+                      ChuChuNavigator.pushPage(
+                        context,
+                        (context) => FeedNotificationsPage(),
+                      );
+                    },
+                    child: CommonImage(
+                      iconName: 'notification.png',
+                      size: 24,
+                    ),
+                  ).setPaddingOnly(right: 12.0),
+                  if (_hasNotifications)
+                    Positioned(
+                      right: 8,
+                      top: 8,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: _isScrolled
+                                ? theme.colorScheme.primary
+                                : theme.colorScheme.surface,
+                            width: 2,
                           ),
                         ),
                       ),
-                      if (_controller.value > 0)
-                        Positioned.fill(
-                          child: IgnorePointer(
-                            ignoring: !isOpen,
-                            child: Opacity(
-                              opacity: 0.5 * _controller.value,
-                              child: GestureDetector(
-                                onTap: close,
-                                child: Container(
-                                  color: theme.colorScheme.scrim,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                    ],
-                  ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+          systemOverlayStyle: SystemUiOverlayStyle.dark,
+        );
+        
+      case BottomNavItem.search:
+        return null;
+        
+      case BottomNavItem.messages:
+        return AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 0,
+          title: Text(
+            'Messages',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
+              onPressed: () {
+                // Handle new message
+              },
+            ),
+          ],
+        );
+        
+      case BottomNavItem.profile:
+        return AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 0,
+          title: Text(
+            'Profile',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          actions: [
+            IconButton(
+              icon: Icon(Icons.settings, color: theme.colorScheme.onSurface),
+              onPressed: () {
+                // Handle settings
+              },
+            ),
+          ],
+        );
+        
+      case BottomNavItem.add:
+        return AppBar(
+          backgroundColor: theme.colorScheme.surface,
+          elevation: 0,
+          title: Text(
+            'Create Post',
+            style: theme.textTheme.headlineMedium?.copyWith(
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          leading: IconButton(
+            icon: Icon(Icons.close, color: theme.colorScheme.onSurface),
+            onPressed: () {
+              setState(() {
+                _currentTab = BottomNavItem.home;
+              });
+            },
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Handle post creation
+              },
+              child: Text(
+                'Post',
+                style: TextStyle(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
                 ),
-              ],
-            );
-          },
-        ),
-      ),
-    );
+              ),
+            ),
+          ],
+        );
+    }
   }
 
   Widget _buildBottomNavigationBar() {
@@ -322,7 +354,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
 
   Widget _buildTabItem(BottomNavItem item) {
-    final bool isSelected = _currentTab == item;
+    final bool isSelected = _currentTab == item && item != BottomNavItem.profile;
     final theme = Theme.of(context);
 
     Widget iconWidget;
@@ -338,7 +370,14 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
 
     return GestureDetector(
-      onTap: () => setState(() => _currentTab = item),
+      onTap: () {
+        if (item == BottomNavItem.profile) {
+          // Show drawer menu from right side for profile tab
+          _showProfileDrawer();
+        } else {
+          setState(() => _currentTab = item);
+        }
+      },
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
         decoration: BoxDecoration(
@@ -358,18 +397,16 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
     Widget _buildCurrentPage() {
-    switch (_currentTab) {
-      case BottomNavItem.home:
-        return FeedPage(scrollController: _scrollController);
-      case BottomNavItem.search:
-        return FollowsPages();
-      case BottomNavItem.messages:
-        return FollowsPages();
-      case BottomNavItem.profile:
-        return FollowsPages();
-      case BottomNavItem.add:
-        return CreateFeedPage();
-    }
+    return IndexedStack(
+      index: _currentTab.index,
+      children: [
+        FeedPage(scrollController: _scrollController),
+        FollowsPages(),
+        FollowsPages(),
+        Container(), // Placeholder for profile - will show drawer instead
+        CreateFeedPage(),
+      ],
+    );
   }
 
   Widget _buildAddButton() {
