@@ -92,7 +92,7 @@ class _FeedRichTextWidgetState extends State<FeedRichTextWidget>
             maxLines: widget.maxLines,
             TextSpan(
               style: TextStyle(
-                color: widget.defaultTextColor ?? Colors.black,
+                color: widget.defaultTextColor ?? Theme.of(context).colorScheme.onSurface,
                 fontSize: widget.textSize ?? 18.px,
               ),
               children: textSpans,

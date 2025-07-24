@@ -1,5 +1,6 @@
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
@@ -305,22 +306,28 @@ class _FeedWidgetState extends State<FeedWidget> {
                   Text(
                     user.name ?? '--',
                     style: TextStyle(
-                      color: Colors.black,
+                      color:Theme.of(context).colorScheme.onSurface,
                       fontSize: 18.px,
                       fontWeight: FontWeight.w500,
                     ),
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Text(
-                    FeedUtils.getUserMomentInfo(user, model.createAtStr)[2],
-                    style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16.px,
-                      fontWeight: FontWeight.w400,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
+                  Row(
+                    children: [
+                      Text(
+                        FeedUtils.getUserMomentInfo(user, model.createAtStr)[2],
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.outline,
+                          fontSize: 16.px,
+                          fontWeight: FontWeight.w400,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      CommonImage(iconName: 'more_icon.png',size: 24,).setPaddingOnly(left: 13.0),
+                    ],
                   ),
+
                   // _checkIsPrivate(),
                 ],
               ),
@@ -328,7 +335,7 @@ class _FeedWidgetState extends State<FeedWidget> {
             Text(
               FeedUtils.getUserMomentInfo(user, model.createAtStr)[1],
               style: TextStyle(
-                color: Colors.black,
+                color: Theme.of(context).colorScheme.outline,
                 fontSize: 16.px,
                 fontWeight: FontWeight.w400,
               ),

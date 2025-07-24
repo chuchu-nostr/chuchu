@@ -1,4 +1,5 @@
 import 'package:chuchu/core/feed/feed+send.dart';
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/feed/feed.dart';
@@ -71,11 +72,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
                 onTap: _onBookmarkTap,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8.0),
-                  child: Icon(
-                    _bookmarkTag ? Icons.bookmark : Icons.bookmark_border,
-                    size: 20,
-                    color: _bookmarkTag ? Theme.of(context).colorScheme.primary : Colors.black54,
-                  ),
+                  child: CommonImage(iconName: 'bookmark_icon.png',size: 24,),
                 ),
               ),
             ),
@@ -201,11 +198,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
         children: [
           Padding(
             padding: const EdgeInsets.only(right: 4.0),
-            child: Icon(
-              _mapIconData(type, isSelect),
-              size: 18,
-              color: textColors,
-            ),
+            child: CommonImage(iconName: _mapIconData(type, isSelect),  size: 24,),
           ),
           Text(
             content,
@@ -246,14 +239,14 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
     }
   }
 
-  IconData _mapIconData(EFeedOptionType type, bool isSelect) {
+  String _mapIconData(EFeedOptionType type, bool isSelect) {
     switch (type) {
       case EFeedOptionType.reply:
-        return isSelect ? Icons.chat_bubble : Icons.chat_bubble_outline;
+        return isSelect ? EFeedOptionType.reply.getSelectIconName : EFeedOptionType.reply.getIconName;
       case EFeedOptionType.like:
-        return isSelect ? Icons.favorite : Icons.favorite_border;
+        return isSelect ? EFeedOptionType.like.getSelectIconName : EFeedOptionType.like.getIconName;
       case EFeedOptionType.zaps:
-        return isSelect ? Icons.bolt : Icons.bolt_outlined;
+        return isSelect ? EFeedOptionType.zaps.getSelectIconName : EFeedOptionType.zaps.getIconName;
     }
   }
 }

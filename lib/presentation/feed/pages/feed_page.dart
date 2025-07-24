@@ -133,6 +133,7 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
         return RepaintBoundary(
           key: ValueKey('feed_$index'),
           child: FeedWidget(
+            feedWidgetLayout: EFeedWidgetLayout.fullScreen,
             isShowReplyWidget: true,
             notedUIModel: notedUIModel,
             clickMomentCallback: (NotedUIModel? notedUIModel) async {

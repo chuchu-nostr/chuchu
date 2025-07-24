@@ -5,6 +5,10 @@ const Color kPrimaryBlue = Color(0xFF4EACE9);
 const Color kSecondaryBlue = Color(0xFF0071CE);
 const Color kBgWhite = Color(0xFFFFFFFF);
 
+/// ✏️ Text colors
+const Color kTextPrimary = Color(0xFF323232); // Main text (black-ish)
+const Color kTextSecondary = Color(0xFF707070); // Secondary text (gray)
+const Color kTextTertiary = Color(0xFF979797); // Tertiary text (light gray)
 
 final ColorScheme lightScheme = ColorScheme(
   brightness: Brightness.light,
@@ -25,14 +29,14 @@ final ColorScheme lightScheme = ColorScheme(
   onError: Colors.white,
 
   background: kBgWhite,
-  onBackground: Color(0xFF1F1F1F),
+  onBackground: kTextPrimary,
 
   surface: Colors.white,
-  onSurface: Color(0xFF1F1F1F),
+  onSurface: kTextPrimary,
   surfaceVariant: Color(0xFFF4F4F4),
-  onSurfaceVariant: Color(0xFF444444),
+  onSurfaceVariant: kTextSecondary,
 
-  outline: Color(0xFFB0B0B0),
+  outline: kTextTertiary,
 );
 
 /// 📱 ThemeData
@@ -41,6 +45,23 @@ final ThemeData lightTheme = ThemeData(
   colorScheme: lightScheme,
   fontFamily: 'Poppins',
   scaffoldBackgroundColor: kBgWhite,
+  textTheme: TextTheme(
+    displayLarge: TextStyle(color: kTextPrimary),
+    displayMedium: TextStyle(color: kTextPrimary),
+    displaySmall: TextStyle(color: kTextPrimary),
+    headlineLarge: TextStyle(color: kTextPrimary),
+    headlineMedium: TextStyle(color: kTextPrimary),
+    headlineSmall: TextStyle(color: kTextPrimary),
+    titleLarge: TextStyle(color: kTextPrimary),
+    titleMedium: TextStyle(color: kTextPrimary),
+    titleSmall: TextStyle(color: kTextPrimary),
+    bodyLarge: TextStyle(color: kTextSecondary),
+    bodyMedium: TextStyle(color: kTextSecondary),
+    bodySmall: TextStyle(color: kTextTertiary),
+    labelLarge: TextStyle(color: kTextSecondary),
+    labelMedium: TextStyle(color: kTextTertiary),
+    labelSmall: TextStyle(color: kTextTertiary),
+  ),
   appBarTheme: const AppBarTheme(
     backgroundColor: kBgWhite,
     foregroundColor: kSecondaryBlue,

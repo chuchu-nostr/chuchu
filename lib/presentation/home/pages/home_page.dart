@@ -123,24 +123,17 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                           child: Scaffold(
                             appBar: AppBar(
                               backgroundColor:
-                                  _isScrolled
-                                      ? theme.colorScheme.primary
-                                      : theme.colorScheme.surface,
+                              theme.colorScheme.surface,
                               foregroundColor:
-                                  _isScrolled
-                                      ? theme.colorScheme.onPrimary
-                                      : theme.colorScheme.primary,
+                              theme.colorScheme.primary,
                               elevation: _isScrolled ? 4 : 0,
                               surfaceTintColor: Colors.transparent,
-                              leadingWidth: 144.px,
+                              leadingWidth: 164.px,
                               leading: GestureDetector(
                                 onTap: toggle,
                                 child: CommonImage(
-                                  iconName:
-                                      _isScrolled
-                                          ? 'logo_text_white.png'
-                                          : 'logo_text_primary.png',
-                                  width: 120,
+                                  iconName: 'logo_text_primary.png',
+                                  width: 140,
                                 ),
                               ).setPaddingOnly(left: 18.px),
                               bottom: PreferredSize(
@@ -153,25 +146,22 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                                   child: Stack(
                                     key: ValueKey(_isScrolled),
                                     children: [
-                                      IconButton(
-                                        icon: Icon(
-                                          Icons.notifications_outlined,
-                                          color:
-                                              _isScrolled
-                                                  ? theme.colorScheme.onPrimary
-                                                  : theme.colorScheme.onSurface,
-                                        ),
-                                        onPressed: () {
+                                      GestureDetector(
+                                        onTap: (){
                                           setState(() {
                                             _hasNotifications = false;
                                           });
                                           ChuChuNavigator.pushPage(
                                             context,
-                                            (context) =>
+                                                (context) =>
                                                 FeedNotificationsPage(),
                                           );
                                         },
-                                      ),
+                                        child: CommonImage(
+                                          iconName: 'notification.png',
+                                          size: 24,
+                                        ),
+                                      ).setPaddingOnly(right: 12.0),
                                       if (_hasNotifications)
                                         Positioned(
                                           right: 8,
