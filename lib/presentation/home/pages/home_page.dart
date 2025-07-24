@@ -193,25 +193,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       size: 24,
                     ),
                   ).setPaddingOnly(right: 12.0),
-                  if (_hasNotifications)
-                    Positioned(
-                      right: 8,
-                      top: 8,
-                      child: Container(
-                        width: 12,
-                        height: 12,
-                        decoration: BoxDecoration(
-                          color: Colors.red,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: _isScrolled
-                                ? theme.colorScheme.primary
-                                : theme.colorScheme.surface,
-                            width: 2,
-                          ),
-                        ),
-                      ),
-                    ),
                 ],
               ),
             ),

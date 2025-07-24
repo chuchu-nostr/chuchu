@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/nostr_dart/src/ok.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/enum/feed_enum.dart';
 import '../../../data/models/feed_extension_model.dart';
@@ -188,7 +189,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   }) {
     final content =
         clickNum == null || clickNum == 0 ? '' : clickNum.toString();
-    Color textColors = isSelect ? Color(0xFFA84F4F) : Colors.black54;
+    Color textColors = isSelect ? Color(0xFFA84F4F) : kIconState;
     return GestureDetector(
       onLongPress: onLongPress,
       behavior: HitTestBehavior.translucent,
@@ -203,8 +204,8 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
           Text(
             content,
             style: TextStyle(
-              color: textColors,
-              fontSize: 12,
+              color: kIconState,
+              fontSize: 18,
               fontWeight: FontWeight.w400,
             ),
           ),

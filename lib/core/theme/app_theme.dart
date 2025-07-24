@@ -10,6 +10,8 @@ const Color kTextPrimary = Color(0xFF323232); // Main text (black-ish)
 const Color kTextSecondary = Color(0xFF707070); // Secondary text (gray)
 const Color kTextTertiary = Color(0xFF979797); // Tertiary text (light gray)
 
+const Color kIconState = Color(0xFF8A96A3); // Icon default state color
+
 final ColorScheme lightScheme = ColorScheme(
   brightness: Brightness.light,
   primary: kPrimaryBlue,

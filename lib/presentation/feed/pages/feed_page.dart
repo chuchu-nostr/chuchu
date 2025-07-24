@@ -25,14 +25,18 @@ import 'feed_info_page.dart';
 
 class FeedPage extends StatefulWidget {
   final ScrollController? scrollController;
-  
+
   const FeedPage({super.key, this.scrollController});
 
   @override
   State<FeedPage> createState() => _FeedPageState();
 }
 
-class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin, ChuChuUserInfoObserver, ChuChuFeedObserver{
+class _FeedPageState extends State<FeedPage>
+    with
+        SingleTickerProviderStateMixin,
+        ChuChuUserInfoObserver,
+        ChuChuFeedObserver {
   List<NotedUIModel?> notesList = [];
   final int _limit = 1000;
   int? _allNotesFromDBLastTimestamp;
@@ -43,8 +47,12 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   bool _isInitialLoading = true;
   List<UserDBISAR> _showNotedToUserList = [];
   int _newNotesCount = 0;
-  
+
   ThemeData? _cachedTheme;
+
+  double avatarSize = 62;
+  double storyItemWidth = 72;
+
 
   @override
   void initState() {
@@ -54,18 +62,17 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
     _initData();
   }
 
-  void _initData(){
+  void _initData() {
     Future.delayed(Duration(milliseconds: 5000), () {
       updateNotesList(true);
     });
   }
 
-
-  void _resetData(){
+  void _resetData() {
     notesList = [];
     _allNotesFromDBLastTimestamp = null;
     _newNotesCount = 0;
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }
@@ -73,12 +80,12 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   @override
   Widget build(BuildContext context) {
     _cachedTheme ??= Theme.of(context);
-    
+
     return SafeArea(
       child: Column(
         children: [
-          if (notesList.isNotEmpty && _showNotedToUserList.isNotEmpty) 
-            _buildTopStoriesSection(),
+          // if (notesList.isNotEmpty && _showNotedToUserList.isNotEmpty)
+          _buildTopStoriesSection(),
           Expanded(
             child: ChuChuSmartRefresher(
               scrollController: widget.scrollController ?? feedScrollController,
@@ -99,9 +106,9 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
     if (_isInitialLoading) {
       return ListView.builder(
         itemCount: 8,
-        itemBuilder: (context, index) => RepaintBoundary(
-          child: const FeedSkeletonWidget(),
-        ),
+        itemBuilder:
+            (context, index) =>
+                RepaintBoundary(child: const FeedSkeletonWidget()),
       );
     }
 
@@ -111,10 +118,7 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
           children: [
             SizedBox(height: 100),
             CommonImage(iconName: 'no_feed.png', size: 350),
-            Text(
-              'No Content',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
+            Text('No Content', style: Theme.of(context).textTheme.titleLarge),
           ],
         ),
       );
@@ -149,88 +153,122 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildTopStoriesSection() {
-    return RepaintBoundary(
-      child: GestureDetector(
-        behavior: HitTestBehavior.translucent,
-        onTap: _handleNewNotesClick,
-        child: Container(
-          width: double.infinity,
-          height: 121,
-          padding: EdgeInsets.symmetric(vertical: 16),
-          margin: EdgeInsets.only(bottom: 12.0),
-          decoration: BoxDecoration(
-            border: Border(
-              bottom: BorderSide(
-                color: Theme.of(context).dividerColor.withAlpha(80),
-                width: 0.5,
-              ),
-            ),
-          ),
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: 16
+      ),
+      margin: EdgeInsets.only(
+        bottom: 10
+      ),
+      decoration: BoxDecoration(
+        border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor.withAlpha(80), width: 0.5)),
+      ),
+      child: RepaintBoundary(
+        child: SizedBox(
+          height: 106,
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _showNotedToUserList.length,
-            cacheExtent: 500,
-            addRepaintBoundaries: true,
+            itemCount: _showNotedToUserList.length + 2,
             itemBuilder: (context, index) {
-              return RepaintBoundary(
-                key: ValueKey('story_${_showNotedToUserList[index].pubKey}'),
-                child: _buildNewNotesIndicator(index),
-              );
+              if (index == 0) {
+
+                return _buildStoryItem(
+                  name: "You",
+                  imageUrl: ChuChuUserInfoManager.sharedInstance.currentUserInfo?.picture ?? '',
+                  isCurrentUser: true,
+                  hasUnread: false,
+                  marginRight: 12,
+                );
+              } else if (index == _showNotedToUserList.length + 1) {
+
+                return _buildAddStoryItem();
+              } else {
+                final user = _showNotedToUserList[index - 1];
+                return _buildStoryItem(
+                  name: user.name ?? '',
+                  imageUrl: user.picture ?? '',
+                  isCurrentUser: false,
+                  hasUnread: true,
+                  marginRight: 12,
+                );
+              }
             },
           ),
         ),
       ),
     );
   }
+  Widget _buildAddStoryItem() {
+    return _buildStoryItem(
+      name: "Add",
+      imageUrl: "",
+      isCurrentUser: false,
+      hasUnread: false,
+      marginRight: 12,
+      storyCount: 0,
+      isAddButton: true,
+    );
+  }
 
 
-
-  Widget _buildNewNotesIndicator(int index) {
+  Widget _buildStoryItem({
+    required String name,
+    required String imageUrl,
+    required bool isCurrentUser,
+    required bool hasUnread,
+    double marginRight = 0,
+    int storyCount = 3,
+    bool isAddButton = false,
+  }) {
     final theme = Theme.of(context);
-    
+    final hasStory = hasUnread && storyCount > 0;
+
     return Container(
-      width: 80,
-      margin: EdgeInsets.only(right: 12),
+      width: storyItemWidth,
+      margin: EdgeInsets.only(right: marginRight),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Stack(
-            children: [
-              _buildAvatarWidget(imageUrl:  _showNotedToUserList[index].picture ?? ''),
-              if (_newNotesCount > 0)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.white, width: 2),
-                    ),
-                    constraints: BoxConstraints(minWidth: 20, minHeight: 20),
-                    child: Text(
-                      _newNotesCount > 99 ? '99+' : _newNotesCount.toString(),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
+          SizedBox(
+            width: avatarSize,
+            height: avatarSize,
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (hasStory)
+                  Positioned.fill(
+                    child: CustomPaint(
+                      painter: SegmentedCirclePainter(
+                        segmentCount: storyCount,
+                        color: Colors.blueAccent,
+                        strokeWidth: 1.5,
                       ),
-                      textAlign: TextAlign.center,
                     ),
                   ),
-                ),
-            ],
-          ),
-          SizedBox(height: 8),
-          Text(
-            _showNotedToUserList[index].name ?? '',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: Colors.black,
-              fontWeight: FontWeight.bold,
+                isAddButton
+                    ? Container(
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.grey[300],
+                  ),
+                  width: avatarSize,
+                  height: avatarSize,
+                  child: const Icon(Icons.add, size: 28, color: Colors.black87),
+                )
+                    : _buildAvatar(imageUrl),
+              ],
             ),
-            maxLines: 1,
+          ),
+          const SizedBox(height: 6),
+          Text(
+            name,
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontSize: 18,
+            ),
             overflow: TextOverflow.ellipsis,
+            maxLines: 1,
             textAlign: TextAlign.center,
           ),
         ],
@@ -238,41 +276,93 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
     );
   }
 
-  Widget _buildAvatarWidget({String? imageUrl}) {
-    return RepaintBoundary(
-      child: GestureDetector(
-        onTap: () {},
-        child: FeedWidgetsUtils.clipImage(
-          borderRadius: 64.px,
-          imageSize: 64.px,
-          child:             ChuChuCachedNetworkImage(
-              imageUrl: imageUrl ?? '',
+
+
+
+  Color _getBackgroundColor(String name) {
+    switch (name.toLowerCase()) {
+      case 'you':
+        return Colors.lightBlue[100]!;
+      case 'saaik_':
+        return Colors.pink[100]!;
+      case 'leeesove...':
+        return Colors.lightBlue[100]!;
+      case 'saika_ka...':
+        return Colors.grey[100]!;
+      case 'honk':
+        return Colors.lightBlue[100]!;
+      default:
+        return Colors.grey[100]!;
+    }
+  }
+
+  Widget debugPainterPreview() {
+    return Center(
+      child: CustomPaint(
+        painter: SegmentedCirclePainter(
+          segmentCount: 5,
+          strokeWidth: 4,
+          color: Colors.orange,
+          gapAngle: 8,
+        ),
+        size: Size(80, 80),
+        child: Container(
+          width: 80,
+          height: 80,
+          alignment: Alignment.center,
+          child: ClipOval(
+            child: Image.asset(
+              'assets/images/icon_user_default.png',
+              width: 64,
+              height: 64,
               fit: BoxFit.cover,
-              placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-              errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-              width: 64.px,
-              height: 64.px,
             ),
+          ),
         ),
       ),
     );
   }
 
-  void _handleNewNotesClick() {
-    _showNotedToUserList = [];
-    _newNotesCount = 0;
-    setState(() {});
 
-    final scrollController = widget.scrollController ?? feedScrollController;
-    scrollController.animateTo(
-      0,
-      duration: Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
-
-    updateNotesList(true);
+  Widget _buildAvatarWidget(String imageUrl) {
+    return imageUrl.isNotEmpty
+        ? ChuChuCachedNetworkImage(
+            imageUrl: imageUrl,
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+            placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+            errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+          )
+        : Image.asset(
+            'assets/images/icon_user_default.png',
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+          );
   }
 
+  Widget _buildAvatar(String imageUrl) {
+    final avatarSize = 62.0;
+
+    return ClipOval(
+      child: SizedBox(
+        width: avatarSize,
+        height: avatarSize,
+        child: imageUrl.isNotEmpty
+            ? ChuChuCachedNetworkImage(
+          imageUrl: imageUrl,
+          fit: BoxFit.cover,
+          placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+          errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+        )
+            : Image.asset(
+          'assets/images/icon_user_default.png',
+          fit: BoxFit.cover,
+        ),
+      ),
+    );
+  }
 
   @override
   void dispose() {
@@ -371,10 +461,10 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   void _updateUI(List<NoteDBISAR> showList, bool isInit, int fetchedCount) {
     Future.microtask(() {
       if (!mounted) return;
-      
+
       final List<NotedUIModel?> list =
           showList.map((item) => NotedUIModel(noteDB: item)).toList();
-      
+
       if (isInit) {
         notesList = list;
       } else {
@@ -413,7 +503,8 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
 
     try {
       final List<UserDBISAR> users = await FeedUtils.getUserList(
-          notes.map((e) => e.author).toSet().toList());
+        notes.map((e) => e.author).toSet().toList(),
+      );
 
       if (mounted) {
         Future.microtask(() {
@@ -435,7 +526,6 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
     // tipContainerHeight.value = tipsHeight;
   }
 
-
   @override
   void didLoginSuccess(UserDBISAR? userInfo) {
     // TODO: implement didLoginSuccess
@@ -452,4 +542,43 @@ class _FeedPageState extends State<FeedPage> with SingleTickerProviderStateMixin
   void didSwitchUser(UserDBISAR? userInfo) {
     // TODO: implement didSwitchUser
   }
+}
+
+class SegmentedCirclePainter extends CustomPainter {
+  final int segmentCount;
+  final double strokeWidth;
+  final Color color;
+  final double gapAngle;
+
+  SegmentedCirclePainter({
+    required this.segmentCount,
+    this.strokeWidth = 1.5,
+    this.color = Colors.blue,
+    this.gapAngle = 6,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final Paint paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke
+      ..strokeCap = StrokeCap.round;
+
+    final double radius = size.width / 2 - strokeWidth / 2;
+    final Offset center = Offset(size.width / 2, size.height / 2);
+    final Rect rect = Rect.fromCircle(center: center, radius: radius);
+
+    final double sweep = (360 - gapAngle * segmentCount) / segmentCount;
+
+    for (int i = 0; i < segmentCount; i++) {
+      final startAngle = radians(i * (sweep + gapAngle));
+      canvas.drawArc(rect, startAngle, radians(sweep), false, paint);
+    }
+  }
+
+  double radians(double degree) => degree * 3.1415926535 / 180;
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }
