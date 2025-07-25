@@ -34,7 +34,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
   }
 

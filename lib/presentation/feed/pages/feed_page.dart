@@ -1,5 +1,4 @@
 import 'package:chuchu/core/account/model/userDB_isar.dart';
-import 'package:chuchu/core/utils/adapt.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chuchu/core/feed/feed+load.dart';
@@ -516,7 +515,7 @@ class _FeedPageState extends State<FeedPage>
         });
       }
     } catch (e) {
-      print('Error updating notification notes: $e');
+      debugPrint('Error updating notification notes: $e');
     }
   }
 
@@ -528,19 +527,17 @@ class _FeedPageState extends State<FeedPage>
 
   @override
   void didLoginSuccess(UserDBISAR? userInfo) {
-    // TODO: implement didLoginSuccess
     _initData();
   }
 
   @override
   void didLogout() {
-    // TODO: implement didLogout
     _resetData();
   }
 
   @override
   void didSwitchUser(UserDBISAR? userInfo) {
-    // TODO: implement didSwitchUser
+    // Implementation will be added later
   }
 }
 

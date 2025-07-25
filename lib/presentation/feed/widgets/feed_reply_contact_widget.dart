@@ -23,7 +23,6 @@ class _FeedReplyContactWidgetState extends State<FeedReplyContactWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getMomentUser();
   }
