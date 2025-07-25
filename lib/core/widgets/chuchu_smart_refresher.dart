@@ -1,6 +1,5 @@
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:flutter/material.dart' hide RefreshIndicator, RefreshIndicatorState;
-import 'package:lottie/lottie.dart';
 
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -299,15 +298,18 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
 
   @override
   void onModeChange(RefreshStatus? mode) {
-    // TODO: implement onModeChange
     if (mode == RefreshStatus.canRefresh) {
       _controller.repeat();
-    }else if(mode == RefreshStatus.completed){
+    } else if (mode == RefreshStatus.refreshing) {
+      _controller.repeat();
+    } else if (mode == RefreshStatus.completed) {
+      _controller.stop();
       ChuChuCacheManager.defaultOXCacheManager.saveData("pull_refresh_time", DateTime.now().millisecondsSinceEpoch);
       setState(() {
         refreshTime = DateTime.now().millisecondsSinceEpoch;
       });
-
+    } else {
+      _controller.stop();
     }
     super.onModeChange(mode);
   }
@@ -335,25 +337,71 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
 
   @override
   Widget buildContent(BuildContext context, RefreshStatus mode) {
-    // TODO: implement buildContent
+    final theme = Theme.of(context);
+    
     return Column(
       children: [
-        Lottie.asset(
-          "assets/chuchu_pull_loading.json",
+        SizedBox(
           width: 72.px,
-          repeat: true,
-          fit: BoxFit.fitWidth,
-          controller: _controller,
-          onLoaded: (composition) {
-            _controller.duration ??= composition.duration;
-          },
+          height: 72.px,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: _controller.value * 2 * 3.14159,
+                    child: Container(
+                      width: 72.px,
+                      height: 72.px,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.colorScheme.primary.withOpacity(0.3),
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return Transform.rotate(
+                    angle: -_controller.value * 2 * 3.14159,
+                    child: Container(
+                      width: 48.px,
+                      height: 48.px,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.colorScheme.primary,
+                          width: 3,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              Container(
+                width: 8.px,
+                height: 8.px,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+            ],
+          ),
         ),
         Container(
           margin: EdgeInsets.only(top: 4.px),
           child: Text(
             _getRefreshTimeString(),
             style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+              color: theme.colorScheme.onSurface.withOpacity(0.6),
               fontSize: 12.px,
             ),
           ),

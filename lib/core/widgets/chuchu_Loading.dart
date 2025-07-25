@@ -62,7 +62,6 @@ class ChuChuLoading extends State<StatefulWidget> with TickerProviderStateMixin 
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     throw UnimplementedError();
   }
 }
