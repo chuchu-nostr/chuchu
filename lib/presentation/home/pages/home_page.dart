@@ -141,12 +141,19 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final drawerWidth = MediaQuery.of(context).size.width * maxSlide;
     return Scaffold(
       appBar: _buildAppBar(context),
-      body: _buildCurrentPage(),
-      bottomNavigationBar: _buildBottomNavigationBar(),
+
+      body: Stack(
+        children: [
+          _buildCurrentPage(),
+
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: _buildBottomNavigationBar(context),
+          ),
+        ],
+      ),
     );
   }
 
@@ -279,31 +286,42 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     }
   }
 
-  Widget _buildBottomNavigationBar() {
-    final theme = Theme.of(context);
+  Widget _buildBottomNavigationBar(BuildContext context) {
+    final theme       = Theme.of(context);
     final bottomInset = MediaQuery.of(context).padding.bottom;
-    const gap = 10.0;
+
+    const double barHeight  = 66;
+    const double floatGap   = 24;
+    const double sideMargin = 0;
 
     return Padding(
-      padding: EdgeInsets.only(bottom: bottomInset + gap),
+      padding: EdgeInsets.only(
+        left   : sideMargin,
+        right  : sideMargin,
+        bottom : bottomInset + floatGap,
+      ),
       child: ClipRRect(
+        borderRadius: BorderRadius.circular(22),
         child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          filter: ImageFilter.blur(sigmaX: 22, sigmaY: 22),
           child: Container(
-            height: 66,
-            decoration: _glassDecoration(theme),
+            height: barHeight,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.surface.withOpacity(0.20),
+              borderRadius: BorderRadius.circular(22),
+              border: Border.all(
+                color: Colors.white.withOpacity(0.25),
+                width: 0.8,
+              ),
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                for (final item in [
-                  BottomNavItem.home,
-                  BottomNavItem.search,
-                ]) _buildTabItem(item),
+                for (final item in [BottomNavItem.home, BottomNavItem.search])
+                  _buildTabItem(item),
                 _buildAddButton(),
-                for (final item in [
-                  BottomNavItem.messages,
-                  BottomNavItem.profile,
-                ]) _buildTabItem(item),
+                for (final item in [BottomNavItem.messages, BottomNavItem.profile])
+                  _buildTabItem(item),
               ],
             ),
           ),
@@ -311,26 +329,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       ),
     );
   }
-
-  BoxDecoration _glassDecoration(ThemeData theme) => BoxDecoration(
-    gradient: LinearGradient(
-      begin: Alignment.centerLeft,
-      end: Alignment.centerRight,
-      colors: [
-        theme.colorScheme.primary.withOpacity(0.25),
-        Colors.white.withOpacity(0.80),
-        Colors.white.withOpacity(0.60),
-      ],
-      stops: const [0.0, 0.55, 1.0],
-    ),
-    border: Border(
-      top: BorderSide(
-        color: Colors.white.withOpacity(0.30),
-        width: 0.5,
-      ),
-    ),
-  );
-
 
 
 
