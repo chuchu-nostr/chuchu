@@ -120,7 +120,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           child: Align(
             alignment: Alignment.centerRight,
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.8,
+              width: MediaQuery.of(context).size.width * 0.6,
               height: MediaQuery.of(context).size.height,
               child: DrawerMenu(onProfileTap: _onProfileTap),
             ),

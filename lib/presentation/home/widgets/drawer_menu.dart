@@ -31,7 +31,7 @@ class _DrawerMenuState extends State<DrawerMenu>
     if (userInfo == null) return '--';
     String pubkey = userInfo.pubKey;
     String nupKey = Nip19.encodePubkey(pubkey);
-    return '${nupKey.substring(0, 8)}:${nupKey.substring(nupKey.length - 8)}';
+    return '${nupKey.substring(0, 6)}:${nupKey.substring(nupKey.length - 6)}';
   }
 
   @override
@@ -205,7 +205,7 @@ class _DrawerMenuState extends State<DrawerMenu>
               style: TextStyle(
                 fontWeight: bold ? FontWeight.bold : FontWeight.normal,
                 fontSize: 16,
-                color: Theme.of(context).textTheme.bodyLarge?.color,
+                color: Theme.of(context).colorScheme.onSurface,
               ),
             ),
             if (tag != null)
