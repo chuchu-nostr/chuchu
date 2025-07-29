@@ -81,20 +81,10 @@ class FollowsPagesState extends State<FollowsPages> {
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
-        leadingWidth: 50.px,
+        leadingWidth: 25.px,
         titleSpacing: 0,
-        leading: GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onTap: () => Navigator.pop(context),
-          child: Container(
-            alignment: Alignment.centerLeft,
-            padding: EdgeInsets.only(left: 24.px),
-            child: Icon(
-              Icons.arrow_back_ios,
-              size: 20,
-              color: theme.colorScheme.onSurface,
-            ),
-          ),
+        leading: SizedBox(
+          width: 25,
         ),
         title: _buildSearchBar(theme),
         actions: [SizedBox(width: Adapt.px(24))],

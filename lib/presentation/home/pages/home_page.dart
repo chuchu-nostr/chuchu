@@ -94,9 +94,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   void close() => _controller.reverse();
   void toggle() => isOpen ? close() : open();
 
-  Future<void> _onProfileTap() async {
-    await _controller.reverse();
-  }
+
 
   void _showProfileDrawer() {
     showGeneralDialog(
@@ -122,7 +120,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child: Container(
               width: MediaQuery.of(context).size.width * 0.6,
               height: MediaQuery.of(context).size.height,
-              child: DrawerMenu(onProfileTap: _onProfileTap),
+              child: DrawerMenu(),
             ),
           ),
         );

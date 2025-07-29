@@ -12,13 +12,12 @@ import '../../../core/nostr_dart/src/nips/nip_019.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../backup/pages/backup_page.dart';
-import '../../drawerMenu/follows/pages/follows_pages.dart';
 import '../../feed/pages/feed_personal_page.dart';
 import '../../relay/pages/relay_pages.dart';
+import '../../search/pages/search_page.dart';
 
 class DrawerMenu extends StatefulWidget {
-  final Future<void> Function()? onProfileTap;
-  const DrawerMenu({this.onProfileTap, super.key});
+  const DrawerMenu({super.key});
 
   @override
   State createState() => _DrawerMenuState();
@@ -118,7 +117,6 @@ class _DrawerMenuState extends State<DrawerMenu>
                               if (status) {
                                 await ChuChuUserInfoManager.sharedInstance
                                     .logout(needObserver: true);
-                                widget.onProfileTap?.call();
                                 ChuChuNavigator.pushReplacement(
                                   context,
                                   const LoginPage(),
@@ -140,7 +138,7 @@ class _DrawerMenuState extends State<DrawerMenu>
               Icons.person_outline,
               "My Posts",
               onTap: () {
-                widget.onProfileTap?.call();
+                Navigator.of(context).pop(); // Close drawer first
                 ChuChuNavigator.pushPage(
                   context,
                       (context) => FeedPersonalPage(
@@ -154,17 +152,17 @@ class _DrawerMenuState extends State<DrawerMenu>
               Icons.link,
               "Relays",
               onTap: () {
-                widget.onProfileTap?.call();
+                Navigator.of(context).pop(); // Close drawer first
                 ChuChuNavigator.pushPage(context, (context) => RelaysPage());
               },
             ),
             _menuItem(
               context,
-              Icons.list_alt,
-              "Follows",
+              Icons.search,
+              "Search",
               onTap: () {
-                widget.onProfileTap?.call();
-                ChuChuNavigator.pushPage(context, (context) => FollowsPages());
+                Navigator.of(context).pop(); // Close drawer first
+                ChuChuNavigator.pushPage(context, (context) => SearchPage());
               },
             ),
 
@@ -174,7 +172,7 @@ class _DrawerMenuState extends State<DrawerMenu>
               Icons.lock_outline, 
               "Back Up",
               onTap: () {
-                widget.onProfileTap?.call();
+                Navigator.of(context).pop(); // Close drawer first
                 ChuChuNavigator.pushPage(context, (context) => const BackupPage());
               },
             ),
