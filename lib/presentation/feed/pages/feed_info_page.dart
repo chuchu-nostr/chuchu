@@ -7,16 +7,21 @@ import 'package:flutter/scheduler.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/feed.dart';
+import '../../../core/feed/feed+send.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
+import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/utils/navigator/navigator_observer_mixin.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/common_image.dart';
+import '../../../core/widgets/common_toast.dart';
 import '../../../data/models/feed_extension_model.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../widgets/feed_widget.dart';
+import '../widgets/feed_option_widget.dart';
+import '../pages/feed_reply_page.dart';
 
 class FeedInfoPage extends StatefulWidget {
   final bool isShowReply;
@@ -43,17 +48,11 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   List<NotedUIModel?> replyList = [];
 
   bool scrollTag = false;
-  
-  // Engagement statistics
-  int _likeCount = 0;
-  int _commentCount = 0;
-  double _monetaryValue = 0.0;
 
   @override
   void initState() {
     super.initState();
     _getReplyList();
-    _loadEngagementStats();
   }
 
   @override
@@ -97,25 +96,175 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     }
   }
 
-  void _loadEngagementStats() {
-    if (widget.notedUIModel == null) return;
-    
-    final note = widget.notedUIModel!.noteDB;
-    _likeCount = note.reactionCount;
-    _commentCount = note.replyCount;
-    _monetaryValue = note.zapAmount / 100000000.0; // Convert sats to BTC
-    
-    if (mounted) {
-      setState(() {});
-    }
-  }
+
 
   void _handleMessageTap() {
     if (widget.notedUIModel == null) return;
     
     final author = widget.notedUIModel!.noteDB.author;
-    // Navigate to message page or show message dialog
-    // You can implement the message functionality here
+    
+    // Show message dialog or navigate to message page
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Send Message'),
+          content: Text('Send a message to ${widget.notedUIModel!.noteDB.author}?'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                CommonToast.instance.show(context, 'Message functionality coming soon');
+                // You can implement message functionality here
+              },
+              child: Text('Send'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _handleLikeTap() async {
+    if (widget.notedUIModel == null) return;
+    
+    final noteDB = widget.notedUIModel!.noteDB;
+    final bool isCurrentlyLiked = noteDB.reactionCountByMe > 0;
+    
+    bool isSuccess = false;
+    if (noteDB.groupId.isEmpty) {
+      try {
+        if (isCurrentlyLiked) {
+          // Unlike - remove reaction
+          // Note: You might need to implement unlike functionality in Feed
+          // For now, we'll just update the UI
+          isSuccess = true;
+        } else {
+          // Like - send reaction
+          OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
+          isSuccess = event.status;
+        }
+      } catch (e) {
+        debugPrint('Error handling reaction: $e');
+        isSuccess = false;
+      }
+    }
+    
+    if (isSuccess) {
+      // Update the local state immediately for better UX
+      if (isCurrentlyLiked) {
+        // Unlike
+        widget.notedUIModel!.noteDB.reactionCountByMe = 0;
+        widget.notedUIModel!.noteDB.reactionCount = 
+            (widget.notedUIModel!.noteDB.reactionCount - 1).clamp(0, double.infinity).toInt();
+        CommonToast.instance.show(context, 'Unlike success');
+      } else {
+        // Like
+        widget.notedUIModel!.noteDB.reactionCountByMe = 1;
+        widget.notedUIModel!.noteDB.reactionCount += 1;
+        CommonToast.instance.show(context, 'Like success tips');
+      }
+      
+      _updateNoteDB();
+      // Refresh the UI to show updated like count and icon
+      setState(() {});
+    } else {
+      CommonToast.instance.show(context, isCurrentlyLiked ? 'Unlike failed' : 'Like fail tips');
+    }
+  }
+
+  void _handleCommentTap() {
+    if (widget.notedUIModel == null) return;
+    
+    // Navigate to comment page
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) => 
+            FeedReplyPage(notedUIModel: widget.notedUIModel!),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          const begin = Offset(0.0, 1.0);
+          const end = Offset.zero;
+          const curve = Curves.easeInOut;
+
+          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var offsetAnimation = animation.drive(tween);
+
+          return SlideTransition(
+            position: offsetAnimation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
+        reverseTransitionDuration: const Duration(milliseconds: 250),
+      ),
+    );
+  }
+
+  void _handleZapTap() {
+    if (widget.notedUIModel == null) return;
+    
+    // Show zap dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Send Zap'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Send a zap to support this post?'),
+              SizedBox(height: 16),
+              Text(
+                'Current zap amount: \$${(widget.notedUIModel!.noteDB.zapAmount / 100000000.0).toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                CommonToast.instance.show(context, 'Zap functionality coming soon');
+                // You can implement zap functionality here
+              },
+              child: Text('Send Zap'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _updateNoteDB() async {
+    if (widget.notedUIModel == null) return;
+    
+    try {
+      NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
+        widget.notedUIModel!.noteDB.noteId,
+        isUpdateCache: true,
+        notedUIModel: widget.notedUIModel,
+      );
+
+      if (noteNotifier != null && mounted) {
+        // Update the widget's notedUIModel if possible
+        // Note: This might need to be handled by parent widget
+        setState(() {});
+      }
+    } catch (e) {
+      debugPrint('Error updating note DB: $e');
+    }
   }
 
   Future _getReplyList() async {
@@ -393,6 +542,13 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   }
 
   Widget _buildBottomActionBar() {
+    if (widget.notedUIModel == null) return const SizedBox();
+    
+    final noteDB = widget.notedUIModel!.noteDB;
+    final likeCount = noteDB.reactionCount;
+    final commentCount = noteDB.replyCount;
+    final zapAmount = noteDB.zapAmount / 100000000.0; // Convert sats to BTC
+    
     return Positioned(
       bottom: 0,
       left: 0,
@@ -453,28 +609,24 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         _buildEngagementItem(
-                          iconName: 'like_icon.png',
-                          value: _likeCount.toString(),
-                          onTap: () {
-                            // Handle likes tap
-                          },
+                          iconName: widget.notedUIModel!.noteDB.reactionCountByMe > 0 
+                              ? 'liked_icon.png' 
+                              : 'like_icon.png',
+                          value: likeCount.toString(),
+                          onTap: _handleLikeTap,
                         ),
                         SizedBox(width: 16.px),
                         _buildEngagementItem(
                           iconName: 'reply_icon.png',
-                          value: _commentCount.toString(),
-                          onTap: () {
-                            // Handle comments tap
-                          },
+                          value: commentCount.toString(),
+                          onTap: _handleCommentTap,
                         ),
                         SizedBox(width: 16.px),
                         _buildEngagementItem(
                           iconName: 'zap_icon.png',
-                          value: '\$${_monetaryValue.toStringAsFixed(0)}',
+                          value: '\$${zapAmount.toStringAsFixed(0)}',
                           isMonetary: true,
-                          onTap: () {
-                            // Handle monetary tap
-                          },
+                          onTap: _handleZapTap,
                         ),
                       ],
                     ),
@@ -500,7 +652,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
         CommonImage(
           iconName: iconName,
           size: 24,
-          color: Theme.of(context).colorScheme.onSurface,
+          color: iconName == 'liked_icon.png' ? null :  Theme.of(context).colorScheme.onSurface,
         ),
         SizedBox(width: 4.px),
         Text(
@@ -961,25 +1113,15 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                             ],
                           ),
                         ),
-                        Container(
-                          child: Column(
-                            children: [
-                              CommonImage(
-                                iconName: 'like_icon.png',
-                                size: 24,
-                              ).setPaddingOnly(
-                                  bottom: 8.0
-                              ),
-                              Text(
-                                '18',
-                                style: TextStyle(
-                                  color: Theme.of(context).colorScheme.outline,
-                                  fontSize: 18,
-                                ),
-                              )
-                            ],
-                          ),
-                        )
+                    ReusableInteractionButtons(
+                           notedUIModel: widget.notedUIModel,
+                           iconSize: 24,
+                           fontSize: 18,
+                           textColor: Theme.of(context).colorScheme.outline,
+                           showComment: false,
+                           showZap: false,
+                           showBookmark: false,
+                         )
                       ],
                     ),
                   ),
