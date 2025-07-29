@@ -43,11 +43,17 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   List<NotedUIModel?> replyList = [];
 
   bool scrollTag = false;
+  
+  // Engagement statistics
+  int _likeCount = 0;
+  int _commentCount = 0;
+  double _monetaryValue = 0.0;
 
   @override
   void initState() {
     super.initState();
     _getReplyList();
+    _loadEngagementStats();
   }
 
   @override
@@ -89,6 +95,27 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     if (newReplyNum > replyList.length) {
       _getReplyList();
     }
+  }
+
+  void _loadEngagementStats() {
+    if (widget.notedUIModel == null) return;
+    
+    final note = widget.notedUIModel!.noteDB;
+    _likeCount = note.reactionCount;
+    _commentCount = note.replyCount;
+    _monetaryValue = note.zapAmount / 100000000.0; // Convert sats to BTC
+    
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  void _handleMessageTap() {
+    if (widget.notedUIModel == null) return;
+    
+    final author = widget.notedUIModel!.noteDB.author;
+    // Navigate to message page or show message dialog
+    // You can implement the message functionality here
   }
 
   Future _getReplyList() async {
@@ -152,6 +179,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -161,10 +189,54 @@ class _FeedInfoPageState extends State<FeedInfoPage>
       child: Scaffold(
         backgroundColor: theme.colorScheme.surface,
         appBar: AppBar(
-          title: Text(''),
+          title:  ValueListenableBuilder<UserDBISAR>(
+            valueListenable: Account.sharedInstance.getUserNotifier(widget.notedUIModel!.noteDB.author),
+            builder: (context, value, child) {
+              return RepaintBoundary(
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: (){
+                        // if(notedUIModel != null){
+                        //   ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author,));
+                        // }
+                      },
+                      child: FeedWidgetsUtils.clipImage(
+                        borderRadius: 32,
+                        imageSize: 32,
+                        child: ChuChuCachedNetworkImage(
+                          imageUrl: value.picture ?? '',
+                          fit: BoxFit.cover,
+                          placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                          errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+                          width: 32,
+                          height: 32,
+                        ),
+                      ),
+                    ).setPaddingOnly(right: 12.0),
+                    Text(
+                      value.name ?? '--',
+                      style: TextStyle(
+                        color:Theme.of(context).colorScheme.onSurface,
+                        fontSize: 24.px,
+                        fontWeight: FontWeight.w500,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+          titleTextStyle: TextStyle(
+            color: theme.colorScheme.onSurface,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
           backgroundColor: theme.colorScheme.surface,
           foregroundColor: theme.colorScheme.onSurface,
           elevation: 0,
+          centerTitle: false,
         ),
         body: SizedBox(
           height: double.infinity,
@@ -174,7 +246,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                 controller: _scrollController,
                 child: Container(
                   padding: EdgeInsets.only(
-                    bottom: 100.px,
+                    bottom: 120.px,
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -202,6 +274,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         notedUIModel: widget.notedUIModel,
                         isShowBottomBorder: false,
                         feedWidgetLayout: EFeedWidgetLayout.fullScreen,
+                        isShowOption: false,
                       ).setPadding(EdgeInsets.only(left: 24.0,right: 24.0, top: 8.0)),
                       Container(
                         padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
@@ -214,24 +287,21 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                             ),
                           ),
                         ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.chat_bubble_outline,
-                              size: 18,
-                              color: theme.colorScheme.onSurface,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              'Relevant reply',
-                              style: TextStyle(
-                                color: theme.colorScheme.onSurface,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ],
+                      ),
+                      if(replyList.isNotEmpty)
+                      Container(
+                        padding: EdgeInsets.only(
+                          left: 16,
+                          top: 16,
                         ),
+                        child: Text(
+                          '${replyList.length} comments',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            fontSize: 18,
+                          ),
+                        ),
+
                       ),
                       _showReplyList(),
                       _noDataWidget(),
@@ -243,7 +313,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                 ),
               ),
               _isShowMaskWidget(),
-              // _showSimpleReplyWidget(),
+              _buildBottomActionBar(),
             ],
           ),
         ),
@@ -321,6 +391,138 @@ class _FeedInfoPageState extends State<FeedInfoPage>
       ),
     );
   }
+
+  Widget _buildBottomActionBar() {
+    return Positioned(
+      bottom: 0,
+      left: 0,
+      right: 0,
+      child: Container(
+        padding: EdgeInsets.only(
+          left: 16.px,
+          right: 16.px,
+          top: 12.px,
+          bottom: 50.px,
+        ),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.only(
+            topLeft: Radius.circular(16.px),
+            topRight: Radius.circular(16.px),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 8,
+              offset: Offset(0, -2),
+            ),
+          ],
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 16.px),
+            Row(
+              children: [
+                // Message button
+                GestureDetector(
+                  onTap: _handleMessageTap,
+                  child: Container(
+                    width: 200,
+                    height: 48.px,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(24.px),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Message',
+                        style: TextStyle(
+                          color: Colors.grey.shade700,
+                          fontSize: 16.px,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                SizedBox(width: 16.px),
+                // Engagement stats
+                Expanded(
+                    child:Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        _buildEngagementItem(
+                          iconName: 'like_icon.png',
+                          value: _likeCount.toString(),
+                          onTap: () {
+                            // Handle likes tap
+                          },
+                        ),
+                        SizedBox(width: 16.px),
+                        _buildEngagementItem(
+                          iconName: 'reply_icon.png',
+                          value: _commentCount.toString(),
+                          onTap: () {
+                            // Handle comments tap
+                          },
+                        ),
+                        SizedBox(width: 16.px),
+                        _buildEngagementItem(
+                          iconName: 'zap_icon.png',
+                          value: '\$${_monetaryValue.toStringAsFixed(0)}',
+                          isMonetary: true,
+                          onTap: () {
+                            // Handle monetary tap
+                          },
+                        ),
+                      ],
+                    ),
+                ),
+
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEngagementItem({
+    required String iconName,
+    required String value,
+    bool isMonetary = false,
+    VoidCallback? onTap,
+  }) {
+    Widget content = Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        CommonImage(
+          iconName: iconName,
+          size: 24,
+          color: Theme.of(context).colorScheme.onSurface,
+        ),
+        SizedBox(width: 4.px),
+        Text(
+          value,
+          style: TextStyle(
+            color:Theme.of(context).colorScheme.onSurface,
+            fontSize: 20.px,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ],
+    );
+
+    if (onTap != null) {
+      return GestureDetector(
+        onTap: onTap,
+        child: content,
+      );
+    }
+
+    return content;
+  }
 }
 
 class MomentRootNotedWidget extends StatefulWidget {
@@ -341,7 +543,6 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _dealWithNoted();
   }
@@ -404,7 +605,6 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return _showContentWidget();
   }
 
@@ -479,7 +679,6 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getReplyList(widget.notedUIModel, 0);
   }
@@ -551,17 +750,22 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
 
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Column(
       children: [
         MomentReplyWidget(
           notedUIModel: widget.notedUIModel,
           isShowLink: firstReplyNoted != null,
         ),
-        _firstReplyWidget(),
-        _secondReplyWidget(),
-        _thirdReplyWidget(),
-        _showRepliesWidget(),
+        Container(
+          padding: EdgeInsets.only(left: 50.0),
+          child: Column(
+            children: [_firstReplyWidget(),
+              _secondReplyWidget(),
+              _thirdReplyWidget(),
+              _showRepliesWidget(),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -639,7 +843,6 @@ class MomentReplyWidget extends StatefulWidget {
 class _MomentReplyWidgetState extends State<MomentReplyWidget> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _getMomentUserInfo();
   }
@@ -705,42 +908,80 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                         ),
                       ),
                     ),
-                    if (widget.isShowLink)
-                      Expanded(
-                        child: Container(
-                          margin: EdgeInsets.symmetric(vertical: 4.px),
-                          width: 1.0,
-                          color: Theme.of(context).dividerColor.withOpacity(0.3),
-                        ),
-                      ),
+                    // if (widget.isShowLink)
+                    //   Expanded(
+                    //     child: Container(
+                    //       margin: EdgeInsets.symmetric(vertical: 4.px),
+                    //       width: 1.0,
+                    //       color: Theme.of(context).dividerColor.withOpacity(0.3),
+                    //     ),
+                    //   ),
                   ],
                 ).setPaddingOnly(right: 8.0),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      _momentUserInfoWidget(value),
-                      FeedWidget(
-                        feedWidgetLayout: EFeedWidgetLayout.fullScreen,
-                        isShowAllContent: false,
-                        isShowBottomBorder: false,
-                        isShowReply: false,
-                        notedUIModel: widget.notedUIModel,
-                        isShowUserInfo: false,
-                        clickMomentCallback: (
-                          NotedUIModel? notedUIModel,
-                        ) async {
-                          await ChuChuNavigator.pushPage(
-                            context,
-                            (context) => FeedInfoPage(
-                              notedUIModel: widget.notedUIModel,
-                              isShowReply: false,
-                            ),
-                          );
-                        },
+                  child:  Container(
+                    decoration: BoxDecoration(
+                      border: Border(
+                        bottom: BorderSide(
+                          width: 0.5,
+                          color: Theme.of(context).dividerColor.withOpacity(0.3),
+                        ),
                       ),
-                    ],
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              _momentUserInfoWidget(value),
+                              FeedWidget(
+                                feedWidgetLayout: EFeedWidgetLayout.fullScreen,
+                                isShowAllContent: false,
+                                isShowBottomBorder: false,
+                                isShowReply: false,
+                                notedUIModel: widget.notedUIModel,
+                                isShowUserInfo: false,
+                                isShowOption: false,
+                                isShowSimpleReplyBtn: true,
+                                clickMomentCallback: (
+                                    NotedUIModel? notedUIModel,
+                                    ) async {
+                                  await ChuChuNavigator.pushPage(
+                                    context,
+                                        (context) => FeedInfoPage(
+                                      notedUIModel: widget.notedUIModel,
+                                      isShowReply: false,
+                                    ),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ),
+                        Container(
+                          child: Column(
+                            children: [
+                              CommonImage(
+                                iconName: 'like_icon.png',
+                                size: 24,
+                              ).setPaddingOnly(
+                                  bottom: 8.0
+                              ),
+                              Text(
+                                '18',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.outline,
+                                  fontSize: 18,
+                                ),
+                              )
+                            ],
+                          ),
+                        )
+                      ],
+                    ),
                   ),
                 ),
               ],
@@ -748,7 +989,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           },
         ),
       ),
-    ).setPaddingOnly(left: 18.0,right:18.0);
+    ).setPaddingOnly(left: 18.0,right:18.0,top: 12.0);
   }
 
   Widget _momentUserInfoWidget(UserDBISAR userDB) {
@@ -763,7 +1004,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
               userDB.name ?? '--',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 14.px,
+                fontSize: 18.px,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -776,7 +1017,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           )[0],
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 12.px,
+            fontSize: 16.px,
             fontWeight: FontWeight.w400,
           ),
         ),

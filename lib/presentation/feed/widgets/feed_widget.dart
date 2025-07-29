@@ -19,10 +19,7 @@ import 'feed_rich_text_widget.dart';
 import 'feed_url_widget.dart';
 import 'nine_palace_grid_picture_widget.dart';
 
-enum EFeedWidgetLayout {
-  fullScreen,
-  halfScreen
-}
+enum EFeedWidgetLayout { fullScreen, halfScreen }
 
 class FeedWidget extends StatefulWidget {
   final bool isShowReply;
@@ -32,6 +29,7 @@ class FeedWidget extends StatefulWidget {
   final bool isShowAllContent;
   final bool isShowBottomBorder;
   final bool isShowOption;
+  final bool isShowSimpleReplyBtn;
 
   final Function(NotedUIModel? notedUIModel)? clickMomentCallback;
   final NotedUIModel? notedUIModel;
@@ -48,7 +46,8 @@ class FeedWidget extends StatefulWidget {
     this.isShowReplyWidget = false,
     this.isShowMomentOptionWidget = true,
     this.isShowBottomBorder = true,
-    this.feedWidgetLayout = EFeedWidgetLayout.halfScreen
+    this.feedWidgetLayout = EFeedWidgetLayout.halfScreen,
+    this.isShowSimpleReplyBtn = false,
   });
 
   @override
@@ -65,7 +64,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   static const double _mediaWidthRatio = 0.64;
 
   NotedUIModel? notedUIModel;
-  
+
   ThemeData? _cachedTheme;
   MediaQueryData? _cachedMediaQuery;
 
@@ -79,11 +78,12 @@ class _FeedWidgetState extends State<FeedWidget> {
   Widget build(BuildContext context) {
     _cachedTheme ??= Theme.of(context);
     _cachedMediaQuery ??= MediaQuery.of(context);
-    
+
     return RepaintBoundary(
-      child: widget.feedWidgetLayout == EFeedWidgetLayout.halfScreen 
-          ? _feedHalfItemWidget() 
-          : _feedFullItemWidget(),
+      child:
+          widget.feedWidgetLayout == EFeedWidgetLayout.halfScreen
+              ? _feedHalfItemWidget()
+              : _feedFullItemWidget(),
     );
   }
 
@@ -97,9 +97,17 @@ class _FeedWidgetState extends State<FeedWidget> {
     }
   }
 
-  Border? get _bottomBorder => widget.isShowBottomBorder
-      ? Border(bottom: BorderSide(color: (_cachedTheme ?? Theme.of(context)).dividerColor.withAlpha(80), width: _borderWidth))
-      : null;
+  Border? get _bottomBorder =>
+      widget.isShowBottomBorder
+          ? Border(
+            bottom: BorderSide(
+              color: (_cachedTheme ?? Theme.of(context)).dividerColor.withAlpha(
+                80,
+              ),
+              width: _borderWidth,
+            ),
+          )
+          : null;
 
   Widget _buildFeedContainer({required Widget child, EdgeInsets? padding}) {
     return GestureDetector(
@@ -128,28 +136,66 @@ class _FeedWidgetState extends State<FeedWidget> {
             isShowReplyWidget: widget.isShowReplyWidget,
           ),
         ),
-        if(widget.isShowOption)
-        RepaintBoundary(
-          child: FeedOptionWidget(notedUIModel: notedUIModel).setPaddingOnly(bottom:  _verticalPadding.px),
-        ),
+        if (widget.isShowOption)
+          RepaintBoundary(
+            child: FeedOptionWidget(
+              notedUIModel: notedUIModel,
+            ).setPaddingOnly(bottom: _verticalPadding.px),
+          ),
+        if (widget.isShowSimpleReplyBtn) showSimpleReplyBtnWidget(),
       ],
+    );
+  }
+
+  Widget showSimpleReplyBtnWidget() {
+    String? pubKey = notedUIModel?.noteDB.author;
+    if (pubKey == null) return const SizedBox();
+    UserDBISAR? user = Account.sharedInstance.getUserNotifier(pubKey).value;
+    return Container(
+      padding: EdgeInsets.only(bottom: 12.0),
+      child: Row(
+        children: [
+          Text(
+            FeedUtils.getUserMomentInfo(user, notedUIModel!.createAtStr)[2],
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.outline,
+              fontSize: 16.px,
+              fontWeight: FontWeight.w400,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ).setPaddingOnly(right: 18.0),
+          GestureDetector(
+            onTap: () {},
+            child: Text(
+              'Reply',
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 16,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
   Widget _feedFullItemWidget() {
     if (notedUIModel == null) return const SizedBox();
-    
-    return _buildFeedContainer(
-      child: _buildContentColumn(),
-    );
+
+    return _buildFeedContainer(child: _buildContentColumn());
   }
 
   Widget _buildAvatarWidget({String? imageUrl}) {
     return RepaintBoundary(
       child: GestureDetector(
-        onTap: (){
-          if(notedUIModel != null){
-            ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author,));
+        onTap: () {
+          if (notedUIModel != null) {
+            ChuChuNavigator.pushPage(
+              context,
+              (context) =>
+                  FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author),
+            );
           }
         },
         child: FeedWidgetsUtils.clipImage(
@@ -159,7 +205,8 @@ class _FeedWidgetState extends State<FeedWidget> {
             imageUrl: imageUrl ?? '',
             fit: BoxFit.cover,
             placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-            errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+            errorWidget:
+                (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
             width: _avatarSize.px,
             height: _avatarSize.px,
           ),
@@ -169,16 +216,18 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildAvatarColumn() {
-    if(notedUIModel == null) return const SizedBox();
+    if (notedUIModel == null) return const SizedBox();
     return RepaintBoundary(
       child: Padding(
         padding: const EdgeInsets.only(right: _rightPadding),
         child: Column(
           children: [
             ValueListenableBuilder<UserDBISAR>(
-              valueListenable: Account.sharedInstance.getUserNotifier(notedUIModel!.noteDB.author),
+              valueListenable: Account.sharedInstance.getUserNotifier(
+                notedUIModel!.noteDB.author,
+              ),
               builder: (context, user, child) {
-                return _buildAvatarWidget(imageUrl:user.picture);
+                return _buildAvatarWidget(imageUrl: user.picture);
               },
             ),
             if (widget.isShowAllContent)
@@ -197,7 +246,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   Widget _feedHalfItemWidget() {
     if (notedUIModel == null) return const SizedBox();
-    
+
     return _buildFeedContainer(
       child: IntrinsicHeight(
         child: Row(
@@ -211,18 +260,30 @@ class _FeedWidgetState extends State<FeedWidget> {
     );
   }
 
-  Widget _buildContentItem(String content, NotedUIModel model, List<String> nddrlList) {
+  Widget _buildContentItem(
+    String content,
+    NotedUIModel model,
+    List<String> nddrlList,
+  ) {
     return RepaintBoundary(
-      child: nddrlList.contains(content) 
-          ? MomentArticleWidget(naddr: content)
-          : FeedRichTextWidget(
-              isShowAllContent: widget.isShowAllContent,
-              clickBlankCallback: () => widget.clickMomentCallback?.call(model),
-              showMoreCallback: () async {
-                await ChuChuNavigator.pushPage(context, (context) => FeedInfoPage(notedUIModel: model,isShowReply: widget.isShowReply));
-              },
-              text: content,
-            ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px)),
+      child:
+          nddrlList.contains(content)
+              ? MomentArticleWidget(naddr: content)
+              : FeedRichTextWidget(
+                isShowAllContent: widget.isShowAllContent,
+                clickBlankCallback:
+                    () => widget.clickMomentCallback?.call(model),
+                showMoreCallback: () async {
+                  await ChuChuNavigator.pushPage(
+                    context,
+                    (context) => FeedInfoPage(
+                      notedUIModel: model,
+                      isShowReply: widget.isShowReply,
+                    ),
+                  );
+                },
+                text: content,
+              ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px)),
     );
   }
 
@@ -232,16 +293,19 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     final nddrlList = model.getNddrlList;
     final contentList = FeedUtils.momentContentSplit(model.noteDB.content);
-    
+
     return Column(
-      children: contentList
-          .map((content) => _buildContentItem(content, model, nddrlList))
-          .toList(),
+      children:
+          contentList
+              .map((content) => _buildContentItem(content, model, nddrlList))
+              .toList(),
     );
   }
 
   Widget _buildImageGrid(List<String> imageList) {
-    final width = (_cachedMediaQuery ?? MediaQuery.of(context)).size.width * _mediaWidthRatio;
+    final width =
+        (_cachedMediaQuery ?? MediaQuery.of(context)).size.width *
+        _mediaWidthRatio;
     return RepaintBoundary(
       child: NinePalaceGridPictureWidget(
         crossAxisCount: _calculateColumnsForPictures(imageList.length),
@@ -253,11 +317,13 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildVideoWidget(String videoUrl) {
-    final isYoutube = videoUrl.contains('youtube.com') || videoUrl.contains('youtu.be');
+    final isYoutube =
+        videoUrl.contains('youtube.com') || videoUrl.contains('youtu.be');
     return RepaintBoundary(
-      child: isYoutube 
-          ? FeedWidgetsUtils.youtubeSurfaceMoment(context, videoUrl)
-          : const SizedBox(),
+      child:
+          isYoutube
+              ? FeedWidgetsUtils.youtubeSurfaceMoment(context, videoUrl)
+              : const SizedBox(),
     );
   }
 
@@ -277,11 +343,9 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     final externalLinks = model.getMomentExternalLink;
     if (externalLinks.isNotEmpty) {
-      return RepaintBoundary(
-        child: FeedUrlWidget(url: externalLinks[0]),
-      );
+      return RepaintBoundary(child: FeedUrlWidget(url: externalLinks[0]));
     }
-    
+
     return const SizedBox();
   }
 
@@ -306,7 +370,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                   Text(
                     user.name ?? '--',
                     style: TextStyle(
-                      color:Theme.of(context).colorScheme.onSurface,
+                      color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 18.px,
                       fontWeight: FontWeight.w500,
                     ),
@@ -324,7 +388,10 @@ class _FeedWidgetState extends State<FeedWidget> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      CommonImage(iconName: 'more_icon.png',size: 24,).setPaddingOnly(left: 13.0),
+                      CommonImage(
+                        iconName: 'more_icon.png',
+                        size: 24,
+                      ).setPaddingOnly(left: 13.0),
                     ],
                   ),
 
@@ -365,7 +432,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   Widget _feedUserInfoWidget() {
     final model = notedUIModel;
     if (model == null || !widget.isShowUserInfo) return const SizedBox();
-    
+
     final pubKey = model.noteDB.author;
 
     return RepaintBoundary(
@@ -387,7 +454,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     notedUIModel = model;
     await _getFeedUserInfo(model);
-    
+
     Future.microtask(() {
       if (mounted) setState(() {});
     });
