@@ -27,7 +27,7 @@ class ChuChuLoading extends State<StatefulWidget> with TickerProviderStateMixin 
     bool dismissOnTap = false,
   }) async {
     EasyLoading.instance.loadingStyle = EasyLoadingStyle.custom;
-    EasyLoading.instance.indicatorColor = Colors.red;
+    EasyLoading.instance.indicatorColor = Color(0xFF4EACE9);
     EasyLoading.instance.indicatorType = EasyLoadingIndicatorType.ring;
     EasyLoading.instance.indicatorSize = Adapt.px(20);
     EasyLoading.instance.contentPadding = EdgeInsets.only(left: Adapt.px(20), top: Adapt.px(16), right: Adapt.px(20), bottom: Adapt.px(16));

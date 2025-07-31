@@ -14,9 +14,6 @@ const Color kIconState = Color(0xFF8A96A3); // Icon default state color
 
 const Color KBorderColor = Color(0xFFF0F0F0); //
 
-
-
-
 final ColorScheme lightScheme = ColorScheme(
   brightness: Brightness.light,
   primary: kPrimaryBlue,

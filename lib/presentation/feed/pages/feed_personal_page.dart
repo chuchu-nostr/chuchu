@@ -202,6 +202,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     final notedUIModel = notesList[adj - 1];
     return FeedWidget(
       isShowReplyWidget: true,
+      feedWidgetLayout: EFeedWidgetLayout.fullScreen,
       notedUIModel: notedUIModel,
       clickMomentCallback:
           (m) => ChuChuNavigator.pushPage(
