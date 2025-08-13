@@ -1,13 +1,10 @@
 import 'dart:io';
-import 'dart:typed_data';
 
 import 'package:chuchu/core/utils/adapt.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/common_image.dart';
 import '../../../core/widgets/common_video_page.dart';
 
@@ -49,8 +46,8 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
 
   @override
   void dispose() {
-    // Clean up thumbnail file if needed
-    if (_thumbnailPath != null) {
+    // Clean up temporary thumbnail file if needed
+    if (_thumbnailPath != null && _thumbnailPath!.contains('temp_')) {
       try {
         File(_thumbnailPath!).delete();
       } catch (e) {
@@ -58,6 +55,30 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
       }
     }
     super.dispose();
+  }
+
+  // Static method to clean up old thumbnail cache files
+  static Future<void> cleanupThumbnailCache() async {
+    try {
+      final cacheDir = await getTemporaryDirectory();
+      final files = cacheDir.listSync();
+      final now = DateTime.now();
+      
+      for (final file in files) {
+        if (file is File && file.path.contains('video_thumb_')) {
+          final stat = await file.stat();
+          final age = now.difference(stat.modified);
+          
+          // Remove thumbnails older than 7 days
+          if (age.inDays > 7) {
+            await file.delete();
+            print('Cleaned up old thumbnail: ${file.path}');
+          }
+        }
+      }
+    } catch (e) {
+      print('Error cleaning up thumbnail cache: $e');
+    }
   }
 
   Future<void> _generateThumbnail() async {
@@ -68,25 +89,28 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
     });
 
     try {
-      // Get temporary directory
-      final tempDir = await getTemporaryDirectory();
-      final thumbnailPath = '${tempDir.path}/thumbnail_${DateTime.now().millisecondsSinceEpoch}.jpg';
-
-      // Generate thumbnail
-      final thumbnailFile = await VideoThumbnail.thumbnailFile(
-        video: widget.videoUrl,
-        thumbnailPath: tempDir.path,
-        imageFormat: ImageFormat.JPEG,
-        maxHeight: 300,
-        quality: 75,
-      );
-
-      if (thumbnailFile != null && mounted) {
+      // Check if thumbnail is already cached
+      final cachedThumbnail = await _getCachedThumbnail();
+      if (cachedThumbnail != null && mounted) {
         setState(() {
-          _thumbnailPath = thumbnailFile;
-          _thumbnailFile = File(thumbnailFile);
+          _thumbnailPath = cachedThumbnail.path;
+          _thumbnailFile = cachedThumbnail;
           _isLoadingThumbnail = false;
         });
+        return;
+      }
+
+      // Generate new thumbnail
+      final thumbnailFile = await _createThumbnail();
+      if (thumbnailFile != null && mounted) {
+        setState(() {
+          _thumbnailPath = thumbnailFile.path;
+          _thumbnailFile = thumbnailFile;
+          _isLoadingThumbnail = false;
+        });
+        
+        // Cache the thumbnail
+        await _cacheThumbnail(thumbnailFile);
       } else {
         setState(() {
           _isLoadingThumbnail = false;
@@ -100,6 +124,69 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
       }
       print('Error generating thumbnail: $e');
     }
+  }
+
+  Future<File?> _getCachedThumbnail() async {
+    try {
+      final cacheKey = _getThumbnailCacheKey();
+      final cacheDir = await getTemporaryDirectory();
+      final thumbnailPath = '${cacheDir.path}/$cacheKey.jpg';
+      final thumbnailFile = File(thumbnailPath);
+      
+      if (await thumbnailFile.exists()) {
+        print('Thumbnail loaded from cache: $thumbnailPath');
+        return thumbnailFile;
+      }
+      return null;
+    } catch (e) {
+      print('Error getting cached thumbnail: $e');
+      return null;
+    }
+  }
+
+  Future<File?> _createThumbnail() async {
+    try {
+      final tempDir = await getTemporaryDirectory();
+      
+      // Generate thumbnail with better quality and consistent naming
+      final thumbnailFile = await VideoThumbnail.thumbnailFile(
+        video: widget.videoUrl,
+        thumbnailPath: tempDir.path,
+        imageFormat: ImageFormat.JPEG,
+        maxHeight: 300,
+        maxWidth: 400,
+        quality: 85,
+        timeMs: 1000, // Take thumbnail at 1 second
+      );
+
+      if (thumbnailFile != null) {
+        return File(thumbnailFile);
+      }
+      return null;
+    } catch (e) {
+      print('Error creating thumbnail: $e');
+      return null;
+    }
+  }
+
+  Future<void> _cacheThumbnail(File thumbnailFile) async {
+    try {
+      final cacheKey = _getThumbnailCacheKey();
+      final cacheDir = await getTemporaryDirectory();
+      final cachedPath = '${cacheDir.path}/$cacheKey.jpg';
+      
+      // Copy thumbnail to cache location
+      await thumbnailFile.copy(cachedPath);
+      print('Thumbnail cached: $cachedPath');
+    } catch (e) {
+      print('Error caching thumbnail: $e');
+    }
+  }
+
+  String _getThumbnailCacheKey() {
+    // Create a unique cache key based on video URL and dimensions
+    final videoHash = widget.videoUrl.hashCode.toString();
+    return 'video_thumb_${videoHash}_300x400';
   }
 
   @override
@@ -129,8 +216,8 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
                   ),
                 ),
               ),
-              width: 210.px,
-              height: 154.px,
+              width: double.infinity,
+              // height: 154.px, // Remove fixed height to allow adaptive height
             ),
             
             // Thumbnail image
@@ -139,8 +226,8 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
             // Loading indicator
             if (_isLoadingThumbnail)
               Container(
-                width: 210.px,
-                height: 154.px,
+                width: double.infinity,
+                // height: 154.px, // Remove fixed height to allow adaptive height
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.3),
                   borderRadius: BorderRadius.all(
@@ -173,24 +260,39 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
     if (_thumbnailFile == null) return const SizedBox();
     
     return Container(
-      width: 210.px,
-      height: 154.px,
+      width: double.infinity,
+      // height: 154.px, // Remove fixed height to allow adaptive height
       child: ClipRRect(
         borderRadius: BorderRadius.circular(Adapt.px(12)),
         child: Image.file(
           _thumbnailFile!,
-          width: 210.px,
-          height: 154.px,
+          width: double.infinity,
+          // height: double.infinity, // Remove fixed height to allow image to scale proportionally
           fit: BoxFit.cover,
+          cacheWidth: 420, // 2x for high DPI displays
+          cacheHeight: 308,
           errorBuilder: (context, error, stackTrace) {
             return Container(
-              width: 210.px,
-              height: 154.px,
+              width: double.infinity,
+              // height: double.infinity, // 移除固定高度，让错误状态也自适应
               color: Colors.grey.shade400,
-              child: Icon(
-                Icons.video_library,
-                color: Colors.grey.shade600,
-                size: 40.px,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.video_library,
+                    color: Colors.grey.shade600,
+                    size: 40.px,
+                  ),
+                  SizedBox(height: 8.px),
+                  Text(
+                    'Failed to load thumbnail',
+                    style: TextStyle(
+                      color: Colors.grey.shade600,
+                      fontSize: 12.px,
+                    ),
+                  ),
+                ],
               ),
             );
           },

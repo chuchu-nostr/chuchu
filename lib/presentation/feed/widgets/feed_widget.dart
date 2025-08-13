@@ -313,12 +313,6 @@ class _FeedWidgetState extends State<FeedWidget> {
         (_cachedMediaQuery ?? MediaQuery.of(context)).size.width *
         _mediaWidthRatio;
     return  CarouselWidget(items:[...imageList,...imageList]);
-    //   NinePalaceGridPictureWidget(
-    //   crossAxisCount: _calculateColumnsForPictures(imageList.length),
-    //   width: width.px,
-    //   axisSpacing: _imageSpacing,
-    //   imageList: imageList,
-    // ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px));
   }
 
   Widget _buildVideoWidget(String videoUrl) {

@@ -82,7 +82,7 @@ class FeedWidgetsUtils {
           ).setPaddingOnly(bottom: 20.px),
           // VideoCoverWidget(videoUrl:videoUrl),
           CommonImage(
-            iconName: 'play_moment_icon.png',
+            iconName: 'play_feed_icon.png',
             size: 60.0.px,
             color: Colors.white,
           ),
@@ -179,7 +179,7 @@ class FeedWidgetsUtils {
             ),
             // _videoSurfaceDrawingWidget(),
             CommonImage(
-              iconName: 'play_moment_icon.png',
+              iconName: 'play_feed_icon.png',
               size: 60.0.px,
               color: Colors.white,
             )

@@ -41,6 +41,12 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
   int? bufferDelay;
 
   Color bgColor = Color(0xFF5B5B5B);
+  
+  // Video cache state
+  bool _isCaching = false;
+  double _cacheProgress = 0.0;
+  bool _isCached = false;
+  String? _cacheStatus;
 
   @override
   void initState() {
@@ -81,6 +87,7 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
         height: double.infinity,
         child: Stack(
           children: [
+            // Close button
             Positioned(
               top: 70,
               left: 10,
@@ -93,6 +100,56 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
                 ),
               ),
             ),
+            
+            // Cache status display
+            if (_cacheStatus != null)
+              Positioned(
+                top: 120,
+                left: 20,
+                right: 20,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withOpacity(0.7),
+                    borderRadius: BorderRadius.circular(8.px),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            _isCached ? Icons.check_circle : Icons.download,
+                            color: _isCached ? Colors.green : Colors.blue,
+                            size: 20.px,
+                          ),
+                          SizedBox(width: 8.px),
+                          Expanded(
+                            child: Text(
+                              _cacheStatus!,
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 14.px,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (_isCaching)
+                        Container(
+                          margin: EdgeInsets.only(top: 8.px),
+                          child: LinearProgressIndicator(
+                            value: _cacheProgress,
+                            backgroundColor: Colors.white.withOpacity(0.3),
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
           ],
         ),
       );
@@ -151,36 +208,79 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
   Future<void> initializePlayer() async {
     try {
       if (RegExp(r'https?:\/\/').hasMatch(widget.videoUrl)) {
-        final fileInfo =
-        await ChuChuFileCacheManager.get().getFileFromCache(widget.videoUrl);
+        // Check if video is already cached
+        final fileInfo = await ChuChuFileCacheManager.get().getFileFromCache(widget.videoUrl);
         if (fileInfo != null) {
+          _isCached = true;
+          _cacheStatus = 'Video loaded from cache';
           _videoPlayerController = VideoPlayerController.file(fileInfo.file);
+          print('Video loaded from cache: ${fileInfo.file.path}');
         } else {
-          _videoPlayerController =
-              VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
-          cacheVideo();
+          _isCached = false;
+          _cacheStatus = 'Loading video from network...';
+          _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+          // Start caching in background
+          _startCaching();
         }
       } else {
+        // Local file
         File videoFile = File(widget.videoUrl);
+        _isCached = true;
+        _cacheStatus = 'Local video file';
         _videoPlayerController = VideoPlayerController.file(videoFile);
       }
+      
       await Future.wait([_videoPlayerController.initialize()]);
       _createChewieController();
+      
       if (mounted) {
         setState(() {});
       }
     } catch (e) {
-      print('Error playing audio: $e');
+      print('Error initializing video player: $e');
+      _cacheStatus = 'Error: $e';
+      if (mounted) {
+        setState(() {});
+      }
+    }
+  }
+
+  void _startCaching() {
+    if (!_isCaching) {
+      _isCaching = true;
+      _cacheProgress = 0.0;
+      _cacheStatus = 'Starting cache...';
+      setState(() {});
+      cacheVideo();
     }
   }
 
   Future<void> cacheVideo() async {
     try {
-      print('Starting cache process...');
+      print('Starting video cache process...');
+      _cacheStatus = 'Downloading video...';
+      setState(() {});
+      
+      // Start caching with progress tracking
       await ChuChuFileCacheManager.get().downloadFile(widget.videoUrl);
+      
+      _isCaching = false;
+      _isCached = true;
+      _cacheProgress = 1.0;
+      _cacheStatus = 'Video cached successfully';
+      
       print('Video cached successfully');
+      
+      if (mounted) {
+        setState(() {});
+      }
     } catch (e) {
       print('Error caching video: $e');
+      _isCaching = false;
+      _cacheStatus = 'Cache failed: $e';
+      if (mounted) {
+        setState(() {});
+      }
     }
   }
 
@@ -190,6 +290,8 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
         key: _customControlsKey,
         videoPlayerController: _videoPlayerController,
         videoUrl: widget.videoUrl,
+        isCached: _isCached,
+        onCachePressed: _handleCacheAction,
       ),
       showControls: true,
       videoPlayerController: _videoPlayerController,
@@ -197,6 +299,69 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
       autoPlay: true,
       looping: false,
     );
+  }
+
+  void _handleCacheAction() {
+    if (_isCached) {
+      // Show cache info or clear cache option
+      _showCacheInfo();
+    } else {
+      // Start caching if not already cached
+      _startCaching();
+    }
+  }
+
+  void _showCacheInfo() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Video Cache Info'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Video is cached locally'),
+            SizedBox(height: 16.px),
+            Text('Cache location: ${_getCachePath()}'),
+            SizedBox(height: 16.px),
+            Text('Cache status: ${_cacheStatus ?? "Unknown"}'),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: Text('OK'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              _clearCache();
+            },
+            child: Text('Clear Cache'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _getCachePath() {
+    try {
+      final fileInfo = ChuChuFileCacheManager.get().getFileFromCache(widget.videoUrl);
+      return fileInfo.then((info) => info?.file.path ?? 'Unknown').toString();
+    } catch (e) {
+      return 'Unknown';
+    }
+  }
+
+  Future<void> _clearCache() async {
+    try {
+      await ChuChuFileCacheManager.get().removeFile(widget.videoUrl);
+      _isCached = false;
+      _cacheStatus = 'Cache cleared';
+      setState(() {});
+    } catch (e) {
+      print('Error clearing cache: $e');
+    }
   }
 }
 
@@ -209,9 +374,16 @@ class CustomControlsOption {
 class CustomControls extends StatefulWidget {
   final VideoPlayerController videoPlayerController;
   final String videoUrl;
-  const CustomControls(
-      {Key? key, required this.videoPlayerController, required this.videoUrl})
-      : super(key: key);
+  final bool isCached;
+  final VoidCallback? onCachePressed;
+  
+  const CustomControls({
+    Key? key, 
+    required this.videoPlayerController, 
+    required this.videoUrl,
+    this.isCached = false,
+    this.onCachePressed,
+  }) : super(key: key);
 
   @override
   _CustomControlsState createState() => _CustomControlsState();
@@ -316,6 +488,7 @@ class _CustomControlsState extends State<CustomControls> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Share button
               GestureDetector(
                 onTap: () => ChuChuNavigator.pop(context),
                 child: CommonImage(

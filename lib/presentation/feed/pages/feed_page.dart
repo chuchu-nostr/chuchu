@@ -1,4 +1,5 @@
 import 'package:chuchu/core/account/model/userDB_isar.dart';
+import 'package:chuchu/core/utils/adapt.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chuchu/core/feed/feed+load.dart';
@@ -6,6 +7,7 @@ import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 
+import '../../../core/account/account.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
@@ -18,9 +20,11 @@ import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/chuchu_smart_refresher.dart';
 import '../../../data/models/noted_ui_model.dart';
 
+import '../../search/pages/search_page.dart';
 import '../widgets/feed_widget.dart';
 import '../widgets/feed_skeleton_widget.dart';
 import 'feed_info_page.dart';
+import 'feed_personal_page.dart';
 
 class FeedPage extends StatefulWidget {
   final ScrollController? scrollController;
@@ -136,6 +140,7 @@ class _FeedPageState extends State<FeedPage>
         return RepaintBoundary(
           key: ValueKey('feed_$index'),
           child: FeedWidget(
+            horizontalPadding: 16,
             feedWidgetLayout: EFeedWidgetLayout.fullScreen,
             isShowReplyWidget: true,
             notedUIModel: notedUIModel,
@@ -145,7 +150,7 @@ class _FeedPageState extends State<FeedPage>
                 (context) => FeedInfoPage(notedUIModel: notedUIModel),
               );
             },
-          ).setPadding(EdgeInsets.only(left: 16.0, right: 16.0, bottom: 12.0)),
+          ).setPadding(EdgeInsets.only(bottom: 12.0)),
         );
       },
     );
@@ -172,12 +177,22 @@ class _FeedPageState extends State<FeedPage>
             itemBuilder: (context, index) {
               if (index == 0) {
 
-                return _buildStoryItem(
-                  name: "You",
-                  imageUrl: ChuChuUserInfoManager.sharedInstance.currentUserInfo?.picture ?? '',
-                  isCurrentUser: true,
-                  hasUnread: false,
-                  marginRight: 12,
+                return GestureDetector(
+                  onTap: (){
+                    ChuChuNavigator.pushPage(
+                      context,
+                          (context) => FeedPersonalPage(
+                        userPubkey: Account.sharedInstance.currentPubkey ?? '',
+                      ),
+                    );
+                  },
+                  child: _buildStoryItem(
+                    name: "You",
+                    imageUrl: ChuChuUserInfoManager.sharedInstance.currentUserInfo?.picture ?? '',
+                    isCurrentUser: true,
+                    hasUnread: false,
+                    marginRight: 12,
+                  ),
                 );
               } else if (index == _showNotedToUserList.length + 1) {
 
@@ -199,14 +214,19 @@ class _FeedPageState extends State<FeedPage>
     );
   }
   Widget _buildAddStoryItem() {
-    return _buildStoryItem(
-      name: "Add",
-      imageUrl: "",
-      isCurrentUser: false,
-      hasUnread: false,
-      marginRight: 12,
-      storyCount: 0,
-      isAddButton: true,
+    return GestureDetector(
+      onTap: (){
+        ChuChuNavigator.pushPage(context, (context) => SearchPage());
+      },
+      child: _buildStoryItem(
+        name: "Add",
+        imageUrl: "",
+        isCurrentUser: false,
+        hasUnread: false,
+        marginRight: 12,
+        storyCount: 0,
+        isAddButton: true,
+      ),
     );
   }
 
@@ -515,7 +535,7 @@ class _FeedPageState extends State<FeedPage>
         });
       }
     } catch (e) {
-      debugPrint('Error updating notification notes: $e');
+      print('Error updating notification notes: $e');
     }
   }
 
@@ -527,17 +547,19 @@ class _FeedPageState extends State<FeedPage>
 
   @override
   void didLoginSuccess(UserDBISAR? userInfo) {
+    // TODO: implement didLoginSuccess
     _initData();
   }
 
   @override
   void didLogout() {
+    // TODO: implement didLogout
     _resetData();
   }
 
   @override
   void didSwitchUser(UserDBISAR? userInfo) {
-    // Implementation will be added later
+    // TODO: implement didSwitchUser
   }
 }
 
