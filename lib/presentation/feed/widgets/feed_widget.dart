@@ -9,6 +9,7 @@ import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../data/models/noted_ui_model.dart';
+import '../../home/widgets/carousel_widget.dart';
 import '../pages/feed_info_page.dart';
 import '../pages/feed_personal_page.dart';
 import 'feed_article_widget.dart';
@@ -17,6 +18,7 @@ import 'feed_reply_abbreviate_widget.dart';
 import 'feed_reply_contact_widget.dart';
 import 'feed_rich_text_widget.dart';
 import 'feed_url_widget.dart';
+import 'feed_video_widget.dart';
 import 'nine_palace_grid_picture_widget.dart';
 
 enum EFeedWidgetLayout { fullScreen, halfScreen }
@@ -34,6 +36,8 @@ class FeedWidget extends StatefulWidget {
   final Function(NotedUIModel? notedUIModel)? clickMomentCallback;
   final NotedUIModel? notedUIModel;
   final EFeedWidgetLayout? feedWidgetLayout;
+  final double horizontalPadding;
+
 
   const FeedWidget({
     super.key,
@@ -48,6 +52,7 @@ class FeedWidget extends StatefulWidget {
     this.isShowBottomBorder = true,
     this.feedWidgetLayout = EFeedWidgetLayout.halfScreen,
     this.isShowSimpleReplyBtn = false,
+    this.horizontalPadding = 0,
   });
 
   @override
@@ -126,23 +131,24 @@ class _FeedWidgetState extends State<FeedWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _feedUserInfoWidget(),
-        _showReplyContactWidget(),
-        _showFeedContent(),
+
+        _feedUserInfoWidget().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
+        _showReplyContactWidget().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
+        _showFeedContent().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
         _showFeedMediaWidget(),
         RepaintBoundary(
           child: FeedReplyAbbreviateWidget(
             notedUIModel: notedUIModel,
             isShowReplyWidget: widget.isShowReplyWidget,
           ),
-        ),
+        ).setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
         if (widget.isShowOption)
           RepaintBoundary(
             child: FeedOptionWidget(
               notedUIModel: notedUIModel,
             ).setPaddingOnly(bottom: _verticalPadding.px),
-          ),
-        if (widget.isShowSimpleReplyBtn) showSimpleReplyBtnWidget(),
+          ).setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
+        if (widget.isShowSimpleReplyBtn) showSimpleReplyBtnWidget().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
       ],
     );
   }
@@ -306,14 +312,13 @@ class _FeedWidgetState extends State<FeedWidget> {
     final width =
         (_cachedMediaQuery ?? MediaQuery.of(context)).size.width *
         _mediaWidthRatio;
-    return RepaintBoundary(
-      child: NinePalaceGridPictureWidget(
-        crossAxisCount: _calculateColumnsForPictures(imageList.length),
-        width: width.px,
-        axisSpacing: _imageSpacing,
-        imageList: imageList,
-      ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px)),
-    );
+    return  CarouselWidget(items:[...imageList,...imageList]);
+    //   NinePalaceGridPictureWidget(
+    //   crossAxisCount: _calculateColumnsForPictures(imageList.length),
+    //   width: width.px,
+    //   axisSpacing: _imageSpacing,
+    //   imageList: imageList,
+    // ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px));
   }
 
   Widget _buildVideoWidget(String videoUrl) {
@@ -323,7 +328,7 @@ class _FeedWidgetState extends State<FeedWidget> {
       child:
           isYoutube
               ? FeedWidgetsUtils.youtubeSurfaceMoment(context, videoUrl)
-              : const SizedBox(),
+              : FeedVideoWidget(videoUrl: videoUrl)
     );
   }
 
