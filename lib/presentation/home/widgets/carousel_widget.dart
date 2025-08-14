@@ -1,6 +1,7 @@
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/adapt.dart';
+import 'image_viewer_page.dart';
 
 class CarouselWidget extends StatefulWidget {
   final List<String> items;
@@ -124,7 +125,13 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                   itemBuilder: (context, index) {
                     final imageUrl = widget.items[index];
                     return GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        showImageViewer(
+                          context: context,
+                          images: widget.items,
+                          initialIndex: index,
+                        );
+                      },
                       child: Container(
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(6.px),

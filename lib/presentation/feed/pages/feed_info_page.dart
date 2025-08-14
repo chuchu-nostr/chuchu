@@ -530,7 +530,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
       child: Center(
         child: Column(
           children: [
-            CommonImage(iconName: 'no_reply.png'),
+            CommonImage(iconName: 'no_reply.png',size: 100,),
             Text(
               'No reply !',
               style: Theme.of(context).textTheme.titleLarge,
@@ -580,27 +580,27 @@ class _FeedInfoPageState extends State<FeedInfoPage>
             Row(
               children: [
                 // Message button
-                GestureDetector(
-                  onTap: _handleMessageTap,
-                  child: Container(
-                    width: 200,
-                    height: 48.px,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(24.px),
-                    ),
-                    child: Center(
-                      child: Text(
-                        'Message',
-                        style: TextStyle(
-                          color: Colors.grey.shade700,
-                          fontSize: 16.px,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
+                // GestureDetector(
+                //   onTap: _handleMessageTap,
+                //   child: Container(
+                //     width: 200,
+                //     height: 48.px,
+                //     decoration: BoxDecoration(
+                //       color: Colors.grey.withOpacity(0.1),
+                //       borderRadius: BorderRadius.circular(24.px),
+                //     ),
+                //     child: Center(
+                //       child: Text(
+                //         'Message',
+                //         style: TextStyle(
+                //           color: Colors.grey.shade700,
+                //           fontSize: 16.px,
+                //           fontWeight: FontWeight.w500,
+                //         ),
+                //       ),
+                //     ),
+                //   ),
+                // ),
 
                 SizedBox(width: 16.px),
                 // Engagement stats
