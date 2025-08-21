@@ -19,6 +19,8 @@ import '../../../core/widgets/common_image.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../widgets/feed_skeleton_widget.dart';
 import '../widgets/feed_widget.dart';
+import '../widgets/subscribed_ui_widget.dart';
+import '../widgets/unsubscribed_ui_widget.dart';
 import 'feed_info_page.dart';
 
 class FeedPersonalPage extends StatefulWidget {
@@ -37,6 +39,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   final int _limit = 1000;
   int? _allNotesFromDBLastTimestamp;
   bool _isFollowing = false;
+  bool _isSubscribed = false; // Add subscription status
 
   bool _showAppBar = false;
   static const double _triggerOffset = 100;
@@ -109,7 +112,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
         itemCount:
             _isInitialLoading
                 ? 8
-                : (notesList.isEmpty ? 1 : notesList.length + 2),
+                : (notesList.isEmpty ? 1 : (_isSubscribed ? notesList.length + 2 : 3)),
         itemBuilder: _buildListItem,
       ),
     );
@@ -148,7 +151,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
           widget.userPubkey,
         ),
         builder: (context, user, child) {
-          return         Column(
+          return Column(
             children: [
               _PersonalPageHeader(
                 userPubkey: widget.userPubkey,
@@ -192,6 +195,38 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
                   ),
                 ),
               ),
+              // Add subscription section based on subscription status
+              if (!_isSubscribed) 
+                UnsubscribedUIWidget(
+                  onSubscribe: () {
+                    // Handle main subscription
+                    _toggleSubscription();
+                  },
+                  onBundle3Months: () {
+                    // Handle 3 months bundle
+                    _toggleSubscription();
+                  },
+                  onBundle6Months: () {
+                    // Handle 6 months bundle
+                    _toggleSubscription();
+                  },
+                  onBundle12Months: () {
+                    // Handle 12 months bundle
+                    _toggleSubscription();
+                  },
+                  onSubscribeToSeeContent: () {
+                    // Handle subscribe to see content
+                    _toggleSubscription();
+                  },
+                ),
+              // Test button to toggle subscription status (remove in production)
+              Container(
+                margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+                child: ElevatedButton(
+                  onPressed: _toggleSubscription,
+                  child: Text(_isSubscribed ? 'Switch to Unsubscribed' : 'Switch to Subscribed'),
+                ),
+              ),
             ],
           );
         },
@@ -199,18 +234,42 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     }
 
     // Feed Item (index - 1)
-    final notedUIModel = notesList[adj - 1];
-    return FeedWidget(
-      isShowReplyWidget: true,
-      feedWidgetLayout: EFeedWidgetLayout.fullScreen,
-      notedUIModel: notedUIModel,
-      clickMomentCallback:
-          (m) => ChuChuNavigator.pushPage(
+    if (!_isSubscribed) {
+      // Show locked content for unsubscribed users
+      return adj == 1 ? const SizedBox.shrink() : const SizedBox.shrink();
+    }
+    
+    // For subscribed users, show feed content
+    if (adj == 1) {
+      return SubscribedUIWidget(
+        notesList: notesList,
+        isInitialLoading: _isInitialLoading,
+      );
+    }
+    
+    // Additional feed items (if any)
+    if (adj > 1 && adj - 1 < notesList.length) {
+      final notedUIModel = notesList[adj - 1];
+      return Padding(
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+        child: FeedWidget(
+          isShowReplyWidget: true,
+          feedWidgetLayout: EFeedWidgetLayout.fullScreen,
+          notedUIModel: notedUIModel,
+          clickMomentCallback: (m) => ChuChuNavigator.pushPage(
             context,
             (_) => FeedInfoPage(notedUIModel: m),
           ),
-    ).setPadding(const EdgeInsets.only(left: 16, right: 16, bottom: 12));
+        ),
+      );
+    }
+    
+    return const SizedBox.shrink();
   }
+
+
+
+
 
   Future<void> updateNotesList(bool isInit) async {
     if (isInit && notesList.isEmpty) {
@@ -374,6 +433,13 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     } catch (e) {
       debugPrint('Error checking following status: $e');
     }
+  }
+
+  // Toggle subscription status for testing (you can remove this in production)
+  void _toggleSubscription() {
+    setState(() {
+      _isSubscribed = !_isSubscribed;
+    });
   }
 
 
