@@ -1,5 +1,4 @@
 import 'dart:io';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:dart_ping_ios/dart_ping_ios.dart';
@@ -7,8 +6,8 @@ import 'package:dart_ping_ios/dart_ping_ios.dart';
 import '../manager/chuchu_user_info_manager.dart';
 import '../manager/thread_pool_manager.dart';
 import '../widgets/chuchu_Loading.dart';
-import 'app_initializer.dart';
-
+import '../proxy/unified_proxy_manager.dart';
+import '../proxy/chuchu_http_overrides.dart';
 
 class InitializationManager {
   static final InitializationManager _instance = InitializationManager._internal();
@@ -21,21 +20,18 @@ class InitializationManager {
   final List<String> _errors = [];
   final Map<String, bool> _initializationStatus = {};
 
-
   bool get isInitialized => _isInitialized;
-
-
   List<String> get errors => List.unmodifiable(_errors);
-
-
   Map<String, bool> get initializationStatus => Map.unmodifiable(_initializationStatus);
-
 
   Future<void> initialize() async {
     if (_isInitialized) {
       return;
     }
     try {
+      HttpOverrides.global = ChuCHuHttpOverrides();
+      debugPrint('🔧 HttpOverrides.global set successfully');
+      
       await _initializeCore();
       await _initializeBasicServices();
 
@@ -44,8 +40,6 @@ class InitializationManager {
       _initializeBackgroundServicesAsync();
       
       _isInitialized = true;
-
-      
     } catch (error, stackTrace) {
       final errorMessage = 'init fail: $error';
       _errors.add(errorMessage);
@@ -59,7 +53,34 @@ class InitializationManager {
 
   Future<void> _initializeCore() async {
     await _executeWithStatus('core_systems', () async {
-      HttpOverrides.global = ChuChuHttpOverrides();
+      final proxyManager = UnifiedProxyManager();
+      await proxyManager.initialize();
+      
+      try {
+        await proxyManager.syncHistoricalSettings();
+      } catch (e) {
+        debugPrint('⚠️ Could not sync historical proxy settings: $e');
+      }
+      
+      try {
+        final proxyManager = UnifiedProxyManager();
+        final proxyEnv = proxyManager.environmentVariables;
+        
+        for (var entry in proxyEnv.entries) {
+          try {
+            _setEnvironmentVariable(entry.key, entry.value);
+            debugPrint('🔧 Set environment variable: ${entry.key}=${entry.value}');
+          } catch (e) {
+            debugPrint('⚠️ Could not set ${entry.key}: $e');
+          }
+        }
+        
+        proxyManager.printCurrentConfig();
+        debugPrint('🔧 Unified proxy configuration completed');
+      } catch (e) {
+        debugPrint('⚠️ Could not configure unified proxy: $e');
+      }
+      
       ChuChuLoading.init();
     });
   }
@@ -169,5 +190,18 @@ class InitializationManager {
     final keyComponents = ['core_systems', 'basic_services'];
     return keyComponents.every((component) => 
         _initializationStatus[component] == true);
+  }
+
+  void _setEnvironmentVariable(String key, String value) {
+    try {
+      if (Platform.isAndroid || Platform.isIOS) {
+        debugPrint('📱 Mobile platform detected - environment variables set through unified proxy config');
+        return;
+      } else if (Platform.isMacOS || Platform.isLinux || Platform.isWindows) {
+        debugPrint('💻 Desktop platform detected - attempting to set environment variable');
+      }
+    } catch (e) {
+      debugPrint('⚠️ Environment variable setting not supported: $e');
+    }
   }
 } 
