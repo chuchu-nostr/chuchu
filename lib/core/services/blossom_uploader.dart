@@ -1,25 +1,27 @@
 import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
-import 'package:ox_common/upload/upload_exception.dart';
-import 'string_util.dart';
-import 'base64.dart';
+import 'dart:typed_data';
 import 'package:dio/dio.dart';
-import 'package:flutter/services.dart';
 import 'package:mime/mime.dart';
-import 'hash_util.dart';
-import 'package:nostr_core_dart/nostr.dart';
-import 'package:chatcore/chat-core.dart';
 
-// This uploader not complete.
+import '../account/account.dart';
+import '../nostr_dart/src/event.dart';
+import './string_util.dart';
+import 'base64.dart';
+import 'hash_util.dart';
+
 class BolssomUploader {
   static var dio = Dio();
 
-  static Future<String?> upload(String endPoint, String filePath, {
+
+
+
+  static Future<String?> upload(String? endPoint, String filePath, {
     String? fileName,
     Function(double progress)? onProgress,
   }) async {
-    var uri = Uri.tryParse(endPoint);
+    var uri = Uri.tryParse(endPoint ?? 'https://blossom.band');
     if (uri == null) {
       return null;
     }
@@ -52,6 +54,7 @@ class BolssomUploader {
     var fileSize = bytes.length;
     log("file size is ${bytes.length}");
     payload = HashUtil.sha256Bytes(bytes);
+    
     multipartFile = MultipartFile.fromBytes(
       bytes,
       filename: fileName,
@@ -92,7 +95,6 @@ class BolssomUploader {
     try {
       var response = await dio.put(
         uploadApiPath,
-        // data: formData,
         data: Stream.fromIterable(bytes.map((e) => [e])),
         options: Options(
           headers: headers,
@@ -109,7 +111,7 @@ class BolssomUploader {
       if (body is Map<String, dynamic> && body["url"] != null) {
         return body["url"];
       } else {
-        throw UploadException('${uri.host} Bad Gateway');
+        throw Exception('${uri.host} Bad Gateway');
       }
     } catch (e) {
       print("BolssomUploader.upload upload exception:");
