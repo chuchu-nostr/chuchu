@@ -1,17 +1,15 @@
 import 'dart:io';
-import 'package:chuchu/core/feed/feed+notification.dart';
 import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:chuchu/core/nostr_dart/nostr.dart';
+import 'package:chuchu/core/services/blossom_uploader.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
-import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/nostr_dart/src/ok.dart';
-import '../../../core/utils/feed_content_analyze_utils.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../../core/widgets/common_toast.dart';
@@ -28,9 +26,12 @@ class CreateFeedPage extends StatefulWidget {
 class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver {
   final TextEditingController _controller = TextEditingController();
   final List<File> _selectedImages = [];
+  final List<String> _uploadedImageUrls = []; // Store uploaded image URLs
+  final Map<int, bool> _uploadingStatus = {}; // Track upload status for each image
   Map<String,UserDBISAR> draftCueUserMap = {};
 
   bool _postFeedTag = false;
+  bool _isUploading = false; // Track overall upload status
 
   @override
   void initState() {
@@ -43,14 +44,92 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     if (picked.isNotEmpty) {
       setState(() {
         _selectedImages.addAll(picked.map((x) => File(x.path)));
+        // Initialize upload status for new images
+        for (int i = _uploadedImageUrls.length; i < _selectedImages.length; i++) {
+          _uploadingStatus[i] = false;
+        }
       });
+      
+      // Auto-upload newly selected images
+      _uploadNewImages();
     }
   }
 
   void _removeImage(int index) {
     setState(() {
       _selectedImages.removeAt(index);
+      // Remove corresponding upload status and URL
+      _uploadingStatus.remove(index);
+      if (index < _uploadedImageUrls.length) {
+        _uploadedImageUrls.removeAt(index);
+      }
+      // Re-adjust status indices for remaining images
+      final newStatus = <int, bool>{};
+      _uploadingStatus.forEach((key, value) {
+        if (key > index) {
+          newStatus[key - 1] = value;
+        } else if (key < index) {
+          newStatus[key] = value;
+        }
+      });
+      _uploadingStatus.clear();
+      _uploadingStatus.addAll(newStatus);
     });
+  }
+
+  /// Upload newly selected images
+  Future<void> _uploadNewImages() async {
+    if (_isUploading) return;
+    
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      // Upload images that haven't been uploaded yet
+      for (int i = _uploadedImageUrls.length; i < _selectedImages.length; i++) {
+        if (!mounted) return;
+        
+        final imageFile = _selectedImages[i];
+        
+        try {
+          // Set upload status to true
+          if (mounted) {
+            setState(() {
+              _uploadingStatus[i] = true;
+            });
+          }
+          
+          final imageUrl = await BolssomUploader.upload(
+            'https://blossom.band',
+            imageFile.path,
+            fileName: imageFile.path.split('/').last,
+          );
+
+          if (imageUrl != null) {
+            if (mounted) {
+              setState(() {
+                _uploadedImageUrls.add(imageUrl);
+                _uploadingStatus[i] = false; // Upload completed
+              });
+            }
+          } else {
+            throw Exception('Upload returned empty URL');
+          }
+        } catch (e) {
+          print('Image $i upload failed: $e');
+          if (mounted) {
+            CommonToast.instance.show(context, 'Image ${i + 1} upload failed: $e');
+          }
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
   }
 
   @override
@@ -160,6 +239,9 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   }
 
   Widget _buildSingleImage(File image, int index, {required Key key}) {
+    final isUploaded = index < _uploadedImageUrls.length;
+    final isUploading = _uploadingStatus[index] ?? false;
+    
     return Stack(
       key: key,
       children: [
@@ -167,7 +249,25 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           margin: const EdgeInsets.symmetric(horizontal: 12),
           decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
           clipBehavior: Clip.hardEdge,
-          child: Image.file(image),
+          child: Stack(
+            children: [
+              Image.file(image),
+              if (isUploading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.black54,
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
         ),
         Positioned(
           top: 12,
@@ -181,6 +281,29 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             ),
           ),
         ),
+        if (isUploaded)
+          Positioned(
+            bottom: 8,
+            left: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check, color: Colors.white, size: 12),
+                  SizedBox(width: 3),
+                  Text(
+                    'Uploaded',
+                    style: TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                ],
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -195,6 +318,9 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         itemCount: _selectedImages.length,
         itemBuilder: (context, index) {
           final image = _selectedImages[index];
+          final isUploaded = index < _uploadedImageUrls.length;
+          final isUploading = _uploadingStatus[index] ?? false;
+          
           return Stack(
             children: [
               Container(
@@ -206,7 +332,49 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                   borderRadius: BorderRadius.circular(12),
                 ),
                 clipBehavior: Clip.hardEdge,
-                child: Image.file(image, fit: BoxFit.cover),
+                child: Stack(
+                  children: [
+                    Image.file(image, fit: BoxFit.cover),
+                    if (isUploading)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.black54,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (isUploaded)
+                      Positioned(
+                        bottom: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check, color: Colors.white, size: 10),
+                              SizedBox(width: 2),
+                              Text(
+                                'Done',
+                                style: TextStyle(color: Colors.white, fontSize: 8),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
               ),
 
               Positioned(
@@ -229,48 +397,51 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   }
 
   void _postMoment() async {
-
-
-    String getMediaStr = '';
-    // if (_uploadCompleter != null) {
-    //   getMediaStr = await _uploadCompleter!.future;
-    // }
-    // if (_postFeedTag) return;
-    // _postFeedTag = true;
+    if (_postFeedTag) return;
+    _postFeedTag = true;
+    
     ChuChuLoading.show();
-    // String getMediaStr = await _getUploadMediaContent();
-    final inputText = _controller.text;
-    String content =
-        '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)} $getMediaStr';
-    OKEvent? event;
-
-    NoteDBISAR? noteDB = widget.notedUIModel?.noteDB;
-
-    List<String> hashTags =
-        FeedContentAnalyzeUtils(content).getMomentHashTagList;
-    List<String>? getHashTags = hashTags.isEmpty ? null : hashTags;
-    List<String>? getReplyUser = FeedUtils.getMentionReplyUserList(
-      draftCueUserMap,
-      inputText,
-    );
-
-    if (content.trim().isEmpty) {
-      CommonToast.instance.show(
-        context,
-        'Content empty tips',
+    
+    try {
+      // Wait for all images to complete upload
+      if (_selectedImages.isNotEmpty && _uploadedImageUrls.length < _selectedImages.length) {
+        await _uploadNewImages();
+      }
+      
+      final inputText = _controller.text;
+      
+      // Build content with image URLs
+      String mediaContent = '';
+      if (_uploadedImageUrls.isNotEmpty) {
+        mediaContent = ' ${_uploadedImageUrls.join(' ')}';
+      }
+      
+      String content = '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)}$mediaContent';
+      
+      if (content.trim().isEmpty) {
+        CommonToast.instance.show(context, 'Content empty tips');
+        return;
+      }
+      
+      OKEvent? eventStatus = await Feed.sharedInstance.sendNoteContacts(
+        content,
+        // mentions: getReplyUser,
+        // hashTags: getHashTags,
+        sendMessageProgressCallBack: (value) {},
       );
-      return;
-    }
-    OKEvent? eventStatus = await Feed.sharedInstance.sendNoteContacts(
-          content,
-          // mentions: getReplyUser,
-          // hashTags: getHashTags,
-          sendMessageProgressCallBack: (value) {
-          },
-        );
-    ChuChuLoading.dismiss();
-    if(eventStatus.status){
-      CommonToast.instance.show(context, 'Sent successfully');
+      
+      if (eventStatus.status) {
+        CommonToast.instance.show(context, 'Sent successfully');
+        Navigator.pop(context);
+      } else {
+        CommonToast.instance.show(context, 'Failed to send');
+      }
+    } catch (e) {
+      print('Post failed: $e');
+      CommonToast.instance.show(context, 'Post failed: $e');
+    } finally {
+      ChuChuLoading.dismiss();
+      _postFeedTag = false;
     }
   }
 
