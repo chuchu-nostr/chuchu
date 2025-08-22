@@ -3,17 +3,12 @@ import 'dart:io';
 
 import 'package:chewie/chewie.dart';
 import 'package:chuchu/core/utils/adapt.dart';
-import 'package:chuchu/core/utils/widget_tool_utils.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter/widgets.dart';
-
-import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 
-import '../manager/common_file_cache_manager.dart';
 import '../utils/navigator/navigator.dart';
+import '../manager/common_file_cache_manager.dart';
 import 'chuchu_Loading.dart';
 import 'common_image.dart';
 
@@ -38,19 +33,11 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
   final GlobalKey<_CustomControlsState> _customControlsKey = GlobalKey<_CustomControlsState>();
   ChewieController? _chewieController;
   late VideoPlayerController _videoPlayerController;
-  int? bufferDelay;
 
-  Color bgColor = Color(0xFF5B5B5B);
-  
-  // Video cache state
-  bool _isCaching = false;
-  double _cacheProgress = 0.0;
-  bool _isCached = false;
-  String? _cacheStatus;
+  static const Color _bgColor = Color(0xFF5B5B5B);
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       initializePlayer();
@@ -82,7 +69,7 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
     if (!isShowVideoWidget) {
       ChuChuLoading.show();
       return Container(
-        color: bgColor,
+        color: _bgColor,
         width: double.infinity,
         height: double.infinity,
         child: Stack(
@@ -100,65 +87,14 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
                 ),
               ),
             ),
-            
-            // Cache status display
-            if (_cacheStatus != null)
-              Positioned(
-                top: 120,
-                left: 20,
-                right: 20,
-                child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
-                  decoration: BoxDecoration(
-                    color: Colors.black.withOpacity(0.7),
-                    borderRadius: BorderRadius.circular(8.px),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            _isCached ? Icons.check_circle : Icons.download,
-                            color: _isCached ? Colors.green : Colors.blue,
-                            size: 20.px,
-                          ),
-                          SizedBox(width: 8.px),
-                          Expanded(
-                            child: Text(
-                              _cacheStatus!,
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 14.px,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      if (_isCaching)
-                        Container(
-                          margin: EdgeInsets.only(top: 8.px),
-                          child: LinearProgressIndicator(
-                            value: _cacheProgress,
-                            backgroundColor: Colors.white.withOpacity(0.3),
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
-                          ),
-                        ),
-                    ],
-                  ),
-                ),
-              ),
           ],
         ),
       );
     }
 
     ChuChuLoading.dismiss();
-    Size size = MediaQuery.of(context).size;
     return Container(
-      color: bgColor,
+      color: _bgColor,
       child: Stack(
         children: [
           GestureDetector(
@@ -211,13 +147,9 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
         // Check if video is already cached
         final fileInfo = await ChuChuFileCacheManager.get().getFileFromCache(widget.videoUrl);
         if (fileInfo != null) {
-          _isCached = true;
-          _cacheStatus = 'Video loaded from cache';
           _videoPlayerController = VideoPlayerController.file(fileInfo.file);
           print('Video loaded from cache: ${fileInfo.file.path}');
         } else {
-          _isCached = false;
-          _cacheStatus = 'Loading video from network...';
           _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
           // Start caching in background
           _startCaching();
@@ -225,8 +157,6 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
       } else {
         // Local file
         File videoFile = File(widget.videoUrl);
-        _isCached = true;
-        _cacheStatus = 'Local video file';
         _videoPlayerController = VideoPlayerController.file(videoFile);
       }
       
@@ -238,7 +168,6 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
       }
     } catch (e) {
       print('Error initializing video player: $e');
-      _cacheStatus = 'Error: $e';
       if (mounted) {
         setState(() {});
       }
@@ -246,41 +175,16 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
   }
 
   void _startCaching() {
-    if (!_isCaching) {
-      _isCaching = true;
-      _cacheProgress = 0.0;
-      _cacheStatus = 'Starting cache...';
-      setState(() {});
-      cacheVideo();
-    }
+    cacheVideo();
   }
 
   Future<void> cacheVideo() async {
     try {
       print('Starting video cache process...');
-      _cacheStatus = 'Downloading video...';
-      setState(() {});
-      
-      // Start caching with progress tracking
       await ChuChuFileCacheManager.get().downloadFile(widget.videoUrl);
-      
-      _isCaching = false;
-      _isCached = true;
-      _cacheProgress = 1.0;
-      _cacheStatus = 'Video cached successfully';
-      
       print('Video cached successfully');
-      
-      if (mounted) {
-        setState(() {});
-      }
     } catch (e) {
       print('Error caching video: $e');
-      _isCaching = false;
-      _cacheStatus = 'Cache failed: $e';
-      if (mounted) {
-        setState(() {});
-      }
     }
   }
 
@@ -290,8 +194,6 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
         key: _customControlsKey,
         videoPlayerController: _videoPlayerController,
         videoUrl: widget.videoUrl,
-        isCached: _isCached,
-        onCachePressed: _handleCacheAction,
       ),
       showControls: true,
       videoPlayerController: _videoPlayerController,
@@ -301,68 +203,7 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
     );
   }
 
-  void _handleCacheAction() {
-    if (_isCached) {
-      // Show cache info or clear cache option
-      _showCacheInfo();
-    } else {
-      // Start caching if not already cached
-      _startCaching();
-    }
-  }
 
-  void _showCacheInfo() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Video Cache Info'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('Video is cached locally'),
-            SizedBox(height: 16.px),
-            Text('Cache location: ${_getCachePath()}'),
-            SizedBox(height: 16.px),
-            Text('Cache status: ${_cacheStatus ?? "Unknown"}'),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: Text('OK'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              _clearCache();
-            },
-            child: Text('Clear Cache'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _getCachePath() {
-    try {
-      final fileInfo = ChuChuFileCacheManager.get().getFileFromCache(widget.videoUrl);
-      return fileInfo.then((info) => info?.file.path ?? 'Unknown').toString();
-    } catch (e) {
-      return 'Unknown';
-    }
-  }
-
-  Future<void> _clearCache() async {
-    try {
-      await ChuChuFileCacheManager.get().removeFile(widget.videoUrl);
-      _isCached = false;
-      _cacheStatus = 'Cache cleared';
-      setState(() {});
-    } catch (e) {
-      print('Error clearing cache: $e');
-    }
-  }
 }
 
 class CustomControlsOption {
@@ -374,15 +215,11 @@ class CustomControlsOption {
 class CustomControls extends StatefulWidget {
   final VideoPlayerController videoPlayerController;
   final String videoUrl;
-  final bool isCached;
-  final VoidCallback? onCachePressed;
   
   const CustomControls({
     Key? key, 
     required this.videoPlayerController, 
     required this.videoUrl,
-    this.isCached = false,
-    this.onCachePressed,
   }) : super(key: key);
 
   @override
@@ -397,8 +234,6 @@ class _CustomControlsState extends State<CustomControls> {
   ));
 
   Timer? _hideTimer;
-  List<double> videoSpeedList = [0.5, 1.0, 1.5, 2.0];
-  ValueNotifier<double> videoSpeedNotifier = ValueNotifier(1.0);
 
   @override
   void initState() {
@@ -457,7 +292,6 @@ class _CustomControlsState extends State<CustomControls> {
 
   @override
   Widget build(BuildContext context) {
-    Size size = MediaQuery.of(context).size;
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
@@ -503,35 +337,7 @@ class _CustomControlsState extends State<CustomControls> {
                   iconName: 'video_screen_icon.png',
                   size: 24.px,
                 ),
-                // onTap: () async {
-                  // await ChuChuLoading.show();
-                  // if (RegExp(r'https?:\/\/').hasMatch(widget.videoUrl)) {
-                  //   var result;
-                  //   final fileInfo = await ChuChuFileCacheManager.get()
-                  //       .getFileFromCache(widget.videoUrl);
-                  //   if (fileInfo != null) {
-                  //     result =
-                  //     await ImageGallerySaverPlus.saveFile(fileInfo.file.path);
-                  //   } else {
-                  //     var appDocDir = await getTemporaryDirectory();
-                  //     String savePath = appDocDir.path + "/temp.mp4";
-                  //     await Dio().download(widget.videoUrl, savePath);
-                  //     result = await ImageGallerySaverPlus.saveFile(savePath);
-                  //   }
-                  //
-                  //   if (result['isSuccess'] == true) {
-                  //     await ChuChuLoading.dismiss();
-                  //     CommonToast.instance.show(context, 'Save successful');
-                  //   }
-                  // } else {
-                  //   final result =
-                  //   await ImageGallerySaverPlus.saveFile(widget.videoUrl);
-                  //   if (result['isSuccess'] == true) {
-                  //     await ChuChuLoading.dismiss();
-                  //     CommonToast.instance.show(context, 'Save successful');
-                  //   }
-                  // }
-                // },
+
 
               ),
             ],
@@ -599,13 +405,12 @@ class _CustomControlsState extends State<CustomControls> {
           child:
           Column(
             children: [
-              Container(
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 10.px),
                 child: CustomVideoProgressIndicator(
                   controller: widget.videoPlayerController,
                   callback: _progressCallback,
                 ),
-              ).setPadding(
-                EdgeInsets.symmetric(horizontal: 10.px),
               ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -635,7 +440,7 @@ class _CustomControlsState extends State<CustomControls> {
                     ),
                   ),
                 ],
-              ).setPaddingOnly(bottom: 20.px),
+              ),
 
             ],
           ),
