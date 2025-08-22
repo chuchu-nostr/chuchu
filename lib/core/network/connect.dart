@@ -7,6 +7,7 @@ import '../account/account.dart';
 import '../config/config.dart';
 import '../manager/thread_pool_manager.dart';
 import '../nostr_dart/nostr.dart';
+import '../proxy/proxy_settings.dart';
 import '../utils/log_utils.dart';
 import 'eventCache.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -87,12 +88,19 @@ class Connect {
   Connect._internal() {
     startHeartBeat();
     listenConnectivity();
+    Future.delayed(Duration(milliseconds: 100), () {
+      if (!_isDisposed) {
+        resetConnection(force: false);
+      }
+    });
   }
   factory Connect() => sharedInstance;
   static final Connect sharedInstance = Connect._internal();
 
   static final int timeout = 10;
   static final int MAX_SUBSCRIPTIONS_COUNT = 15;
+  
+  bool _isDisposed = false;
 
   NoticeCallBack? noticeCallBack;
   StreamSubscription? _connectivitySubscription;
@@ -121,7 +129,6 @@ class Connect {
         _checkTimeout();
       });
     }
-    resetConnection(force: false);
   }
 
   Future<void> resetConnection({bool force = true}) async {
@@ -136,15 +143,6 @@ class Connect {
     }
   }
 
-  // void listenConnectivity() {
-  //   _connectivitySubscription ??=
-  //       Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) async {
-  //         if (results.any((result) => result != ConnectivityResult.none)) {
-  //           resetConnection(force: false);
-  //         }
-  //       });
-  // }
-
   void listenConnectivity() {
     _connectivitySubscription ??=
         Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
@@ -153,12 +151,6 @@ class Connect {
           }
         });
   }
-
-  // void _stopCheckTimeOut() {
-  //   if (timer != null && timer!.isActive) {
-  //     timer!.cancel();
-  //   }
-  // }
 
   void _checkTimeout() {
     var now = DateTime.now().millisecondsSinceEpoch;
@@ -290,6 +282,14 @@ class Connect {
     auths.clear();
     eventCheckerFutures.clear();
     subscriptionsWaitingQueue.clear();
+  }
+  
+  /// Destroy connection manager and clean up all resources
+  void dispose() {
+    _isDisposed = true;
+    _connectivitySubscription?.cancel();
+    timer?.cancel();
+    closeAllConnects();
   }
 
   Future closeConnect(String relay) async {
@@ -711,16 +711,18 @@ class Connect {
     if (host != null && host.isNotEmpty) {
       relay = host;
     }
+    
     ProxySettings? settings = Config.sharedInstance.proxySettings;
+    
     if (settings != null && settings.turnOnProxy) {
       bool onionURI = relay.contains(".onion");
       switch (settings.onionHostOption) {
         case EOnionHostOption.no:
           if (onionURI) return null;
+        case EOnionHostOption.whenAvailable:
+          if (!onionURI) return null;
         case EOnionHostOption.required:
           if (!onionURI) return null;
-        default:
-          break;
       }
     }
     return await WebSocket.connect(relay);

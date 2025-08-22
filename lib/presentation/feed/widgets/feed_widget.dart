@@ -312,7 +312,7 @@ class _FeedWidgetState extends State<FeedWidget> {
     final width =
         (_cachedMediaQuery ?? MediaQuery.of(context)).size.width *
         _mediaWidthRatio;
-    return  CarouselWidget(items:[...imageList,...imageList]);
+    return  CarouselWidget(items: imageList);
   }
 
   Widget _buildVideoWidget(String videoUrl) {

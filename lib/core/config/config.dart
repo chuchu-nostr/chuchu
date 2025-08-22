@@ -1,9 +1,8 @@
 /// 0xchat config based on relay events
-/// 1.DNS configs 2.Discovery configs
+/// 1.DNS configs 2.Discovery configs 3.Proxy configs (delegated to UnifiedProxyManager)
 
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
 import '../account/account.dart';
@@ -11,54 +10,14 @@ import '../database/db_isar.dart';
 import '../network/connect.dart';
 import '../nostr_dart/nostr.dart';
 import '../utils/log_utils.dart';
+import '../proxy/unified_proxy_manager.dart';
+import '../proxy/proxy_settings.dart';
 import 'configDB_isar.dart';
 
-enum EOnionHostOption { no, whenAvailable, required }
-
-class ProxySettings {
-  bool turnOnProxy;
-  String socksProxyHost;
-  int socksProxyPort;
-  EOnionHostOption onionHostOption;
-
-  ProxySettings({
-    this.turnOnProxy = false,
-    this.socksProxyHost = '127.0.0.1',
-    this.socksProxyPort = 7890,
-    this.onionHostOption = EOnionHostOption.whenAvailable,
-  });
-
-  Map<String, dynamic> toJson() {
-    return {
-      'turnOnProxy': turnOnProxy,
-      'socksProxyHost': socksProxyHost,
-      'socksProxyPort': socksProxyPort,
-      'onionHostOption': onionHostOption.index,
-    };
-  }
-
-  factory ProxySettings.fromJson(Map<String, dynamic> json) {
-    return ProxySettings(
-      turnOnProxy: json['turnOnProxy'],
-      socksProxyHost: json['socksProxyHost'],
-      socksProxyPort: json['socksProxyPort'],
-      onionHostOption: EOnionHostOption.values[json['onionHostOption']],
-    );
-  }
-
-  String toJsonString() {
-    final jsonData = toJson();
-    return jsonEncode(jsonData);
-  }
-
-  factory ProxySettings.fromJsonString(String jsonString) {
-    final Map<String, dynamic> jsonData = jsonDecode(jsonString);
-    return ProxySettings.fromJson(jsonData);
-  }
-}
-
+/// Application configuration manager
+/// Handles DNS, discovery, and proxy configuration (proxy logic delegated to UnifiedProxyManager)
 class Config {
-  /// singleton
+  /// Singleton instance
   Config._internal();
 
   factory Config() => sharedInstance;
@@ -109,7 +68,7 @@ class Config {
     List<Object?> maps = await isar.configDBISARs.where().findAll();
     configs = {for (var configDB in maps) (configDB as ConfigDBISAR).d: configDB};
     _setConfig();
-    _loadProxy();
+    await _loadProxy();
   }
 
   void _loadConfigFromRelay({String? relay}) {
@@ -138,8 +97,6 @@ class Config {
 
   Future<void> _handleAppData(Event event) async {
     AppData appData = Nip78.decodeAppData(event);
-    // if (appData.d == null) return;
-    // if (event.createdAt <= (configs[appData.d]?.time ?? 0)) return;
     ConfigDBISAR configDB = ConfigDBISAR(
         d: appData.d ?? '',
         eventId: event.id,
@@ -174,14 +131,22 @@ class Config {
     }
   }
 
-  void _loadProxy() {
+  Future<void> _loadProxy() async {
     String? json = configs[configD]?.proxyJson;
     if (json != null) {
       try {
-        proxySettings = ProxySettings.fromJsonString(json);
+        final loadedSettings = ProxySettings.fromJsonString(json);
+        proxySettings = loadedSettings;
+        
+        print('🔧 Historical proxy settings loaded: ${loadedSettings.socksProxyHost}:${loadedSettings.socksProxyPort}');
+        print('🔧 Note: Proxy will be synced when UnifiedProxyManager initializes');
+        
       } catch (_) {
         proxySettings = ProxySettings(turnOnProxy: false);
+        print('⚠️ Failed to load proxy settings, using defaults');
       }
+    } else {
+      print('🔧 No historical proxy settings found, will use defaults');
     }
   }
 
@@ -190,10 +155,26 @@ class Config {
   }
 
   Future<void> setProxy(ProxySettings setting) async {
-    proxySettings = setting;
-    configs[configD] ??= ConfigDBISAR(d: configD);
-    configs[configD]!.proxyJson = proxySettings!.toJsonString();
-    await DBISAR.sharedInstance.saveToDB(configs[configD]!);
-    await Connect.sharedInstance.resetConnection();
+    try {
+      proxySettings = setting;
+      
+      configs[configD] ??= ConfigDBISAR(d: configD);
+      configs[configD]!.proxyJson = proxySettings!.toJsonString();
+      await DBISAR.sharedInstance.saveToDB(configs[configD]!);
+      
+      try {
+        final proxyManager = UnifiedProxyManager();
+        await proxyManager.setProxy(setting.socksProxyHost, setting.socksProxyPort);
+        print('🔧 Proxy settings updated and synced to unified manager');
+      } catch (e) {
+        print('⚠️ Failed to sync to unified manager: $e');
+      }
+      
+      await Connect.sharedInstance.resetConnection();
+      
+    } catch (e) {
+      print('⚠️ Failed to update proxy settings: $e');
+      rethrow;
+    }
   }
 }
