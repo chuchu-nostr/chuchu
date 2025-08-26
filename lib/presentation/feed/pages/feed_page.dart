@@ -53,8 +53,14 @@ class _FeedPageState extends State<FeedPage>
 
   ThemeData? _cachedTheme;
 
-  double avatarSize = 62;
-  double storyItemWidth = 72;
+  double avatarSize = 72;
+  double storyItemWidth = 82;
+  double storyItemHeight = 128;
+  
+  static const double kStoriesSectionHeight = 148.0;
+  bool _isStoriesVisible = true;
+  double _storiesHeight = kStoriesSectionHeight;
+  double _storiesOpacity = 1.0;
 
 
   @override
@@ -63,11 +69,51 @@ class _FeedPageState extends State<FeedPage>
     ChuChuUserInfoManager.sharedInstance.addObserver(this);
     ChuChuFeedManager.sharedInstance.addObserver(this);
     _initData();
+    _setupScrollListener();
   }
 
   void _initData() {
+    _resetStoriesSection();
+    
     Future.delayed(Duration(milliseconds: 5000), () {
       updateNotesList(true);
+    });
+  }
+
+  void _setupScrollListener() {
+    final scrollController = widget.scrollController ?? feedScrollController;
+    scrollController.addListener(_onScroll);
+  }
+
+  bool _isScrollProcessing = false;
+
+  void _onScroll() {
+    if (!mounted || _isScrollProcessing) return;
+    
+    _isScrollProcessing = true;
+    
+    final scrollController = widget.scrollController ?? feedScrollController;
+    final scrollOffset = scrollController.offset;
+    final threshold = 50.0;
+    
+    if (scrollOffset > threshold && _isStoriesVisible) {
+      setState(() {
+        _isStoriesVisible = false;
+        _storiesHeight = 0.0;
+        _storiesOpacity = 0.0;
+      });
+      print('Stories hidden, height: $_storiesHeight');
+    } else if (scrollOffset <= threshold && !_isStoriesVisible) {
+      setState(() {
+        _isStoriesVisible = true;
+        _storiesHeight = kStoriesSectionHeight;
+        _storiesOpacity = 1.0;
+      });
+      print('Stories shown, height: $_storiesHeight');
+    }
+    
+    Future.delayed(Duration(milliseconds: 100), () {
+      _isScrollProcessing = false;
     });
   }
 
@@ -80,6 +126,16 @@ class _FeedPageState extends State<FeedPage>
     }
   }
 
+  void _resetStoriesSection() {
+    if (mounted) {
+      setState(() {
+        _isStoriesVisible = true;
+        _storiesHeight = kStoriesSectionHeight;
+        _storiesOpacity = 1.0;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     _cachedTheme ??= Theme.of(context);
@@ -87,7 +143,6 @@ class _FeedPageState extends State<FeedPage>
     return SafeArea(
       child: Column(
         children: [
-          // if (notesList.isNotEmpty && _showNotedToUserList.isNotEmpty)
           _buildTopStoriesSection(),
           Expanded(
             child: ChuChuSmartRefresher(
@@ -120,7 +175,7 @@ class _FeedPageState extends State<FeedPage>
         child: Column(
           children: [
             SizedBox(height: 100),
-            CommonImage(iconName: 'no_feed.png', size: 350),
+            CommonImage(iconName: 'no_feed.png', size: 150),
             Text('No Content', style: Theme.of(context).textTheme.titleLarge),
           ],
         ),
@@ -157,57 +212,64 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Widget _buildTopStoriesSection() {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: 16
-      ),
-      margin: EdgeInsets.only(
-        bottom: 10
-      ),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor.withAlpha(80), width: 0.5)),
-      ),
-      child: RepaintBoundary(
-        child: SizedBox(
-          height: 106,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _showNotedToUserList.length + 2,
-            itemBuilder: (context, index) {
-              if (index == 0) {
-
-                return GestureDetector(
-                  onTap: (){
-                    ChuChuNavigator.pushPage(
-                      context,
-                          (context) => FeedPersonalPage(
-                        userPubkey: Account.sharedInstance.currentPubkey ?? '',
-                      ),
-                    );
+    return AnimatedSize(
+      duration: Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+      child: Container(
+        height: _storiesHeight,
+        child: ClipRect(
+          child: Container(
+            padding: EdgeInsets.only(
+              bottom: 16
+            ),
+            margin: EdgeInsets.only(
+              bottom: 10
+            ),
+            decoration: BoxDecoration(
+              border: Border(bottom: BorderSide(color: Theme.of(context).dividerColor.withAlpha(80), width: 0.5)),
+            ),
+            child: _isStoriesVisible ? RepaintBoundary(
+              child: SizedBox(
+                height: kStoriesSectionHeight,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: _showNotedToUserList.length + 2,
+                  itemBuilder: (context, index) {
+                    if (index == 0) {
+                      return GestureDetector(
+                        onTap: (){
+                          ChuChuNavigator.pushPage(
+                            context,
+                                (context) => FeedPersonalPage(
+                              userPubkey: Account.sharedInstance.currentPubkey ?? '',
+                            ),
+                          );
+                        },
+                        child: _buildStoryItem(
+                          name: "You",
+                          imageUrl: ChuChuUserInfoManager.sharedInstance.currentUserInfo?.picture ?? '',
+                          isCurrentUser: true,
+                          hasUnread: false,
+                          marginRight: 12,
+                        ),
+                      );
+                    } else if (index == _showNotedToUserList.length + 1) {
+                      return _buildAddStoryItem();
+                    } else {
+                      final user = _showNotedToUserList[index - 1];
+                      return _buildStoryItem(
+                        name: user.name ?? '',
+                        imageUrl: user.picture ?? '',
+                        isCurrentUser: false,
+                        hasUnread: true,
+                        marginRight: 12,
+                      );
+                    }
                   },
-                  child: _buildStoryItem(
-                    name: "You",
-                    imageUrl: ChuChuUserInfoManager.sharedInstance.currentUserInfo?.picture ?? '',
-                    isCurrentUser: true,
-                    hasUnread: false,
-                    marginRight: 12,
-                  ),
-                );
-              } else if (index == _showNotedToUserList.length + 1) {
-
-                return _buildAddStoryItem();
-              } else {
-                final user = _showNotedToUserList[index - 1];
-                return _buildStoryItem(
-                  name: user.name ?? '',
-                  imageUrl: user.picture ?? '',
-                  isCurrentUser: false,
-                  hasUnread: true,
-                  marginRight: 12,
-                );
-              }
-            },
+                ),
+              ),
+            ) : SizedBox.shrink(),
           ),
         ),
       ),
@@ -243,54 +305,69 @@ class _FeedPageState extends State<FeedPage>
     final theme = Theme.of(context);
     final hasStory = hasUnread && storyCount > 0;
 
-    return Container(
-      width: storyItemWidth,
-      margin: EdgeInsets.only(right: marginRight),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          SizedBox(
-            width: avatarSize,
-            height: avatarSize,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                if (hasStory)
-                  Positioned.fill(
-                    child: CustomPaint(
-                      painter: SegmentedCirclePainter(
-                        segmentCount: storyCount,
-                        color: Colors.blueAccent,
-                        strokeWidth: 1.5,
+    return ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: storyItemHeight,
+        maxHeight: storyItemHeight,
+        minWidth: storyItemWidth,
+        maxWidth: storyItemWidth,
+      ),
+      child: Container(
+        width: storyItemWidth,
+        height: storyItemHeight,
+        margin: EdgeInsets.only(right: marginRight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+              width: avatarSize,
+              height: avatarSize,
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  if (hasStory)
+                    Positioned.fill(
+                      child: CustomPaint(
+                        painter: SegmentedCirclePainter(
+                          segmentCount: storyCount,
+                          color: Colors.blueAccent,
+                          strokeWidth: 1.5,
+                        ),
                       ),
                     ),
-                  ),
-                isAddButton
-                    ? Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.grey[300],
-                  ),
-                  width: avatarSize,
-                  height: avatarSize,
-                  child: const Icon(Icons.add, size: 28, color: Colors.black87),
-                )
-                    : _buildAvatar(imageUrl),
-              ],
+                  isAddButton
+                      ? Container(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey[300],
+                    ),
+                    width: avatarSize,
+                    height: avatarSize,
+                    child: const Icon(Icons.add, size: 28, color: Colors.black87),
+                  )
+                      : _buildAvatar(imageUrl),
+                ],
+              ),
             ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            name,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontSize: 18,
+            const SizedBox(height: 8),
+            Container(
+              height: 24,
+              width: double.infinity,
+              child: Text(
+                name,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurface,
+                  fontSize: 15,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
+                textAlign: TextAlign.center,
+              ),
             ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -362,8 +439,6 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Widget _buildAvatar(String imageUrl) {
-    final avatarSize = 62.0;
-
     return ClipOval(
       child: SizedBox(
         width: avatarSize,
@@ -387,6 +462,10 @@ class _FeedPageState extends State<FeedPage>
   void dispose() {
     ChuChuUserInfoManager.sharedInstance.removeObserver(this);
     ChuChuFeedManager.sharedInstance.removeObserver(this);
+    
+    final scrollController = widget.scrollController ?? feedScrollController;
+    scrollController.removeListener(_onScroll);
+    
     super.dispose();
   }
 
@@ -541,25 +620,20 @@ class _FeedPageState extends State<FeedPage>
 
   @override
   didNewNotificationCallBack(List<NotificationDBISAR> notifications) {
-    // _updateNotifications(notifications);
-    // tipContainerHeight.value = tipsHeight;
   }
 
   @override
   void didLoginSuccess(UserDBISAR? userInfo) {
-    // TODO: implement didLoginSuccess
     _initData();
   }
 
   @override
   void didLogout() {
-    // TODO: implement didLogout
     _resetData();
   }
 
   @override
   void didSwitchUser(UserDBISAR? userInfo) {
-    // TODO: implement didSwitchUser
   }
 }
 
