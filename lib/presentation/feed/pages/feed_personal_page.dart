@@ -39,8 +39,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   final int _limit = 1000;
   int? _allNotesFromDBLastTimestamp;
   bool _isFollowing = false;
-  bool _isSubscribed = false; // Add subscription status
-
+  bool _isSubscribed = false;
   bool _showAppBar = false;
   static const double _triggerOffset = 100;
 
@@ -50,7 +49,6 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     _setStatusBarStyle();
     updateNotesList(true);
     _checkFollowing();
-
     _scrollController.addListener(_handleScroll);
   }
 
@@ -82,20 +80,19 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:
-          _showAppBar
-              ? PreferredSize(
-                preferredSize: Size.fromHeight(50),
-                child: _PinnedNavBar(
-                  userName: Account.sharedInstance.getUserNotifier(
-                    widget.userPubkey,
-                  ).value.name ?? '--',
-                  onBack: () => Navigator.of(context).pop(),
-                  onMore: () {},
-                ),
-              )
-              : null,
+      appBar: _showAppBar ? _buildAppBar() : null,
       body: _buildSmartRefresher(),
+    );
+  }
+
+  PreferredSizeWidget _buildAppBar() {
+    return PreferredSize(
+      preferredSize: const Size.fromHeight(50),
+      child: _PinnedNavBar(
+        userName: Account.sharedInstance.getUserNotifier(widget.userPubkey).value.name ?? '--',
+        onBack: () => Navigator.of(context).pop(),
+        onMore: () {},
+      ),
     );
   }
 
@@ -109,173 +106,166 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       child: ListView.builder(
         controller: _scrollController,
         padding: EdgeInsets.zero,
-        itemCount:
-            _isInitialLoading
-                ? 8
-                : (notesList.isEmpty ? 1 : (_isSubscribed ? notesList.length + 2 : 3)),
+        itemCount: _calculateItemCount(),
         itemBuilder: _buildListItem,
       ),
     );
   }
 
+  int _calculateItemCount() {
+    if (_isInitialLoading) return 8;
+    if (notesList.isEmpty) return 2;
+    return _isSubscribed ? notesList.length + 2 : 3;
+  }
+
   Widget _buildListItem(BuildContext context, int index) {
-    // Placeholder to push content down and avoid overlap with status bar
     if (index == 0) return const SizedBox.shrink();
 
-    // Original logic, remember to subtract 1 from all indices
     final adj = index - 1;
 
-    // Skeleton
     if (_isInitialLoading) {
       return adj < 8 ? const FeedSkeletonWidget() : const SizedBox.shrink();
     }
 
-    // Empty data
     if (notesList.isEmpty) {
-      return adj == 0
-          ? Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const SizedBox(height: 100),
-              CommonImage(iconName: 'no_feed.png', size: 350),
-              Text('No Content', style: Theme.of(context).textTheme.titleLarge),
-            ],
-          )
-          : const SizedBox.shrink();
+      return adj == 0 ? _buildEmptyState() : const SizedBox.shrink();
     }
 
-    // First item: Header + Stats + Profile
     if (adj == 0) {
-      return ValueListenableBuilder<UserDBISAR>(
-        valueListenable: Account.sharedInstance.getUserNotifier(
-          widget.userPubkey,
-        ),
-        builder: (context, user, child) {
-          return Column(
-            children: [
-              _PersonalPageHeader(
-                userPubkey: widget.userPubkey,
-                isShowAppBar:_showAppBar,
-                userName: user.name ?? '--',
-                onBackPressed: () => ChuChuNavigator.pop(context),
-                onMorePressed: () {},
-              ),
-              _PersonalPageStats(
-                userPubkey: widget.userPubkey,
-                stats: const _PersonalStats(
-                  images: '1.4K',
-                  videos: '334',
-                  likes: '621K',
-                ),
-              ),
-              _PersonalPageProfile(
-                userName: user.name ?? '--',
-                userHandle: '@${user.dns}',
-              ),
-              Container(
-                margin: EdgeInsets.only(top: 12,bottom: 20),
-                padding: EdgeInsets.only(
-                  bottom: 20,
-                  left: 18,
-                ),
-                decoration: BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      width: 10,
-                      color: Color(0xFFF7F7F7),
-                    )
-                  ),
-                ),
-                width: double.infinity,
-                child: Text(
-                    user.about ?? '',
-                  style: TextStyle(
-
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
-              ),
-              // Add subscription section based on subscription status
-              if (!_isSubscribed) 
-                UnsubscribedUIWidget(
-                  onSubscribe: () {
-                    // Handle main subscription
-                    _toggleSubscription();
-                  },
-                  onBundle3Months: () {
-                    // Handle 3 months bundle
-                    _toggleSubscription();
-                  },
-                  onBundle6Months: () {
-                    // Handle 6 months bundle
-                    _toggleSubscription();
-                  },
-                  onBundle12Months: () {
-                    // Handle 12 months bundle
-                    _toggleSubscription();
-                  },
-                  onSubscribeToSeeContent: () {
-                    // Handle subscribe to see content
-                    _toggleSubscription();
-                  },
-                ),
-              // Test button to toggle subscription status (remove in production)
-              Container(
-                margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-                child: ElevatedButton(
-                  onPressed: _toggleSubscription,
-                  child: Text(_isSubscribed ? 'Switch to Unsubscribed' : 'Switch to Subscribed'),
-                ),
-              ),
-            ],
-          );
-        },
-      );
+      return _buildHeaderSection();
     }
 
-    // Feed Item (index - 1)
     if (!_isSubscribed) {
-      // Show locked content for unsubscribed users
       return adj == 1 ? const SizedBox.shrink() : const SizedBox.shrink();
     }
-    
-    // For subscribed users, show feed content
+
     if (adj == 1) {
       return SubscribedUIWidget(
         notesList: notesList,
         isInitialLoading: _isInitialLoading,
       );
     }
-    
-    // Additional feed items (if any)
+
     if (adj > 1 && adj - 1 < notesList.length) {
-      final notedUIModel = notesList[adj - 1];
-      return Padding(
-        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
-        child: FeedWidget(
-          isShowReplyWidget: true,
-          feedWidgetLayout: EFeedWidgetLayout.fullScreen,
-          notedUIModel: notedUIModel,
-          clickMomentCallback: (m) => ChuChuNavigator.pushPage(
-            context,
-            (_) => FeedInfoPage(notedUIModel: m),
-          ),
-        ),
-      );
+      return _buildFeedItem(notesList[adj - 1]);
     }
-    
+
     return const SizedBox.shrink();
   }
 
+  Widget _buildEmptyState() {
+    return ValueListenableBuilder<UserDBISAR>(
+      valueListenable: Account.sharedInstance.getUserNotifier(widget.userPubkey),
+      builder: (context, user, child) {
+        return Column(
+          children: [
+            _PersonalPageHeader(
+              userPubkey: widget.userPubkey,
+              isShowAppBar: _showAppBar,
+              userName: user.name ?? '--',
+              onBackPressed: () => ChuChuNavigator.pop(context),
+              onMorePressed: () {},
+            ),
+            const SizedBox(height: 100),
+            CommonImage(iconName: 'no_feed.png', size: 150),
+            Text('No Content', style: Theme.of(context).textTheme.titleLarge),
+          ],
+        );
+      },
+    );
+  }
 
+  Widget _buildHeaderSection() {
+    return ValueListenableBuilder<UserDBISAR>(
+      valueListenable: Account.sharedInstance.getUserNotifier(widget.userPubkey),
+      builder: (context, user, child) {
+        return Column(
+          children: [
+            _PersonalPageHeader(
+              userPubkey: widget.userPubkey,
+              isShowAppBar: _showAppBar,
+              userName: user.name ?? '--',
+              onBackPressed: () => ChuChuNavigator.pop(context),
+              onMorePressed: () {},
+            ),
+            _PersonalPageStats(
+              userPubkey: widget.userPubkey,
+              stats: const _PersonalStats(
+                images: '1.4K',
+                videos: '334',
+                likes: '621K',
+              ),
+            ),
+            _PersonalPageProfile(
+              userName: user.name ?? '--',
+              userHandle: '@${user.dns}',
+            ),
+            _buildAboutSection(user.about ?? ''),
+            if (!_isSubscribed) _buildSubscriptionSection(),
+            _buildTestToggleButton(),
+          ],
+        );
+      },
+    );
+  }
 
+  Widget _buildAboutSection(String about) {
+    return Container(
+      margin: const EdgeInsets.only(top: 12, bottom: 20),
+      padding: const EdgeInsets.only(bottom: 20, left: 18),
+      decoration: const BoxDecoration(
+        border: Border(
+          bottom: BorderSide(width: 10, color: Color(0xFFF7F7F7)),
+        ),
+      ),
+      width: double.infinity,
+      child: Text(
+        about,
+        style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
+      ),
+    );
+  }
 
+  Widget _buildSubscriptionSection() {
+    return UnsubscribedUIWidget(
+      onSubscribe: _toggleSubscription,
+      onBundle3Months: _toggleSubscription,
+      onBundle6Months: _toggleSubscription,
+      onBundle12Months: _toggleSubscription,
+      onSubscribeToSeeContent: _toggleSubscription,
+    );
+  }
+
+  Widget _buildTestToggleButton() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+      child: ElevatedButton(
+        onPressed: _toggleSubscription,
+        child: Text(_isSubscribed ? 'Switch to Unsubscribed' : 'Switch to Subscribed'),
+      ),
+    );
+  }
+
+  Widget _buildFeedItem(NotedUIModel? notedUIModel) {
+    if (notedUIModel == null) return const SizedBox.shrink();
+    
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, right: 16, bottom: 12),
+      child: FeedWidget(
+        isShowReplyWidget: true,
+        feedWidgetLayout: EFeedWidgetLayout.fullScreen,
+        notedUIModel: notedUIModel,
+        clickMomentCallback: (m) => ChuChuNavigator.pushPage(
+          context,
+          (_) => FeedInfoPage(notedUIModel: m),
+        ),
+      ),
+    );
+  }
 
   Future<void> updateNotesList(bool isInit) async {
     if (isInit && notesList.isEmpty) {
-      setState(() {
-        _isInitialLoading = true;
-      });
+      setState(() => _isInitialLoading = true);
     }
 
     try {
@@ -308,9 +298,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     } catch (e) {
       debugPrint('Error loading notes: $e');
       _refreshController.loadFailed();
-      setState(() {
-        _isInitialLoading = false;
-      });
+      setState(() => _isInitialLoading = false);
     }
   }
 
@@ -331,12 +319,11 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
   Future<List<NoteDBISAR>> _getNoteTypeToRelay() async {
     try {
-      List<NoteDBISAR>? result = await Feed.sharedInstance
-          .loadNewNotesFromRelay(
-            authors: [widget.userPubkey],
-            until: _allNotesFromDBLastTimestamp,
-            limit: _limit,
-          );
+      List<NoteDBISAR>? result = await Feed.sharedInstance.loadNewNotesFromRelay(
+        authors: [widget.userPubkey],
+        until: _allNotesFromDBLastTimestamp,
+        limit: _limit,
+      );
       return result ?? [];
     } catch (e) {
       debugPrint('Error loading notes from relay: $e');
@@ -351,9 +338,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       if (list.isEmpty) {
         _refreshController.loadNoData();
         if (_isInitialLoading) {
-          setState(() {
-            _isInitialLoading = false;
-          });
+          setState(() => _isInitialLoading = false);
         }
         return;
       }
@@ -364,9 +349,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       debugPrint('Error loading notes from relay: $e');
       _refreshController.loadFailed();
       if (_isInitialLoading) {
-        setState(() {
-          _isInitialLoading = false;
-        });
+        setState(() => _isInitialLoading = false);
       }
     }
   }
@@ -375,9 +358,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     if (list.isEmpty) return [];
 
     return list
-        .where(
-          (NoteDBISAR note) => !note.isReaction && note.getReplyLevel(null) < 2,
-        )
+        .where((NoteDBISAR note) => !note.isReaction && note.getReplyLevel(null) < 2)
         .toList();
   }
 
@@ -394,8 +375,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       return;
     }
 
-    List<NotedUIModel?> list =
-        showList.map((item) => NotedUIModel(noteDB: item)).toList();
+    List<NotedUIModel?> list = showList.map((item) => NotedUIModel(noteDB: item)).toList();
 
     if (isInit) {
       notesList = list;
@@ -410,9 +390,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     if (isInit) {
       _refreshController.refreshCompleted();
     } else {
-      fetchedCount < _limit
-          ? _refreshController.loadNoData()
-          : _refreshController.loadComplete();
+      fetchedCount < _limit ? _refreshController.loadNoData() : _refreshController.loadComplete();
     }
 
     if (_isInitialLoading) {
@@ -426,26 +404,18 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     try {
       bool f = await Account.sharedInstance.onFollowingList(widget.userPubkey);
       if (mounted) {
-        setState(() {
-          _isFollowing = f;
-        });
+        setState(() => _isFollowing = f);
       }
     } catch (e) {
       debugPrint('Error checking following status: $e');
     }
   }
 
-  // Toggle subscription status for testing (you can remove this in production)
   void _toggleSubscription() {
-    setState(() {
-      _isSubscribed = !_isSubscribed;
-    });
+    setState(() => _isSubscribed = !_isSubscribed);
   }
-
-
 }
 
-// Internal data model for personal statistics
 class _PersonalStats {
   final String images;
   final String videos;
@@ -458,7 +428,6 @@ class _PersonalStats {
   });
 }
 
-// Internal header widget
 class _PersonalPageHeader extends StatelessWidget {
   final String userName;
   final VoidCallback onBackPressed;
@@ -488,10 +457,10 @@ class _PersonalPageHeader extends StatelessWidget {
             color: Theme.of(context).colorScheme.primary,
             image: (badgeUrl.isNotEmpty)
                 ? DecorationImage(
-              image: CachedNetworkImageProvider(badgeUrl),
-              fit: BoxFit.cover,
-              onError: (_, __) {},
-            )
+                    image: CachedNetworkImageProvider(badgeUrl),
+                    fit: BoxFit.cover,
+                    onError: (_, __) {},
+                  )
                 : null,
           ),
           child: SafeArea(
@@ -505,44 +474,37 @@ class _PersonalPageHeader extends StatelessWidget {
         );
       },
     );
-
-
   }
 
   Widget _buildNavigationBar() {
-    return Container(
-      child: Row(
-        children: [
-          // Back button
-          IconButton(
-            onPressed: onBackPressed,
-            icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
-          ),
-          const SizedBox(width: 8),
-          // User name and verified badge
-          Expanded(
-            child: Row(
-              children: [
-                Text(
-                  userName,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  ),
+    return Row(
+      children: [
+        IconButton(
+          onPressed: onBackPressed,
+          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+        ),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Row(
+            children: [
+              Text(
+                userName,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
                 ),
-                const SizedBox(width: 4),
-                const Icon(Icons.verified, color: Colors.white, size: 20),
-              ],
-            ),
+              ),
+              const SizedBox(width: 4),
+              const Icon(Icons.verified, color: Colors.white, size: 20),
+            ],
           ),
-          // More options button
-          IconButton(
-            onPressed: onMorePressed,
-            icon: const Icon(Icons.more_vert, color: Colors.white, size: 24),
-          ),
-        ],
-      ),
+        ),
+        IconButton(
+          onPressed: onMorePressed,
+          icon: const Icon(Icons.more_vert, color: Colors.white, size: 24),
+        ),
+      ],
     );
   }
 
@@ -551,19 +513,14 @@ class _PersonalPageHeader extends StatelessWidget {
       margin: const EdgeInsets.only(left: 50),
       child: Row(
         children: [
-          // Images/Views stat
           _buildStatItem(icon: Icons.landscape, value: '1.4K'),
           const SizedBox(width: 16),
           _buildDot(),
           const SizedBox(width: 16),
-
-          // Videos stat
           _buildStatItem(icon: Icons.videocam, value: '334'),
           const SizedBox(width: 16),
           _buildDot(),
           const SizedBox(width: 16),
-
-          // Likes stat
           _buildStatItem(icon: Icons.favorite, value: '621K'),
         ],
       ),
@@ -600,7 +557,6 @@ class _PersonalPageHeader extends StatelessWidget {
   }
 }
 
-// Internal stats widget
 class _PersonalPageStats extends StatelessWidget {
   final _PersonalStats stats;
   final String userPubkey;
@@ -627,7 +583,7 @@ class _PersonalPageStats extends StatelessWidget {
         width: 100,
         height: 100,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.all(Radius.circular(100)),
+          borderRadius: const BorderRadius.all(Radius.circular(100)),
           border: Border.all(color: Colors.white, width: 0.5),
         ),
         child: ValueListenableBuilder<UserDBISAR>(
@@ -667,13 +623,12 @@ class _PersonalPageStats extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.only(right: 8, top: 8),
       child: Row(
-        children: [const Expanded(child: SizedBox()), const _PersonalPageActions()],
+        children: [const Expanded(child: SizedBox()), _PersonalPageActions()],
       ),
     );
   }
 }
 
-// Internal actions widget
 class _PersonalPageActions extends StatelessWidget {
   const _PersonalPageActions();
 
@@ -681,28 +636,17 @@ class _PersonalPageActions extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Dollar sign icon
         _buildIconButton(
           iconName: 'zaps_blue_icon.png',
-          onTap: () {
-            // Handle dollar sign tap
-          },
+          onTap: () {},
         ),
-
-        // Star icon
         _buildIconButton(
           iconName: 'favorite_blue_icon.png',
-          onTap: () {
-            // Handle star tap
-          },
+          onTap: () {},
         ),
-
-        // Share icon
         _buildIconButton(
           iconName: 'share_blue_icon.png',
-          onTap: () {
-            // Handle share tap
-          },
+          onTap: () {},
         ),
       ],
     );
@@ -723,17 +667,13 @@ class _PersonalPageActions extends StatelessWidget {
           border: Border.all(color: KBorderColor, width: 1),
         ),
         child: Center(
-          child: CommonImage(
-            iconName: iconName,
-            size: 24,
-          ),
+          child: CommonImage(iconName: iconName, size: 24),
         ),
       ),
     );
   }
 }
 
-// Internal profile widget
 class _PersonalPageProfile extends StatelessWidget {
   final String userName;
   final String userHandle;
@@ -770,13 +710,13 @@ class _PersonalPageProfile extends StatelessWidget {
       ],
     );
   }
-
 }
 
 class _PinnedNavBar extends StatelessWidget {
   final String userName;
   final VoidCallback onBack;
   final VoidCallback onMore;
+  
   const _PinnedNavBar({
     required this.userName,
     required this.onBack,
