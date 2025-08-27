@@ -103,7 +103,10 @@ class BolssomUploader {
           },
         ),
         onSendProgress: (count, total) {
-          onProgress?.call(count / total);
+          if (onProgress != null && total > 0) {
+            final progress = count / total;
+            onProgress(progress);
+          }
         },
       );
       var body = response.data;
