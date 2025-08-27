@@ -1,6 +1,7 @@
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/adapt.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'image_viewer_page.dart';
 
 class CarouselWidget extends StatefulWidget {
@@ -83,11 +84,23 @@ class _CarouselWidgetState extends State<CarouselWidget> {
       );
     }
 
-    return Image.network(
-      imageUrl,
+    return CachedNetworkImage(
+      imageUrl: imageUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
+      placeholder: (context, url) => Container(
+        color: Colors.grey[300],
+        child: Center(
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      errorWidget: (context, url, error) => Container(
+        color: Colors.grey[300],
+        child: Center(
+          child: Icon(Icons.broken_image, color: Colors.grey[600]),
+        ),
+      ),
     );
   }
 
@@ -107,14 +120,14 @@ class _CarouselWidgetState extends State<CarouselWidget> {
   @override
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) {
-      return SizedBox(height: 200);
+      return SizedBox(height: 300);
     }
 
     return Column(
       children: [
         // Carousel content
         Container(
-          height: 200,
+          height: 300,
           child: Stack(
             children: [
               GestureDetector(
