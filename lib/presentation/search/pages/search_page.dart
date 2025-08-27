@@ -163,7 +163,7 @@ class _SearchPageState extends State<SearchPage> {
         children: [
           CommonImage(
             iconName: 'search_people_icon.png',
-            size: 320.px,
+            size: 150.px,
           ),
           SizedBox(height: 24.px),
           Text(

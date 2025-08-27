@@ -165,10 +165,10 @@ class _RelaysPageState extends State<RelaysPage> with WidgetsBindingObserver, Na
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
-                  RelaySelectTableTabBar(
-                    tabs: RelayType.values.map((e) => e.name()).toList(),
-                    onChanged: _relayTypeChanged,
-                  ).setPaddingOnly(top: 16.px),
+                  // RelaySelectTableTabBar(
+                  //   tabs: RelayType.values.map((e) => e.name()).toList(),
+                  //   onChanged: _relayTypeChanged,
+                  // ).setPaddingOnly(top: 16.px),
                  Column(
                    children: [
                      Container(
