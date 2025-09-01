@@ -655,14 +655,16 @@ class GroupModeration {
         actionKind: GroupActionKind.removeUser);
   }
 
-  factory GroupModeration.editMetadata(
-      String groupId, String name, String about, String picture, String reason) {
+  factory GroupModeration.editMetadata(String groupId, String name, String about, String picture,
+      bool closed, bool private, String reason) {
     return GroupModeration(
         groupId: groupId,
         name: name,
         about: about,
         picture: picture,
         content: reason,
+        closed: closed,
+        private: private,
         actionKind: GroupActionKind.editMetadata);
   }
 

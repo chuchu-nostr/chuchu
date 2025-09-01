@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:chuchu/core/feed/feed+send.dart';
+// import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:chuchu/core/nostr_dart/nostr.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
 import 'package:flutter/material.dart';
@@ -423,19 +423,19 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         return;
       }
       
-      OKEvent? eventStatus = await Feed.sharedInstance.sendNoteContacts(
-        content,
-        // mentions: getReplyUser,
-        // hashTags: getHashTags,
-        sendMessageProgressCallBack: (value) {},
-      );
+      // OKEvent? eventStatus = await Feed.sharedInstance.sendNoteContacts(
+      //   content,
+      //   // mentions: getReplyUser,
+      //   // hashTags: getHashTags,
+      //   sendMessageProgressCallBack: (value) {},
+      // );
       
-      if (eventStatus.status) {
-        CommonToast.instance.show(context, 'Sent successfully');
-        Navigator.pop(context);
-      } else {
-        CommonToast.instance.show(context, 'Failed to send');
-      }
+      // if (eventStatus.status) {
+      //   CommonToast.instance.show(context, 'Sent successfully');
+      //   Navigator.pop(context);
+      // } else {
+      //   CommonToast.instance.show(context, 'Failed to send');
+      // }
     } catch (e) {
       print('Post failed: $e');
       CommonToast.instance.show(context, 'Post failed: $e');

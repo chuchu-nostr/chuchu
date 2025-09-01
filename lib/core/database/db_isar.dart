@@ -11,10 +11,7 @@ import '../account/model/zapsDB_isar.dart';
 import '../config/configDB_isar.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../feed/model/notificationDB_isar.dart';
-import '../messages/model/messageDB_isar.dart';
 import '../network/eventDB_isar.dart';
-import '../privateGroups/model/groupDB_isar.dart';
-import '../privateGroups/model/groupKeysDB_isar.dart';
 
 class DBISAR {
   static final DBISAR sharedInstance = DBISAR._internal();
@@ -28,17 +25,14 @@ class DBISAR {
   Timer? _timer;
 
   List<CollectionSchema<dynamic>> schemas = [
-    MessageDBISARSchema,
     UserDBISARSchema,
     RelayDBISARSchema,
     ZapRecordsDBISARSchema,
     ZapsDBISARSchema,
-    GroupDBISARSchema,
     NoteDBISARSchema,
     NotificationDBISARSchema,
     ConfigDBISARSchema,
     EventDBISARSchema,
-    GroupKeysDBISARSchema
   ];
 
   Future open(String pubkey) async {

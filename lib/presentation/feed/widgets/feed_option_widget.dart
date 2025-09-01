@@ -1,4 +1,3 @@
-import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 
@@ -127,8 +126,8 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
           if (noteDB.reactionCountByMe > 0 || _reactionTag) return;
           bool isSuccess = false;
           if (noteDB.groupId.isEmpty) {
-            OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
-            isSuccess = event.status;
+            // OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
+            // isSuccess = event.status;
           }
           _dealWithReaction(isSuccess);
         };
@@ -340,8 +339,8 @@ class _ReusableLikeButtonState extends State<ReusableLikeButton> {
     bool isSuccess = false;
     if (noteDB.groupId.isEmpty) {
       try {
-        OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
-        isSuccess = event.status;
+        // OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
+        // isSuccess = event.status;
       } catch (e) {
         debugPrint('Error sending reaction: $e');
         isSuccess = false;

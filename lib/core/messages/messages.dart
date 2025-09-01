@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:chuchu/core/feed/model/noteDB_isar.dart';
+import 'package:chuchu/core/relayGroups/relayGroup+message.dart';
 import 'package:isar/isar.dart';
 
 import '../account/account.dart';
@@ -14,7 +14,7 @@ import '../feed/feed+load.dart';
 import '../feed/feed.dart';
 import '../network/connect.dart';
 import '../nostr_dart/nostr.dart';
-import '../privateGroups/groups.dart';
+import '../relayGroups/relayGroup.dart';
 import '../utils/log_utils.dart';
 import 'model/messageDB_isar.dart';
 
@@ -244,22 +244,22 @@ class Messages {
       switch (messageDB.chatType) {
         case 0:
         case 3:
-          OKEvent ok =
-              await Feed.sharedInstance.sendPrivateMessage([messageDB.sender, pubkey], event);
-          if (!completer.isCompleted) completer.complete(ok);
-          break;
+          // OKEvent ok =
+          //     await Feed.sharedInstance.sendPrivateMessage([messageDB.sender, pubkey], event);
+          // if (!completer.isCompleted) completer.complete(ok);
+          // break;
         case 1:
-          if (groupId != null) {
-            OKEvent ok = await Groups.sharedInstance.sendToGroup(groupId, event);
-            if (!completer.isCompleted) completer.complete(ok);
-            break;
-          }
-        case 4:
           // if (groupId != null) {
-          //   OKEvent ok = await RelayGroup.sharedInstance.sendToGroup(groupId, event);
+          //   OKEvent ok = await Groups.sharedInstance.sendToGroup(groupId, event);
           //   if (!completer.isCompleted) completer.complete(ok);
           //   break;
           // }
+        case 4:
+          if (groupId != null) {
+            OKEvent ok = await RelayGroup.sharedInstance.sendToGroup(groupId, event);
+            if (!completer.isCompleted) completer.complete(ok);
+            break;
+          }
           break;
         default:
           Connect.sharedInstance.sendEvent(event, sendCallBack: (ok, relay) async {

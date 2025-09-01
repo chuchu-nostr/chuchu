@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:chuchu/core/contacts/contacts+isolateEvent.dart';
-import 'package:chuchu/core/privateGroups/groups+private.dart';
 import 'package:isar/isar.dart';
 import 'package:http/http.dart' as http;
 
@@ -11,7 +10,6 @@ import '../../database/db_isar.dart';
 import '../../manager/thread_pool_manager.dart';
 import '../../nostr_dart/src/event.dart';
 import '../../nostr_dart/src/nips/nip_004.dart';
-import '../../privateGroups/groups.dart';
 import '../../utils/log_utils.dart';
 
 part 'messageDB_isar.g.dart';
@@ -394,50 +392,6 @@ class MessageDBISAR {
     return '';
   }
 
-  static Future<MessageDBISAR?> fromPrivateMessage(Event event, String receiver, String privkey,
-      {int chatType = 0}) async {
-    EDMessage? message;
-    if (event.kind == 4) {
-      message = await Contacts.sharedInstance.decodeNip4Event(event, receiver, privkey);
-    } else if (event.kind == 44) {
-      message = await Contacts.sharedInstance.decodeNip44Event(event, receiver, privkey);
-    } else if (event.kind == 14 || event.kind == 15) {
-      message = await Contacts.sharedInstance.decodeKind14Event(event, receiver);
-      if (message?.groupId?.isNotEmpty == true) {
-        Groups.sharedInstance.createPrivateGroup(
-            message!.sender, message.groupId!, message.subject, message.members,
-            createAt: event.createdAt);
-        chatType = 1;
-      }
-    }
-    if (message == null) return null;
-    MessageDBISAR messageDB = MessageDBISAR(
-        messageId: event.id,
-        sender: message.sender,
-        receiver: message.receiver,
-        groupId: message.groupId ?? '',
-        kind: event.kind,
-        tags: jsonEncode(event.tags),
-        content: message.content,
-        createTime: event.createdAt,
-        replyId: message.replyId,
-        plaintEvent: jsonEncode(event),
-        chatType: chatType,
-        expiration: message.expiration == null ? null : int.parse(message.expiration!),
-        decryptAlgo: message.algorithm,
-        decryptNonce: message.nonce,
-        decryptSecret: message.secret);
-    var map = await decodeContent(message.content);
-    messageDB.decryptContent = map['content'];
-    messageDB.type = map['contentType'];
-    if (map['decryptSecret'] != null) {
-      messageDB.decryptSecret = map['decryptSecret'];
-    }
-    if (message.mimeType != null) {
-      messageDB.type = mimeTypeToTpyeString(message.mimeType!);
-    }
-    return messageDB;
-  }
 
   static Future<void> savePreviewData(String messageId, String previewData) async {
     final isar = DBISAR.sharedInstance.isar;

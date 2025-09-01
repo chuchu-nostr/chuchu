@@ -5,7 +5,6 @@ import 'package:flutter/foundation.dart';
 import '../contacts/contacts.dart';
 import '../network/connect.dart';
 import '../nostr_dart/nostr.dart';
-import '../privateGroups/groups.dart';
 import 'account.dart';
 import 'model/userDB_isar.dart';
 
@@ -371,12 +370,12 @@ extension AccountProfile on Account {
     if (db == null) return null;
     if (db.lastGroupsListUpdatedTime >= event.createdAt) return db;
     Lists result = await Nip51.getLists(event, currentPubkey, currentPrivkey);
-    if (result.identifier == Groups.identifier) {
-      // private group list
-      db.lastGroupsListUpdatedTime = event.createdAt;
-      db.groupsList = result.bookmarks;
-      groupListUpdateCallback?.call();
-    }
+    // if (result.identifier == Groups.identifier) {
+    //   // private group list
+    //   db.lastGroupsListUpdatedTime = event.createdAt;
+    //   db.groupsList = result.bookmarks;
+    //   groupListUpdateCallback?.call();
+    // }
     return db;
   }
 

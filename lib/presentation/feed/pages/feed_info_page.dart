@@ -7,7 +7,6 @@ import 'package:flutter/scheduler.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/feed.dart';
-import '../../../core/feed/feed+send.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/utils/feed_utils.dart';
@@ -145,8 +144,8 @@ class _FeedInfoPageState extends State<FeedInfoPage>
           isSuccess = true;
         } else {
           // Like - send reaction
-          OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
-          isSuccess = event.status;
+          // OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
+          // isSuccess = event.status;
         }
       } catch (e) {
         debugPrint('Error handling reaction: $e');

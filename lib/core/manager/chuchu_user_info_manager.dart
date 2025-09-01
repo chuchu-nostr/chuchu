@@ -17,7 +17,6 @@ import '../feed/feed.dart';
 import '../messages/messages.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
-import '../privateGroups/groups.dart';
 import 'cache/chuchu_cache_manager.dart';
 import 'chuchu_feed_manager.dart';
 
@@ -209,9 +208,9 @@ class ChuChuUserInfoManager {
       Contacts.sharedInstance.initContacts(
         Contacts.sharedInstance.contactUpdatedCallBack,
       );
-      Groups.sharedInstance.init(
-        callBack: Groups.sharedInstance.myGroupsUpdatedCallBack,
-      );
+      // Groups.sharedInstance.init(
+      //   callBack: Groups.sharedInstance.myGroupsUpdatedCallBack,
+      // );
       Feed.sharedInstance.init();
       Zaps.sharedInstance.init();
       _initMessage();

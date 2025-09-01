@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'package:chuchu/core/contacts/contacts+isolateEvent.dart';
+import 'package:chuchu/core/relayGroups/relayGroup.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:isar/isar.dart';
@@ -14,10 +15,16 @@ import '../messages/messages.dart';
 import '../messages/model/messageDB_isar.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
-import '../nostr_dart/nostr.dart';
+import '../nostr_dart/src/event.dart';
+import '../nostr_dart/src/nips/nip_017.dart';
+import '../nostr_dart/src/nips/nip_019.dart';
+import '../nostr_dart/src/nips/nip_021.dart';
+import '../nostr_dart/src/nips/nip_028.dart';
+import '../nostr_dart/src/nips/nip_051.dart';
+import '../nostr_dart/src/ok.dart';
 import '../utils/log_utils.dart';
 import 'model/groupDB_isar.dart';
-typedef OfflineGroupMessageFinishCallBack = void Function();
+
 typedef GroupsUpdatedCallBack = void Function();
 typedef GroupMessageCallBack = void Function(MessageDBISAR);
 typedef GroupMessageUpdateCallBack = void Function(MessageDBISAR, String);
@@ -39,6 +46,8 @@ class Groups {
   Map<String, ValueNotifier<GroupDBISAR>> groups = {};
   Map<String, ValueNotifier<GroupDBISAR>> myGroups = {};
 
+  List<Event> mlsGroupEventCache = [];
+
   Map<String, List<String>> currentGroupRelays = {};
   Map<String, bool> offlineGroupMessageFinish = {};
   OfflineGroupMessageFinishCallBack? offlineGroupMessageFinishCallBack;
@@ -57,6 +66,7 @@ class Groups {
       myGroupsUpdatedCallBack?.call();
     };
 
+    // await initMLS();
     await _loadAllGroupsFromDB();
   }
 
@@ -87,8 +97,8 @@ class Groups {
     List<GroupDBISAR> maps = await DBISAR.sharedInstance.isar.groupDBISARs.where().findAll();
     for (GroupDBISAR e in maps) {
       GroupDBISAR groupDB = e.withGrowableLevels();
-      if (groupDB.name.isEmpty) groupDB.name = _shortGroupId(groupDB.groupId);
-      groups[groupDB.groupId] = ValueNotifier(groupDB);
+      if (groupDB.name.isEmpty) groupDB.name = _shortGroupId(groupDB.privateGroupId);
+      groups[groupDB.privateGroupId] = ValueNotifier(groupDB);
     }
     myGroups = _myGroups();
   }
@@ -220,16 +230,16 @@ class Groups {
   }
 
   Future<void> syncGroupToDB(GroupDBISAR groupDB) async {
-    if (groups.containsKey(groupDB.groupId)) {
-      groups[groupDB.groupId]?.value = groupDB;
-    } else {
-      groups[groupDB.groupId] = ValueNotifier(groupDB);
+    String groupId = groupDB.privateGroupId;
+
+    groups[groupId]?.value = groupDB;
+    groups[groupId]?.notifyListeners();
+    groups.putIfAbsent(groupId, () => ValueNotifier(groupDB));
+
+    if (myGroups.containsKey(groupId)) {
+      myGroups[groupId]?.value = groupDB;
     }
-    if (myGroups.containsKey(groupDB.groupId)) {
-      myGroups[groupDB.groupId]?.value = groupDB;
-    } else {
-      myGroups[groupDB.groupId] = ValueNotifier(groupDB);
-    }
+
     await saveGroupToDB(groupDB);
   }
 
@@ -302,7 +312,7 @@ class Groups {
     return event;
   }
 
-  Future<OKEvent> sendGroupMessage(String groupId, MessageType type, String content,
+  Future<OKEvent> sendGroupMessage(String privateGroupId, MessageType type, String content,
       {String? source,
       String? groupRelay,
       String? replyMessage,
@@ -315,8 +325,10 @@ class Groups {
       List<String>? inviteUsers,
       String? decryptSecret}) async {
     Completer<OKEvent> completer = Completer<OKEvent>();
+    GroupDBISAR? groupDB = groups[privateGroupId]?.value;
+    if (groupDB == null) return OKEvent(privateGroupId, false, 'group not exit');
     event ??= await Nip28.sendChannelMessage(
-        groupId, MessageDBISAR.getContent(type, content, source), pubkey, privkey,
+        groupDB.groupId, MessageDBISAR.getContent(type, content, source), pubkey, privkey,
         channelRelay: groupRelay,
         replyMessage: replyMessage,
         replyMessageRelay: replyMessageRelay,
@@ -329,7 +341,7 @@ class Groups {
         messageId: event.id,
         sender: event.pubkey,
         receiver: '',
-        groupId: groupId,
+        groupId: privateGroupId,
         kind: event.kind,
         tags: jsonEncode(event.tags),
         replyId: replyMessage ?? '',
@@ -356,7 +368,7 @@ class Groups {
           ok = await sendMessageEvent(inviteUsers, event);
           break;
         case 'request':
-          ok = await sendToOwner(groupId, event);
+          ok = await sendToOwner(privateGroupId, event);
           break;
         case 'join':
         case 'add':
@@ -365,7 +377,7 @@ class Groups {
         case 'updateName':
         case 'updatePinned':
         default:
-          ok = await sendToGroup(groupId, event);
+          ok = await sendToGroup(privateGroupId, event);
       }
       messageDB.status = ok.status ? 1 : 2;
       await Messages.saveMessageToDB(messageDB, conflictAlgorithm: ConflictAlgorithm.replace);
@@ -375,11 +387,15 @@ class Groups {
     return completer.future;
   }
 
-  Future<OKEvent> sendToGroup(String groupId, Event event) async {
-    GroupDBISAR? groupDB = groups[groupId]?.value;
+  Future<OKEvent> sendToGroup(String privateGroupId, Event event) async {
+    GroupDBISAR? groupDB = groups[privateGroupId]?.value;
     if (groupDB != null) {
-      return await sendMessageEvent(groupDB.members, event);
-
+      if (groupDB.isMLSGroup) {
+        return OKEvent(event.id, false, 'group not found');
+        // return await sendMessageToMLSGroup(groupDB, event);
+      } else {
+        return await sendMessageEvent(groupDB.members, event);
+      }
     } else {
       return OKEvent(event.id, false, 'group not found');
     }
