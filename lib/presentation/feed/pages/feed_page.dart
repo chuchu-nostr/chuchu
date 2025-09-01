@@ -150,6 +150,16 @@ class _FeedPageState extends State<FeedPage>
     }
   }
 
+  void _clearAvatarBorders() {
+    if (mounted) {
+      setState(() {
+        _usersWithNewNotes.clear();
+        _userNoteCounts.clear();
+        _newNotesCount = 0;
+      });
+    }
+  }
+
   void _setInitialLoadingFalse() {
     if (mounted) {
       setState(() => _isInitialLoading = false);
@@ -157,13 +167,18 @@ class _FeedPageState extends State<FeedPage>
   }
 
   void _handleNewNotesAfterNavigation(bool hasNewNotes, {bool clearUserNoteCounts = false}) {
-    if (hasNewNotes && mounted) {
+    if (mounted) {
       if (clearUserNoteCounts) {
         _userNoteCounts.clear();
       } else {
         _usersWithNewNotes.clear();
       }
-      updateNotesList(true);
+      
+      if (hasNewNotes) {
+        updateNotesList(true);
+      } else {
+        setState(() {});
+      }
     }
   }
 
@@ -442,6 +457,10 @@ class _FeedPageState extends State<FeedPage>
   Future<void> updateNotesList(bool isInit) async {
     if (isInit && notesList.isEmpty) {
       setState(() => _isInitialLoading = true);
+    }
+
+    if (isInit) {
+      _clearAvatarBorders();
     }
 
     try {
