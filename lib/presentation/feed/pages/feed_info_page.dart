@@ -601,9 +601,6 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                 //     ),
                 //   ),
                 // ),
-
-                SizedBox(width: 16.px),
-                // Engagement stats
                 Expanded(
                     child:Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,

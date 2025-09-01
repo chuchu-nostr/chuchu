@@ -20,6 +20,7 @@ import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/chuchu_smart_refresher.dart';
 import '../../../data/models/noted_ui_model.dart';
+import '../../../core/nostr_dart/nostr.dart';
 
 import '../../search/pages/search_page.dart';
 import '../widgets/feed_widget.dart';
@@ -344,7 +345,7 @@ class _FeedPageState extends State<FeedPage>
         _handleNewNotesAfterNavigation(hasNewNotes);
       },
       child: _buildStoryItem(
-        name: userPubkey.substring(0, 8),
+        name: _shortNpub(userPubkey),
         imageUrl: '',
         isCurrentUser: false,
         hasUnread: hasNewNotes,
@@ -352,6 +353,14 @@ class _FeedPageState extends State<FeedPage>
         storyCount: noteCount,
       ),
     );
+  }
+
+  String _shortNpub(String pubkey) {
+    final npub = Nip19.encodePubkey(pubkey);
+    if (npub.length < 13) return npub;
+    final start = npub.substring(0, 6);
+    final end = npub.substring(npub.length - 6);
+    return '$start:$end';
   }
 
   Widget _buildAddStoryItem() {

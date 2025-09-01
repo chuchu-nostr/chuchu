@@ -243,7 +243,10 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     final theme = Theme.of(context);
 
     return GestureDetector(
-      onTap: () => _handleNotificationTap(notification),
+      onTap: () {
+        if(notification.kind == 7) return;
+        _handleNotificationTap(notification);
+      },
       child: Container(
         margin: EdgeInsets.symmetric(horizontal: 16.px, vertical: 6.px),
         padding: EdgeInsets.all(16.px),
