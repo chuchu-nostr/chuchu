@@ -3,9 +3,12 @@ import 'dart:io';
 
 import 'package:chewie/chewie.dart';
 import 'package:chuchu/core/utils/adapt.dart';
+import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
+import 'package:image_gallery_saver/image_gallery_saver.dart';
 
 import '../utils/navigator/navigator.dart';
 import '../manager/common_file_cache_manager.dart';
@@ -64,9 +67,10 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
 
   @override
   Widget build(BuildContext context) {
-    bool isShowVideoWidget = _chewieController != null &&
+    final isVideoReady = _chewieController != null &&
         _chewieController!.videoPlayerController.value.isInitialized;
-    if (!isShowVideoWidget) {
+        
+    if (!isVideoReady) {
       ChuChuLoading.show();
       return Container(
         color: _bgColor,
@@ -74,7 +78,6 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
         height: double.infinity,
         child: Stack(
           children: [
-            // Close button
             Positioned(
               top: 70,
               left: 10,
@@ -144,18 +147,15 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
   Future<void> initializePlayer() async {
     try {
       if (RegExp(r'https?:\/\/').hasMatch(widget.videoUrl)) {
-        // Check if video is already cached
         final fileInfo = await ChuChuFileCacheManager.get().getFileFromCache(widget.videoUrl);
         if (fileInfo != null) {
           _videoPlayerController = VideoPlayerController.file(fileInfo.file);
           print('Video loaded from cache: ${fileInfo.file.path}');
         } else {
           _videoPlayerController = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
-          // Start caching in background
           _startCaching();
         }
       } else {
-        // Local file
         File videoFile = File(widget.videoUrl);
         _videoPlayerController = VideoPlayerController.file(videoFile);
       }
@@ -175,10 +175,10 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
   }
 
   void _startCaching() {
-    cacheVideo();
+    _cacheVideo();
   }
 
-  Future<void> cacheVideo() async {
+  Future<void> _cacheVideo() async {
     try {
       print('Starting video cache process...');
       await ChuChuFileCacheManager.get().downloadFile(widget.videoUrl);
@@ -207,9 +207,13 @@ class _CommonVideoPageState extends State<CommonVideoPage> {
 }
 
 class CustomControlsOption {
-  bool isDragging;
-  bool isVisible;
-  CustomControlsOption({required this.isDragging, required this.isVisible});
+  final bool isDragging;
+  final bool isVisible;
+  
+  const CustomControlsOption({
+    required this.isDragging, 
+    required this.isVisible,
+  });
 }
 
 class CustomControls extends StatefulWidget {
@@ -228,10 +232,10 @@ class CustomControls extends StatefulWidget {
 
 class _CustomControlsState extends State<CustomControls> {
   ValueNotifier<CustomControlsOption> customControlsStatus =
-  ValueNotifier(CustomControlsOption(
-    isVisible: true,
-    isDragging: false,
-  ));
+      ValueNotifier(const CustomControlsOption(
+        isVisible: true,
+        isDragging: false,
+      ));
 
   Timer? _hideTimer;
 
@@ -272,8 +276,10 @@ class _CustomControlsState extends State<CustomControls> {
   }
 
   void _toggleControls() {
-    if (customControlsStatus.value.isVisible &&
-        widget.videoPlayerController.value.isPlaying) {
+    final isVisible = customControlsStatus.value.isVisible;
+    final isPlaying = widget.videoPlayerController.value.isPlaying;
+    
+    if (isVisible && isPlaying) {
       hideControlsAfterDelay();
     } else {
       customControlsStatus.value = CustomControlsOption(
@@ -322,11 +328,10 @@ class _CustomControlsState extends State<CustomControls> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Share button
               GestureDetector(
-                onTap: () => ChuChuNavigator.pop(context),
+                onTap: _downloadVideo,
                 child: CommonImage(
-                  iconName: 'share_white_icon.png',
+                  iconName: 'icon_download.png',
                   size: 24.px,
                 ),
               ),
@@ -337,8 +342,6 @@ class _CustomControlsState extends State<CustomControls> {
                   iconName: 'video_screen_icon.png',
                   size: 24.px,
                 ),
-
-
               ),
             ],
           ),
@@ -365,22 +368,21 @@ class _CustomControlsState extends State<CustomControls> {
     return ValueListenableBuilder<CustomControlsOption>(
       valueListenable: customControlsStatus,
       builder: (context, value, child) {
-        String iconName = 'video_palyer_icon.png';
-
-        if (widget.videoPlayerController.value.isPlaying ||
-            value.isDragging ||
-            !value.isVisible) {
-          iconName = 'video_stop_icon.png';
-        }
+        final isPlaying = widget.videoPlayerController.value.isPlaying;
+        final isDragging = value.isDragging;
+        final isVisible = value.isVisible;
+        
+        final iconName = (isPlaying || isDragging || !isVisible) 
+            ? 'video_stop_icon.png' 
+            : 'video_palyer_icon.png';
+            
         return GestureDetector(
           onTap: () {
-            if (widget.videoPlayerController.value.isPlaying) {
+            if (isPlaying) {
               widget.videoPlayerController.pause();
-
               showControls();
             } else {
               widget.videoPlayerController.play();
-
               hideControlsAfterDelay();
             }
           },
@@ -402,8 +404,7 @@ class _CustomControlsState extends State<CustomControls> {
           bottom: 40.0,
           left: 0,
           right: 0,
-          child:
-          Column(
+          child: Column(
             children: [
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 10.px),
@@ -419,8 +420,7 @@ class _CustomControlsState extends State<CustomControls> {
                     margin: EdgeInsets.only(left: 10.px),
                     width: 45.px,
                     child: Text(
-                      _formatDuration(
-                          widget.videoPlayerController.value.position),
+                      _formatDuration(widget.videoPlayerController.value.position),
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
@@ -431,9 +431,8 @@ class _CustomControlsState extends State<CustomControls> {
                     width: 45.px,
                     margin: EdgeInsets.only(right: 10.px),
                     child: Text(
-                      _formatDuration(
-                          widget.videoPlayerController.value.duration),
-                      style: TextStyle(
+                      _formatDuration(widget.videoPlayerController.value.duration),
+                      style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
                       ),
@@ -441,7 +440,6 @@ class _CustomControlsState extends State<CustomControls> {
                   ),
                 ],
               ),
-
             ],
           ),
         );
@@ -461,10 +459,115 @@ class _CustomControlsState extends State<CustomControls> {
       }
       hideControlsAfterDelay();
     }
+    
     customControlsStatus.value = CustomControlsOption(
       isDragging: isStart,
       isVisible: customControlsStatus.value.isVisible,
     );
+  }
+
+  Future<void> _downloadVideo() async {
+    try {
+      if (widget.videoUrl.isEmpty) {
+        _showToast('Invalid video URL');
+        return;
+      }
+      
+      ChuChuLoading.show(status: 'Downloading...');
+
+      String fileName;
+      String? videoPath;
+
+      if (widget.videoUrl.startsWith('http')) {
+        try {
+          final fileInfo = await ChuChuFileCacheManager.get().getFileFromCache(widget.videoUrl);
+          if (fileInfo != null) {
+            videoPath = fileInfo.file.path;
+          } else {
+            final downloadedFile = await ChuChuFileCacheManager.get().downloadFile(widget.videoUrl);
+            videoPath = downloadedFile.file.path;
+          }
+
+          final uri = Uri.parse(widget.videoUrl);
+          fileName = uri.pathSegments.last;
+          if (fileName.isEmpty || !fileName.contains('.')) {
+            fileName = 'video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+          } else {
+            if (!fileName.toLowerCase().endsWith('.mp4')) {
+              fileName = '${fileName.split('.').first}.mp4';
+            }
+          }
+        } catch (e) {
+          print('Error downloading video: $e');
+          ChuChuLoading.dismiss();
+          _showToast('Download failed, please check network connection');
+          return;
+        }
+      } else {
+        final localFile = File(widget.videoUrl);
+        if (await localFile.exists()) {
+          videoPath = widget.videoUrl;
+          fileName = widget.videoUrl.split('/').last;
+          if (fileName.isEmpty) {
+            fileName = 'local_video_${DateTime.now().millisecondsSinceEpoch}.mp4';
+          } else {
+            if (!fileName.toLowerCase().endsWith('.mp4')) {
+              fileName = '${fileName.split('.').first}.mp4';
+            }
+          }
+        } else {
+          ChuChuLoading.dismiss();
+          _showToast('Local video file not found');
+          return;
+        }
+      }
+
+      if (videoPath != null) {
+        final timestamp = DateTime.now().millisecondsSinceEpoch;
+        String uniqueFileName;
+        
+        if (fileName.contains('.')) {
+          final nameWithoutExt = fileName.substring(0, fileName.lastIndexOf('.'));
+          final extension = fileName.substring(fileName.lastIndexOf('.'));
+          final cleanName = nameWithoutExt.replaceAll(RegExp(r'[^\w\s-]'), '');
+          uniqueFileName = cleanName.isNotEmpty 
+            ? '${cleanName}_$timestamp$extension'
+            : 'video_$timestamp$extension';
+        } else {
+          final cleanName = fileName.replaceAll(RegExp(r'[^\w\s-]'), '');
+          uniqueFileName = cleanName.isNotEmpty 
+            ? '${cleanName}_$timestamp.mp4'
+            : 'video_$timestamp.mp4';
+        }
+        
+        final result = await ImageGallerySaver.saveFile(
+          videoPath,
+          name: uniqueFileName,
+        );
+
+        ChuChuLoading.dismiss();
+
+        if (result['isSuccess'] == true) {
+          _showToast('Video saved to gallery: $uniqueFileName');
+        } else {
+          _showToast('Failed to save to gallery');
+        }
+      } else {
+        ChuChuLoading.dismiss();
+        _showToast('Invalid video file path');
+      }
+
+    } catch (e) {
+      ChuChuLoading.dismiss();
+      print('Error saving video to gallery: $e');
+      _showToast('Save failed: $e');
+    }
+  }
+
+
+
+  void _showToast(String message) {
+    CommonToast.instance.show(context, message);
   }
 
   String _formatDuration(Duration duration) {
@@ -472,7 +575,10 @@ class _CustomControlsState extends State<CustomControls> {
     final hours = twoDigits(duration.inHours);
     final minutes = twoDigits(duration.inMinutes.remainder(60));
     final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return [if (duration.inHours > 0) hours, minutes, seconds].join(':');
+    
+    return duration.inHours > 0 
+        ? '$hours:$minutes:$seconds'
+        : '$minutes:$seconds';
   }
 }
 
@@ -491,12 +597,13 @@ class CustomVideoProgressIndicator extends StatelessWidget {
         if (!snapshot.hasData) {
           return Container();
         }
-        Duration position = snapshot.data ?? Duration.zero;
+        
+        final position = snapshot.data ?? Duration.zero;
         final totalDuration = controller.value.duration.inMilliseconds;
-        double progress = 0;
-        if (totalDuration != 0) {
-          progress = position.inMilliseconds / controller.value.duration.inMilliseconds;
-        }
+        final progress = totalDuration != 0 
+            ? position.inMilliseconds / totalDuration 
+            : 0.0;
+            
         return LayoutBuilder(
           builder: (context, constraints) {
             return GestureDetector(
@@ -518,7 +625,7 @@ class CustomVideoProgressIndicator extends StatelessWidget {
                     ClipRRect(
                       borderRadius: BorderRadius.circular(5),
                       child: Container(
-                        height: 5, // Thin progress bar
+                        height: 5,
                         width: double.infinity,
                         decoration: BoxDecoration(
                           color: Colors.white,
@@ -526,15 +633,15 @@ class CustomVideoProgressIndicator extends StatelessWidget {
                         ),
                         child: LinearProgressIndicator(
                           value: progress,
-                          valueColor:
-                          AlwaysStoppedAnimation<Color>(Theme.of(context).colorScheme.primary),
+                          valueColor: AlwaysStoppedAnimation<Color>(
+                            Theme.of(context).colorScheme.primary,
+                          ),
                           backgroundColor: Colors.transparent,
                         ),
                       ),
                     ),
                     Positioned(
-                      left: constraints.maxWidth * progress -
-                          10, // Adjust for circle size
+                      left: constraints.maxWidth * progress - 10,
                       child: GestureDetector(
                         onPanUpdate: (details) =>
                             _dragUpdate(context, constraints, details),
@@ -559,11 +666,10 @@ class CustomVideoProgressIndicator extends StatelessWidget {
   }
 
   void _dragUpdate(context, constraints, details) {
-    final RenderBox boxChuChu = context.findRenderObject() as RenderBox;
-    final Offset offset = boxChuChu.globalToLocal(details.globalPosition);
+    final RenderBox box = context.findRenderObject() as RenderBox;
+    final Offset offset = box.globalToLocal(details.globalPosition);
     double newProgress = offset.dx / constraints.maxWidth;
-    if (newProgress < 0) newProgress = 0;
-    if (newProgress > 1) newProgress = 1;
+    newProgress = newProgress.clamp(0.0, 1.0);
     controller.seekTo(controller.value.duration * newProgress);
   }
 }
