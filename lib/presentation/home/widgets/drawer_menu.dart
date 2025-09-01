@@ -15,6 +15,7 @@ import '../../backup/pages/backup_page.dart';
 import '../../feed/pages/feed_personal_page.dart';
 import '../../relay/pages/relay_pages.dart';
 import '../../search/pages/search_page.dart';
+import '../../wallet/wallet_page.dart';
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({super.key});
@@ -144,6 +145,18 @@ class _DrawerMenuState extends State<DrawerMenu>
                       (context) => FeedPersonalPage(
                     userPubkey: Account.sharedInstance.currentPubkey ?? '',
                   ),
+                );
+              }
+            ),
+            _menuItem(
+              context,
+              Icons.account_balance_wallet,
+              "Wallet",
+              onTap: () {
+                Navigator.of(context).pop(); // Close drawer first
+                ChuChuNavigator.pushPage(
+                  context,
+                  (context) => WalletPage(),
                 );
               }
             ),
