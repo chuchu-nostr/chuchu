@@ -1,6 +1,5 @@
 import 'dart:io';
 import 'dart:typed_data';
-// import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:chuchu/core/nostr_dart/nostr.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
@@ -52,11 +51,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   @override
   void initState() {
     super.initState();
-    _checkProxyStatus();
-  }
-
-  void _checkProxyStatus() {
-    // Proxy status check removed
   }
 
   Future<void> _pickImages() async {

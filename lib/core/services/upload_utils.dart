@@ -9,6 +9,7 @@ import 'package:uuid/uuid.dart';
 
 import '../utils/aes_encrypt_utils.dart';
 import '../widgets/chuchu_Loading.dart';
+import 'blossom_uploader.dart';
 import 'file_type.dart';
 
 class UploadUtils {
@@ -43,14 +44,10 @@ class UploadUtils {
           nonce: encryptedNonce, mode: AESMode.gcm);
       uploadFile = encryptedFile;
     }
-    String url = '';
+    String? url = '';
     if (showLoading) ChuChuLoading.show();
     try {
-      url = await Uploader.upload(
-        uploadFile.path,
-        fileName: filename,
-        onProgress: onProgress,
-      ) ?? '';
+      url = await BolssomUploader.upload(null,uploadFile.path, fileName: filename, onProgress: onProgress);
       if (showLoading) ChuChuLoading.dismiss();
     } catch (e, s) {
       if (showLoading) ChuChuLoading.dismiss();
@@ -61,7 +58,7 @@ class UploadUtils {
       encryptedFile.delete();
     }
 
-    return UploadResult.success(url, encryptedKey, encryptedNonce);
+    return UploadResult.success(url!, encryptedKey, encryptedNonce);
   }
 
 }
