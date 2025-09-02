@@ -5,7 +5,7 @@ import '../network/connect.dart';
 import '../nostr_dart/nostr.dart';
 import '../utils/log_utils.dart';
 import 'model/wallet_transaction.dart';
-import 'model/wallet_balance.dart';
+import 'model/wallet_info.dart';
 import 'model/wallet_invoice.dart';
 
 /// NIP-47 Wallet Manager
@@ -17,8 +17,8 @@ class Wallet {
   static final Wallet sharedInstance = Wallet._internal();
 
   /// Current wallet balance
-  WalletBalance? _balance;
-  WalletBalance? get balance => _balance;
+  WalletInfo? _walletInfo;
+  WalletInfo? get walletInfo => _walletInfo;
 
   /// Transaction history
   List<WalletTransaction> _transactions = [];
@@ -86,9 +86,9 @@ class Wallet {
     
     try {
       final balance = await _getBalance();
-      if (balance != null) {
-        _balance = balance;
-        await _saveBalanceToDB(balance);
+      if (balance != null && _walletInfo != null) {
+        _walletInfo!.updateBalance(totalBalance: balance);
+        await _saveBalanceToDB(_walletInfo!);
         onBalanceChanged?.call();
       }
     } catch (e) {
@@ -153,7 +153,7 @@ class Wallet {
   /// Setup NIP-47 subscription for notifications
   void _setupNIP47Subscription() {
     Connect.sharedInstance.addConnectStatusListener((relay, status, relayKinds) {
-      if (status == 1 && relayKinds.contains(RelayKind.general)) {
+      if (status == 1 && relayKinds.contains(RelayKind.nwc)) {
         _subscribeToWalletEvents(relay);
       }
     });
@@ -165,7 +165,7 @@ class Wallet {
     
     // Subscribe to NIP-47 events (kind 23194 for requests, 23195 for responses)
     Filter filter = Filter(
-      kinds: [23194, 23195],
+      kinds: [23195],
       authors: [Account.sharedInstance.currentPubkey],
     );
     
@@ -186,9 +186,6 @@ class Wallet {
         case 23195: // Response event
           await _handleResponseEvent(event);
           break;
-        case 23194: // Request event
-          await _handleRequestEvent(event);
-          break;
       }
     } catch (e) {
       LogUtils.e(() => 'Failed to handle wallet event: $e');
@@ -201,23 +198,18 @@ class Wallet {
     // This would decode the encrypted content and update local state
   }
 
-  /// Handle request events
-  Future<void> _handleRequestEvent(Event event) async {
-    // Handle incoming payment requests
-    // This would show notifications for incoming payments
-  }
-
   /// Get wallet balance from NIP-47
-  Future<WalletBalance?> _getBalance() async {
+  Future<int?> _getBalance() async {
     // Implementation for getting balance via NIP-47
     // This would send a get_balance request to the wallet
     return null;
   }
 
   /// Get wallet info
-  Future<void> _getWalletInfo() async {
+  Future<WalletInfo?> _getWalletInfo() async {
     // Implementation for getting wallet info via NIP-47
     // This would send a get_info request to the wallet
+    return null;
   }
 
   /// Pay invoice via NIP-47
@@ -272,7 +264,7 @@ class Wallet {
   }
 
   /// Save balance to database
-  Future<void> _saveBalanceToDB(WalletBalance balance) async {
+  Future<void> _saveBalanceToDB(WalletInfo balance) async {
     try {
       // Save balance to local database
       // This would be implemented when database is properly set up

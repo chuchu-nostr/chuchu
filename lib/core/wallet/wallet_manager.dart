@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../utils/log_utils.dart';
 import 'wallet.dart';
 import 'model/wallet_transaction.dart';
-import 'model/wallet_balance.dart';
+import 'model/wallet_info.dart';
 import 'model/wallet_invoice.dart';
 
 /// Wallet Manager
@@ -22,7 +22,7 @@ class WalletManager {
   bool get isWalletAvailable => _wallet.walletURI != null;
 
   /// Wallet balance
-  WalletBalance? get balance => _wallet.balance;
+  WalletInfo? get balance => _wallet.balance;
 
   /// Transaction history
   List<WalletTransaction> get transactions => _wallet.transactions;
