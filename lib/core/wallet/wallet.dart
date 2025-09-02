@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../account/account.dart';
-import '../nostr_dart/src/nips/nip_044_v2.dart';
-import '../nostr_dart/src/utils.dart';
+import '../database/db_isar.dart';
+
 import '../utils/log_utils.dart';
 import 'model/wallet_transaction.dart';
 import 'model/wallet_info.dart';
@@ -17,12 +17,12 @@ class Wallet {
   factory Wallet() => sharedInstance;
   static final Wallet sharedInstance = Wallet._internal();
 
-  static final String walletPubkey = '';
-  static final String walletRelay = '';
-
   /// Current wallet balance
   WalletInfo? _walletInfo;
   WalletInfo? get walletInfo => _walletInfo;
+
+  /// LNbits API service
+  final LnbitsApiService lnbitsApi = LnbitsApiService();
 
   /// Transaction history
   List<WalletTransaction> _transactions = [];
@@ -44,43 +44,23 @@ class Wallet {
     await connectToWallet();
   }
 
-  /// Generate password from private key using NIP-44 shareSecret derivation
-  static String _derivePasswordFromPrivateKey(String privateKey, String publicKey) {
-    // Use NIP-44 shareSecret to derive a shared secret
-    final sharedSecret = Nip44v2.shareSecret(privateKey, publicKey);
-    return bytesToHex(sharedSecret);
-  }
-
   /// Create new wallet
   Future<WalletInfo> createNewWallet(String pubkey, String privkey) async {
     try {
-      // Import the LNbits API service
-      final lnbitsApi = LnbitsApiService();
+      LogUtils.d(() => 'Creating new wallet for pubkey: ${pubkey.substring(0, 8)}...');
       
-      // Create username from pubkey (first 8 characters)
-      final username = pubkey;
+      // Create wallet with random name
+      final accountResponse = await lnbitsApi.createWallet();
+      final walletId = accountResponse['id'] as String;
+      final adminKey = accountResponse['admin'] as String;
+      final invoiceKey = accountResponse['invoice'] as String;
+      final readKey = accountResponse['read'] as String;
+      final walletName = accountResponse['name'] as String;
       
-      // Step 1: Create user in LNbits
-      LogUtils.d(() => 'Creating user in LNbits: $username');
-      final password = _derivePasswordFromPrivateKey(privkey, pubkey);
-      final userResponse = await lnbitsApi.createUser(username: username, password: password);
-      final userId = userResponse['id'] as String;
-      final adminKey = userResponse['admin'] as String;
-      
-      // Step 2: Create wallet for the user
-      LogUtils.d(() => 'Creating wallet for user: $userId');
-      final walletResponse = await lnbitsApi.createWallet(
-        adminKey: adminKey,
-        walletName: 'ChuChu Wallet',
-      );
-      final walletId = walletResponse['id'] as String;
-      final invoiceKey = walletResponse['invoice'] as String;
-      final readKey = walletResponse['read'] as String;
-      
-      // Step 3: Get initial wallet info
-      LogUtils.d(() => 'Getting initial wallet info');
-      final walletInfo = await lnbitsApi.getWalletInfo(apiKey: invoiceKey);
-      final balance = (walletInfo['balance'] as int?) ?? 0;
+      LogUtils.d(() => 'Wallet ID: $walletId');
+      LogUtils.d(() => 'Wallet Name: $walletName');
+      LogUtils.d(() => 'Admin Key: $adminKey');
+      LogUtils.d(() => 'Invoice Key: $invoiceKey');
       
       // Create wallet info object
       final walletInfoObj = WalletInfo(
@@ -90,10 +70,10 @@ class Wallet {
         adminKey: adminKey,
         invoiceKey: invoiceKey,
         readKey: readKey,
-        lnbitsUserId: userId,
-        lnbitsUsername: username,
-        totalBalance: balance,
-        confirmedBalance: balance,
+        lnbitsUserId: walletId, // For LNbits, the wallet ID serves as user ID
+        lnbitsUsername: walletName,
+        totalBalance: 0, // New wallet starts with 0 balance
+        confirmedBalance: 0,
         unconfirmedBalance: 0,
         reservedBalance: 0,
         lastUpdated: DateTime.now().millisecondsSinceEpoch ~/ 1000,
@@ -113,17 +93,25 @@ class Wallet {
   /// Connect to LNbits wallet using current pubkey
   Future<bool> connectToWallet() async {
     try {
+      LogUtils.d(() => 'Starting wallet connection process');
       // Get current pubkey and privkey from account
       final pubkey = Account.sharedInstance.currentPubkey;
       final privkey = Account.sharedInstance.currentPrivkey;
+      LogUtils.d(() => 'Current pubkey: $pubkey, privkey length: ${privkey.length}');
       if (pubkey.isEmpty || privkey.isEmpty) {
         LogUtils.e(() => 'No current pubkey or privkey available');
         return false;
       }
       
-      // Load wallet info from database by pubkey
-      WalletInfo? walletInfo = await _loadWalletInfoByPubkey(pubkey);
-      walletInfo ??= await createNewWallet(pubkey, privkey);
+      // Load wallet info from database
+      LogUtils.d(() => 'Loading wallet info from database');
+      WalletInfo? walletInfo = await _loadWalletInfo();
+      if (walletInfo == null) {
+        LogUtils.d(() => 'No existing wallet found, creating new wallet');
+        walletInfo = await createNewWallet(pubkey, privkey);
+      } else {
+        LogUtils.d(() => 'Found existing wallet: ${walletInfo?.walletId ?? "unknown"}');
+      }
 
       // Set wallet info
       _walletInfo = walletInfo;
@@ -133,7 +121,7 @@ class Wallet {
       // Get recent transactions
       await refreshTransactions();
       
-      LogUtils.i(() => 'Successfully connected to wallet: ${walletInfo?.walletId}');
+      LogUtils.i(() => 'Successfully connected to wallet: ${walletInfo?.walletId ?? "unknown"}');
       return true;
     } catch (e) {
       LogUtils.e(() => 'Failed to connect to wallet: $e');
@@ -275,15 +263,7 @@ class Wallet {
 
 
 
-  /// Load transactions from database
-  Future<void> _loadTransactionsFromDB() async {
-    try {
-      // Load cached transactions from local database
-      // This would be implemented when database is properly set up
-    } catch (e) {
-      LogUtils.e(() => 'Failed to load transactions from DB: $e');
-    }
-  }
+
 
   /// Save transactions to database
   Future<void> _saveTransactionsToDB(List<WalletTransaction> transactions) async {
@@ -295,25 +275,25 @@ class Wallet {
     }
   }
 
-  /// Load balance from database
-  Future<void> _loadBalanceFromDB() async {
-    try {
-      // Load cached balance from local database
-      // This would be implemented when database is properly set up
-    } catch (e) {
-      LogUtils.e(() => 'Failed to load balance from DB: $e');
-    }
-  }
 
-  /// Load wallet info by pubkey from database
-  Future<WalletInfo?> _loadWalletInfoByPubkey(String pubkey) async {
+
+  /// Load wallet info from database
+  Future<WalletInfo?> _loadWalletInfo() async {
     try {
-      // Load wallet info from local database by pubkey
-      // This would be implemented when database is properly set up
-      // For now, return null to indicate no wallet found
+      // Load wallet info from local database
+      final isar = DBISAR.sharedInstance.isar;
+      final count = await isar.walletInfos.count();
+      if (count > 0) {
+        final walletInfo = await isar.walletInfos.get(1); // Get first wallet
+        if (walletInfo != null) {
+          LogUtils.d(() => 'Found existing wallet in database: ${walletInfo.walletId}');
+          return walletInfo;
+        }
+      }
+      LogUtils.d(() => 'No wallet found in database');
       return null;
     } catch (e) {
-      LogUtils.e(() => 'Failed to load wallet info by pubkey: $e');
+      LogUtils.e(() => 'Failed to load wallet info: $e');
       return null;
     }
   }
@@ -324,7 +304,7 @@ class Wallet {
   Future<void> _saveWalletInfoToDB(WalletInfo walletInfo) async {
     try {
       // Save wallet info to local database
-      // This would be implemented when database is properly set up
+      await DBISAR.sharedInstance.saveToDB(walletInfo);
       LogUtils.i(() => 'Wallet info saved to database: ${walletInfo.walletId}');
     } catch (e) {
       LogUtils.e(() => 'Failed to save wallet info to DB: $e');

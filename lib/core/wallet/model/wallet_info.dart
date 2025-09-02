@@ -7,7 +7,7 @@ part 'wallet_info.g.dart';
 class WalletInfo {
   Id id = Isar.autoIncrement;
   /// Wallet identifier
-  @Index(unique: true, replace: false)
+  @Index(unique: true, replace: true)
   String walletId;
 
   /// Total balance in satoshis

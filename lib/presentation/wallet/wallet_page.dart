@@ -30,17 +30,20 @@ class _WalletPageState extends State<WalletPage> {
       setState(() {});
     };
     
-    // Load some initial demo data
-    _loadDemoData();
+    // Initialize wallet
+    _initializeWallet();
   }
 
-  void _loadDemoData() {
-    // Load demo data
-    if (!_wallet.isConnected) {
-      // In real application, this data should be obtained through normal API calls
-      // This is just reserved for demo purposes
+  Future<void> _initializeWallet() async {
+    try {
+      await _wallet.init();
+      setState(() {}); // Refresh UI after wallet initialization
+    } catch (e) {
+      print('Failed to initialize wallet: $e');
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {

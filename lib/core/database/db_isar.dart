@@ -17,6 +17,7 @@ import '../relayGroups/model/groupDB_isar.dart';
 import '../relayGroups/model/joinRequestDB_isar.dart';
 import '../relayGroups/model/moderationDB_isar.dart';
 import '../relayGroups/model/relayGroupDB_isar.dart';
+import '../wallet/model/wallet_info.dart';
 
 class DBISAR {
   static final DBISAR sharedInstance = DBISAR._internal();
@@ -43,6 +44,7 @@ class DBISAR {
     NotificationDBISARSchema,
     ConfigDBISARSchema,
     EventDBISARSchema,
+    WalletInfoSchema,
   ];
 
   Future open(String pubkey) async {

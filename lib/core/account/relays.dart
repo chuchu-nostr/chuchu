@@ -21,13 +21,6 @@ class Relays {
 
   List<String> recommendGeneralRelays = [
     'wss://relay.0xchat.com',
-    'wss://yabu.me',
-    'wss://relay.siamstr.com',
-    'wss://relay.damus.io',
-    'wss://relay.nostr.band',
-    'wss://nos.lol',
-    'wss://nostr.wine',
-    'wss://eden.nostr.land'
   ];
 
   List<String> recommendDMRelays = [

@@ -1,98 +1,30 @@
 import 'dart:convert';
+import 'package:chuchu/core/nostr_dart/src/utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:chuchu/core/utils/log_utils.dart';
 
 /// LNbits API service for HTTP requests
 class LnbitsApiService {
-  static const String _defaultLnbitsUrl = 'https://demo.lnbits.com';
+  static const String _defaultLnbitsUrl = 'http://127.0.0.1:5000';
   
   final String baseUrl;
   
   LnbitsApiService({String? lnbitsUrl}) : baseUrl = lnbitsUrl ?? _defaultLnbitsUrl;
   
-  /// Create a new user in LNbits or get existing user info
-  Future<Map<String, dynamic>> createUser({
-    required String username,
-    String? password,
-  }) async {
-    try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/v1/user'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'username': username,
-          'password': password,
-        }),
-      );
-      
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        return jsonDecode(response.body);
-      } else if (response.statusCode == 409) {
-        // User already exists, try to get user info
-        LogUtils.d(() => 'User already exists, attempting to get user info');
-        return await _getUserInfo(username, password);
-      } else {
-        throw Exception('Failed to create user: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      LogUtils.e(() => 'Error creating user: $e');
-      rethrow;
-    }
-  }
-
-  /// Get existing user info (internal method)
-  Future<Map<String, dynamic>> _getUserInfo(String username, String? password) async {
-    try {
-      // Try to authenticate and get user info
-      final response = await http.post(
-        Uri.parse('$baseUrl/api/v1/auth'),
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: jsonEncode({
-          'username': username,
-          'password': password,
-        }),
-      );
-      
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception('Failed to authenticate user: ${response.statusCode} - ${response.body}');
-      }
-    } catch (e) {
-      LogUtils.e(() => 'Error getting user info: $e');
-      rethrow;
-    }
-  }
-  
-  /// Create a new wallet for a user or get existing wallet
+  /// Create a new wallet with random name
   Future<Map<String, dynamic>> createWallet({
-    required String adminKey,
     String? walletName,
   }) async {
     try {
-      // First, check if user already has wallets
-      final existingWallets = await _getUserWallets(adminKey);
-      final targetName = walletName ?? 'ChuChu Wallet';
+      // Generate random wallet name if not provided
+      final targetName = walletName ?? generate64RandomHexChars();
       
-      // Check if a wallet with the same name already exists
-      for (final wallet in existingWallets) {
-        if (wallet['name'] == targetName) {
-          LogUtils.d(() => 'Wallet with name "$targetName" already exists, using existing wallet');
-          return wallet;
-        }
-      }
+      LogUtils.d(() => 'Creating wallet with name: $targetName');
       
-      // No existing wallet found, create a new one
-      LogUtils.d(() => 'Creating new wallet with name: $targetName');
       final response = await http.post(
-        Uri.parse('$baseUrl/api/v1/wallet'),
+        Uri.parse('$baseUrl/api/v1/account'),
         headers: {
           'Content-Type': 'application/json',
-          'X-Api-Key': adminKey,
         },
         body: jsonEncode({
           'name': targetName,
@@ -100,7 +32,20 @@ class LnbitsApiService {
       );
       
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return jsonDecode(response.body);
+        final walletData = jsonDecode(response.body);
+        LogUtils.d(() => 'Successfully created wallet: ${walletData['id']}');
+        return {
+          'id': walletData['id'],
+          'admin': walletData['adminkey'],
+          'invoice': walletData['inkey'],
+          'read': walletData['inkey'], // LNbits uses inkey for read operations
+          'name': targetName,
+        };
+      } else if (response.statusCode == 409) {
+        // Wallet name already exists, try with a different random name
+        LogUtils.d(() => 'Wallet name exists, trying with different name');
+        final newName = 'chuchu_${DateTime.now().millisecondsSinceEpoch}_${(DateTime.now().microsecond % 1000)}';
+        return await createWallet(walletName: newName);
       } else {
         throw Exception('Failed to create wallet: ${response.statusCode} - ${response.body}');
       }
@@ -109,29 +54,8 @@ class LnbitsApiService {
       rethrow;
     }
   }
+  
 
-  /// Get all wallets for a user (internal method)
-  Future<List<Map<String, dynamic>>> _getUserWallets(String adminKey) async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/api/v1/wallets'),
-        headers: {
-          'X-Api-Key': adminKey,
-        },
-      );
-      
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return List<Map<String, dynamic>>.from(data);
-      } else {
-        LogUtils.w(() => 'Failed to get user wallets: ${response.statusCode} - ${response.body}');
-        return []; // Return empty list if failed
-      }
-    } catch (e) {
-      LogUtils.e(() => 'Error getting user wallets: $e');
-      return []; // Return empty list if failed
-    }
-  }
   
   /// Get wallet information
   Future<Map<String, dynamic>> getWalletInfo({

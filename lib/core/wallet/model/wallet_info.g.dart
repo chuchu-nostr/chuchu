@@ -123,7 +123,7 @@ const WalletInfoSchema = CollectionSchema(
       id: -1783113319798776304,
       name: r'walletId',
       unique: true,
-      replace: false,
+      replace: true,
       properties: [
         IndexPropertySchema(
           name: r'walletId',
