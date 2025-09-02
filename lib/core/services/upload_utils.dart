@@ -1,18 +1,14 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:chuchu/core/services/upload_exception.dart';
 import 'package:chuchu/core/services/uploader.dart';
 import 'package:chuchu/core/utils/string_util.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:http/http.dart';
-import 'package:dio/dio.dart';
 import 'package:uuid/uuid.dart';
 
 import '../utils/aes_encrypt_utils.dart';
 import '../widgets/chuchu_Loading.dart';
-import 'file_storage_server.dart';
 import 'file_type.dart';
 
 class UploadUtils {
