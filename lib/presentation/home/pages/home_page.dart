@@ -21,18 +21,18 @@ enum BottomNavItem {
     selectedAsset: 'home_select_icon.png',
     unselectedAsset: 'home_icon.png',
   ),
-  search(
-    selectedAsset: 'search_select_icon.png',
-    unselectedAsset: 'search_icon.png',
-  ),
+  // search(
+  //   selectedAsset: 'search_select_icon.png',
+  //   unselectedAsset: 'search_icon.png',
+  // ),
   add(
     selectedAsset: 'reply_select_icon.png',
     unselectedAsset: 'reply.png',
   ),
-  messages(
-    selectedAsset: 'reply_select_icon.png',
-    unselectedAsset: 'reply.png',
-  ),
+  // messages(
+  //   selectedAsset: 'reply_select_icon.png',
+  //   unselectedAsset: 'reply.png',
+  // ),
   profile(
     selectedAsset: 'user_icon.png',
     unselectedAsset: 'user_icon.png',
@@ -205,29 +205,29 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           systemOverlayStyle: SystemUiOverlayStyle.dark,
         );
         
-      case BottomNavItem.search:
-        return null;
+      // case BottomNavItem.search:
+      //   return null;
         
-      case BottomNavItem.messages:
-        return AppBar(
-          backgroundColor: theme.colorScheme.surface,
-          elevation: 0,
-          title: Text(
-            'Messages',
-            style: theme.textTheme.headlineMedium?.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          actions: [
-            IconButton(
-              icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
-              onPressed: () {
-                // Handle new message
-              },
-            ),
-          ],
-        );
-        
+      // case BottomNavItem.messages:
+      //   return AppBar(
+      //     backgroundColor: theme.colorScheme.surface,
+      //     elevation: 0,
+      //     title: Text(
+      //       'Messages',
+      //       style: theme.textTheme.headlineMedium?.copyWith(
+      //         fontWeight: FontWeight.bold,
+      //       ),
+      //     ),
+      //     actions: [
+      //       IconButton(
+      //         icon: Icon(Icons.edit, color: theme.colorScheme.onSurface),
+      //         onPressed: () {
+      //           // Handle new message
+      //         },
+      //       ),
+      //     ],
+      //   );
+      //
       case BottomNavItem.profile:
         return AppBar(
           backgroundColor: theme.colorScheme.surface,
@@ -315,10 +315,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                for (final item in [BottomNavItem.home, BottomNavItem.search])
+                for (final item in [BottomNavItem.home])
                   _buildTabItem(item),
                 _buildAddButton(),
-                for (final item in [BottomNavItem.messages, BottomNavItem.profile])
+                for (final item in [BottomNavItem.profile])
                   _buildTabItem(item),
               ],
             ),
