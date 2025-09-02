@@ -21,8 +21,8 @@ class WalletManager {
   bool get isConnected => _wallet.isConnected;
   bool get isWalletAvailable => _wallet.walletURI != null;
 
-  /// Wallet balance
-  WalletInfo? get balance => _wallet.balance;
+  /// Wallet info
+  WalletInfo? get walletInfo => _wallet.walletInfo;
 
   /// Transaction history
   List<WalletTransaction> get transactions => _wallet.transactions;
@@ -41,7 +41,7 @@ class WalletManager {
   /// Connect to wallet
   Future<bool> connectToWallet(String uri) async {
     try {
-      final success = await _wallet.connectToWallet(uri);
+      final success = await _wallet.connectToWallet();
       if (success) {
         LogUtils.i(() => 'Successfully connected to wallet');
       } else {

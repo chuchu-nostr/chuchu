@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/wallet/wallet_manager.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
-import '../../core/wallet/model/wallet_balance.dart';
+import '../../core/wallet/model/wallet_info.dart';
 import '../../core/widgets/common_image.dart';
 
 /// Wallet Page
@@ -138,10 +138,10 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Widget _buildBalanceCard() {
-    WalletBalance? balance = _walletManager.balance;
+    WalletInfo? balance = _walletManager.walletInfo;
     
     // If no balance data, use demo data
-    balance ??= WalletBalance(
+    balance ??= WalletInfo(
       totalBalance: 125000, // 0.00125 BTC
       confirmedBalance: 100000, // 0.001 BTC
       unconfirmedBalance: 25000, // 0.00025 BTC
