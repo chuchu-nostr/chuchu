@@ -48,15 +48,35 @@ class Wallet {
     _setupNIP47Subscription();
   }
 
-  /// Connect to NIP-47 wallet
-  Future<bool> connectToWallet(String uri) async {
+  /// Connect to NIP-47 wallet using current pubkey
+  Future<bool> connectToWallet() async {
     try {
-      _walletURI = uri;
+      // Get current pubkey from account
+      final pubkey = Account.sharedInstance.currentPubkey;
+      if (pubkey.isEmpty) {
+        LogUtils.e(() => 'No current pubkey available');
+        return false;
+      }
+      
+      // Load wallet info from database by pubkey
+      final walletInfo = await _loadWalletInfoByPubkey(pubkey);
+      if (walletInfo == null) {
+        LogUtils.e(() => 'No wallet found for pubkey: $pubkey');
+        return false;
+      }
+      
+      // Set wallet info and URI
+      _walletInfo = walletInfo;
+      _walletURI = walletInfo.nwcUri;
       _isConnected = true;
       onConnectionStatusChanged?.call();
       
-      // Get wallet info
-      await _getWalletInfo();
+      // Get fresh wallet info from server
+      final freshWalletInfo = await _getWalletInfo();
+      if (freshWalletInfo != null) {
+        _walletInfo = freshWalletInfo;
+        await _saveBalanceToDB(_walletInfo!);
+      }
       
       // Get initial balance
       await refreshBalance();
@@ -260,6 +280,19 @@ class Wallet {
       // This would be implemented when database is properly set up
     } catch (e) {
       LogUtils.e(() => 'Failed to load balance from DB: $e');
+    }
+  }
+
+  /// Load wallet info by pubkey from database
+  Future<WalletInfo?> _loadWalletInfoByPubkey(String pubkey) async {
+    try {
+      // Load wallet info from local database by pubkey
+      // This would be implemented when database is properly set up
+      // For now, return null to indicate no wallet found
+      return null;
+    } catch (e) {
+      LogUtils.e(() => 'Failed to load wallet info by pubkey: $e');
+      return null;
     }
   }
 
