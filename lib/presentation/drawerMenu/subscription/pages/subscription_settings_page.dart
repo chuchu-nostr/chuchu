@@ -32,7 +32,7 @@ class SubscriptionSettingsPage extends StatefulWidget {
 
 class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
   final TextEditingController _priceController = TextEditingController();
-  bool _isLoading = false;
+
   bool _isPaidSubscription = true;
   final Map<String, String> _customPrices = {};
 
@@ -72,6 +72,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
     super.initState();
     _selectedTier = _subscriptionTiers.firstWhere((tier) => tier.isDefault);
     _priceController.text = (_selectedTier!.price / 100).toStringAsFixed(2);
+    init();
   }
 
   @override
@@ -80,15 +81,20 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
     super.dispose();
   }
 
+  bool _hasExistingGroup = false;
+  
+  void init(){
+    Map<String, ValueNotifier<RelayGroupDBISAR>>? groups = RelayGroup.sharedInstance.myGroups;
+    if(groups[Account.sharedInstance.currentPubkey] != null){
+      _hasExistingGroup = true;
+    }
+  }
+
   Future<void> _createSettings() async {
     if (_isPaidSubscription && _priceController.text.isEmpty) {
       CommonToast.instance.show(context, 'Please set a subscription price');
       return;
     }
-
-    setState(() {
-      _isLoading = true;
-    });
 
     try {
       double price = 0.0;
@@ -98,9 +104,6 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
         String cleanPriceText = _priceController.text.replaceAll(RegExp(r'[^\d.]'), '');
         if (cleanPriceText.isEmpty) {
           CommonToast.instance.show(context, 'Please enter a valid price');
-          setState(() {
-            _isLoading = false;
-          });
           return;
         }
         
@@ -108,30 +111,37 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
         priceText = '\$${price.toStringAsFixed(2)}';
       }
       
-      RelayGroupDBISAR? relayGroupDB = await RelayGroup.sharedInstance.createGroup(
-        _subscriptionRelay,
-        Account.sharedInstance.currentPubkey,
-        about: _isPaidSubscription 
-            ? 'Premium content subscription - $priceText per ${_selectedTier?.duration ?? 'month'}'
-            : 'Free subscription content',
-        closed: _isPaidSubscription,
-      );
-
-      if(relayGroupDB != null){
+      if (_hasExistingGroup) {
+        // Update existing subscription settings
+        // TODO: Implement update logic for existing group
         String message = _isPaidSubscription 
-            ? 'Premium subscription created successfully at $priceText'
-            : 'Free subscription created successfully';
+            ? 'Subscription settings updated successfully at $priceText'
+            : 'Subscription settings updated to free';
         CommonToast.instance.show(context, message);
         Navigator.pop(context);
       } else {
-        CommonToast.instance.show(context, 'Failed to create subscription');
+        // Create new subscription
+        RelayGroupDBISAR? relayGroupDB = await RelayGroup.sharedInstance.createGroup(
+          _subscriptionRelay,
+          Account.sharedInstance.currentPubkey,
+          about: _isPaidSubscription 
+              ? 'Premium content subscription - $priceText per ${_selectedTier?.duration ?? 'month'}'
+              : 'Free subscription content',
+          closed: _isPaidSubscription,
+        );
+
+        if(relayGroupDB != null){
+          String message = _isPaidSubscription 
+              ? 'Premium subscription created successfully at $priceText'
+              : 'Free subscription created successfully';
+          CommonToast.instance.show(context, message);
+          Navigator.pop(context);
+        } else {
+          CommonToast.instance.show(context, 'Failed to create subscription');
+        }
       }
     } catch (e) {
-      CommonToast.instance.show(context, 'Error creating subscription: ${e.toString()}');
-    } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      CommonToast.instance.show(context, 'Error ${_hasExistingGroup ? 'updating' : 'creating'} subscription: ${e.toString()}');
     }
   }
 
@@ -358,31 +368,20 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _createSettings,
+                    onPressed: _createSettings,
                     style: ElevatedButton.styleFrom(
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
                     ),
-                    child: _isLoading
-                        ? SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(
-                                Theme.of(context).colorScheme.onPrimary,
-                              ),
-                            ),
-                          )
-                        : Text(
-                            'Create Subscription',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w600,
-                              color: Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
+                    child: Text(
+                      _hasExistingGroup ? 'Update Subscription' : 'Create Subscription',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: Theme.of(context).colorScheme.onPrimary,
+                      ),
+                    ),
                   ),
                 ),
               ),

@@ -6,6 +6,10 @@ import 'package:chuchu/presentation/drawerMenu/follows/pages/follows_pages.dart'
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
+import '../../../core/account/account.dart';
+import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
+import '../../../core/relayGroups/relayGroup.dart';
+import '../../drawerMenu/subscription/pages/subscription_settings_page.dart';
 import '../../feed/pages/create_feed_page.dart';
 import '../../feed/pages/feed_notifications_page.dart';
 
@@ -389,9 +393,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   Widget _buildAddButton() {
     return GestureDetector(
       onTap: () {
+        Map<String, ValueNotifier<RelayGroupDBISAR>>? groups = RelayGroup.sharedInstance.myGroups;
+
+        bool isCreate = groups[Account.sharedInstance.currentPubkey] != null;
         Navigator.of(context).push(
           PageRouteBuilder(
-            pageBuilder: (context, animation, secondaryAnimation) => CreateFeedPage(),
+            pageBuilder: (context, animation, secondaryAnimation) => isCreate ? CreateFeedPage() : SubscriptionSettingsPage(),
             transitionsBuilder: (context, animation, secondaryAnimation, child) {
               const begin = Offset(0.0, 1.0);
               const end = Offset.zero;
@@ -415,7 +422,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         height: 30,
         decoration: BoxDecoration(
           color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(8), // 添加圆角
+          borderRadius: BorderRadius.circular(8),
           boxShadow: [
             BoxShadow(
               color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
