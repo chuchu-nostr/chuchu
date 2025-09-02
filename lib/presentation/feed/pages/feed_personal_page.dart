@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chuchu/core/account/account+follows.dart';
 import 'package:chuchu/core/feed/feed+load.dart';
+import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:flutter/material.dart';
@@ -10,6 +11,7 @@ import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
@@ -305,12 +307,12 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   Future<List<NoteDBISAR>> _getNoteTypeToDB(bool isInit) async {
     try {
       int? until = isInit ? null : _allNotesFromDBLastTimestamp;
-      List<NoteDBISAR>? result = await Feed.sharedInstance.loadUserNotesFromDB(
-        [widget.userPubkey],
-        until: until,
-        limit: _limit,
-      );
-      return result ?? [];
+      List<NoteDBISAR> result = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
+          widget.userPubkey,
+          until: until,
+          limit: _limit) ??
+          [];
+      return result;
     } catch (e) {
       debugPrint('Error loading notes from DB: $e');
       return [];
