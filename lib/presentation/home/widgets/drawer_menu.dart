@@ -16,6 +16,7 @@ import '../../feed/pages/feed_personal_page.dart';
 import '../../relay/pages/relay_pages.dart';
 import '../../search/pages/search_page.dart';
 import '../../wallet/wallet_page.dart';
+import '../../drawerMenu/subscription/pages/subscription_settings_page.dart';
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({super.key});
@@ -176,6 +177,15 @@ class _DrawerMenuState extends State<DrawerMenu>
               onTap: () {
                 Navigator.of(context).pop(); // Close drawer first
                 ChuChuNavigator.pushPage(context, (context) => SearchPage());
+              },
+            ),
+            _menuItem(
+              context,
+              Icons.subscriptions,
+              "Subscription Settings",
+              onTap: () {
+                Navigator.of(context).pop(); // Close drawer first
+                ChuChuNavigator.pushPage(context, (context) => const SubscriptionSettingsPage());
               },
             ),
 
