@@ -1,22 +1,28 @@
 import 'dart:io';
+import 'dart:typed_data';
 // import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:chuchu/core/nostr_dart/nostr.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:video_thumbnail/video_thumbnail.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
-import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/relayGroups/relayGroup.dart';
+import '../../../core/services/file_type.dart';
+import '../../../core/services/upload_utils.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/models/noted_ui_model.dart';
+
+
+import 'package:path/path.dart' as Path;
 
 class CreateFeedPage extends StatefulWidget {
   final NotedUIModel? notedUIModel;
@@ -31,6 +37,13 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   final List<File> _selectedImages = [];
   final List<String> _uploadedImageUrls = []; // Store uploaded image URLs
   final Map<int, bool> _uploadingStatus = {}; // Track upload status for each image
+  
+  // Video related state
+  final List<File> _selectedVideos = [];
+  final List<String> _uploadedVideoUrls = []; // Store uploaded video URLs
+  final Map<int, bool> _videoUploadingStatus = {}; // Track upload status for each video
+  final Map<int, Uint8List?> _videoThumbnails = {}; // Store video thumbnails
+  
   Map<String,UserDBISAR> draftCueUserMap = {};
 
   bool _postFeedTag = false;
@@ -39,6 +52,11 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   @override
   void initState() {
     super.initState();
+    _checkProxyStatus();
+  }
+
+  void _checkProxyStatus() {
+    // Proxy status check removed
   }
 
   Future<void> _pickImages() async {
@@ -55,6 +73,23 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       
       // Auto-upload newly selected images
       _uploadNewImages();
+    }
+  }
+
+  Future<void> _pickVideos() async {
+    final picker = ImagePicker();
+    final picked = await picker.pickVideo(source: ImageSource.gallery);
+    if (picked != null) {
+      setState(() {
+        _selectedVideos.add(File(picked.path));
+        // Initialize upload status for new video
+        final index = _selectedVideos.length - 1;
+        _videoUploadingStatus[index] = false;
+      });
+      
+      // Generate thumbnail and auto-upload
+      _generateVideoThumbnail(File(picked.path), _selectedVideos.length - 1);
+      _uploadNewVideos();
     }
   }
 
@@ -78,6 +113,59 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       _uploadingStatus.clear();
       _uploadingStatus.addAll(newStatus);
     });
+  }
+
+  void _removeVideo(int index) {
+    setState(() {
+      _selectedVideos.removeAt(index);
+      // Remove corresponding upload status, URL and thumbnail
+      _videoUploadingStatus.remove(index);
+      _videoThumbnails.remove(index);
+      if (index < _uploadedVideoUrls.length) {
+        _uploadedVideoUrls.removeAt(index);
+      }
+      // Re-adjust status indices for remaining videos
+      final newStatus = <int, bool>{};
+      final newThumbnails = <int, Uint8List?>{};
+      _videoUploadingStatus.forEach((key, value) {
+        if (key > index) {
+          newStatus[key - 1] = value;
+        } else if (key < index) {
+          newStatus[key] = value;
+        }
+      });
+      _videoThumbnails.forEach((key, value) {
+        if (key > index) {
+          newThumbnails[key - 1] = value;
+        } else if (key < index) {
+          newThumbnails[key] = value;
+        }
+      });
+      _videoUploadingStatus.clear();
+      _videoThumbnails.clear();
+      _videoUploadingStatus.addAll(newStatus);
+      _videoThumbnails.addAll(newThumbnails);
+    });
+  }
+
+  /// Generate video thumbnail
+  Future<void> _generateVideoThumbnail(File videoFile, int index) async {
+    try {
+      final thumbnail = await VideoThumbnail.thumbnailData(
+        video: videoFile.path,
+        imageFormat: ImageFormat.JPEG,
+        maxWidth: 200,
+        quality: 75,
+      );
+      
+      if (thumbnail != null && mounted) {
+        setState(() {
+          _videoThumbnails[index] = thumbnail;
+        });
+      }
+    } catch (e) {
+      // Thumbnail generation failed, continue without thumbnail
+    }
   }
 
   /// Upload newly selected images
@@ -108,7 +196,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             imageFile.path,
             fileName: imageFile.path.split('/').last,
           );
-
           if (imageUrl != null) {
             if (mounted) {
               setState(() {
@@ -120,9 +207,69 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             throw Exception('Upload returned empty URL');
           }
         } catch (e) {
-          print('Image $i upload failed: $e');
           if (mounted) {
             CommonToast.instance.show(context, 'Image ${i + 1} upload failed: $e');
+          }
+        }
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+    }
+  }
+
+  /// Upload newly selected videos
+  Future<void> _uploadNewVideos() async {
+    if (_isUploading) return;
+
+    setState(() {
+      _isUploading = true;
+    });
+
+    try {
+      // Upload videos that haven't been uploaded yet
+      for (int i = _uploadedVideoUrls.length; i < _selectedVideos.length; i++) {
+        if (!mounted) return;
+
+        final file = _selectedVideos[i];
+
+        try {
+          // Set upload status to true
+          if (mounted) {
+            setState(() {
+              _videoUploadingStatus[i] = true;
+            });
+          }
+
+          final currentTime = DateTime.now().microsecondsSinceEpoch.toString();
+          String fileName = '$currentTime${Path.basenameWithoutExtension(file.path)}.mp4';
+          
+          UploadResult result = await UploadUtils.uploadFile(
+              context: context,
+              fileType: FileType.video,
+              file: file,
+              filename: fileName,
+          );
+          
+          if (result.isSuccess && result.url.isNotEmpty) {
+            if (mounted) {
+              setState(() {
+                _uploadedVideoUrls.add(result.url);
+                _videoUploadingStatus[i] = false; // Upload completed
+              });
+            }
+          } else {
+            throw Exception('Upload failed: ${result.errorMsg}');
+          }
+        } catch (e) {
+          if (mounted) {
+            setState(() {
+              _videoUploadingStatus[i] = false; // Reset upload status
+            });
+            CommonToast.instance.show(context, 'Video ${i + 1} upload failed: $e');
           }
         }
       }
@@ -162,7 +309,11 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
               child: SingleChildScrollView(
                 padding: const EdgeInsets.only(bottom: 12),
                 child: Column(
-                  children: [_buildTextInputArea(), _buildImageDisplayArea()],
+                  children: [
+                    _buildTextInputArea(), 
+                    _buildImageDisplayArea(),
+                    _buildVideoDisplayArea(),
+                  ],
                 ),
               ),
             ),
@@ -179,6 +330,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                     IconButton(
                       icon: const Icon(Icons.image),
                       onPressed: _pickImages,
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.videocam),
+                      onPressed: _pickVideos,
                     ),
                   ],
                 ),
@@ -237,6 +392,30 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                   key: const ValueKey('single'),
                 )
                 : _buildImageCarousel(key: const ValueKey('multi')),
+      ),
+    );
+  }
+
+  Widget _buildVideoDisplayArea() {
+    if (_selectedVideos.isEmpty) return const SizedBox();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (child, animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: ScaleTransition(scale: animation, child: child),
+          );
+        },
+        child:
+            _selectedVideos.length == 1
+                ? _buildSingleVideo(
+                  _selectedVideos[0],
+                  0,
+                  key: const ValueKey('single_video'),
+                )
+                : _buildVideoCarousel(key: const ValueKey('multi_video')),
       ),
     );
   }
@@ -399,6 +578,187 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     );
   }
 
+  Widget _buildSingleVideo(File video, int index, {required Key key}) {
+    final isUploaded = index < _uploadedVideoUrls.length;
+    final isUploading = _videoUploadingStatus[index] ?? false;
+    final thumbnail = _videoThumbnails[index];
+    
+    return Stack(
+      key: key,
+      children: [
+        Container(
+          margin: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(borderRadius: BorderRadius.circular(16)),
+          clipBehavior: Clip.hardEdge,
+          child: Stack(
+            children: [
+              // Show thumbnail if available, otherwise show play icon
+              if (thumbnail != null)
+                Image.memory(thumbnail, fit: BoxFit.cover, width: double.infinity, height: 200)
+              else
+                Container(
+                  width: double.infinity,
+                  height: 200,
+                  color: Colors.black12,
+                  child: const Center(
+                    child: Icon(Icons.play_circle_outline, size: 50, color: Colors.grey),
+                  ),
+                ),
+              if (isUploading)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: Colors.black54,
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ),
+        Positioned(
+          top: 12,
+          right: 24,
+          child: GestureDetector(
+            onTap: () => _removeVideo(index),
+            child: const CircleAvatar(
+              radius: 14,
+              backgroundColor: Colors.black54,
+              child: Icon(Icons.close, color: Colors.white, size: 16),
+            ),
+          ),
+        ),
+        if (isUploaded)
+          Positioned(
+            bottom: 8,
+            left: 16,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+              decoration: BoxDecoration(
+                color: Colors.green,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check, color: Colors.white, size: 12),
+                  SizedBox(width: 3),
+                  Text(
+                    'Uploaded',
+                    style: TextStyle(color: Colors.white, fontSize: 10),
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildVideoCarousel({required Key key}) {
+    return SizedBox(
+      key: key,
+      height: 130,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        itemCount: _selectedVideos.length,
+        itemBuilder: (context, index) {
+          final isUploaded = index < _uploadedVideoUrls.length;
+          final isUploading = _videoUploadingStatus[index] ?? false;
+          final thumbnail = _videoThumbnails[index];
+          
+          return Stack(
+            children: [
+              Container(
+                width: 120,
+                height: 120,
+                margin: const EdgeInsets.only(right: 10),
+                decoration: BoxDecoration(
+                  color: Colors.black12,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                clipBehavior: Clip.hardEdge,
+                child: Stack(
+                  children: [
+                    // Show thumbnail if available, otherwise show play icon
+                    if (thumbnail != null)
+                      Image.memory(thumbnail, fit: BoxFit.cover, width: 120, height: 120)
+                    else
+                      Container(
+                        width: 120,
+                        height: 120,
+                        color: Colors.black12,
+                        child: const Center(
+                          child: Icon(Icons.play_circle_outline, size: 30, color: Colors.grey),
+                        ),
+                      ),
+                    if (isUploading)
+                      Positioned.fill(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(12),
+                            color: Colors.black54,
+                          ),
+                          child: const Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              strokeWidth: 2,
+                            ),
+                          ),
+                        ),
+                      ),
+                    if (isUploaded)
+                      Positioned(
+                        bottom: 8,
+                        left: 8,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.check, color: Colors.white, size: 10),
+                              SizedBox(width: 2),
+                              Text(
+                                'Done',
+                                style: TextStyle(color: Colors.white, fontSize: 8),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+
+              Positioned(
+                top: 6,
+                right: 14,
+                child: GestureDetector(
+                  onTap: () => _removeVideo(index),
+                  child: const CircleAvatar(
+                    radius: 12,
+                    backgroundColor: Colors.black54,
+                    child: Icon(Icons.close, color: Colors.white, size: 14),
+                  ),
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+
   void _postMoment() async {
     if (_postFeedTag) return;
     _postFeedTag = true;
@@ -411,12 +771,20 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         await _uploadNewImages();
       }
       
+      // Wait for all videos to complete upload
+      if (_selectedVideos.isNotEmpty && _uploadedVideoUrls.length < _selectedVideos.length) {
+        await _uploadNewVideos();
+      }
+      
       final inputText = _controller.text;
       
-      // Build content with image URLs
+      // Build content with image and video URLs
       String mediaContent = '';
       if (_uploadedImageUrls.isNotEmpty) {
-        mediaContent = ' ${_uploadedImageUrls.join(' ')}';
+        mediaContent += ' ${_uploadedImageUrls.join(' ')}';
+      }
+      if (_uploadedVideoUrls.isNotEmpty) {
+        mediaContent += ' ${_uploadedVideoUrls.join(' ')}';
       }
       
       String content = '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)}$mediaContent';
@@ -435,7 +803,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         CommonToast.instance.show(context, 'Failed to send');
       }
     } catch (e) {
-      print('Post failed: $e');
       CommonToast.instance.show(context, 'Post failed: $e');
     } finally {
       ChuChuLoading.dismiss();
