@@ -10,10 +10,6 @@ class WalletInfo {
   @Index(unique: true, replace: false)
   String walletId;
 
-  /// Nostr Wallet Connect URI
-  @Index(unique: true, replace: true)
-  String nwcUri;
-
   /// Total balance in satoshis
   int totalBalance;
 
@@ -32,11 +28,23 @@ class WalletInfo {
   /// Nostr public key
   String pubkey;
 
-  /// Secret key for authentication
-  String secret;
+  /// LNbits server URL
+  String lnbitsUrl;
 
-  /// Relay URL for Nostr connection
-  String relay;
+  /// LNbits admin API key
+  String adminKey;
+
+  /// LNbits invoice API key
+  String invoiceKey;
+
+  /// LNbits read API key
+  String readKey;
+
+  /// User ID in LNbits
+  String lnbitsUserId;
+
+  /// Username in LNbits
+  String lnbitsUsername;
 
   WalletInfo({
     this.totalBalance = 0,
@@ -46,9 +54,12 @@ class WalletInfo {
     this.lastUpdated = 0,
     this.walletId = '',
     this.pubkey = '',
-    this.nwcUri = '',
-    this.secret = '',
-    this.relay = '',
+    this.lnbitsUrl = '',
+    this.adminKey = '',
+    this.invoiceKey = '',
+    this.readKey = '',
+    this.lnbitsUserId = '',
+    this.lnbitsUsername = '',
   });
 
   /// Create from JSON map
@@ -61,9 +72,12 @@ class WalletInfo {
       lastUpdated: json['last_updated'] ?? 0,
       walletId: json['wallet_id'] ?? '',
       pubkey: json['pubkey'] ?? '',
-      nwcUri: json['nwc_uri'] ?? '',
-      secret: json['secret'] ?? '',
-      relay: json['relay'] ?? '',
+      lnbitsUrl: json['lnbits_url'] ?? '',
+      adminKey: json['admin_key'] ?? '',
+      invoiceKey: json['invoice_key'] ?? '',
+      readKey: json['read_key'] ?? '',
+      lnbitsUserId: json['lnbits_user_id'] ?? '',
+      lnbitsUsername: json['lnbits_username'] ?? '',
     );
   }
 
@@ -77,9 +91,12 @@ class WalletInfo {
       'last_updated': lastUpdated,
       'wallet_id': walletId,
       'pubkey': pubkey,
-      'nwc_uri': nwcUri,
-      'secret': secret,
-      'relay': relay,
+      'lnbits_url': lnbitsUrl,
+      'admin_key': adminKey,
+      'invoice_key': invoiceKey,
+      'read_key': readKey,
+      'lnbits_user_id': lnbitsUserId,
+      'lnbits_username': lnbitsUsername,
     };
   }
 
@@ -109,14 +126,20 @@ class WalletInfo {
   /// Update wallet info with new values
   void updateInfo({
     String? pubkey,
-    String? nwcUri,
-    String? secret,
-    String? relay,
+    String? lnbitsUrl,
+    String? adminKey,
+    String? invoiceKey,
+    String? readKey,
+    String? lnbitsUserId,
+    String? lnbitsUsername,
   }) {
     this.pubkey = pubkey ?? this.pubkey;
-    this.nwcUri = nwcUri ?? this.nwcUri;
-    this.secret = secret ?? this.secret;
-    this.relay = relay ?? this.relay;
+    this.lnbitsUrl = lnbitsUrl ?? this.lnbitsUrl;
+    this.adminKey = adminKey ?? this.adminKey;
+    this.invoiceKey = invoiceKey ?? this.invoiceKey;
+    this.readKey = readKey ?? this.readKey;
+    this.lnbitsUserId = lnbitsUserId ?? this.lnbitsUserId;
+    this.lnbitsUsername = lnbitsUsername ?? this.lnbitsUsername;
     lastUpdated = DateTime.now().millisecondsSinceEpoch ~/ 1000;
   }
 
@@ -129,9 +152,12 @@ class WalletInfo {
     int? lastUpdated,
     String? walletId,
     String? pubkey,
-    String? nwcUri,
-    String? secret,
-    String? relay,
+    String? lnbitsUrl,
+    String? adminKey,
+    String? invoiceKey,
+    String? readKey,
+    String? lnbitsUserId,
+    String? lnbitsUsername,
   }) {
     return WalletInfo(
       totalBalance: totalBalance ?? this.totalBalance,
@@ -141,15 +167,18 @@ class WalletInfo {
       lastUpdated: lastUpdated ?? this.lastUpdated,
       walletId: walletId ?? this.walletId,
       pubkey: pubkey ?? this.pubkey,
-      nwcUri: nwcUri ?? this.nwcUri,
-      secret: secret ?? this.secret,
-      relay: relay ?? this.relay,
+      lnbitsUrl: lnbitsUrl ?? this.lnbitsUrl,
+      adminKey: adminKey ?? this.adminKey,
+      invoiceKey: invoiceKey ?? this.invoiceKey,
+      readKey: readKey ?? this.readKey,
+      lnbitsUserId: lnbitsUserId ?? this.lnbitsUserId,
+      lnbitsUsername: lnbitsUsername ?? this.lnbitsUsername,
     );
   }
 
   @override
   String toString() {
-    return 'WalletInfo(totalBalance: $totalBalance, confirmedBalance: $confirmedBalance, unconfirmedBalance: $unconfirmedBalance, reservedBalance: $reservedBalance, lastUpdated: $lastUpdated, walletId: $walletId, pubkey: $pubkey, nwcUri: $nwcUri, secret: $secret, relay: $relay)';
+    return 'WalletInfo(totalBalance: $totalBalance, confirmedBalance: $confirmedBalance, unconfirmedBalance: $unconfirmedBalance, reservedBalance: $reservedBalance, lastUpdated: $lastUpdated, walletId: $walletId, pubkey: $pubkey, lnbitsUrl: $lnbitsUrl, adminKey: $adminKey, invoiceKey: $invoiceKey, readKey: $readKey, lnbitsUserId: $lnbitsUserId, lnbitsUsername: $lnbitsUsername)';
   }
 
   @override
@@ -163,9 +192,12 @@ class WalletInfo {
         other.lastUpdated == lastUpdated &&
         other.walletId == walletId &&
         other.pubkey == pubkey &&
-        other.nwcUri == nwcUri &&
-        other.secret == secret &&
-        other.relay == relay;
+        other.lnbitsUrl == lnbitsUrl &&
+        other.adminKey == adminKey &&
+        other.invoiceKey == invoiceKey &&
+        other.readKey == readKey &&
+        other.lnbitsUserId == lnbitsUserId &&
+        other.lnbitsUsername == lnbitsUsername;
   }
 
   @override
@@ -178,9 +210,12 @@ class WalletInfo {
       lastUpdated,
       walletId,
       pubkey,
-      nwcUri,
-      secret,
-      relay,
+      lnbitsUrl,
+      adminKey,
+      invoiceKey,
+      readKey,
+      lnbitsUserId,
+      lnbitsUsername,
     );
   }
 }

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../core/wallet/wallet_manager.dart';
+import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
 import '../../core/wallet/model/wallet_info.dart';
 import '../../core/widgets/common_image.dart';
@@ -12,7 +12,7 @@ class WalletPage extends StatefulWidget {
 }
 
 class _WalletPageState extends State<WalletPage> {
-  final WalletManager _walletManager = WalletManager.sharedInstance;
+  final Wallet _wallet = Wallet.sharedInstance;
   bool _isLoading = false;
   String _statusMessage = '';
 
@@ -23,17 +23,12 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   void _setupCallbacks() {
-    _walletManager.setCallbacks(
-      onBalanceChanged: () {
-        setState(() {});
-      },
-      onTransactionAdded: () {
-        setState(() {});
-      },
-      onConnectionStatusChanged: () {
-        setState(() {});
-      },
-    );
+    _wallet.onBalanceChanged = () {
+      setState(() {});
+    };
+    _wallet.onTransactionAdded = () {
+      setState(() {});
+    };
     
     // Load some initial demo data
     _loadDemoData();
@@ -41,7 +36,7 @@ class _WalletPageState extends State<WalletPage> {
 
   void _loadDemoData() {
     // Load demo data
-    if (!_walletManager.isConnected) {
+    if (!_wallet.isConnected) {
       // In real application, this data should be obtained through normal API calls
       // This is just reserved for demo purposes
     }
@@ -83,7 +78,7 @@ class _WalletPageState extends State<WalletPage> {
                   SizedBox(height: 16),
                   _buildRecentTransactions(),
                   SizedBox(height: 16),
-                  if (_walletManager.isConnected) ...[
+                  if (_wallet.isConnected) ...[
                     _buildQuickActions(),
                   ] else ...[
                     _buildConnectWalletCard(),
@@ -112,9 +107,9 @@ class _WalletPageState extends State<WalletPage> {
                   ),
                   SizedBox(height: 4),
                   Text(
-                    _walletManager.isConnected ? 'Connected to NIP-47 wallet' : 'Wallet not connected',
+                    _wallet.isConnected ? 'Connected to LNbits wallet' : 'Wallet not connected',
                     style: TextStyle(
-                      color: _walletManager.isConnected ? Colors.green : Colors.grey,
+                      color: _wallet.isConnected ? Colors.green : Colors.grey,
                     ),
                   ),
                 ],
@@ -123,11 +118,11 @@ class _WalletPageState extends State<WalletPage> {
             Container(
               padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: _walletManager.isConnected ? Colors.green : Colors.grey,
+                color: _wallet.isConnected ? Colors.green : Colors.grey,
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Text(
-                _walletManager.isConnected ? 'Connected' : 'Disconnected',
+                _wallet.isConnected ? 'Connected' : 'Disconnected',
                 style: TextStyle(color: Colors.white, fontSize: 12),
               ),
             ),
@@ -138,7 +133,7 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Widget _buildBalanceCard() {
-    WalletInfo? balance = _walletManager.walletInfo;
+    WalletInfo? balance = _wallet.walletInfo;
     
     // If no balance data, use demo data
     balance ??= WalletInfo(
@@ -307,7 +302,7 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Widget _buildRecentTransactions() {
-    List<WalletTransaction> transactions = _walletManager.transactions.take(5).toList();
+    List<WalletTransaction> transactions = _wallet.transactions.take(5).toList();
     
     // If no transaction data, use demo data
     if (transactions.isEmpty) {
@@ -493,8 +488,8 @@ class _WalletPageState extends State<WalletPage> {
       });
 
     try {
-      await _walletManager.refreshBalance();
-      await _walletManager.refreshTransactions();
+      await _wallet.refreshBalance();
+      await _wallet.refreshTransactions();
               setState(() {
           _statusMessage = 'Data refresh completed';
         });
@@ -533,12 +528,11 @@ class _WalletPageState extends State<WalletPage> {
 
   Future<void> _autoConnectWallet() async {
     try {
-      // Simulate getting NIP-47 URI from API
+      // Simulate connecting to wallet
       await Future.delayed(Duration(seconds: 2));
-      final uri = 'bunker://wallet_pubkey@relay.example.com?secret=auto_generated_secret';
       
-      // Connect wallet using the obtained URI
-      final success = await _walletManager.connectToWallet(uri);
+      // Connect wallet
+      final success = await _wallet.connectToWallet();
       
       Navigator.pop(context); // Close progress dialog
       

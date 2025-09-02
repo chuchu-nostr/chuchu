@@ -8,7 +8,6 @@ import '../manager/thread_pool_manager.dart';
 import '../widgets/chuchu_Loading.dart';
 import '../proxy/unified_proxy_manager.dart';
 import '../proxy/chuchu_http_overrides.dart';
-import '../wallet/wallet_manager.dart';
 
 class InitializationManager {
   static final InitializationManager _instance = InitializationManager._internal();
@@ -118,10 +117,6 @@ class InitializationManager {
   void _initializeUserServicesAsync() {
     _executeAsyncWithStatus('user_services', () async {
       await ChuChuUserInfoManager.sharedInstance.initLocalData();
-    });
-    
-    _executeAsyncWithStatus('wallet_services', () async {
-      await WalletManager.sharedInstance.init();
     });
   }
 

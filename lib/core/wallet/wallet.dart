@@ -1,12 +1,13 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../account/account.dart';
-import '../network/connect.dart';
-import '../nostr_dart/nostr.dart';
+import '../nostr_dart/src/nips/nip_044_v2.dart';
+import '../nostr_dart/src/utils.dart';
 import '../utils/log_utils.dart';
 import 'model/wallet_transaction.dart';
 import 'model/wallet_info.dart';
 import 'model/wallet_invoice.dart';
+import 'lnbits_api_service.dart';
 
 /// NIP-47 Wallet Manager
 /// Handles Lightning Network payments through Nostr Wallet Connect
@@ -15,6 +16,9 @@ class Wallet {
   Wallet._internal();
   factory Wallet() => sharedInstance;
   static final Wallet sharedInstance = Wallet._internal();
+
+  static final String walletPubkey = '';
+  static final String walletRelay = '';
 
   /// Current wallet balance
   WalletInfo? _walletInfo;
@@ -29,86 +33,128 @@ class Wallet {
   List<WalletTransaction> get pendingTransactions => List.unmodifiable(_pendingTransactions);
 
   /// Wallet connection status
-  bool _isConnected = false;
-  bool get isConnected => _isConnected;
-
-  /// Wallet URI for NIP-47 connection
-  String? _walletURI;
-  String? get walletURI => _walletURI;
+  bool get isConnected => _walletInfo != null;
 
   /// Callbacks
   VoidCallback? onBalanceChanged;
   VoidCallback? onTransactionAdded;
-  VoidCallback? onConnectionStatusChanged;
 
   /// Initialize wallet
   Future<void> init() async {
-    await _loadTransactionsFromDB();
-    await _loadBalanceFromDB();
-    _setupNIP47Subscription();
+    await connectToWallet();
   }
 
-  /// Connect to NIP-47 wallet using current pubkey
+  /// Generate password from private key using NIP-44 shareSecret derivation
+  static String _derivePasswordFromPrivateKey(String privateKey, String publicKey) {
+    // Use NIP-44 shareSecret to derive a shared secret
+    final sharedSecret = Nip44v2.shareSecret(privateKey, publicKey);
+    return bytesToHex(sharedSecret);
+  }
+
+  /// Create new wallet
+  Future<WalletInfo> createNewWallet(String pubkey, String privkey) async {
+    try {
+      // Import the LNbits API service
+      final lnbitsApi = LnbitsApiService();
+      
+      // Create username from pubkey (first 8 characters)
+      final username = pubkey;
+      
+      // Step 1: Create user in LNbits
+      LogUtils.d(() => 'Creating user in LNbits: $username');
+      final password = _derivePasswordFromPrivateKey(privkey, pubkey);
+      final userResponse = await lnbitsApi.createUser(username: username, password: password);
+      final userId = userResponse['id'] as String;
+      final adminKey = userResponse['admin'] as String;
+      
+      // Step 2: Create wallet for the user
+      LogUtils.d(() => 'Creating wallet for user: $userId');
+      final walletResponse = await lnbitsApi.createWallet(
+        adminKey: adminKey,
+        walletName: 'ChuChu Wallet',
+      );
+      final walletId = walletResponse['id'] as String;
+      final invoiceKey = walletResponse['invoice'] as String;
+      final readKey = walletResponse['read'] as String;
+      
+      // Step 3: Get initial wallet info
+      LogUtils.d(() => 'Getting initial wallet info');
+      final walletInfo = await lnbitsApi.getWalletInfo(apiKey: invoiceKey);
+      final balance = (walletInfo['balance'] as int?) ?? 0;
+      
+      // Create wallet info object
+      final walletInfoObj = WalletInfo(
+        walletId: walletId,
+        pubkey: pubkey,
+        lnbitsUrl: lnbitsApi.baseUrl,
+        adminKey: adminKey,
+        invoiceKey: invoiceKey,
+        readKey: readKey,
+        lnbitsUserId: userId,
+        lnbitsUsername: username,
+        totalBalance: balance,
+        confirmedBalance: balance,
+        unconfirmedBalance: 0,
+        reservedBalance: 0,
+        lastUpdated: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      );
+      
+      // Save to database
+      await _saveWalletInfoToDB(walletInfoObj);
+      
+      LogUtils.i(() => 'Successfully created wallet: $walletId');
+      return walletInfoObj;
+    } catch (e) {
+      LogUtils.e(() => 'Failed to create new wallet: $e');
+      rethrow;
+    }
+  }
+
+  /// Connect to LNbits wallet using current pubkey
   Future<bool> connectToWallet() async {
     try {
-      // Get current pubkey from account
+      // Get current pubkey and privkey from account
       final pubkey = Account.sharedInstance.currentPubkey;
-      if (pubkey.isEmpty) {
-        LogUtils.e(() => 'No current pubkey available');
+      final privkey = Account.sharedInstance.currentPrivkey;
+      if (pubkey.isEmpty || privkey.isEmpty) {
+        LogUtils.e(() => 'No current pubkey or privkey available');
         return false;
       }
       
       // Load wallet info from database by pubkey
-      final walletInfo = await _loadWalletInfoByPubkey(pubkey);
-      if (walletInfo == null) {
-        LogUtils.e(() => 'No wallet found for pubkey: $pubkey');
-        return false;
-      }
-      
-      // Set wallet info and URI
+      WalletInfo? walletInfo = await _loadWalletInfoByPubkey(pubkey);
+      walletInfo ??= await createNewWallet(pubkey, privkey);
+
+      // Set wallet info
       _walletInfo = walletInfo;
-      _walletURI = walletInfo.nwcUri;
-      _isConnected = true;
-      onConnectionStatusChanged?.call();
-      
-      // Get fresh wallet info from server
-      final freshWalletInfo = await _getWalletInfo();
-      if (freshWalletInfo != null) {
-        _walletInfo = freshWalletInfo;
-        await _saveBalanceToDB(_walletInfo!);
-      }
-      
+
       // Get initial balance
       await refreshBalance();
-      
       // Get recent transactions
       await refreshTransactions();
       
+      LogUtils.i(() => 'Successfully connected to wallet: ${walletInfo?.walletId}');
       return true;
     } catch (e) {
       LogUtils.e(() => 'Failed to connect to wallet: $e');
-      _isConnected = false;
-      onConnectionStatusChanged?.call();
       return false;
     }
   }
 
   /// Disconnect from wallet
   void disconnect() {
-    _isConnected = false;
-    _walletURI = null;
-    onConnectionStatusChanged?.call();
+    _walletInfo = null;
   }
 
   /// Refresh wallet balance
   Future<void> refreshBalance() async {
-    if (!_isConnected || _walletURI == null) return;
+    if (_walletInfo == null) return;
     
     try {
       final balance = await _getBalance();
       if (balance != null && _walletInfo != null) {
         _walletInfo!.updateBalance(totalBalance: balance);
-        await _saveBalanceToDB(_walletInfo!);
+        await _saveWalletInfoToDB(_walletInfo!);
         onBalanceChanged?.call();
       }
     } catch (e) {
@@ -118,14 +164,31 @@ class Wallet {
 
   /// Send payment
   Future<WalletTransaction?> sendPayment(String invoice, {String? description}) async {
-    if (!_isConnected || _walletURI == null) return null;
+    if (_walletInfo == null || _walletInfo!.adminKey.isEmpty) return null;
     
     try {
-      final transaction = await _payInvoice(invoice, description);
-      if (transaction != null) {
-        _addTransaction(transaction);
-        await refreshBalance();
-      }
+      final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
+      final response = await lnbitsApi.payInvoice(
+        adminKey: _walletInfo!.adminKey,
+        bolt11: invoice,
+      );
+      
+      final transaction = WalletTransaction(
+        transactionId: response['payment_hash'] as String,
+        type: TransactionType.outgoing,
+        status: TransactionStatus.confirmed,
+        amount: response['amount'] as int,
+        fee: response['fee'] as int? ?? 0,
+        description: description ?? '',
+        invoice: invoice,
+        paymentHash: response['payment_hash'] as String,
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        walletId: _walletInfo!.walletId,
+        preimage: response['preimage'] as String?,
+      );
+      
+      _addTransaction(transaction);
+      await refreshBalance();
       return transaction;
     } catch (e) {
       LogUtils.e(() => 'Failed to send payment: $e');
@@ -135,10 +198,27 @@ class Wallet {
 
   /// Create invoice for receiving payment
   Future<WalletInvoice?> createInvoice(int amountSats, {String? description}) async {
-    if (!_isConnected || _walletURI == null) return null;
+    if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) return null;
     
     try {
-      return await _makeInvoice(amountSats, description);
+      final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
+      final response = await lnbitsApi.createInvoice(
+        apiKey: _walletInfo!.invoiceKey,
+        amount: amountSats,
+        memo: description,
+      );
+      
+      return WalletInvoice(
+        invoiceId: response['payment_hash'] as String,
+        bolt11: response['bolt11'] as String,
+        paymentHash: response['payment_hash'] as String,
+        amount: response['amount'] as int,
+        description: response['memo'] as String? ?? '',
+        status: InvoiceStatus.pending,
+        createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
+        expiresAt: DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,
+        walletId: _walletInfo!.walletId,
+      );
     } catch (e) {
       LogUtils.e(() => 'Failed to create invoice: $e');
       return null;
@@ -147,10 +227,16 @@ class Wallet {
 
   /// Refresh transaction history
   Future<void> refreshTransactions() async {
-    if (!_isConnected || _walletURI == null) return;
+    if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) return;
     
     try {
-      final transactions = await _listTransactions();
+      final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
+      final payments = await lnbitsApi.getPayments(
+        apiKey: _walletInfo!.invoiceKey,
+        limit: 50,
+      );
+      
+      final transactions = payments.map((payment) => WalletTransaction.fromJson(payment)).toList();
       if (transactions.isNotEmpty) {
         _transactions = transactions;
         await _saveTransactionsToDB(transactions);
@@ -170,88 +256,24 @@ class Wallet {
     onTransactionAdded?.call();
   }
 
-  /// Setup NIP-47 subscription for notifications
-  void _setupNIP47Subscription() {
-    Connect.sharedInstance.addConnectStatusListener((relay, status, relayKinds) {
-      if (status == 1 && relayKinds.contains(RelayKind.nwc)) {
-        _subscribeToWalletEvents(relay);
-      }
-    });
-  }
 
-  /// Subscribe to wallet events
-  void _subscribeToWalletEvents(String relay) {
-    if (_walletURI == null) return;
+  /// Get wallet balance from LNbits API
+  Future<int?> _getBalance() async {
+    if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) {
+      return null;
+    }
     
-    // Subscribe to NIP-47 events (kind 23194 for requests, 23195 for responses)
-    Filter filter = Filter(
-      kinds: [23195],
-      authors: [Account.sharedInstance.currentPubkey],
-    );
-    
-    Connect.sharedInstance.addSubscription([filter], relays: [relay],
-      eventCallBack: (event, relay) async {
-        await _handleWalletEvent(event);
-      },
-      eoseCallBack: (requestId, ok, relay, unRelays) {
-        // Handle EOSE
-      }
-    );
-  }
-
-  /// Handle incoming wallet events
-  Future<void> _handleWalletEvent(Event event) async {
     try {
-      switch (event.kind) {
-        case 23195: // Response event
-          await _handleResponseEvent(event);
-          break;
-      }
+      final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
+      final walletInfo = await lnbitsApi.getWalletInfo(apiKey: _walletInfo!.invoiceKey);
+      return walletInfo['balance'] as int?;
     } catch (e) {
-      LogUtils.e(() => 'Failed to handle wallet event: $e');
+      LogUtils.e(() => 'Failed to get balance: $e');
+      return null;
     }
   }
 
-  /// Handle response events
-  Future<void> _handleResponseEvent(Event event) async {
-    // Handle payment responses, balance updates, etc.
-    // This would decode the encrypted content and update local state
-  }
 
-  /// Get wallet balance from NIP-47
-  Future<int?> _getBalance() async {
-    // Implementation for getting balance via NIP-47
-    // This would send a get_balance request to the wallet
-    return null;
-  }
-
-  /// Get wallet info
-  Future<WalletInfo?> _getWalletInfo() async {
-    // Implementation for getting wallet info via NIP-47
-    // This would send a get_info request to the wallet
-    return null;
-  }
-
-  /// Pay invoice via NIP-47
-  Future<WalletTransaction?> _payInvoice(String invoice, String? description) async {
-    // Implementation for paying invoice via NIP-47
-    // This would send a pay_invoice request to the wallet
-    return null;
-  }
-
-  /// Make invoice via NIP-47
-  Future<WalletInvoice?> _makeInvoice(int amountSats, String? description) async {
-    // Implementation for creating invoice via NIP-47
-    // This would send a make_invoice request to the wallet
-    return null;
-  }
-
-  /// List transactions via NIP-47
-  Future<List<WalletTransaction>> _listTransactions() async {
-    // Implementation for listing transactions via NIP-47
-    // This would send a list_transactions request to the wallet
-    return [];
-  }
 
   /// Load transactions from database
   Future<void> _loadTransactionsFromDB() async {
@@ -296,15 +318,21 @@ class Wallet {
     }
   }
 
-  /// Save balance to database
-  Future<void> _saveBalanceToDB(WalletInfo balance) async {
+
+
+  /// Save wallet info to database
+  Future<void> _saveWalletInfoToDB(WalletInfo walletInfo) async {
     try {
-      // Save balance to local database
+      // Save wallet info to local database
       // This would be implemented when database is properly set up
+      LogUtils.i(() => 'Wallet info saved to database: ${walletInfo.walletId}');
     } catch (e) {
-      LogUtils.e(() => 'Failed to save balance to DB: $e');
+      LogUtils.e(() => 'Failed to save wallet info to DB: $e');
+      rethrow;
     }
   }
+
+
 
   /// Lookup invoice
   Future<WalletInvoice?> lookupInvoice(String invoice) async {
