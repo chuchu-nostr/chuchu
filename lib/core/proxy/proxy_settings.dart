@@ -9,7 +9,7 @@ class ProxySettings {
   EOnionHostOption onionHostOption;
 
   ProxySettings({
-    this.turnOnProxy = true,
+    this.turnOnProxy = false,
     this.socksProxyHost = '127.0.0.1',
     this.socksProxyPort = 7890,
     this.onionHostOption = EOnionHostOption.whenAvailable,
