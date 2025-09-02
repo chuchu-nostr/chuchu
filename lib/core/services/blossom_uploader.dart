@@ -3,6 +3,7 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:mime/mime.dart';
 
 import '../account/account.dart';
@@ -92,10 +93,20 @@ class BolssomUploader {
     headers["Authorization"] =
         "Nostr ${base64Url.encode(utf8.encode(jsonEncode(nip98Event.toJson())))}";
 
+    bool isVideo = false;
+    if (StringUtil.isNotBlank(fileName)) {
+      final extension = fileName!.toLowerCase();
+      isVideo = extension.endsWith('.mp4') || 
+                extension.endsWith('.mov') || 
+                extension.endsWith('.avi') || 
+                extension.endsWith('.mkv') ||
+                extension.endsWith('.webm');
+    }
+    
     try {
       var response = await dio.put(
         uploadApiPath,
-        data: Stream.fromIterable(bytes.map((e) => [e])),
+        data: isVideo ? bytes : Stream.fromIterable(bytes.map((e) => [e])),
         options: Options(
           headers: headers,
           validateStatus: (status) {
@@ -121,7 +132,5 @@ class BolssomUploader {
       print(e);
       rethrow;
     }
-
-    return null;
   }
 }
