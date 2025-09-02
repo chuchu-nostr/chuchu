@@ -91,7 +91,7 @@ class Zaps {
     if (nwc == null) {
       completer.complete(OKEvent(invoice, false, 'nwc not exit'));
     }
-    Event event = await Nip47.request(invoice, nwc!.server, nwc!.secret);
+    Event event = await Nip47.payInvoice(invoice, nwc!.server, nwc!.secret);
     Connect.sharedInstance.sendEvent(event, toRelays: nwc!.relays,
         sendCallBack: (ok, relay) {
       if (!completer.isCompleted) completer.complete(ok);
