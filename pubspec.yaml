@@ -76,6 +76,8 @@ dependencies:
   video_thumbnail: ^0.5.3
   chewie: ^1.7.4
   image_gallery_saver: ^2.0.3
+  uuid: ^4.3.3
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:

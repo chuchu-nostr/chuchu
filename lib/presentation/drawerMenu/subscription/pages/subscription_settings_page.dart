@@ -5,7 +5,6 @@ import '../../../../core/account/relays.dart';
 import '../../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../../core/relayGroups/relayGroup.dart';
 import '../../../../core/widgets/common_toast.dart';
-import '../../../../core/config/storage_key_tool.dart';
 import '../../../../core/manager/cache/chuchu_cache_manager.dart';
 
 class SubscriptionTier {
@@ -98,26 +97,6 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
   }
 
   Future<void> _loadCurrentSettings() async {
-    try {
-      final savedTierIndex = await ChuChuCacheManager.defaultOXCacheManager
-          .getForeverData(StorageKeyTool.SUBSCRIPTION_TIER_INDEX);
-      final savedDescription = await ChuChuCacheManager.defaultOXCacheManager
-          .getForeverData(StorageKeyTool.SUBSCRIPTION_DESCRIPTION);
-
-      if (mounted) {
-        setState(() {
-          if (savedTierIndex != null) {
-            final index = int.tryParse(savedTierIndex);
-            if (index != null && index >= 0 && index < _subscriptionTiers.length) {
-              _selectedTier = _subscriptionTiers[index];
-            }
-          }
-          _descriptionController.text = savedDescription ?? '';
-        });
-      }
-    } catch (e) {
-      print('Failed to load subscription settings: $e');
-    }
   }
 
   Future<void> _saveSettings() async {
