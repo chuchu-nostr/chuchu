@@ -1,9 +1,11 @@
+import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/nostr_dart/src/ok.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/enum/feed_enum.dart';
@@ -125,9 +127,13 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
         return () async {
           if (noteDB.reactionCountByMe > 0 || _reactionTag) return;
           bool isSuccess = false;
-          if (noteDB.groupId.isEmpty) {
-            // OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
-            // isSuccess = event.status;
+          try {
+
+            OKEvent event = await RelayGroup.sharedInstance.sendGroupNoteReaction(noteDB.noteId);
+            isSuccess = event.status;
+          } catch (e) {
+            debugPrint('Error sending reaction: $e');
+            isSuccess = false;
           }
           _dealWithReaction(isSuccess);
         };
@@ -293,7 +299,7 @@ class _ReusableLikeButtonState extends State<ReusableLikeButton> {
   Widget build(BuildContext context) {
     final isLiked = _isLiked();
     final likeCount = _getLikeCount();
-    
+
     return GestureDetector(
       onTap: widget.onTap ?? _handleLikeTap,
       child: Column(
@@ -332,21 +338,19 @@ class _ReusableLikeButtonState extends State<ReusableLikeButton> {
   Future<void> _handleLikeTap() async {
     final noteDB = widget.notedUIModel?.noteDB;
     if (noteDB == null) return;
-    
+
     // Prevent double tap
     if (noteDB.reactionCountByMe > 0 || _reactionTag) return;
-    
+
     bool isSuccess = false;
-    if (noteDB.groupId.isEmpty) {
-      try {
-        // OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
-        // isSuccess = event.status;
-      } catch (e) {
-        debugPrint('Error sending reaction: $e');
-        isSuccess = false;
-      }
+    try {
+      OKEvent event = await RelayGroup.sharedInstance.sendGroupNoteReaction(noteDB.noteId);
+      isSuccess = event.status;
+    } catch (e) {
+      debugPrint('Error sending reaction: $e');
+      isSuccess = false;
     }
-    
+
     _dealWithReaction(isSuccess);
   }
 
@@ -364,7 +368,7 @@ class _ReusableLikeButtonState extends State<ReusableLikeButton> {
 
   void _updateNoteDB() async {
     if (widget.notedUIModel == null) return;
-    
+
     try {
       NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
         widget.notedUIModel!.noteDB.noteId,
@@ -458,7 +462,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
 
   Widget _buildCommentButton() {
     final commentCount = widget.notedUIModel?.noteDB.replyCount ?? 0;
-    
+
     return GestureDetector(
       onTap: widget.onCommentTap ?? _handleCommentTap,
       child: Column(
@@ -484,7 +488,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
 
   Widget _buildZapButton() {
     final zapAmount = widget.notedUIModel?.noteDB.zapAmount ?? 0;
-    
+
     return GestureDetector(
       onTap: widget.onZapTap ?? _handleZapTap,
       child: Column(
@@ -530,7 +534,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
     if (widget.notedUIModel != null) {
       Navigator.of(context).push(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => 
+          pageBuilder: (context, animation, secondaryAnimation) =>
               FeedReplyPage(notedUIModel: widget.notedUIModel!),
           transitionsBuilder: (context, animation, secondaryAnimation, child) {
             const begin = Offset(0.0, 1.0);
@@ -561,7 +565,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
     setState(() {
       _bookmarkTag = !_bookmarkTag;
     });
-    
+
     if (_bookmarkTag) {
       CommonToast.instance.show(context, 'Bookmarked');
     } else {

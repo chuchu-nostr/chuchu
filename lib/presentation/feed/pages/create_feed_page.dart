@@ -1,15 +1,18 @@
 import 'dart:io';
 // import 'package:chuchu/core/feed/feed+send.dart';
 import 'package:chuchu/core/nostr_dart/nostr.dart';
+import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/nostr_dart/src/ok.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../../core/widgets/common_toast.dart';
@@ -422,20 +425,15 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         CommonToast.instance.show(context, 'Content empty tips');
         return;
       }
-      
-      // OKEvent? eventStatus = await Feed.sharedInstance.sendNoteContacts(
-      //   content,
-      //   // mentions: getReplyUser,
-      //   // hashTags: getHashTags,
-      //   sendMessageProgressCallBack: (value) {},
-      // );
-      
-      // if (eventStatus.status) {
-      //   CommonToast.instance.show(context, 'Sent successfully');
-      //   Navigator.pop(context);
-      // } else {
-      //   CommonToast.instance.show(context, 'Failed to send');
-      // }
+      List<String> previous = Nip29.getPrevious([[Account.sharedInstance.currentPubkey]]);
+      OKEvent? eventStatus  = await RelayGroup.sharedInstance.sendGroupNotes(Account.sharedInstance.currentPubkey,content,previous);
+
+      if (eventStatus.status) {
+        CommonToast.instance.show(context, 'Sent successfully');
+        Navigator.pop(context);
+      } else {
+        CommonToast.instance.show(context, 'Failed to send');
+      }
     } catch (e) {
       print('Post failed: $e');
       CommonToast.instance.show(context, 'Post failed: $e');

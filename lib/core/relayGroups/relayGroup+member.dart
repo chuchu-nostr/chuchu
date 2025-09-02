@@ -24,7 +24,7 @@ import 'model/relayGroupDB_isar.dart';
 
 
 extension EMember on RelayGroup {
-  Future<RelayGroupDBISAR?> createGroup(String relay,
+  Future<RelayGroupDBISAR?> createGroup(String relay,String groupId,
       {String name = '', bool closed = false, String picture = '', String about = ''}) async {
     // if (relay == 'wss://groups.fiatjaf.com') {
     //   return await createGroup2(relay,
@@ -33,9 +33,8 @@ extension EMember on RelayGroup {
 
     await Connect.sharedInstance.connectRelays([relay], relayKind: RelayKind.relayGroup);
     Completer<RelayGroupDBISAR?> completer = Completer<RelayGroupDBISAR?>();
-    String groupId = generate64RandomHexChars();
     Event event = await Nip29.encodeCreateGroup(groupId, pubkey, privkey);
-    Connect.sharedInstance.sendEvent(event, toRelays: [relay], sendCallBack: (ok, relay) async {
+    Connect.sharedInstance.sendEvent(event, toRelays: [relay], sendCallBack: (OKEvent ok, relay) async {
       if (ok.status) {
         RelayGroupDBISAR relayGroupDB = RelayGroupDBISAR(
             groupId: groupId,

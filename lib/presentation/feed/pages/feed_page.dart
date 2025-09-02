@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:chuchu/core/account/model/userDB_isar.dart';
+import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chuchu/core/feed/feed+load.dart';
@@ -14,6 +15,7 @@ import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
@@ -473,7 +475,12 @@ class _FeedPageState extends State<FeedPage>
     }
 
     try {
-      List<NoteDBISAR> list = await _getNoteTypeToDB(isInit);
+      // List<NoteDBISAR> list = await _getNoteTypeToDB(isInit);
+      List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
+          Account.sharedInstance.currentPubkey,
+          until: isInit ? null : _allNotesFromDBLastTimestamp,
+          limit: _limit) ??
+          [];
       if (list.isEmpty) {
         isInit
             ? refreshController.refreshCompleted()

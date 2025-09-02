@@ -17,6 +17,7 @@ import '../feed/feed.dart';
 import '../messages/messages.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
+import '../relayGroups/relayGroup.dart';
 import 'cache/chuchu_cache_manager.dart';
 import 'chuchu_feed_manager.dart';
 
@@ -213,6 +214,7 @@ class ChuChuUserInfoManager {
       // );
       Feed.sharedInstance.init();
       Zaps.sharedInstance.init();
+      RelayGroup.sharedInstance.init(callBack: RelayGroup.sharedInstance.myGroupsUpdatedCallBack);
       _initMessage();
     });
   }
