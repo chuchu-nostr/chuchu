@@ -5,29 +5,22 @@ import '../../../../core/account/relays.dart';
 import '../../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../../core/relayGroups/relayGroup.dart';
 import '../../../../core/widgets/common_toast.dart';
-import '../../../../core/manager/cache/chuchu_cache_manager.dart';
 
 class SubscriptionTier {
   final String name;
   final String duration;
-  final int originalPrice; // in cents
-  final int discountedPrice; // in cents
-  final int discount; // percentage
+  final int price;
   final bool isDefault;
 
   SubscriptionTier({
     required this.name,
     required this.duration,
-    required this.originalPrice,
-    required this.discountedPrice,
-    required this.discount,
+    required this.price,
     required this.isDefault,
   });
 
-  String get formattedPrice => '\$${(discountedPrice / 100).toStringAsFixed(2)}';
-  String get formattedOriginalPrice => '\$${(originalPrice / 100).toStringAsFixed(2)}';
-  String get discountText => discount > 0 ? '($discount% off)' : '';
-  String get totalText => discount > 0 ? '$formattedPrice total' : '$formattedPrice per month';
+  String get formattedPrice => '\$${(price / 100).toStringAsFixed(2)}';
+  String get priceText => '$formattedPrice per $duration';
 }
 
 class SubscriptionSettingsPage extends StatefulWidget {
@@ -38,44 +31,36 @@ class SubscriptionSettingsPage extends StatefulWidget {
 }
 
 class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
-  final TextEditingController _descriptionController = TextEditingController();
+  final TextEditingController _priceController = TextEditingController();
   bool _isLoading = false;
-  bool _showDiscountOptions = false;
+  bool _isPaidSubscription = true;
+  final Map<String, String> _customPrices = {};
 
   String _subscriptionRelay = Relays.sharedInstance.recommendGroupRelays.first;
   
-  // Subscription tiers with discounts
   final List<SubscriptionTier> _subscriptionTiers = [
     SubscriptionTier(
       name: 'Monthly',
-      duration: '1 month',
-      originalPrice: 999, // $9.99 in cents
-      discountedPrice: 999,
-      discount: 0,
+      duration: 'month',
+      price: 999,
       isDefault: true,
     ),
     SubscriptionTier(
       name: '3 Months',
       duration: '3 months',
-      originalPrice: 2997, // 3 * $9.99
-      discountedPrice: 2898, // 5% off
-      discount: 5,
+      price: 2499,
       isDefault: false,
     ),
     SubscriptionTier(
       name: '6 Months',
       duration: '6 months',
-      originalPrice: 5994, // 6 * $9.99
-      discountedPrice: 5398, // 10% off
-      discount: 10,
+      price: 4499,
       isDefault: false,
     ),
     SubscriptionTier(
       name: '12 Months',
-      duration: '12 months',
-      originalPrice: 11988, // 12 * $9.99
-      discountedPrice: 5994, // 50% off
-      discount: 50,
+      duration: 'year',
+      price: 7999,
       isDefault: false,
     ),
   ];
@@ -85,49 +70,77 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
   @override
   void initState() {
     super.initState();
-    _loadCurrentSettings();
-    // Set default tier
     _selectedTier = _subscriptionTiers.firstWhere((tier) => tier.isDefault);
+    _priceController.text = (_selectedTier!.price / 100).toStringAsFixed(2);
   }
 
   @override
   void dispose() {
-    _descriptionController.dispose();
+    _priceController.dispose();
     super.dispose();
   }
 
-  Future<void> _loadCurrentSettings() async {
-  }
-
-  Future<void> _saveSettings() async {
-    RelayGroupDBISAR? relayGroupDB = await RelayGroup.sharedInstance.createGroup(
-      _subscriptionRelay,
-      Account.sharedInstance.currentPubkey,
-      about: _descriptionController.text,
-      closed: false,
-    );
-
-    if(relayGroupDB != null){
-      CommonToast.instance.show(context, 'Create successfully');
+  Future<void> _createSettings() async {
+    if (_isPaidSubscription && _priceController.text.isEmpty) {
+      CommonToast.instance.show(context, 'Please set a subscription price');
+      return;
     }
 
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      double price = 0.0;
+      String priceText = 'Free';
+      
+      if (_isPaidSubscription) {
+        String cleanPriceText = _priceController.text.replaceAll(RegExp(r'[^\d.]'), '');
+        if (cleanPriceText.isEmpty) {
+          CommonToast.instance.show(context, 'Please enter a valid price');
+          setState(() {
+            _isLoading = false;
+          });
+          return;
+        }
+        
+        price = double.parse(cleanPriceText);
+        priceText = '\$${price.toStringAsFixed(2)}';
+      }
+      
+      RelayGroupDBISAR? relayGroupDB = await RelayGroup.sharedInstance.createGroup(
+        _subscriptionRelay,
+        Account.sharedInstance.currentPubkey,
+        about: _isPaidSubscription 
+            ? 'Premium content subscription - $priceText per ${_selectedTier?.duration ?? 'month'}'
+            : 'Free subscription content',
+        closed: _isPaidSubscription,
+      );
+
+      if(relayGroupDB != null){
+        String message = _isPaidSubscription 
+            ? 'Premium subscription created successfully at $priceText'
+            : 'Free subscription created successfully';
+        CommonToast.instance.show(context, message);
+        Navigator.pop(context);
+      } else {
+        CommonToast.instance.show(context, 'Failed to create subscription');
+      }
+    } catch (e) {
+      CommonToast.instance.show(context, 'Error creating subscription: ${e.toString()}');
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Colors.black),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: const Text(
-          'Subscription Settings',
-          style: TextStyle(color: Colors.black, fontWeight: FontWeight.w600),
-        ),
+        title: const Text('Create Subscription'),
+        elevation: 0,
       ),
       body: SafeArea(
         child: Column(
@@ -138,133 +151,203 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Header
-                    const Text(
-                      'SUBSCRIBE AND GET THESE BENEFITS:',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                    Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _isPaidSubscription ? 'Premium Subscription' : 'Free Subscription',
+                                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  _isPaidSubscription 
+                                      ? 'Users pay to access your content'
+                                      : 'Users can access your content for free',
+                                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            Switch(
+                              value: _isPaidSubscription,
+                              onChanged: (value) {
+                                setState(() {
+                                  _isPaidSubscription = value;
+                                  if (_isPaidSubscription) {
+                                    _selectedTier = _subscriptionTiers.firstWhere((tier) => tier.isDefault);
+                                    if (_priceController.text.isEmpty) {
+                                      _priceController.text = (_selectedTier!.price / 100).toStringAsFixed(2);
+                                    }
+                                  }
+                                });
+                              },
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Benefits list
-                    _buildBenefitItem('Full access to this user\'s content'),
-                    _buildBenefitItem('Direct message with this user'),
-                    _buildBenefitItem('Cancel your subscription at any time'),
-                    const SizedBox(height: 24),
-                    
-                    // Monthly subscription option
-                    _buildSubscriptionButton(_subscriptionTiers[0], isDefault: true),
-                    const SizedBox(height: 8),
-                    
-                    // Renewal info
-                    Row(
-                      children: [
+                      const SizedBox(height: 24),
+                      
+                      if (_isPaidSubscription) ...[
                         Text(
-                          'This subscription renews at ${_subscriptionTiers[0].formattedPrice}.',
-                          style: const TextStyle(
-                            fontSize: 14,
-                            color: Colors.black54,
+                          'Set Subscription Price',
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(width: 8),
-                        GestureDetector(
-                          onTap: () {
-                            // Show renewal info dialog
-                          },
-                          child: const Text(
-                            'Renewal info',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.blue,
-                              decoration: TextDecoration.underline,
+                        const SizedBox(height: 16),
+                        
+                        Text(
+                          'Subscription Duration',
+                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        
+                        for (int i = 0; i < _subscriptionTiers.length; i++)
+                          Padding(
+                            padding: const EdgeInsets.only(bottom: 8),
+                            child: _buildDurationOption(_subscriptionTiers[i]),
+                          ),
+                        
+                        const SizedBox(height: 16),
+                        
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Custom Price (USD)',
+                              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
+                            TextButton(
+                              onPressed: () {
+                                setState(() {
+                                  if (_selectedTier != null) {
+                                    String suggestedPrice = (_selectedTier!.price / 100).toStringAsFixed(2);
+                                    _priceController.text = suggestedPrice;
+                                    _customPrices[_selectedTier!.name] = suggestedPrice;
+                                  }
+                                });
+                              },
+                              child: Text(
+                                'Use Suggested: \$${((_selectedTier?.price ?? 999) / 100).toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontSize: 12,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        TextField(
+                          controller: _priceController,
+                          keyboardType: TextInputType.numberWithOptions(decimal: true),
+                          onChanged: (value) {
+                            setState(() {
+                              if (_selectedTier != null) {
+                                _customPrices[_selectedTier!.name] = value;
+                              }
+                            });
+                          },
+                          decoration: InputDecoration(
+                            prefixText: '\$ ',
+                            hintText: '0.00',
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide(
+                                color: Theme.of(context).colorScheme.primary,
+                                width: 2,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ] else ...[
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.check_circle,
+                                color: Theme.of(context).colorScheme.primary,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Free Subscription',
+                                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Users can access your content without payment',
+                                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                        color: Theme.of(context).colorScheme.onPrimaryContainer,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                       ],
-                    ),
-                    const SizedBox(height: 16),
-                    
-                    // Discounted options
-                    GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          _showDiscountOptions = !_showDiscountOptions;
-                        });
-                      },
-                      child: Row(
-                        children: [
-                          const Text(
-                            'Discounted longer subscription options',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.blue,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          Icon(
-                            _showDiscountOptions ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down,
-                            color: Colors.blue,
-                            size: 20,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    
-                    // Discounted subscription options
-                    if (_showDiscountOptions) ...[
-                      for (int i = 1; i < _subscriptionTiers.length; i++)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: _buildSubscriptionButton(_subscriptionTiers[i]),
+                      
+                      const SizedBox(height: 24),
+                      
+                      Text(
+                        'What subscribers get:',
+                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
                         ),
-                    ],
-                    
-                    const SizedBox(height: 24),
-                    
-                    // Description input
-                    const Text(
-                      'Description (Optional)',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.black87,
                       ),
-                    ),
-                    const SizedBox(height: 8),
-                    TextField(
-                      controller: _descriptionController,
-                      maxLines: 3,
-                      decoration: InputDecoration(
-                        hintText: 'Describe what subscribers will get...',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.grey),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.blue, width: 2),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[50],
-                        alignLabelWithHint: true,
-                      ),
-                    ),
+                      const SizedBox(height: 16),
+                      
+                      _buildBenefitItem('Exclusive content access'),
+                      _buildBenefitItem('Direct messaging with you'),
+                      _buildBenefitItem('Early access to new posts'),
+                      _buildBenefitItem('Cancel anytime'),
                   ],
                 ),
               ),
             ),
-            // Bottom Create Button
             Container(
               padding: const EdgeInsets.all(16.0),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Theme.of(context).colorScheme.surface,
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.1),
+                    color: Theme.of(context).shadowColor.withOpacity(0.1),
                     blurRadius: 4,
                     offset: const Offset(0, -2),
                   ),
@@ -275,29 +358,29 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: _isLoading ? null : _saveSettings,
+                    onPressed: _isLoading ? null : _createSettings,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                       elevation: 0,
                     ),
                     child: _isLoading
-                        ? const SizedBox(
+                        ? SizedBox(
                             width: 20,
                             height: 20,
                             child: CircularProgressIndicator(
                               strokeWidth: 2,
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Theme.of(context).colorScheme.onPrimary,
+                              ),
                             ),
                           )
-                        : const Text(
-                            'Create',
-                            style: TextStyle(
-                              fontSize: 16,
+                        : Text(
+                            'Create Subscription',
+                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
                               fontWeight: FontWeight.w600,
+                              color: Theme.of(context).colorScheme.onPrimary,
                             ),
                           ),
                   ),
@@ -315,19 +398,16 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
         children: [
-          const Icon(
+          Icon(
             Icons.check_circle,
-            color: Colors.blue,
+            color: Theme.of(context).colorScheme.primary,
             size: 20,
           ),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               text,
-              style: const TextStyle(
-                fontSize: 14,
-                color: Colors.black87,
-              ),
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
         ],
@@ -335,55 +415,71 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
     );
   }
 
-  Widget _buildSubscriptionButton(SubscriptionTier tier, {bool isDefault = false}) {
+  Widget _buildDurationOption(SubscriptionTier tier) {
     final isSelected = _selectedTier == tier;
+    
+    String displayPrice;
+    if (_customPrices.containsKey(tier.name) && _customPrices[tier.name]!.isNotEmpty) {
+      String customPrice = _customPrices[tier.name]!.replaceAll(RegExp(r'[^\d.]'), '');
+      if (customPrice.isNotEmpty) {
+        try {
+          double price = double.parse(customPrice);
+          displayPrice = '\$${price.toStringAsFixed(2)} per ${tier.duration}';
+        } catch (e) {
+          displayPrice = tier.priceText;
+        }
+      } else {
+        displayPrice = tier.priceText;
+      }
+    } else {
+      displayPrice = tier.priceText;
+    }
     
     return GestureDetector(
       onTap: () {
         setState(() {
           _selectedTier = tier;
+          if (_customPrices.containsKey(tier.name)) {
+            _priceController.text = _customPrices[tier.name]!;
+          } else {
+            _priceController.text = (tier.price / 100).toStringAsFixed(2);
+          }
         });
       },
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.blue : Colors.blue[100],
+          color: isSelected 
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(12),
-          border: isSelected 
-              ? Border.all(color: Colors.blue, width: 2)
-              : null,
+          border: Border.all(
+            color: isSelected 
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).dividerColor,
+            width: isSelected ? 2 : 1,
+          ),
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  tier.name.toUpperCase(),
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                if (tier.discount > 0)
-                  Text(
-                    tier.discountText,
-                    style: const TextStyle(
-                      fontSize: 12,
-                      color: Colors.white70,
-                    ),
-                  ),
-              ],
+            Text(
+              tier.name,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isSelected 
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurface,
+              ),
             ),
             Text(
-              tier.totalText,
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+              displayPrice,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isSelected 
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ],
