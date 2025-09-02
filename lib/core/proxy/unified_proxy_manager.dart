@@ -16,7 +16,7 @@ class UnifiedProxyManager {
 
   // Current proxy settings
   ProxySettings _proxySettings = ProxySettings(
-    turnOnProxy: true,
+    turnOnProxy: false,
     socksProxyHost: _defaultHost,
     socksProxyPort: _defaultPort,
     onionHostOption: EOnionHostOption.whenAvailable,
@@ -43,7 +43,7 @@ class UnifiedProxyManager {
       HttpOverrides.global = ChuCHuHttpOverrides();
     } catch (e) {
       _proxySettings = ProxySettings(
-        turnOnProxy: true,
+        turnOnProxy: false,
         socksProxyHost: _defaultHost,
         socksProxyPort: _defaultPort,
         onionHostOption: EOnionHostOption.whenAvailable,
