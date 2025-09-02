@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../account/account.dart';
 import '../database/db_isar.dart';
+import 'package:isar/isar.dart';
 
 import '../utils/log_utils.dart';
 import 'model/wallet_transaction.dart';
@@ -282,14 +283,15 @@ class Wallet {
     try {
       // Load wallet info from local database
       final isar = DBISAR.sharedInstance.isar;
-      final count = await isar.walletInfos.count();
-      if (count > 0) {
-        final walletInfo = await isar.walletInfos.get(1); // Get first wallet
-        if (walletInfo != null) {
-          LogUtils.d(() => 'Found existing wallet in database: ${walletInfo.walletId}');
-          return walletInfo;
-        }
+      var queryBuilder = isar.walletInfos.where();
+      final walletInfos = await queryBuilder.findAll();
+      
+      if (walletInfos.isNotEmpty) {
+        final walletInfo = walletInfos.first;
+        LogUtils.d(() => 'Found existing wallet in database: ${walletInfo.walletId}');
+        return walletInfo;
       }
+      
       LogUtils.d(() => 'No wallet found in database');
       return null;
     } catch (e) {
