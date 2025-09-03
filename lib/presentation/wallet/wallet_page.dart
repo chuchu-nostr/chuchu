@@ -138,15 +138,36 @@ class _WalletPageState extends State<WalletPage> {
   Widget _buildBalanceCard() {
     WalletInfo? balance = _wallet.walletInfo;
     
-    // If no balance data, use demo data
-    balance ??= WalletInfo(
-      totalBalance: 125000, // 0.00125 BTC
-      confirmedBalance: 100000, // 0.001 BTC
-      unconfirmedBalance: 25000, // 0.00025 BTC
-      reservedBalance: 0,
-      lastUpdated: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-      walletId: 'demo_wallet',
-    );
+    // Show loading state if no balance data
+    if (balance == null) {
+      return Card(
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Balance',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              SizedBox(height: 12),
+              Center(
+                child: Column(
+                  children: [
+                    CircularProgressIndicator(),
+                    SizedBox(height: 8),
+                    Text(
+                      'Loading balance...',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
     return Card(
       child: Padding(
@@ -307,32 +328,6 @@ class _WalletPageState extends State<WalletPage> {
   Widget _buildRecentTransactions() {
     List<WalletTransaction> transactions = _wallet.transactions.take(5).toList();
     
-    // If no transaction data, use demo data
-    if (transactions.isEmpty) {
-      transactions = [
-        WalletTransaction(
-          transactionId: 'tx_demo_001',
-          type: TransactionType.incoming,
-          status: TransactionStatus.confirmed,
-          amount: 50000, // 0.0005 BTC
-          fee: 100,
-          description: 'Demo Income',
-          createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
-          walletId: 'demo_wallet',
-        ),
-        WalletTransaction(
-          transactionId: 'tx_demo_002',
-          type: TransactionType.outgoing,
-          status: TransactionStatus.confirmed,
-          amount: 25000, // 0.00025 BTC
-          fee: 50,
-          description: 'Demo Expense',
-          createdAt: (DateTime.now().subtract(Duration(hours: 2))).millisecondsSinceEpoch ~/ 1000,
-          walletId: 'demo_wallet',
-        ),
-      ];
-    }
-    
     return Card(
       child: Padding(
         padding: EdgeInsets.all(16),
@@ -485,21 +480,26 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Future<void> _refreshData() async {
-          setState(() {
-        _isLoading = true;
-        _statusMessage = 'Refreshing data...';
-      });
+    setState(() {
+      _isLoading = true;
+      _statusMessage = 'Refreshing data...';
+    });
 
     try {
+      // Refresh balance and transactions
       await _wallet.refreshBalance();
       await _wallet.refreshTransactions();
-              setState(() {
-          _statusMessage = 'Data refresh completed';
-        });
+      
+      // Also refresh invoice statuses
+      await _wallet.refreshInvoiceStatuses();
+      
+      setState(() {
+        _statusMessage = 'Data refresh completed';
+      });
     } catch (e) {
-              setState(() {
-          _statusMessage = 'Refresh failed: $e';
-        });
+      setState(() {
+        _statusMessage = 'Refresh failed: $e';
+      });
     } finally {
       setState(() {
         _isLoading = false;
@@ -570,31 +570,263 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   void _showSendDialog() {
+    final invoiceController = TextEditingController();
+    final descriptionController = TextEditingController();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Send Payment'),
-        content: Text('Send payment functionality'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: invoiceController,
+              decoration: InputDecoration(
+                labelText: 'Lightning Invoice (BOLT11)',
+                hintText: 'lnbc...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Description (Optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => _sendPayment(invoiceController.text, descriptionController.text),
+            child: Text('Send'),
           ),
         ],
       ),
     );
   }
 
+  Future<void> _sendPayment(String invoice, String description) async {
+    if (invoice.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter a valid Lightning invoice'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    Navigator.pop(context); // Close dialog
+    
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('Sending Payment'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Processing payment...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final transaction = await _wallet.sendPayment(invoice, description: description);
+      
+      Navigator.pop(context); // Close loading dialog
+      
+      if (transaction != null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment sent successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+        setState(() {}); // Refresh UI
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment failed'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // Close loading dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Payment error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   void _showReceiveDialog() {
+    final amountController = TextEditingController();
+    final descriptionController = TextEditingController();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('Receive Payment'),
-        content: Text('Receive payment functionality'),
+        title: Text('Create Invoice'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: amountController,
+              decoration: InputDecoration(
+                labelText: 'Amount (sats)',
+                hintText: '1000',
+                border: OutlineInputBorder(),
+              ),
+              keyboardType: TextInputType.number,
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: descriptionController,
+              decoration: InputDecoration(
+                labelText: 'Description (Optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => _createInvoice(amountController.text, descriptionController.text),
+            child: Text('Create'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _createInvoice(String amountText, String description) async {
+    final amount = int.tryParse(amountText);
+    if (amount == null || amount <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Please enter a valid amount'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    Navigator.pop(context); // Close dialog
+    
+    // Show loading dialog
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('Creating Invoice'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Generating invoice...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      final invoice = await _wallet.createInvoice(amount, description: description.isEmpty ? null : description);
+      
+      Navigator.pop(context); // Close loading dialog
+      
+      if (invoice != null) {
+        _showInvoiceDialog(invoice);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to create invoice'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // Close loading dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Invoice creation error: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showInvoiceDialog(invoice) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Invoice Created'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Amount: ${invoice.amount} sats'),
+            if (invoice.description.isNotEmpty) ...[
+              SizedBox(height: 8),
+              Text('Description: ${invoice.description}'),
+            ],
+            SizedBox(height: 16),
+            Text('BOLT11 Invoice:', style: TextStyle(fontWeight: FontWeight.bold)),
+            SizedBox(height: 8),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.grey[300]!),
+              ),
+              child: SelectableText(
+                invoice.bolt11,
+                style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+              ),
+            ),
+            SizedBox(height: 16),
+            Text(
+              'Share this invoice to receive payment',
+              style: TextStyle(color: Colors.grey[600], fontSize: 12),
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: Text('Close'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              // Copy to clipboard functionality would go here
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Invoice copied to clipboard')),
+              );
+            },
+            child: Text('Copy'),
           ),
         ],
       ),
@@ -602,15 +834,51 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   void _showScanDialog() {
+    final invoiceController = TextEditingController();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text('Scan QR Code'),
-        content: Text('Scan QR code functionality'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.qr_code_scanner,
+              size: 64,
+              color: Colors.grey,
+            ),
+            SizedBox(height: 16),
+            Text(
+              'QR Scanner not implemented yet.\nPlease paste the invoice manually:',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.grey),
+            ),
+            SizedBox(height: 16),
+            TextField(
+              controller: invoiceController,
+              decoration: InputDecoration(
+                labelText: 'Lightning Invoice',
+                hintText: 'lnbc...',
+                border: OutlineInputBorder(),
+              ),
+              maxLines: 3,
+            ),
+          ],
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              if (invoiceController.text.isNotEmpty) {
+                _sendPayment(invoiceController.text, '');
+              }
+            },
+            child: Text('Send'),
           ),
         ],
       ),
