@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import '../account/account.dart';
 import '../database/db_isar.dart';
 import 'package:isar/isar.dart';
+import 'package:bolt11_decoder/bolt11_decoder.dart';
+import 'package:decimal/decimal.dart';
 
 import '../utils/log_utils.dart';
 import 'model/wallet_transaction.dart';
@@ -783,5 +785,66 @@ class Wallet {
     final btcRate = await getBtcToUsdRate();
     final btcAmount = sats / 100000000.0; // Convert sats to BTC
     return btcAmount * btcRate;
+  }
+
+  /// Parse BOLT11 invoice to extract amount and description
+  Future<Map<String, dynamic>?> parseInvoice(String bolt11) async {
+    try {
+      LogUtils.d(() => 'Parsing invoice: ${bolt11.substring(0, 20)}...');
+      
+      // Use local BOLT11 decoder instead of API call
+      final decoded = _decodeBolt11Invoice(bolt11);
+      
+      if (decoded != null) {
+        LogUtils.d(() => 'Invoice parsed successfully: amount=${decoded['amount']}, description=${decoded['description']}');
+        return decoded;
+      } else {
+        LogUtils.e(() => 'Failed to parse invoice');
+        return null;
+      }
+    } catch (e) {
+      LogUtils.e(() => 'Error parsing invoice: $e');
+      return null;
+    }
+  }
+
+  /// Decode BOLT11 invoice locally using bolt11_decoder
+  Map<String, dynamic>? _decodeBolt11Invoice(String invoice) {
+    try {
+      final Bolt11PaymentRequest req = Bolt11PaymentRequest(invoice);
+      
+      // Extract information from tagged fields
+      String description = '';
+      String paymentHash = '';
+      int expiry = 0;
+      
+      for (final tag in req.tags) {
+        switch (tag.type) {
+          case 'description':
+            description = tag.data as String;
+            break;
+          case 'payment_hash':
+            paymentHash = tag.data as String;
+            break;
+          case 'expiry':
+            expiry = tag.data as int;
+            break;
+        }
+      }
+      
+      // Convert amount from BTC to sats
+      final amountInSats = (req.amount * Decimal.fromInt(100000000)).round().toBigInt().toInt();
+      
+      return {
+        'amount': amountInSats,
+        'description': description,
+        'timestamp': req.timestamp.toInt(),
+        'payment_hash': paymentHash,
+        'expiry': expiry,
+      };
+    } catch (e) {
+      LogUtils.e(() => 'Error decoding BOLT11 invoice: $e');
+      return null;
+    }
   }
 }

@@ -85,17 +85,25 @@ class WalletTransaction {
       transactionId: json['transaction_id'] ?? '',
       type: _parseTransactionType(json['type']),
       status: _parseTransactionStatus(json['status']),
-      amount: json['amount'] ?? 0,
-      fee: json['fee'] ?? 0,
+      amount: _parseInt(json['amount']) ?? 0,
+      fee: _parseInt(json['fee']) ?? 0,
       description: json['description'],
       invoice: json['invoice'],
       paymentHash: json['payment_hash'],
       preimage: json['preimage'],
-      createdAt: json['created_at'] ?? 0,
-      confirmedAt: json['confirmed_at'],
+      createdAt: _parseInt(json['created_at']) ?? 0,
+      confirmedAt: _parseInt(json['confirmed_at']),
       walletId: json['wallet_id'] ?? '',
       relatedPubkey: json['related_pubkey'],
     );
+  }
+
+  /// Parse integer from dynamic value (handles both int and string)
+  static int? _parseInt(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   /// Convert to JSON map

@@ -227,4 +227,31 @@ class LnbitsApiService {
       return 50000.0; // Fallback rate
     }
   }
+
+  /// Decode BOLT11 invoice to extract amount and description
+  Future<Map<String, dynamic>?> decodeInvoice(String bolt11) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/api/v1/payments/decode'),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'data': bolt11,
+        }),
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        LogUtils.d(() => 'Invoice decoded successfully: $data');
+        return data;
+      } else {
+        LogUtils.e(() => 'Failed to decode invoice: ${response.statusCode} - ${response.body}');
+        return null;
+      }
+    } catch (e) {
+      LogUtils.e(() => 'Error decoding invoice: $e');
+      return null;
+    }
+  }
 }

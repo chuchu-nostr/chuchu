@@ -463,7 +463,6 @@ class _WalletPageState extends State<WalletPage> {
 
   void _showSendDialog() {
     final invoiceController = TextEditingController();
-    final descriptionController = TextEditingController();
     
     showDialog(
       context: context,
@@ -481,14 +480,6 @@ class _WalletPageState extends State<WalletPage> {
               ),
               maxLines: 3,
             ),
-            SizedBox(height: 16),
-            TextField(
-              controller: descriptionController,
-              decoration: InputDecoration(
-                labelText: 'Description (Optional)',
-                border: OutlineInputBorder(),
-              ),
-            ),
           ],
         ),
         actions: [
@@ -497,15 +488,15 @@ class _WalletPageState extends State<WalletPage> {
             child: Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () => _sendPayment(invoiceController.text, descriptionController.text),
-            child: Text('Send'),
+            onPressed: () => _parseInvoiceAndConfirm(invoiceController.text),
+            child: Text('Next'),
           ),
         ],
       ),
     );
   }
 
-  Future<void> _sendPayment(String invoice, String description) async {
+  Future<void> _parseInvoiceAndConfirm(String invoice) async {
     if (invoice.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -516,7 +507,124 @@ class _WalletPageState extends State<WalletPage> {
       return;
     }
 
-    Navigator.pop(context); // Close dialog
+    Navigator.pop(context); // Close first dialog
+    
+    // Show loading dialog while parsing
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Text('Parsing Invoice'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Parsing invoice details...'),
+          ],
+        ),
+      ),
+    );
+
+    try {
+      // Parse invoice to get amount and description
+      final invoiceData = await _wallet.parseInvoice(invoice);
+      
+      Navigator.pop(context); // Close loading dialog
+      
+      if (invoiceData != null) {
+        _showConfirmPaymentDialog(invoice, invoiceData);
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to parse invoice'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (e) {
+      Navigator.pop(context); // Close loading dialog
+      
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error parsing invoice: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  void _showConfirmPaymentDialog(String invoice, Map<String, dynamic> invoiceData) {
+    final amount = invoiceData['amount'] as int;
+    final description = invoiceData['description'] as String? ?? '';
+    
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Confirm Payment'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Payment Details',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            SizedBox(height: 16),
+            _buildPaymentDetailRow('Amount', '$amount sats'),
+            if (description.isNotEmpty)
+              _buildPaymentDetailRow('Description', description),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => _sendPayment(invoice, description),
+            child: Text('Send Payment'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentDetailRow(String label, String value) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(
+            width: 80,
+            child: Text(
+              label,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.grey[600],
+              ),
+            ),
+          ),
+          Expanded(
+            child: Text(
+              value,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _sendPayment(String invoice, String description) async {
+    Navigator.pop(context); // Close confirm dialog
     
     // Show loading dialog
     showDialog(
