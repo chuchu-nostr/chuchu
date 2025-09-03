@@ -29,6 +29,38 @@ class Wallet {
   List<WalletTransaction> _transactions = [];
   List<WalletTransaction> get transactions => List.unmodifiable(_transactions);
 
+  /// Get all transactions including pending invoices
+  Future<List<WalletTransaction>> getAllTransactions() async {
+    final all = <WalletTransaction>[];
+    all.addAll(_transactions);
+    
+    // Add pending invoices as transactions
+    try {
+      final invoices = await _loadInvoicesFromDB();
+      final pendingInvoices = invoices.where((invoice) => invoice.status == InvoiceStatus.pending).toList();
+      
+      for (final invoice in pendingInvoices) {
+        final transaction = WalletTransaction(
+          transactionId: invoice.invoiceId,
+          amount: invoice.amount,
+          description: invoice.description,
+          status: TransactionStatus.pending,
+          type: TransactionType.incoming, // Invoice is for receiving
+          createdAt: invoice.createdAt,
+          walletId: invoice.walletId,
+        );
+        all.add(transaction);
+      }
+    } catch (e) {
+      LogUtils.e(() => 'Failed to load pending invoices: $e');
+    }
+    
+    // Sort by creation time (newest first)
+    all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    
+    return all;
+  }
+
   /// Timer for checking pending invoices
   Timer? _invoiceCheckTimer;
 
@@ -216,8 +248,8 @@ class Wallet {
         invoiceId: response['payment_hash'] as String,
         bolt11: response['bolt11'] as String,
         paymentHash: response['payment_hash'] as String,
-        amount: response['amount'] as int,
-        description: response['memo'] as String? ?? description ?? '',
+        amount: (response['amount'] as int) ~/ 1000, // Convert msats to sats
+        description: description ?? '', // Use original description, not API response
         status: InvoiceStatus.pending,
         createdAt: DateTime.now().millisecondsSinceEpoch ~/ 1000,
         expiresAt: DateTime.now().add(Duration(hours: 1)).millisecondsSinceEpoch ~/ 1000,

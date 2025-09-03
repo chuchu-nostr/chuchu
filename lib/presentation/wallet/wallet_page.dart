@@ -15,6 +15,7 @@ class _WalletPageState extends State<WalletPage> {
   bool _isLoading = false;
   String _statusMessage = '';
   double? _usdValue;
+  List<WalletTransaction> _allTransactions = [];
 
   @override
   void initState() {
@@ -25,14 +26,24 @@ class _WalletPageState extends State<WalletPage> {
   void _setupCallbacks() {
     _wallet.onBalanceChanged = () {
       _updateUsdValue();
+      _updateTransactions();
       setState(() {});
     };
     _wallet.onTransactionAdded = () {
+      _updateTransactions();
       setState(() {});
     };
     
     // Initialize wallet
     _initializeWallet();
+  }
+
+  Future<void> _updateTransactions() async {
+    try {
+      _allTransactions = await _wallet.getAllTransactions();
+    } catch (e) {
+      print('Failed to update transactions: $e');
+    }
   }
 
   Future<void> _updateUsdValue() async {
@@ -52,6 +63,7 @@ class _WalletPageState extends State<WalletPage> {
     try {
       await _wallet.init();
       await _updateUsdValue(); // Update USD value after wallet initialization
+      await _updateTransactions(); // Load transactions including pending invoices
       setState(() {}); // Refresh UI after wallet initialization
     } catch (e) {
       print('Failed to initialize wallet: $e');
@@ -273,7 +285,6 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   Widget _buildRecentTransactions() {
-    List<WalletTransaction> transactions = _wallet.transactions.take(5).toList();
     
     return Card(
       child: Padding(
@@ -296,7 +307,7 @@ class _WalletPageState extends State<WalletPage> {
                 ),
               ],
             ),
-            if (transactions.isEmpty)
+            if (_allTransactions.isEmpty)
               Padding(
                 padding: EdgeInsets.symmetric(vertical: 20),
                 child: Center(
@@ -307,7 +318,7 @@ class _WalletPageState extends State<WalletPage> {
                 ),
               )
             else
-              ...transactions.map((tx) => _buildTransactionItem(tx)),
+              ..._allTransactions.take(5).map((tx) => _buildTransactionItem(tx)),
           ],
         ),
       ),
@@ -329,20 +340,31 @@ class _WalletPageState extends State<WalletPage> {
           size: 20,
         ),
       ),
-      title: Text(
-        tx.description ?? 'Transaction',
-        style: TextStyle(fontWeight: FontWeight.w500),
-      ),
-      subtitle: Text(
-        DateTime.fromMillisecondsSinceEpoch(tx.createdAt * 1000).toString().substring(0, 16),
-        style: TextStyle(fontSize: 12, color: Colors.grey),
-      ),
+      title: tx.description?.isNotEmpty == true 
+        ? Text(
+            tx.description!,
+            style: TextStyle(fontWeight: FontWeight.w500),
+          )
+        : Container(
+            height: 40, // 给容器一个固定高度
+            alignment: Alignment.centerLeft, // 左对齐但垂直居中
+            child: Text(
+              DateTime.fromMillisecondsSinceEpoch(tx.createdAt * 1000).toString().substring(0, 16),
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ),
+      subtitle: tx.description?.isNotEmpty == true 
+        ? Text(
+            DateTime.fromMillisecondsSinceEpoch(tx.createdAt * 1000).toString().substring(0, 16),
+            style: TextStyle(fontSize: 12, color: Colors.grey),
+          )
+        : null,
       trailing: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            '${tx.isIncoming ? '+' : '-'}${tx.amountBTC} BTC',
+            '${tx.isIncoming ? '+' : '-'}${tx.amount} sats',
             style: TextStyle(
               fontWeight: FontWeight.bold,
               color: tx.isIncoming ? Colors.green : Colors.red,
@@ -408,6 +430,9 @@ class _WalletPageState extends State<WalletPage> {
       
       // Also refresh invoice statuses
       await _wallet.refreshInvoiceStatuses();
+      
+      // Update transactions list including pending invoices
+      await _updateTransactions();
       
       setState(() {
         _statusMessage = 'Data refresh completed';
