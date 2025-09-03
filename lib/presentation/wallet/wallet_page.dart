@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
 import 'transaction_detail_page.dart';
+import 'transactions_page.dart';
 import '../../core/wallet/model/wallet_info.dart';
 
 /// Wallet Page
@@ -302,7 +303,12 @@ class _WalletPageState extends State<WalletPage> {
                 Spacer(),
                 TextButton(
                   onPressed: () {
-                    // Navigate to full transaction history page
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => TransactionsPage(),
+                      ),
+                    );
                   },
                   child: Text('View All'),
                 ),
