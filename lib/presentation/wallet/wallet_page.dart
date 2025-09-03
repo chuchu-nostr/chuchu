@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
 import '../../core/wallet/model/wallet_info.dart';
-import '../../core/widgets/common_image.dart';
 
 /// Wallet Page
 /// Simple wallet interface navigated from profile page
@@ -15,6 +14,7 @@ class _WalletPageState extends State<WalletPage> {
   final Wallet _wallet = Wallet.sharedInstance;
   bool _isLoading = false;
   String _statusMessage = '';
+  double? _usdValue;
 
   @override
   void initState() {
@@ -24,6 +24,7 @@ class _WalletPageState extends State<WalletPage> {
 
   void _setupCallbacks() {
     _wallet.onBalanceChanged = () {
+      _updateUsdValue();
       setState(() {});
     };
     _wallet.onTransactionAdded = () {
@@ -34,9 +35,23 @@ class _WalletPageState extends State<WalletPage> {
     _initializeWallet();
   }
 
+  Future<void> _updateUsdValue() async {
+    if (_wallet.walletInfo != null) {
+      try {
+        final usdValue = await _wallet.satsToUsd(_wallet.walletInfo!.totalBalance);
+        setState(() {
+          _usdValue = usdValue;
+        });
+      } catch (e) {
+        print('Failed to get USD value: $e');
+      }
+    }
+  }
+
   Future<void> _initializeWallet() async {
     try {
       await _wallet.init();
+      await _updateUsdValue(); // Update USD value after wallet initialization
       setState(() {}); // Refresh UI after wallet initialization
     } catch (e) {
       print('Failed to initialize wallet: $e');
@@ -75,65 +90,18 @@ class _WalletPageState extends State<WalletPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  _buildWalletStatus(),
-                  SizedBox(height: 16),
                   _buildBalanceCard(),
                   SizedBox(height: 16),
-                  _buildRecentTransactions(),
+                  _buildQuickActions(),
                   SizedBox(height: 16),
-                  if (_wallet.isConnected) ...[
-                    _buildQuickActions(),
-                  ] else ...[
-                    _buildConnectWalletCard(),
-                  ],
+                  _buildRecentTransactions(),
                 ],
               ),
             ),
     );
   }
 
-  Widget _buildWalletStatus() {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(16),
-        child: Row(
-          children: [
-            CommonImage(iconName: 'zap_icon.png', size: 32),
-            SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Wallet Status',
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    _wallet.isConnected ? 'Connected to LNbits wallet' : 'Wallet not connected',
-                    style: TextStyle(
-                      color: _wallet.isConnected ? Colors.green : Colors.grey,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: _wallet.isConnected ? Colors.green : Colors.grey,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                _wallet.isConnected ? 'Connected' : 'Disconnected',
-                style: TextStyle(color: Colors.white, fontSize: 12),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   Widget _buildBalanceCard() {
     WalletInfo? balance = _wallet.walletInfo;
@@ -180,44 +148,13 @@ class _WalletPageState extends State<WalletPage> {
               style: Theme.of(context).textTheme.titleMedium,
             ),
             SizedBox(height: 12),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildBalanceItem(
-                    'Total Balance',
-                    '${balance.totalBalanceBTC} BTC',
-                    Colors.blue,
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: _buildBalanceItem(
-                    'Confirmed Balance',
-                    '${balance.confirmedBalanceBTC} BTC',
-                    Colors.green,
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: _buildBalanceItem(
-                    'Unconfirmed',
-                    '${balance.unconfirmedBalanceBTC} BTC',
-                    Colors.orange,
-                  ),
-                ),
-                SizedBox(width: 16),
-                Expanded(
-                  child: _buildBalanceItem(
-                    'Reserved',
-                    '${balance.reservedBalanceBTC} BTC',
-                    Colors.grey,
-                  ),
-                ),
-              ],
+            Center(
+              child: _buildBalanceItem(
+                'Total Balance',
+                '${balance.totalBalance} sats',
+                Colors.blue,
+                usdValue: _usdValue,
+              ),
             ),
           ],
         ),
@@ -225,26 +162,36 @@ class _WalletPageState extends State<WalletPage> {
     );
   }
 
-  Widget _buildBalanceItem(String label, String value, Color color) {
+  Widget _buildBalanceItem(String label, String value, Color color, {double? usdValue}) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            color: Colors.grey[600],
-          ),
-        ),
-        SizedBox(height: 4),
+        // Text(
+        //   label,
+        //   style: TextStyle(
+        //     fontSize: 12,
+        //     color: Colors.grey[600],
+        //   ),
+        // ),
+        // SizedBox(height: 4),
         Text(
           value,
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 24,
             fontWeight: FontWeight.bold,
             color: color,
           ),
         ),
+        if (usdValue != null) ...[
+          SizedBox(height: 2),
+          Text(
+            '≈ \$${usdValue.toStringAsFixed(2)} USD',
+            style: TextStyle(
+              fontSize: 14,
+              color: Colors.grey[600],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -274,19 +221,19 @@ class _WalletPageState extends State<WalletPage> {
                 SizedBox(width: 12),
                 Expanded(
                   child: _buildActionButton(
-                    'Receive',
-                    Icons.qr_code,
-                    Colors.green,
-                    () => _showReceiveDialog(),
+                    'Scan',
+                    Icons.qr_code_scanner,
+                    Colors.orange,
+                    () => _showScanDialog(),
                   ),
                 ),
                 SizedBox(width: 12),
                 Expanded(
                   child: _buildActionButton(
-                    'Scan',
-                    Icons.qr_code_scanner,
-                    Colors.orange,
-                    () => _showScanDialog(),
+                    'Receive',
+                    Icons.qr_code,
+                    Colors.green,
+                    () => _showReceiveDialog(),
                   ),
                 ),
               ],
@@ -446,38 +393,7 @@ class _WalletPageState extends State<WalletPage> {
     }
   }
 
-  Widget _buildConnectWalletCard() {
-    return Card(
-      child: Padding(
-        padding: EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Icon(
-              Icons.account_balance_wallet_outlined,
-              size: 64,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16),
-            Text(
-              'Connect Wallet',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            SizedBox(height: 8),
-            Text(
-              'Connect NIP-47 wallet to use Lightning Network payment features',
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.grey),
-            ),
-            SizedBox(height: 20),
-                          ElevatedButton(
-                onPressed: _showConnectDialog,
-                child: Text('Connect Wallet'),
-              ),
-          ],
-        ),
-      ),
-    );
-  }
+
 
   Future<void> _refreshData() async {
     setState(() {
@@ -507,67 +423,7 @@ class _WalletPageState extends State<WalletPage> {
     }
   }
 
-  void _showConnectDialog() {
-    // Show connection progress dialog
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (context) => AlertDialog(
-        title: Text('Connect Wallet'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 16),
-            Text('Getting wallet configuration from server...'),
-          ],
-        ),
-      ),
-    );
 
-    // Automatically get NIP-47 URI from API and connect
-    _autoConnectWallet();
-  }
-
-  Future<void> _autoConnectWallet() async {
-    try {
-      // Simulate connecting to wallet
-      await Future.delayed(Duration(seconds: 2));
-      
-      // Connect wallet
-      final success = await _wallet.connectToWallet();
-      
-      Navigator.pop(context); // Close progress dialog
-      
-      if (success) {
-        // Show connection success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Wallet connected successfully'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        // Show connection failure message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Wallet connection failed, please try again later'),
-            backgroundColor: Colors.red,
-          ),
-        );
-      }
-    } catch (e) {
-      Navigator.pop(context); // Close progress dialog
-      
-      // Show error message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Connection failed: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
 
   void _showSendDialog() {
     final invoiceController = TextEditingController();

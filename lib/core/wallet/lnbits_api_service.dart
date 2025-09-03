@@ -200,4 +200,31 @@ class LnbitsApiService {
       rethrow;
     }
   }
+
+  /// Get BTC to USD exchange rate using LNbits built-in API
+  Future<double> getBtcToUsdRate() async {
+    try {
+      // Use LNbits built-in exchange rate API
+      final response = await http.get(
+        Uri.parse('$baseUrl/api/v1/rate/usd'),
+        headers: {
+          'Accept': 'application/json',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        // LNbits returns: {"rate": sats_per_usd, "price": btc_price_in_usd}
+        final btcPrice = data['price'] as double;
+        LogUtils.d(() => 'BTC to USD rate from LNbits: $btcPrice');
+        return btcPrice;
+      } else {
+        LogUtils.e(() => 'Failed to get BTC rate from LNbits: ${response.statusCode}');
+        return 50000.0; // Fallback rate
+      }
+    } catch (e) {
+      LogUtils.e(() => 'Error getting BTC rate from LNbits: $e');
+      return 50000.0; // Fallback rate
+    }
+  }
 }

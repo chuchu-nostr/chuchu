@@ -32,6 +32,10 @@ class Wallet {
   /// Timer for checking pending invoices
   Timer? _invoiceCheckTimer;
 
+  /// BTC to USD exchange rate cache
+  double? _btcToUsdRate;
+  DateTime? _rateLastUpdated;
+
   /// Pending transactions
   final List<WalletTransaction> _pendingTransactions = [];
   List<WalletTransaction> get pendingTransactions => List.unmodifiable(_pendingTransactions);
@@ -719,5 +723,33 @@ class Wallet {
     _invoiceCheckTimer?.cancel();
     _invoiceCheckTimer = null;
     LogUtils.d(() => 'Stopped invoice checking timer');
+  }
+
+  /// Get BTC to USD exchange rate (with caching)
+  Future<double> getBtcToUsdRate() async {
+    // Check if we have a cached rate that's less than 5 minutes old
+    if (_btcToUsdRate != null && 
+        _rateLastUpdated != null && 
+        DateTime.now().difference(_rateLastUpdated!).inMinutes < 5) {
+      return _btcToUsdRate!;
+    }
+
+    try {
+      final rate = await lnbitsApi.getBtcToUsdRate();
+      _btcToUsdRate = rate;
+      _rateLastUpdated = DateTime.now();
+      return rate;
+    } catch (e) {
+      LogUtils.e(() => 'Failed to get BTC rate: $e');
+      // Return cached rate if available, otherwise fallback
+      return _btcToUsdRate ?? 50000.0;
+    }
+  }
+
+  /// Convert sats to USD
+  Future<double> satsToUsd(int sats) async {
+    final btcRate = await getBtcToUsdRate();
+    final btcAmount = sats / 100000000.0; // Convert sats to BTC
+    return btcAmount * btcRate;
   }
 }
