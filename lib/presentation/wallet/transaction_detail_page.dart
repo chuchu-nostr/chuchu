@@ -312,7 +312,7 @@ class TransactionDetailPage extends StatelessWidget {
       case TransactionStatus.failed:
         return Colors.red;
       case TransactionStatus.expired:
-        return Colors.grey;
+        return Colors.deepOrange; 
     }
   }
 

@@ -36,25 +36,41 @@ class Wallet {
     final all = <WalletTransaction>[];
     all.addAll(_transactions);
     
-    // Add pending invoices as transactions
+    // Add all invoices as transactions (pending and paid)
     try {
       final invoices = await _loadInvoicesFromDB();
-      final pendingInvoices = invoices.where((invoice) => invoice.status == InvoiceStatus.pending).toList();
       
-      for (final invoice in pendingInvoices) {
+      for (final invoice in invoices) {
+        // Determine transaction status
+        TransactionStatus status;
+        if (invoice.status == InvoiceStatus.paid) {
+          status = TransactionStatus.confirmed;
+        } else if (invoice.status == InvoiceStatus.expired) {
+          status = TransactionStatus.expired; // Use expired status for expired invoices
+        } else if (invoice.isExpired) {
+          // Check if invoice is expired based on timestamp
+          status = TransactionStatus.expired;
+        } else {
+          status = TransactionStatus.pending;
+        }
+        
         final transaction = WalletTransaction(
           transactionId: invoice.invoiceId,
           amount: invoice.amount,
           description: invoice.description,
-          status: TransactionStatus.pending,
+          status: status,
           type: TransactionType.incoming, // Invoice is for receiving
           createdAt: invoice.createdAt,
           walletId: invoice.walletId,
+          invoice: invoice.bolt11,
+          paymentHash: invoice.paymentHash,
+          confirmedAt: invoice.paidAt,
+          preimage: invoice.preimage,
         );
         all.add(transaction);
       }
     } catch (e) {
-      LogUtils.e(() => 'Failed to load pending invoices: $e');
+      LogUtils.e(() => 'Failed to load invoices: $e');
     }
     
     // Sort by creation time (newest first)
@@ -261,6 +277,9 @@ class Wallet {
       // Save invoice to database
       await _saveInvoiceToDB(invoice);
       
+      // Trigger UI update for new invoice
+      onTransactionAdded?.call();
+      
       LogUtils.i(() => 'Successfully created invoice: ${invoice.invoiceId}');
       return invoice;
     } catch (e) {
@@ -356,7 +375,15 @@ class Wallet {
     try {
       final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
       final walletInfo = await lnbitsApi.getWalletInfo(apiKey: _walletInfo!.invoiceKey);
-      return walletInfo['balance'] as int?;
+      
+      // LNbits returns balance in msats, convert to sats
+      final balanceMsats = walletInfo['balance'] as int?;
+      if (balanceMsats != null) {
+        final balanceSats = balanceMsats ~/ 1000; // Convert msats to sats
+        LogUtils.d(() => 'Balance: ${balanceMsats} msats = ${balanceSats} sats');
+        return balanceSats;
+      }
+      return null;
     } catch (e) {
       LogUtils.e(() => 'Failed to get balance: $e');
       return null;
@@ -460,8 +487,11 @@ class Wallet {
       final invoice = await isar.walletInvoices.where().invoiceIdEqualTo(invoiceId).findFirst();
       if (invoice != null) {
         invoice.status = status;
-        await isar.walletInvoices.put(invoice);
+        await DBISAR.sharedInstance.saveToDB(invoice);
         LogUtils.d(() => 'Updated invoice status: $invoiceId -> $status');
+        
+        // Trigger UI update when invoice status changes
+        onTransactionAdded?.call();
       }
     } catch (e) {
       LogUtils.e(() => 'Failed to update invoice status: $e');
@@ -470,10 +500,17 @@ class Wallet {
 
   /// Check pending invoices for payment status
   Future<void> checkPendingInvoices() async {
-    if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) return;
+    LogUtils.d(() => 'checkPendingInvoices called at ${DateTime.now()}');
+    if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) {
+      LogUtils.d(() => 'Skipping checkPendingInvoices: walletInfo is null or invoiceKey is empty');
+      return;
+    }
     
     try {
       LogUtils.d(() => 'Checking pending invoices for payment status...');
+      
+      // First refresh balance to get latest value
+      await refreshBalance();
       
       // Get all pending invoices from database
       final isar = DBISAR.sharedInstance.isar;
@@ -503,18 +540,22 @@ class Wallet {
           }
           
           // Check payment status via API
-          final paymentInfo = await lnbitsApi.getPayment(
-            apiKey: _walletInfo!.invoiceKey,
-            paymentHash: invoice.paymentHash,
-          );
-          
-          if (paymentInfo['paid'] == true) {
-            await updateInvoiceStatus(invoice.invoiceId, InvoiceStatus.paid);
-            LogUtils.d(() => 'Invoice paid: ${invoice.invoiceId}');
-            updatedCount++;
+          try {
+            final paymentInfo = await lnbitsApi.getPayment(
+              apiKey: _walletInfo!.invoiceKey,
+              paymentHash: invoice.paymentHash,
+            );
             
-            // Refresh balance after successful payment
-            await refreshBalance();
+            if (paymentInfo['paid'] == true) {
+              await updateInvoiceStatus(invoice.invoiceId, InvoiceStatus.paid);
+              LogUtils.d(() => 'Invoice paid: ${invoice.invoiceId}');
+              updatedCount++;
+              
+              // Refresh balance after successful payment
+              await refreshBalance();
+            }
+          } catch (e) {
+            LogUtils.d(() => 'getPayment failed for ${invoice.invoiceId}, checking balance change: $e');
           }
         } catch (e) {
           LogUtils.e(() => 'Error checking invoice ${invoice.invoiceId}: $e');
@@ -744,8 +785,11 @@ class Wallet {
   void _startInvoiceCheckTimer() {
     _stopInvoiceCheckTimer(); // Stop any existing timer
     
+    LogUtils.d(() => 'Starting invoice checking timer...');
+    
     // Check every 30 seconds for pending invoices
-    _invoiceCheckTimer = Timer.periodic(const Duration(seconds: 30), (timer) {
+    _invoiceCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+      LogUtils.d(() => 'Timer tick: calling checkPendingInvoices');
       checkPendingInvoices();
     });
     

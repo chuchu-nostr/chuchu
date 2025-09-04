@@ -406,7 +406,7 @@ class _WalletPageState extends State<WalletPage> {
       case TransactionStatus.failed:
         return Colors.red;
       case TransactionStatus.expired:
-        return Colors.grey;
+        return Colors.deepOrange; 
     }
   }
 

@@ -145,8 +145,8 @@ class _TransactionsPageState extends State<TransactionsPage> {
         statusText = 'Failed';
         break;
       case TransactionStatus.expired:
-        backgroundColor = Colors.grey.withOpacity(0.1);
-        textColor = Colors.grey[700]!;
+        backgroundColor = Colors.deepOrange.withOpacity(0.1);
+        textColor = Colors.deepOrange[700]!;
         statusText = 'Expired';
         break;
     }
