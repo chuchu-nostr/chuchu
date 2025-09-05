@@ -78,10 +78,17 @@ class Nip47 {
   }
 
   static Future<Event> makeSubscriptionInvoice(
-      int amount, String description, String receiver, String privkey) async {
-    return _createRequest('make_subscription_invoice', {
-      'amount': amount,
-      'description': description,
+      String groupid, int month, String receiver, String privkey) async {
+    return _createSubscriptionRequest('make_subscription_invoice', {
+      'groupid': groupid,
+      'month': month,
+    }, receiver, privkey);
+  }
+
+  static Future<Event> lookupSubscriptionInvoice(
+      String paymentHash, String receiver, String privkey) async {
+    return _createSubscriptionRequest('lookup_subscription_invoice', {
+      'payment_hash': paymentHash,
     }, receiver, privkey);
   }
 
@@ -110,9 +117,30 @@ class Nip47 {
         privkey: privkey);
   }
 
+  // Helper method to create subscription requests (uses 23196)
+  static Future<Event> _createSubscriptionRequest(
+      String method, Map<String, dynamic> params, String receiver, String privkey) async {
+    String sender = Keychain.getPublicKey(privkey);
+    Map request = {
+      'method': method,
+      'params': params
+    };
+    String content = jsonEncode(request);
+    String enContent =
+        await Nip4.encryptContent(content, receiver, sender, privkey);
+    return await Event.from( 
+        kind: 23196,
+        tags: [
+          ['p', receiver]
+        ],
+        content: enContent,
+        pubkey: sender,
+        privkey: privkey);
+  }
+
   static Future<NwcResponse?> response(
       Event event, String sender, String receiver, String privkey) async {
-    if (event.kind == 23195) {
+    if (event.kind == 23195 || event.kind == 23197) {
       String? requestId, p;
       for (var tag in event.tags) {
         if (tag[0] == "p") p = tag[1];
