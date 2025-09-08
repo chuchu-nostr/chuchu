@@ -18,6 +18,7 @@ import '../messages/messages.dart';
 import '../network/connect.dart';
 import '../nostr_dart/src/event.dart';
 import '../nostr_dart/src/filter.dart';
+import '../wallet/wallet.dart';
 import '../nostr_dart/src/nips/nip_019.dart';
 import '../nostr_dart/src/nips/nip_021.dart';
 import '../nostr_dart/src/nips/nip_029.dart';
@@ -239,7 +240,15 @@ class RelayGroup {
               // 39002
             ],
             since: (groupMessageUntil + 1));
-        subscriptions[relayURL] = [f];
+        
+        // Add NIP-47 response filter for subscription invoices
+        Filter nip47Filter = Filter(
+          kinds: [23197], // NIP-47 response kind
+          p: [pubkey], // From our own pubkey
+          since: (groupMessageUntil + 1),
+        );
+        
+        subscriptions[relayURL] = [f, nip47Filter];
       }
     } else {
       int groupMessageUntil = Relays.sharedInstance.getGroupMessageUntil(relay);
@@ -267,7 +276,15 @@ class RelayGroup {
             // 39002
           ],
           since: (groupMessageUntil + 1));
-      subscriptions[relay] = [f];
+      
+      // Add NIP-47 response filter for subscription invoices
+      Filter nip47Filter = Filter(
+        kinds: [23197], // NIP-47 response kind
+        p: [pubkey], // From our own pubkey
+        since: (groupMessageUntil + 1),
+      );
+      
+      subscriptions[relay] = [f, nip47Filter];
     }
 
     groupMessageSubscription = Connect.sharedInstance.addSubscriptions(subscriptions,
@@ -324,6 +341,9 @@ class RelayGroup {
         break;
       case 9735:
         handleGroupZaps(event, relay);
+        break;
+      case 23197:
+        handleNIP47Response(event, relay);
         break;
       case 39000:
         handleGroupMetadata(event, relay);
@@ -483,5 +503,15 @@ class RelayGroup {
       return {'groupId': Nip19.decodeNote(encodedGroup), 'relays': [], 'author': null};
     }
     return null;
+  }
+
+  /// Handle NIP-47 response events (kind 23197)
+  void handleNIP47Response(Event event, String relay) {
+    try {
+      // Delegate to Wallet's handleNIP47Response method
+      Wallet.sharedInstance.handleNIP47Response(event, relay);
+    } catch (e) {
+      LogUtils.e(() => 'Error handling NIP-47 response in RelayGroup: $e');
+    }
   }
 }

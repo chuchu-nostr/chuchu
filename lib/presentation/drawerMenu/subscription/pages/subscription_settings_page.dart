@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+member.dart';
 import 'package:flutter/material.dart';
@@ -519,16 +520,48 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
         relayPubkey: relayPubkey,
       );
 
-      if (result != null) {
-        // TODO: Send the event to the relay and get response
-        // For now, simulate getting invoice from relay
-        double price = _getSelectedPrice();
-        await _simulateInvoiceFromRelay(groupId, months, price);
+      if (result != null && !result.containsKey('error')) {
+        // Successfully created subscription invoice
+        final bolt11 = result['bolt11'] as String?;
+        final amount = result['amount'] as int?;
+        final paymentHash = result['payment_hash'] as String?;
+        final expiresAt = result['expires_at'] as int?;
         
-        // Log the event for debugging
-        print('Subscription invoice event created: ${result['event']}');
+        if (bolt11 != null && amount != null) {
+          // Set up payment status callback
+          wallet.onPaymentStatusChanged = (paymentHash, isPaid, details) {
+            if (isPaid) {
+              CommonToast.instance.show(context, 'Payment completed successfully!');
+              // Handle payment success - update UI, etc.
+              _handlePaymentSuccess(groupId, months);
+            }
+          };
+          
+          // Show payment dialog
+          if (mounted) {
+            showDialog(
+              context: context,
+              builder: (context) => SubscriptionPaymentDialog(
+                invoice: paymentHash ?? '',
+                bolt11: bolt11,
+                amount: amount,
+                description: 'Subscription for $months month(s)',
+                expiresAt: expiresAt != null 
+                    ? DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000)
+                    : DateTime.now().add(const Duration(minutes: 15)),
+                onPaymentSuccess: () {
+                  Navigator.of(context).pop();
+                  _handlePaymentSuccess(groupId, months);
+                },
+              ),
+            );
+          }
+        } else {
+          CommonToast.instance.show(context, 'Invalid invoice data received');
+        }
       } else {
-        CommonToast.instance.show(context, 'Failed to create subscription invoice');
+        final errorMessage = result?['message'] ?? 'Failed to create subscription invoice';
+        CommonToast.instance.show(context, errorMessage);
       }
     } catch (e) {
       print('Error creating subscription invoice: $e');
@@ -536,57 +569,6 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
     }
   }
 
-  /// Simulate getting invoice from relay (for testing)
-  Future<void> _simulateInvoiceFromRelay(String groupId, int months, double price) async {
-    try {
-      // Simulate delay for relay processing
-      await Future.delayed(const Duration(seconds: 1));
-      
-      // Create a mock invoice for testing
-      final mockInvoice = _createMockInvoice(price, months);
-      
-      // Show payment dialog
-      if (mounted) {
-        showDialog(
-          context: context,
-          builder: (context) => SubscriptionPaymentDialog(
-            invoice: mockInvoice['payment_hash'],
-            bolt11: mockInvoice['bolt11'],
-            amount: mockInvoice['amount'],
-            description: mockInvoice['description'],
-            expiresAt: mockInvoice['expires_at'],
-            onPaymentSuccess: () {
-              CommonToast.instance.show(context, 'Subscription payment successful!');
-              Navigator.of(context).pop(); // Close payment dialog
-              Navigator.of(context).pop(); // Close subscription settings
-            },
-          ),
-        );
-      }
-    } catch (e) {
-      CommonToast.instance.show(context, 'Failed to get invoice from relay: ${e.toString()}');
-    }
-  }
-
-  /// Create mock invoice for testing
-  Map<String, dynamic> _createMockInvoice(double price, int months) {
-    // Convert price to sats (assuming price is in USD, 1 USD = 1000 sats for demo)
-    final amountSats = (price * 1000).round();
-    
-    // Create a mock BOLT11 invoice
-    final mockBolt11 = 'lnbc${amountSats}u1p${DateTime.now().millisecondsSinceEpoch}...';
-    
-    // Set expiration time to 15 minutes from now
-    final expiresAt = DateTime.now().add(const Duration(minutes: 15));
-    
-    return {
-      'payment_hash': 'mock_payment_hash_${DateTime.now().millisecondsSinceEpoch}',
-      'bolt11': mockBolt11,
-      'amount': amountSats,
-      'description': 'Subscription for $months month${months > 1 ? 's' : ''} - \$${price.toStringAsFixed(2)}',
-      'expires_at': expiresAt,
-    };
-  }
 
   /// Update existing subscription settings
   Future<void> _updateSubscriptionSettings(int months) async {
@@ -628,28 +610,21 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
     return 1; // Default to 1 month
   }
 
-  /// Get selected price based on the current subscription tier
-  double _getSelectedPrice() {
-    if (_selectedTier != null) {
-      // Check if there's a custom price for this tier
-      if (_customPrices.containsKey(_selectedTier!.name)) {
-        String customPriceText = _customPrices[_selectedTier!.name]!;
-        String cleanPriceText = customPriceText.replaceAll(RegExp(r'[^\d.]'), '');
-        if (cleanPriceText.isNotEmpty) {
-          return double.parse(cleanPriceText);
-        }
-      }
-      // Use the tier's default price
-      return _selectedTier!.price / 100.0;
-    }
-    return 9.99; // Default price
-  }
 
   /// Get current group ID for the active subscription
   String _getCurrentGroupId() {
     // In a real implementation, you would get this from the current subscription state
     // For now, return a placeholder or get it from the UI state
     return 'current_group_id'; // This should be replaced with actual group ID
+  }
+
+
+  /// Handle successful payment
+  void _handlePaymentSuccess(String groupId, int months) {
+    // TODO: Update subscription status in database
+    // TODO: Refresh UI to show active subscription
+    print('Payment successful for group $groupId, months: $months');
+    CommonToast.instance.show(context, 'Subscription payment successful!');
   }
 
   /// Get relay pubkey for the selected subscription relay

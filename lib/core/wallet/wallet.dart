@@ -11,6 +11,9 @@ import 'model/wallet_transaction.dart';
 import 'model/wallet_info.dart';
 import 'model/wallet_invoice.dart';
 import 'lnbits_api_service.dart';
+import '../network/connect.dart';
+import '../relayGroups/relayGroup.dart';
+import '../nostr_dart/nostr.dart';
 import '../nostr_dart/src/nips/nip_047.dart';
 
 /// NIP-47 Wallet Manager
@@ -27,6 +30,15 @@ class Wallet {
 
   /// LNbits API service
   final LnbitsApiService lnbitsApi = LnbitsApiService();
+
+  /// Pending NIP-47 requests waiting for responses
+  final Map<String, Completer<Map<String, dynamic>?>> _pendingRequests = {};
+
+  /// Active polling timers for subscription invoices
+  final Map<String, Timer> _pollingTimers = {};
+
+  /// Callback for payment status updates
+  Function(String paymentHash, bool isPaid, Map<String, dynamic>? details)? onPaymentStatusChanged;
 
   /// Transaction history
   List<WalletTransaction> _transactions = [];
@@ -667,13 +679,47 @@ class Wallet {
 
       LogUtils.d(() => 'Created NIP-47 subscription invoice event: ${event.id}');
       
-      // Return event data for sending to relay
-      return {
-        'event': event,
-        'groupid': groupId,
-        'month': month,
-        'relay_pubkey': relayPubkey,
-      };
+      // Create completer for this request
+      final completer = Completer<Map<String, dynamic>?>();
+      _pendingRequests[event.id] = completer;
+      
+      // Send event to group relay
+      final sendSuccess = await _sendEventToGroupRelay(event, groupId);
+      if (!sendSuccess) {
+        LogUtils.e(() => 'Failed to send subscription invoice event to group relay');
+        _pendingRequests.remove(event.id);
+        if (!completer.isCompleted) {
+          completer.complete({
+            'error': true,
+            'message': 'Failed to send event to relay',
+          });
+        }
+        return completer.future;
+      }
+      
+      // Set timeout for response (30 seconds)
+      Timer(const Duration(seconds: 30), () {
+        if (_pendingRequests.containsKey(event.id)) {
+          _pendingRequests.remove(event.id);
+          if (!completer.isCompleted) {
+            completer.complete(null);
+          }
+        }
+      });
+      
+      // Wait for response
+      final response = await completer.future;
+      
+      // If successful, start polling for payment status
+      if (response != null && 
+          !response.containsKey('error') && 
+          response.containsKey('payment_hash')) {
+        final paymentHash = response['payment_hash'] as String;
+        _startPollingPaymentStatus(paymentHash, relayPubkey);
+      }
+      
+      return response;
+      
     } catch (e) {
       LogUtils.e(() => 'Failed to create subscription invoice: $e');
       return null;
@@ -709,12 +755,38 @@ class Wallet {
 
       LogUtils.d(() => 'Created NIP-47 lookup subscription invoice event: ${event.id}');
       
-      // Return event data for sending to relay
-      return {
-        'event': event,
-        'payment_hash': paymentHash,
-        'relay_pubkey': relayPubkey,
-      };
+      // Create completer for this request
+      final completer = Completer<Map<String, dynamic>?>();
+      _pendingRequests[event.id] = completer;
+      
+      // Send event to group relay
+      final sendSuccess = await _sendEventToGroupRelay(event, '');
+      if (!sendSuccess) {
+        LogUtils.e(() => 'Failed to send lookup subscription invoice event to group relay');
+        _pendingRequests.remove(event.id);
+        if (!completer.isCompleted) {
+          completer.complete({
+            'error': true,
+            'message': 'Failed to send event to relay',
+          });
+        }
+        return completer.future;
+      }
+      
+      // Set timeout for response (30 seconds)
+      Timer(const Duration(seconds: 30), () {
+        if (_pendingRequests.containsKey(event.id)) {
+          _pendingRequests.remove(event.id);
+          if (!completer.isCompleted) {
+            completer.complete(null);
+          }
+        }
+      });
+      
+      // Wait for response
+      final response = await completer.future;
+      return response;
+      
     } catch (e) {
       LogUtils.e(() => 'Failed to create lookup subscription invoice: $e');
       return null;
@@ -996,10 +1068,241 @@ class Wallet {
     }
   }
 
+  /// Handle NIP-47 response events (kind 23197)
+  Future<void> handleNIP47Response(Event event, String relay) async {
+    try {
+      LogUtils.d(() => 'Received NIP-47 response: ${event.id} from $relay');
+      
+      // Extract request ID from 'e' tag
+      String? requestId;
+      for (var tag in event.tags) {
+        if (tag.length >= 2 && tag[0] == 'e') {
+          requestId = tag[1];
+          break;
+        }
+      }
+      
+      if (requestId == null) {
+        LogUtils.w(() => 'No request ID found in NIP-47 response');
+        return;
+      }
+      
+      // Check if we have a pending request for this ID
+      final completer = _pendingRequests[requestId];
+      if (completer == null) {
+        LogUtils.w(() => 'No pending request found for ID: $requestId');
+        return;
+      }
+      
+      // Get current account's private key
+      final privkey = Account.sharedInstance.currentPrivkey;
+      if (privkey.isEmpty) {
+        LogUtils.e(() => 'No private key available for NIP-47 response');
+        completer.complete(null);
+        return;
+      }
+      
+      // Get current account's public key
+      final pubkey = Account.sharedInstance.currentPubkey;
+      if (pubkey.isEmpty) {
+        LogUtils.e(() => 'No public key available for NIP-47 response');
+        completer.complete(null);
+        return;
+      }
+      
+      // Parse NIP-47 response
+      final nwcResponse = await Nip47.response(
+        event,
+        pubkey, // sender (our pubkey)
+        pubkey, // receiver (our pubkey)
+        privkey,
+      );
+      
+      if (nwcResponse != null) {
+        if (!nwcResponse.isSuccess) {
+          LogUtils.e(() => 'NIP-47 response error: ${nwcResponse.errorMessage}');
+          // Complete with error
+          completer.complete({
+            'error': true,
+            'code': nwcResponse.errorCode,
+            'message': nwcResponse.errorMessage,
+          });
+        } else {
+          LogUtils.d(() => 'NIP-47 response success: ${nwcResponse.result}');
+          // Complete with success result
+          completer.complete(nwcResponse.result);
+        }
+      } else {
+        LogUtils.w(() => 'Failed to parse NIP-47 response');
+        completer.complete(null);
+      }
+      
+      // Remove from pending requests
+      _pendingRequests.remove(requestId);
+      
+    } catch (e) {
+      LogUtils.e(() => 'Error handling NIP-47 response: $e');
+      // Complete with error
+      final requestId = _extractRequestId(event);
+      if (requestId != null) {
+        final completer = _pendingRequests[requestId];
+        if (completer != null && !completer.isCompleted) {
+          completer.complete({
+            'error': true,
+            'message': e.toString(),
+          });
+          _pendingRequests.remove(requestId);
+        }
+      }
+    }
+  }
+  
+  /// Extract request ID from event tags
+  String? _extractRequestId(Event event) {
+    for (var tag in event.tags) {
+      if (tag.length >= 2 && tag[0] == 'e') {
+        return tag[1];
+      }
+    }
+    return null;
+  }
+  
+  
+  
+
+  /// Start polling payment status for a subscription invoice
+  void _startPollingPaymentStatus(String paymentHash, String relayPubkey) {
+    // Stop existing polling if any
+    _stopPollingPaymentStatus(paymentHash);
+    
+    LogUtils.d(() => 'Starting payment status polling for: $paymentHash');
+    
+    // Start polling every 15 seconds
+    final timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
+      try {
+        final status = await lookupSubscriptionInvoice(
+          paymentHash: paymentHash,
+          relayPubkey: relayPubkey,
+        );
+        
+        if (status != null && !status.containsKey('error')) {
+          final isPaid = status['paid'] as bool? ?? false;
+          
+          // Notify about status change
+          onPaymentStatusChanged?.call(paymentHash, isPaid, status);
+          
+          // If paid, stop polling
+          if (isPaid) {
+            LogUtils.d(() => 'Payment completed for: $paymentHash');
+            _stopPollingPaymentStatus(paymentHash);
+          }
+        }
+      } catch (e) {
+        LogUtils.e(() => 'Error polling payment status for $paymentHash: $e');
+      }
+    });
+    
+    _pollingTimers[paymentHash] = timer;
+  }
+  
+  /// Stop polling payment status for a specific invoice
+  void _stopPollingPaymentStatus(String paymentHash) {
+    final timer = _pollingTimers[paymentHash];
+    if (timer != null) {
+      timer.cancel();
+      _pollingTimers.remove(paymentHash);
+      LogUtils.d(() => 'Stopped payment status polling for: $paymentHash');
+    }
+  }
+  
+  /// Stop all payment status polling
+  void stopAllPaymentPolling() {
+    for (var timer in _pollingTimers.values) {
+      timer.cancel();
+    }
+    _pollingTimers.clear();
+    LogUtils.d(() => 'Stopped all payment status polling');
+  }
+  
+  /// Manually check payment status (can be called by upper layer)
+  Future<Map<String, dynamic>?> checkPaymentStatus({
+    required String paymentHash,
+    required String relayPubkey,
+  }) async {
+    return await lookupSubscriptionInvoice(
+      paymentHash: paymentHash,
+      relayPubkey: relayPubkey,
+    );
+  }
+
+  /// Send event to group relay
+  Future<bool> _sendEventToGroupRelay(Event event, String groupId) async {
+    try {
+      // Get group relay URL from RelayGroup
+      final groupRelays = RelayGroup.sharedInstance.groupRelays;
+      if (groupRelays.isEmpty) {
+        LogUtils.e(() => 'No group relays available');
+        return false;
+      }
+
+      // Use only the first relay
+      final relayUrl = groupRelays.first;
+      final completer = Completer<bool>();
+
+      try {
+        Connect.sharedInstance.sendEvent(
+          event,
+          toRelays: [relayUrl],
+          sendCallBack: (ok, relay) {
+            if (ok.status) {
+              LogUtils.d(() => 'Event sent successfully to $relay');
+              if (!completer.isCompleted) {
+                completer.complete(true);
+              }
+            } else {
+              LogUtils.e(() => 'Failed to send event to $relay: ${ok.message}');
+              if (!completer.isCompleted) {
+                completer.complete(false);
+              }
+            }
+          },
+        );
+      } catch (e) {
+        LogUtils.e(() => 'Error sending event to $relayUrl: $e');
+        if (!completer.isCompleted) {
+          completer.complete(false);
+        }
+      }
+
+      // Wait for send to complete with timeout
+      return await completer.future.timeout(
+        const Duration(seconds: 10),
+        onTimeout: () {
+          LogUtils.e(() => 'Timeout waiting for event send completion');
+          return false;
+        },
+      );
+    } catch (e) {
+      LogUtils.e(() => 'Error sending event to group relay: $e');
+      return false;
+    }
+  }
+
   /// Cleanup resources
   void dispose() {
     _stopInvoiceCheckTimer();
     onBalanceChanged = null;
     onTransactionAdded = null;
+    
+    // Complete all pending requests with null
+    for (var completer in _pendingRequests.values) {
+      if (!completer.isCompleted) {
+        completer.complete(null);
+      }
+    }
+    _pendingRequests.clear();
+    
+    // Stop all polling timers
+    stopAllPaymentPolling();
   }
 }
