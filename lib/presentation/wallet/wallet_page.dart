@@ -25,15 +25,26 @@ class _WalletPageState extends State<WalletPage> {
     _setupCallbacks();
   }
 
+  @override
+  void dispose() {
+    // Cleanup wallet resources
+    _wallet.dispose();
+    super.dispose();
+  }
+
   void _setupCallbacks() {
     _wallet.onBalanceChanged = () {
       _updateUsdValue();
       _updateTransactions();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     };
     _wallet.onTransactionAdded = () {
       _updateTransactions();
-      setState(() {});
+      if (mounted) {
+        setState(() {});
+      }
     };
     
     // Initialize wallet
@@ -52,9 +63,11 @@ class _WalletPageState extends State<WalletPage> {
     if (_wallet.walletInfo != null) {
       try {
         final usdValue = await _wallet.satsToUsd(_wallet.walletInfo!.totalBalance);
-        setState(() {
-          _usdValue = usdValue;
-        });
+        if (mounted) {
+          setState(() {
+            _usdValue = usdValue;
+          });
+        }
       } catch (e) {
         print('Failed to get USD value: $e');
       }
@@ -66,7 +79,9 @@ class _WalletPageState extends State<WalletPage> {
       await _wallet.init();
       await _updateUsdValue(); // Update USD value after wallet initialization
       await _updateTransactions(); // Load transactions including pending invoices
-      setState(() {}); // Refresh UI after wallet initialization
+      if (mounted) {
+        setState(() {}); // Refresh UI after wallet initialization
+      }
     } catch (e) {
       print('Failed to initialize wallet: $e');
     }
@@ -435,6 +450,8 @@ class _WalletPageState extends State<WalletPage> {
 
 
   Future<void> _refreshData() async {
+    if (!mounted) return;
+    
     setState(() {
       _isLoading = true;
       _statusMessage = 'Refreshing data...';
@@ -451,17 +468,23 @@ class _WalletPageState extends State<WalletPage> {
       // Update transactions list including pending invoices
       await _updateTransactions();
       
-      setState(() {
-        _statusMessage = 'Data refresh completed';
-      });
+      if (mounted) {
+        setState(() {
+          _statusMessage = 'Data refresh completed';
+        });
+      }
     } catch (e) {
-      setState(() {
-        _statusMessage = 'Refresh failed: $e';
-      });
+      if (mounted) {
+        setState(() {
+          _statusMessage = 'Refresh failed: $e';
+        });
+      }
     } finally {
-      setState(() {
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -661,7 +684,9 @@ class _WalletPageState extends State<WalletPage> {
             backgroundColor: Colors.green,
           ),
         );
-        setState(() {}); // Refresh UI
+        if (mounted) {
+          setState(() {}); // Refresh UI
+        }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

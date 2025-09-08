@@ -5,6 +5,8 @@ import '../../../../core/account/relays.dart';
 import '../../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../../core/relayGroups/relayGroup.dart';
 import '../../../../core/widgets/common_toast.dart';
+import '../../../../core/wallet/wallet.dart';
+import '../widgets/subscription_payment_dialog.dart';
 
 class SubscriptionTier {
   final String name;
@@ -113,12 +115,8 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
       
       if (_hasExistingGroup) {
         // Update existing subscription settings
-        // TODO: Implement update logic for existing group
-        String message = _isPaidSubscription 
-            ? 'Subscription settings updated successfully at $priceText'
-            : 'Subscription settings updated to free';
-        CommonToast.instance.show(context, message);
-        Navigator.pop(context);
+        int months = _getSelectedMonths();
+        await _updateSubscriptionSettings(months);
       } else {
         // Create new subscription
         RelayGroupDBISAR? relayGroupDB = await RelayGroup.sharedInstance.createGroup(
@@ -131,6 +129,12 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
         );
 
         if(relayGroupDB != null){
+          // If it's a paid subscription, create subscription invoice
+          if (_isPaidSubscription) {
+            int months = _getSelectedMonths();
+            await _createSubscriptionInvoice(relayGroupDB.id.toString(), months);
+          }
+          
           String message = _isPaidSubscription 
               ? 'Premium subscription created successfully at $priceText'
               : 'Free subscription created successfully';
@@ -485,5 +489,174 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
         ),
       ),
     );
+  }
+
+  /// Create subscription invoice using NIP-47
+  Future<void> _createSubscriptionInvoice(String groupId, int months) async {
+    try {
+      // Get wallet instance
+      final wallet = Wallet();
+      
+      // Ensure wallet is connected
+      if (!wallet.isConnected) {
+        await wallet.connectToWallet();
+      }
+      
+      if (!wallet.isConnected) {
+        CommonToast.instance.show(context, 'Wallet not connected. Please try again.');
+        return;
+      }
+
+      // Use the months parameter passed to the method
+
+      // Get relay pubkey (using the subscription relay)
+      final relayPubkey = _getRelayPubkey();
+      
+      // Create subscription invoice
+      final result = await wallet.makeSubscriptionInvoice(
+        groupId: groupId,
+        month: months,
+        relayPubkey: relayPubkey,
+      );
+
+      if (result != null) {
+        // TODO: Send the event to the relay and get response
+        // For now, simulate getting invoice from relay
+        double price = _getSelectedPrice();
+        await _simulateInvoiceFromRelay(groupId, months, price);
+        
+        // Log the event for debugging
+        print('Subscription invoice event created: ${result['event']}');
+      } else {
+        CommonToast.instance.show(context, 'Failed to create subscription invoice');
+      }
+    } catch (e) {
+      print('Error creating subscription invoice: $e');
+      CommonToast.instance.show(context, 'Error creating subscription invoice: ${e.toString()}');
+    }
+  }
+
+  /// Simulate getting invoice from relay (for testing)
+  Future<void> _simulateInvoiceFromRelay(String groupId, int months, double price) async {
+    try {
+      // Simulate delay for relay processing
+      await Future.delayed(const Duration(seconds: 1));
+      
+      // Create a mock invoice for testing
+      final mockInvoice = _createMockInvoice(price, months);
+      
+      // Show payment dialog
+      if (mounted) {
+        showDialog(
+          context: context,
+          builder: (context) => SubscriptionPaymentDialog(
+            invoice: mockInvoice['payment_hash'],
+            bolt11: mockInvoice['bolt11'],
+            amount: mockInvoice['amount'],
+            description: mockInvoice['description'],
+            expiresAt: mockInvoice['expires_at'],
+            onPaymentSuccess: () {
+              CommonToast.instance.show(context, 'Subscription payment successful!');
+              Navigator.of(context).pop(); // Close payment dialog
+              Navigator.of(context).pop(); // Close subscription settings
+            },
+          ),
+        );
+      }
+    } catch (e) {
+      CommonToast.instance.show(context, 'Failed to get invoice from relay: ${e.toString()}');
+    }
+  }
+
+  /// Create mock invoice for testing
+  Map<String, dynamic> _createMockInvoice(double price, int months) {
+    // Convert price to sats (assuming price is in USD, 1 USD = 1000 sats for demo)
+    final amountSats = (price * 1000).round();
+    
+    // Create a mock BOLT11 invoice
+    final mockBolt11 = 'lnbc${amountSats}u1p${DateTime.now().millisecondsSinceEpoch}...';
+    
+    // Set expiration time to 15 minutes from now
+    final expiresAt = DateTime.now().add(const Duration(minutes: 15));
+    
+    return {
+      'payment_hash': 'mock_payment_hash_${DateTime.now().millisecondsSinceEpoch}',
+      'bolt11': mockBolt11,
+      'amount': amountSats,
+      'description': 'Subscription for $months month${months > 1 ? 's' : ''} - \$${price.toStringAsFixed(2)}',
+      'expires_at': expiresAt,
+    };
+  }
+
+  /// Update existing subscription settings
+  Future<void> _updateSubscriptionSettings(int months) async {
+    try {
+      // Get the current group ID (assuming we have access to it)
+      // In a real implementation, you would get this from the current subscription
+      String groupId = _getCurrentGroupId();
+      
+      if (groupId.isEmpty) {
+        CommonToast.instance.show(context, 'No active subscription found');
+        return;
+      }
+
+      // If it's a paid subscription, create a new subscription invoice
+      if (_isPaidSubscription) {
+        await _createSubscriptionInvoice(groupId, months);
+      } else {
+        // For free subscription updates, just show success message
+        String message = 'Subscription settings updated to free';
+        CommonToast.instance.show(context, message);
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      CommonToast.instance.show(context, 'Error updating subscription: ${e.toString()}');
+    }
+  }
+
+  /// Get selected months based on the current subscription tier
+  int _getSelectedMonths() {
+    if (_selectedTier != null) {
+      if (_selectedTier!.duration.contains('3')) {
+        return 3;
+      } else if (_selectedTier!.duration.contains('6')) {
+        return 6;
+      } else if (_selectedTier!.duration.contains('12')) {
+        return 12;
+      }
+    }
+    return 1; // Default to 1 month
+  }
+
+  /// Get selected price based on the current subscription tier
+  double _getSelectedPrice() {
+    if (_selectedTier != null) {
+      // Check if there's a custom price for this tier
+      if (_customPrices.containsKey(_selectedTier!.name)) {
+        String customPriceText = _customPrices[_selectedTier!.name]!;
+        String cleanPriceText = customPriceText.replaceAll(RegExp(r'[^\d.]'), '');
+        if (cleanPriceText.isNotEmpty) {
+          return double.parse(cleanPriceText);
+        }
+      }
+      // Use the tier's default price
+      return _selectedTier!.price / 100.0;
+    }
+    return 9.99; // Default price
+  }
+
+  /// Get current group ID for the active subscription
+  String _getCurrentGroupId() {
+    // In a real implementation, you would get this from the current subscription state
+    // For now, return a placeholder or get it from the UI state
+    return 'current_group_id'; // This should be replaced with actual group ID
+  }
+
+  /// Get relay pubkey for the selected subscription relay
+  String _getRelayPubkey() {
+    // For now, return a default relay pubkey
+    // In a real implementation, you would get this from the relay configuration
+    // Note: NIP-4 encryption expects pubkey without the '02' or '03' prefix
+    return '8a9e56512ec98da2b5789761f7af8f280baf98a09282360cd6ff1381b5e889bf';
   }
 }

@@ -11,6 +11,7 @@ import 'model/wallet_transaction.dart';
 import 'model/wallet_info.dart';
 import 'model/wallet_invoice.dart';
 import 'lnbits_api_service.dart';
+import '../nostr_dart/src/nips/nip_047.dart';
 
 /// NIP-47 Wallet Manager
 /// Handles Lightning Network payments through Nostr Wallet Connect
@@ -225,11 +226,15 @@ class Wallet {
         bolt11: invoice,
       );
       
+      // LNbits returns amount in msats as negative value for outgoing payments
+      final amountMsats = response['amount'] as int;
+      final amountSats = (amountMsats.abs() ~/ 1000); // Convert msats to sats and make positive
+      
       final transaction = WalletTransaction(
         transactionId: response['payment_hash'] as String,
         type: TransactionType.outgoing,
         status: TransactionStatus.confirmed,
-        amount: response['amount'] as int,
+        amount: amountSats, // Use positive amount in sats
         fee: response['fee'] as int? ?? 0,
         description: description ?? '',
         invoice: invoice,
@@ -362,7 +367,21 @@ class Wallet {
     if (transaction.status == TransactionStatus.pending) {
       _pendingTransactions.add(transaction);
     }
+    
+    // Save to database
+    _saveTransactionToDB(transaction);
+    
     onTransactionAdded?.call();
+  }
+
+  /// Save transaction to database
+  Future<void> _saveTransactionToDB(WalletTransaction transaction) async {
+    try {
+      await DBISAR.sharedInstance.saveToDB(transaction);
+      LogUtils.d(() => 'Transaction saved to database: ${transaction.transactionId}');
+    } catch (e) {
+      LogUtils.e(() => 'Failed to save transaction to DB: $e');
+    }
   }
 
 
@@ -613,6 +632,91 @@ class Wallet {
       return null; // For now, return null as we need to implement proper mapping
     } catch (e) {
       LogUtils.e(() => 'Failed to lookup invoice: $e');
+      return null;
+    }
+  }
+
+  /// Create subscription invoice using NIP-47
+  Future<Map<String, dynamic>?> makeSubscriptionInvoice({
+    required String groupId,
+    required int month,
+    required String relayPubkey,
+  }) async {
+    if (_walletInfo == null) {
+      LogUtils.e(() => 'Wallet not connected');
+      return null;
+    }
+
+    try {
+      LogUtils.d(() => 'Creating subscription invoice for group: $groupId, month: $month');
+      
+      // Get current account's private key
+      final privkey = Account.sharedInstance.currentPrivkey;
+      if (privkey.isEmpty) {
+        LogUtils.e(() => 'No private key available');
+        return null;
+      }
+
+      // Create NIP-47 request event
+      final event = await Nip47.makeSubscriptionInvoice(
+        groupId,
+        month,
+        relayPubkey,
+        privkey,
+      );
+
+      LogUtils.d(() => 'Created NIP-47 subscription invoice event: ${event.id}');
+      
+      // Return event data for sending to relay
+      return {
+        'event': event,
+        'groupid': groupId,
+        'month': month,
+        'relay_pubkey': relayPubkey,
+      };
+    } catch (e) {
+      LogUtils.e(() => 'Failed to create subscription invoice: $e');
+      return null;
+    }
+  }
+
+  /// Lookup subscription invoice using NIP-47
+  Future<Map<String, dynamic>?> lookupSubscriptionInvoice({
+    required String paymentHash,
+    required String relayPubkey,
+  }) async {
+    if (_walletInfo == null) {
+      LogUtils.e(() => 'Wallet not connected');
+      return null;
+    }
+
+    try {
+      LogUtils.d(() => 'Looking up subscription invoice: $paymentHash');
+      
+      // Get current account's private key
+      final privkey = Account.sharedInstance.currentPrivkey;
+      if (privkey.isEmpty) {
+        LogUtils.e(() => 'No private key available');
+        return null;
+      }
+
+      // Create NIP-47 request event
+      final event = await Nip47.lookupSubscriptionInvoice(
+        paymentHash,
+        relayPubkey,
+        privkey,
+      );
+
+      LogUtils.d(() => 'Created NIP-47 lookup subscription invoice event: ${event.id}');
+      
+      // Return event data for sending to relay
+      return {
+        'event': event,
+        'payment_hash': paymentHash,
+        'relay_pubkey': relayPubkey,
+      };
+    } catch (e) {
+      LogUtils.e(() => 'Failed to create lookup subscription invoice: $e');
       return null;
     }
   }
@@ -890,5 +994,12 @@ class Wallet {
       LogUtils.e(() => 'Error decoding BOLT11 invoice: $e');
       return null;
     }
+  }
+
+  /// Cleanup resources
+  void dispose() {
+    _stopInvoiceCheckTimer();
+    onBalanceChanged = null;
+    onTransactionAdded = null;
   }
 }
