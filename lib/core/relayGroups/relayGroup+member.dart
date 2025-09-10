@@ -25,7 +25,7 @@ import 'model/relayGroupDB_isar.dart';
 
 extension EMember on RelayGroup {
   Future<RelayGroupDBISAR?> createGroup(String relay,String groupId,
-      {String name = '', bool closed = false, String picture = '', String about = ''}) async {
+      {String name = '', bool closed = false, String picture = '', String about = '', int subscriptionAmount = 0, String groupWalletId = ''}) async {
     // if (relay == 'wss://groups.fiatjaf.com') {
     //   return await createGroup2(relay,
     //       name: name, closed: closed, picture: picture, about: about);
@@ -48,10 +48,12 @@ extension EMember on RelayGroup {
             name: name,
             picture: picture,
             about: about,
+            subscriptionAmount: subscriptionAmount,
+            groupWalletId: groupWalletId,
             lastUpdatedTime: event.createdAt);
         myGroups[groupId] = ValueNotifier(relayGroupDB) ;
         await syncGroupToDB(relayGroupDB);
-        await editMetadata(groupId, name, about, picture, closed, closed, '');
+        await editMetadata(groupId, name, about, picture, closed, closed, '', subscriptionAmount: subscriptionAmount, groupWalletId: groupWalletId);
         syncMyGroupListToRelay();
         if (!completer.isCompleted) completer.complete(relayGroupDB);
       } else {
@@ -62,7 +64,7 @@ extension EMember on RelayGroup {
   }
 
   Future<RelayGroupDBISAR?> createGroup2(String relay,
-      {String name = '', bool closed = false, String picture = '', String about = ''}) async {
+      {String name = '', bool closed = false, String picture = '', String about = '', int subscriptionAmount = 0, String groupWalletId = ''}) async {
     Completer<RelayGroupDBISAR?> completer = Completer<RelayGroupDBISAR?>();
     var uri = Uri.parse(relay);
     var hostWithPort = uri.hasPort ? '${uri.host}:${uri.port}' : uri.host;
@@ -96,7 +98,7 @@ extension EMember on RelayGroup {
               lastUpdatedTime: currentUnixTimestampSeconds());
           myGroups[groupId] = ValueNotifier(relayGroupDB);
           await syncGroupToDB(relayGroupDB);
-          await editMetadata(groupId, name, about, picture, closed, closed, '');
+          await editMetadata(groupId, name, about, picture, closed, closed, '', subscriptionAmount: subscriptionAmount, groupWalletId: groupWalletId);
           syncMyGroupListToRelay();
           if (!completer.isCompleted) completer.complete(relayGroupDB);
         } else {

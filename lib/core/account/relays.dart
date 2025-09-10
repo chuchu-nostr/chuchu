@@ -1,12 +1,8 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:isar/isar.dart';
 import '../config/config.dart';
 import '../database/db_isar.dart';
 import '../network/connect.dart';
-import '../nostr_dart/nostr.dart';
 import '../utils/log_utils.dart';
 import 'account.dart';
 import 'model/relayDB_isar.dart';
@@ -30,9 +26,7 @@ class Relays {
   ];
 
   List<String> recommendGroupRelays = [
-    'wss://groups.0xchat.com',
-    'wss://relay.highlighter.com',
-    'wss://relay.groups.nip29.com'
+    'ws://127.0.0.1:5577',
   ];
 
   List<String> recommendSecretChatRelays = [

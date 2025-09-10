@@ -1114,6 +1114,7 @@ class Wallet {
       final nwcResponse = await Nip47.response(
         event,
         pubkey, // sender (our pubkey)
+        event.pubkey, // sender (relay pubkey from event)
         pubkey, // receiver (our pubkey)
         privkey,
       );

@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
 import '../../account/model/userDB_isar.dart';
@@ -39,6 +38,8 @@ class RelayGroupDBISAR {
   List<String>? members;
   int level; // group level
   int point; // group point
+  int subscriptionAmount; // subscription amount in satoshis
+  String groupWalletId; // LNbits wallet ID for group payments
 
   RelayGroupDBISAR(
       {this.groupId = '',
@@ -58,7 +59,9 @@ class RelayGroupDBISAR {
       this.pinned,
       this.members,
       this.level = 0,
-      this.point = 0});
+      this.point = 0,
+      this.subscriptionAmount = 0,
+      this.groupWalletId = ''});
 
   static RelayGroupDBISAR fromMap(Map<String, Object?> map) {
     return _groupInfoFromMap(map);
@@ -132,5 +135,7 @@ RelayGroupDBISAR _groupInfoFromMap(Map<String, dynamic> map) {
     members: UserDBISAR.decodeStringList(map['members'].toString()),
     level: map['level'],
     point: map['point'],
+    subscriptionAmount: map['subscriptionAmount'] ?? 0,
+    groupWalletId: map['groupWalletId']?.toString() ?? '',
   );
 }

@@ -632,6 +632,6 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
     // For now, return a default relay pubkey
     // In a real implementation, you would get this from the relay configuration
     // Note: NIP-4 encryption expects pubkey without the '02' or '03' prefix
-    return '8a9e56512ec98da2b5789761f7af8f280baf98a09282360cd6ff1381b5e889bf';
+    return 'fb691ef0b4d12a0a650782936c401e3fed024f770cb21f32edd3c6429ed39e96';
   }
 }

@@ -132,11 +132,11 @@ extension EAdmin on RelayGroup {
   }
 
   Future<OKEvent> editMetadata(
-      String groupId, String name, String about, String picture, bool closed, bool private, String reason) async {
+      String groupId, String name, String about, String picture, bool closed, bool private, String reason, {int subscriptionAmount = 0, String groupWalletId = ''}) async {
     RelayGroupDBISAR? groupDB = myGroups[groupId]?.value;
     if (groupDB == null) return OKEvent(groupId, false, 'group not exit');
     GroupModeration moderation =
-    GroupModeration.editMetadata(groupId, name, about, picture, closed, private, reason);
+    GroupModeration.editMetadata(groupId, name, about, picture, closed, private, reason, subscriptionAmount: subscriptionAmount, groupWalletId: groupWalletId);
     OKEvent ok = await sendModeration(moderation);
     if (ok.status) {
       groupDB.name = name;
@@ -144,6 +144,8 @@ extension EAdmin on RelayGroup {
       groupDB.picture = picture;
       groupDB.closed = closed;
       groupDB.private = private;
+      groupDB.subscriptionAmount = subscriptionAmount;
+      groupDB.groupWalletId = groupWalletId;
       syncGroupToDB(groupDB);
     }
     return ok;

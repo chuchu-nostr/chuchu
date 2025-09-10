@@ -148,7 +148,7 @@ class Nip47 {
       }
       if (requestId == null || p != receiver) return null;
       String content =
-          await Nip4.decryptContent(event.content, receiver, sender, privkey);
+          await Nip4.decryptContent(event.content, sender, receiver, privkey);
       Map map = jsonDecode(content);
       
       // Check for error
