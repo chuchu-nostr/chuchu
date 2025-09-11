@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/common_toast.dart';
-import '../widgets/subscription_settings_section.dart';
+import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class CreateCreatorPage extends StatefulWidget {
   const CreateCreatorPage({super.key});
@@ -29,6 +29,12 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
       appBar: AppBar(
         title: const Text('Create Creator'),
         elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () {
+            Navigator.of(context).pop();
+          },
+        ),
       ),
       body: SafeArea(
         child: Column(
@@ -106,10 +112,6 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                         }
 
                         print('Price changed: isPaid=$isPaid, price=$price, tier=${selectedTier?.name}');
-                      },
-                      onDone: () {
-                        CommonToast.instance.show(context, 'Creator setup completed!');
-                        Navigator.of(context).pop();
                       },
                     ),
                     const SizedBox(height: 24),
