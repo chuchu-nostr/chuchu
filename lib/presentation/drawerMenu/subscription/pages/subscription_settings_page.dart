@@ -522,7 +522,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
 
       if (result != null && !result.containsKey('error')) {
         // Successfully created subscription invoice
-        final bolt11 = result['bolt11'] as String?;
+        final bolt11 = result['invoice'] as String?;  // NIP-47 uses 'invoice' field
         final amount = result['amount'] as int?;
         final paymentHash = result['payment_hash'] as String?;
         final expiresAt = result['expires_at'] as int?;

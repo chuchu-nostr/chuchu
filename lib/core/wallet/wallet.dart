@@ -1111,9 +1111,9 @@ class Wallet {
       }
       
       // Parse NIP-47 response
+      // For NIP-47 responses: sender is event.pubkey (relay), receiver is user pubkey
       final nwcResponse = await Nip47.response(
         event,
-        pubkey, // sender (our pubkey)
         event.pubkey, // sender (relay pubkey from event)
         pubkey, // receiver (our pubkey)
         privkey,
