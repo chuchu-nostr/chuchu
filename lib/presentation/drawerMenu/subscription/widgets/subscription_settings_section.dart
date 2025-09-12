@@ -26,10 +26,12 @@ class SubscriptionSettingsSection extends StatefulWidget {
   /// Callback when price changes, receives (isPaid, price, selectedTier)
   final Function(bool isPaid, double price, SubscriptionTier? selectedTier)? onPriceChanged;
 
+  final bool isPaidSubscription;
   const SubscriptionSettingsSection({
     super.key,
     required this.subscriptionTiers,
     this.onPriceChanged,
+    this.isPaidSubscription = true,
   });
 
   @override
@@ -39,7 +41,6 @@ class SubscriptionSettingsSection extends StatefulWidget {
 class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSection> {
   final TextEditingController _priceController = TextEditingController();
 
-  bool _isPaidSubscription = true;
   final Map<String, String> _customPrices = {};
 
   late final List<SubscriptionTier> _subscriptionTiers;
@@ -65,9 +66,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _buildModeCard(context),
-        const SizedBox(height: 24),
-        if (_isPaidSubscription) ...[
+        if (widget.isPaidSubscription) ...[
           _buildPriceControls(context),
         ] else ...[
           _buildFreeInfo(context),
@@ -87,55 +86,6 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     );
   }
 
-  Widget _buildModeCard(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                _isPaidSubscription ? 'Premium Subscription' : 'Free Subscription',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                _isPaidSubscription
-                    ? 'Users pay to access your content'
-                    : 'Users can access your content for free',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodyMedium
-                    ?.copyWith(color: Theme.of(context).colorScheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-          Switch(
-            value: _isPaidSubscription,
-            onChanged: (value) {
-              setState(() {
-                _isPaidSubscription = value;
-                if (_isPaidSubscription) {
-                  _selectedTier = _subscriptionTiers.firstWhere((tier) => tier.isDefault);
-                  if (_priceController.text.isEmpty) {
-                    _priceController.text = (_selectedTier!.price / 100).toStringAsFixed(2);
-                  }
-                }
-              });
-              _notifyPriceChanged();
-            },
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildPriceControls(BuildContext context) {
     return Column(
@@ -327,7 +277,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
   void _notifyPriceChanged() {
     if (widget.onPriceChanged != null) {
       double price = 0.0;
-      if (_isPaidSubscription && _priceController.text.isNotEmpty) {
+      if (widget.isPaidSubscription && _priceController.text.isNotEmpty) {
         final clean = _priceController.text.replaceAll(RegExp(r'[^\d.]'), '');
         if (clean.isNotEmpty) {
           try {
@@ -337,7 +287,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
           }
         }
       }
-      widget.onPriceChanged!(_isPaidSubscription, price, _selectedTier);
+      widget.onPriceChanged!(widget.isPaidSubscription, price, _selectedTier);
     }
   }
 }
