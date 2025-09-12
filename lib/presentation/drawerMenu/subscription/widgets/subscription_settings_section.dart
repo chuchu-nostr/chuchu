@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-/// Subscription tiers model
 class SubscriptionTier {
   final String name;
   final String duration;
@@ -18,46 +17,63 @@ class SubscriptionTier {
   String get priceText => '\$formattedPrice per $duration';
 }
 
-/// Subscription settings section widget
-/// onDone will be called after create/update flow succeeds
 class SubscriptionSettingsSection extends StatefulWidget {
-  /// Required subscription tiers
-  final List<SubscriptionTier> subscriptionTiers;
-  /// Callback when price changes, receives (isPaid, price, selectedTier)
-  final Function(bool isPaid, double price, SubscriptionTier? selectedTier)? onPriceChanged;
+  final double initialMonthlyPrice;
+  final Function(double monthlyPrice)? onPriceChanged;
 
-  final bool isPaidSubscription;
   const SubscriptionSettingsSection({
     super.key,
-    required this.subscriptionTiers,
+    this.initialMonthlyPrice = 9.99,
     this.onPriceChanged,
-    this.isPaidSubscription = true,
   });
+
+  static double calculatePriceForDuration(double monthlyPrice, String duration) {
+    const Map<String, double> discountRates = {
+      'month': 1.0,
+      '3 months': 0.95,
+      '6 months': 0.90,
+      'year': 0.80,
+    };
+    
+    const Map<String, int> durationMultipliers = {
+      'month': 1,
+      '3 months': 3,
+      '6 months': 6,
+      'year': 12,
+    };
+    
+    final multiplier = durationMultipliers[duration] ?? 1;
+    final discountRate = discountRates[duration] ?? 1.0;
+    
+    return monthlyPrice * multiplier * discountRate;
+  }
 
   @override
   State<SubscriptionSettingsSection> createState() => _SubscriptionSettingsSectionState();
 }
 
 class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSection> {
-  final TextEditingController _priceController = TextEditingController();
-
-  final Map<String, String> _customPrices = {};
-
-  late final List<SubscriptionTier> _subscriptionTiers;
-
-  SubscriptionTier? _selectedTier;
+  final TextEditingController _monthlyPriceController = TextEditingController();
+  
+  static const List<SubscriptionTier> _subscriptionTiers = [
+    SubscriptionTier(name: 'Monthly', duration: 'month', price: 999, isDefault: true),
+    SubscriptionTier(name: '3 Months', duration: '3 months', price: 2499, isDefault: false),
+    SubscriptionTier(name: '6 Months', duration: '6 months', price: 4499, isDefault: false),
+    SubscriptionTier(name: '12 Months', duration: 'year', price: 7999, isDefault: false),
+  ];
 
   @override
   void initState() {
     super.initState();
-    _subscriptionTiers = widget.subscriptionTiers;
-    _selectedTier = _subscriptionTiers.firstWhere((tier) => tier.isDefault);
-    _priceController.text = (_selectedTier!.price / 100).toStringAsFixed(2);
+    _monthlyPriceController.text = widget.initialMonthlyPrice.toStringAsFixed(2);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _notifyPriceChanged();
+    });
   }
 
   @override
   void dispose() {
-    _priceController.dispose();
+    _monthlyPriceController.dispose();
     super.dispose();
   }
 
@@ -66,11 +82,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (widget.isPaidSubscription) ...[
-          _buildPriceControls(context),
-        ] else ...[
-          _buildFreeInfo(context),
-        ],
+        _buildPriceControls(context),
         const SizedBox(height: 24),
         Text(
           'What subscribers get:',
@@ -81,7 +93,6 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
         _buildBenefitItem(context, 'Direct messaging with you'),
         _buildBenefitItem(context, 'Early access to new posts'),
         _buildBenefitItem(context, 'Cancel anytime'),
-
       ],
     );
   }
@@ -92,174 +103,130 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Set Subscription Price',
+          'Set Monthly Subscription Price',
           style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 8),
-        for (final tier in _subscriptionTiers)
-          Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _buildDurationOption(context, tier),
-          ),
-        const SizedBox(height: 16),
         Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(
-              'Custom Price (USD)',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(fontWeight: FontWeight.w600),
-            ),
-            TextButton(
-              onPressed: () {
-                setState(() {
-                  if (_selectedTier != null) {
-                    final suggested = (_selectedTier!.price / 100).toStringAsFixed(2);
-                    _priceController.text = suggested;
-                    _customPrices[_selectedTier!.name] = suggested;
-                  }
-                });
-              },
-              child: Text(
-                'Use Suggested: \$${((_selectedTier?.price ?? 999) / 100).toStringAsFixed(2)}',
-                style: TextStyle(color: Theme.of(context).colorScheme.primary, fontSize: 12),
+            Expanded(
+              child: TextField(
+                controller: _monthlyPriceController,
+                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                onChanged: (value) {
+                  setState(() {});
+                  _notifyPriceChanged();
+                },
+                decoration: InputDecoration(
+                  prefixText: '\$ ',
+                  hintText: '9.99',
+                  labelText: 'Monthly Price',
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                  ),
+                ),
               ),
             ),
           ],
         ),
+        const SizedBox(height: 16),
+        Text(
+          'Subscription Options',
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 8),
-        TextField(
-          controller: _priceController,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          onChanged: (value) {
-            setState(() {
-              if (_selectedTier != null) {
-                _customPrices[_selectedTier!.name] = value;
-              }
-            });
-            _notifyPriceChanged();
-          },
-          decoration: InputDecoration(
-            prefixText: '\$ ',
-            hintText: '0.00',
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
-            ),
+        Text(
+          'All available subscription options with automatic discounts:',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
+        const SizedBox(height: 12),
+        for (final tier in _subscriptionTiers)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: _buildDurationDisplay(context, tier),
+          ),
       ],
     );
   }
 
-  Widget _buildDurationOption(BuildContext context, SubscriptionTier tier) {
-    final bool isSelected = _selectedTier?.name == tier.name;
-    String displayPrice;
-    if (_customPrices.containsKey(tier.name) && _customPrices[tier.name]!.isNotEmpty) {
-      String customPrice = _customPrices[tier.name]!.replaceAll(RegExp(r'[^\d.]'), '');
-      if (customPrice.isNotEmpty) {
-        try {
-          double p = double.parse(customPrice);
-          displayPrice = '\$${p.toStringAsFixed(2)} per ${tier.duration}';
-        } catch (_) {
-          displayPrice = tier.priceText;
-        }
-      } else {
-        displayPrice = tier.priceText;
-      }
-    } else {
-      displayPrice = tier.priceText;
-    }
-
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedTier = tier;
-          if (_customPrices.containsKey(tier.name)) {
-            _priceController.text = _customPrices[tier.name]!;
-          } else {
-            _priceController.text = (tier.price / 100).toStringAsFixed(2);
-          }
-        });
-        _notifyPriceChanged();
-      },
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: isSelected ? Theme.of(context).colorScheme.primary : Theme.of(context).dividerColor,
-            width: isSelected ? 2 : 1,
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Text(
-              tier.name,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
-            ),
-            Text(
-              displayPrice,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: isSelected
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Theme.of(context).colorScheme.onSurface,
-                  ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildFreeInfo(BuildContext context) {
+  Widget _buildDurationDisplay(BuildContext context, SubscriptionTier tier) {
+    final calculatedPrice = _calculatePrice(tier.duration);
+    const Map<String, double> discountRates = {
+      'month': 1.0,
+      '3 months': 0.95,
+      '6 months': 0.90,
+      'year': 0.80,
+    };
+    final discountRate = discountRates[tier.duration] ?? 1.0;
+    final discountPercent = ((1.0 - discountRate) * 100).toInt();
+    
+    String displayPrice = '\$${calculatedPrice.toStringAsFixed(2)}';
+    String durationText = tier.duration == 'year' ? 'year' : tier.duration;
+    
+    final isMonthlyTier = tier.duration == 'month';
+    
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
+        color: isMonthlyTier 
+            ? Theme.of(context).colorScheme.primary
+            : Theme.of(context).colorScheme.surfaceVariant,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
+        border: Border.all(
+          color: isMonthlyTier 
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).dividerColor,
+          width: isMonthlyTier ? 2 : 1,
+        ),
       ),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary, size: 24),
-          const SizedBox(width: 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Free Subscription',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      ),
+                  tier.name,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: isMonthlyTier
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  'Users can access your content without payment',
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodyMedium
-                      ?.copyWith(color: Theme.of(context).colorScheme.onPrimaryContainer),
-                ),
+                if (discountPercent > 0)
+                  Text(
+                    'Save $discountPercent%',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: isMonthlyTier
+                          ? Theme.of(context).colorScheme.onPrimary.withOpacity(0.9)
+                          : Theme.of(context).colorScheme.primary,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
               ],
+            ),
+          ),
+          Text(
+            '$displayPrice per $durationText',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              fontWeight: FontWeight.w600,
+              color: isMonthlyTier
+                  ? Theme.of(context).colorScheme.onPrimary
+                  : Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],
       ),
     );
   }
+
 
   Widget _buildBenefitItem(BuildContext context, String text) {
     return Padding(
@@ -274,20 +241,36 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     );
   }
 
+  double _calculatePrice(String duration) {
+    double monthlyPrice = 0.0;
+    if (_monthlyPriceController.text.isNotEmpty) {
+      final clean = _monthlyPriceController.text.replaceAll(RegExp(r'[^\d.]'), '');
+      if (clean.isNotEmpty) {
+        try {
+          monthlyPrice = double.parse(clean);
+        } catch (_) {
+          monthlyPrice = 0.0;
+        }
+      }
+    }
+    
+    return SubscriptionSettingsSection.calculatePriceForDuration(monthlyPrice, duration);
+  }
+  
   void _notifyPriceChanged() {
     if (widget.onPriceChanged != null) {
-      double price = 0.0;
-      if (widget.isPaidSubscription && _priceController.text.isNotEmpty) {
-        final clean = _priceController.text.replaceAll(RegExp(r'[^\d.]'), '');
+      double monthlyPrice = 0.0;
+      if (_monthlyPriceController.text.isNotEmpty) {
+        final clean = _monthlyPriceController.text.replaceAll(RegExp(r'[^\d.]'), '');
         if (clean.isNotEmpty) {
           try {
-            price = double.parse(clean);
+            monthlyPrice = double.parse(clean);
           } catch (_) {
-            price = 0.0;
+            monthlyPrice = 0.0;
           }
         }
       }
-      widget.onPriceChanged!(widget.isPaidSubscription, price, _selectedTier);
+      widget.onPriceChanged!(monthlyPrice);
     }
   }
 }

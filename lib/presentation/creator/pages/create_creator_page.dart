@@ -14,14 +14,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
   final TextEditingController _aboutController = TextEditingController();
 
   bool _isPaidSubscription = true;
-
-  final List<SubscriptionTier> _subscriptionTiers = [
-    SubscriptionTier(name: 'Monthly', duration: 'month', price: 999, isDefault: true),
-    SubscriptionTier(name: '3 Months', duration: '3 months', price: 2499, isDefault: false),
-    SubscriptionTier(name: '6 Months', duration: '6 months', price: 4499, isDefault: false),
-    SubscriptionTier(name: '12 Months', duration: 'year', price: 7999, isDefault: false),
-  ];
-
+  double subscriptionPrice = 9.99;
 
   @override
   Widget build(BuildContext context) {
@@ -94,24 +87,53 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                       ),
                     ),
                     const SizedBox(height: 24),
-                    SubscriptionSettingsSection(
-                      subscriptionTiers: _subscriptionTiers,
-                      onPriceChanged: (isPaid, price, selectedTier) {
-                        _isPaidSubscription = isPaid;
-
-                        if (selectedTier != null && price > 0) {
-                          final index = _subscriptionTiers.indexWhere((tier) => tier.name == selectedTier.name);
-                          if (index != -1) {
-                            _subscriptionTiers[index] = SubscriptionTier(
-                              name: selectedTier.name,
-                              duration: selectedTier.duration,
-                              price: (price * 100).round(),
-                              isDefault: selectedTier.isDefault,
-                            );
-                          }
-                        }
-
-                        print('Price changed: isPaid=$isPaid, price=$price, tier=${selectedTier?.name}');
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).colorScheme.surface,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                _isPaidSubscription ? 'Premium Subscription' : 'Free Subscription',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                _isPaidSubscription
+                                    ? 'Users pay to access your content'
+                                    : 'Users can access your content for free',
+                                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          ),
+                          Switch(
+                            value: _isPaidSubscription,
+                            onChanged: (value) {
+                              setState(() {
+                                _isPaidSubscription = value;
+                              });
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    if (_isPaidSubscription)
+                      SubscriptionSettingsSection(
+                      initialMonthlyPrice: subscriptionPrice,
+                      onPriceChanged: (monthlyPrice) {
+                        subscriptionPrice = monthlyPrice;
                       },
                     ),
                     const SizedBox(height: 24),
@@ -154,28 +176,6 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
       return;
     }
 
-    if (_isPaidSubscription) {
-      final hasValidPrice = _subscriptionTiers.any((tier) => tier.price > 0);
-      if (!hasValidPrice) {
-        CommonToast.instance.show(context, 'Please set a valid subscription price');
-        return;
-      }
-    }
-
-    String priceText = _isPaidSubscription ? 'Paid' : 'Free';
-    String tierText = _subscriptionTiers.firstWhere((tier) => tier.isDefault).name;
-
-    print('=== Creator Setup Data ===');
-    print('Circle Name: ${_nameController.text.trim()}');
-    print('Circle About: ${_aboutController.text.trim()}');
-    print('Is Paid Subscription: $_isPaidSubscription');
-    print('Price Type: $priceText');
-    print('Default Tier: $tierText');
-    print('All Subscription Tiers:');
-    for (int i = 0; i < _subscriptionTiers.length; i++) {
-      final tier = _subscriptionTiers[i];
-      print('  ${i + 1}. ${tier.name}: \$${(tier.price / 100).toStringAsFixed(2)} per ${tier.duration} (Default: ${tier.isDefault})');
-    }
-    print('========================');
+    CommonToast.instance.show(context, 'Creator profile created successfully!');
   }
 }
