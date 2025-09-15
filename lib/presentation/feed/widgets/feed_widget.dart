@@ -197,11 +197,11 @@ class _FeedWidgetState extends State<FeedWidget> {
       child: GestureDetector(
         onTap: () {
           if (notedUIModel != null) {
-            ChuChuNavigator.pushPage(
-              context,
-              (context) =>
-                  FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author),
-            );
+            // ChuChuNavigator.pushPage(
+            //   context,
+            //   (context) =>
+            //       FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author),
+            // );
           }
         },
         child: FeedWidgetsUtils.clipImage(

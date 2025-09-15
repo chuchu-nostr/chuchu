@@ -1,5 +1,6 @@
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/feed/feed+notification.dart';
+import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/adapt.dart';
@@ -7,6 +8,7 @@ import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
+import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
@@ -54,7 +56,9 @@ class AggregatedNotification {
 }
 
 class FeedNotificationsPage extends StatefulWidget {
-  const FeedNotificationsPage({super.key});
+  final RelayGroupDBISAR? relayGroupDB;
+
+  FeedNotificationsPage({super.key, this.relayGroupDB});
 
   @override
   State<FeedNotificationsPage> createState() => _FeedNotificationsPageState();
@@ -290,9 +294,13 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
         return GestureDetector(
           onTap: () {
             if (user?.pubKey != null) {
+              if(widget.relayGroupDB == null){
+                CommonToast.instance.show(context, 'Creator not enabled');
+                return;
+              }
               ChuChuNavigator.pushPage(
                 context,
-                (context) => FeedPersonalPage(userPubkey: user!.pubKey),
+                (context) => FeedPersonalPage(relayGroupDB: widget.relayGroupDB!),
               );
             }
           },

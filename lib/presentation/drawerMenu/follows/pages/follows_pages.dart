@@ -214,7 +214,7 @@ class FollowsPagesState extends State<FollowsPages> {
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
-        ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: info.db.pubKey));
+        // ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: info.db.pubKey));
       },
       child: SizedBox(
         height: Adapt.px(140),

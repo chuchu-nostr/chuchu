@@ -15,6 +15,7 @@ import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
+import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
@@ -51,8 +52,11 @@ class _FeedPageState extends State<FeedPage>
   final ScrollController feedScrollController = ScrollController();
   final RefreshController refreshController = RefreshController();
 
+  final Map<String,List<NoteDBISAR>> _notificationGroupNotes = {};
+
   bool _isInitialLoading = true;
-  List<String> _followsList = [];
+  // List<String> _followsList = [];
+  Map<String, ValueNotifier<RelayGroupDBISAR>> myGroupsList = {};
   int _newNotesCount = 0;
   Set<String> _usersWithNewNotes = {};
   Map<String, int> _userNoteCounts = {};
@@ -78,20 +82,18 @@ class _FeedPageState extends State<FeedPage>
 
   void _initData() {
     _resetStoriesSection();
-    _loadFollowsList();
+    _loadSubscriptionList();
 
     Future.delayed(Duration(milliseconds: 5000), () {
       updateNotesList(true);
     });
   }
 
-  void _loadFollowsList() {
-    final List<String> followings = List<String>.from(
-      Account.sharedInstance.me?.followingList ?? [],
-    );
-    setState(() {
-      _followsList = followings;
-    });
+  void _loadSubscriptionList() {
+    myGroupsList = RelayGroup.sharedInstance.myGroups;
+    if(mounted){
+      setState(() {});
+    }
   }
 
   void _setupScrollListener() {
@@ -284,7 +286,7 @@ class _FeedPageState extends State<FeedPage>
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: _followsList.length + 2,
+                        itemCount: myGroupsList.length + 2,
                         itemBuilder: _buildStoryItemBuilder,
                       ),
                     ),
@@ -299,24 +301,31 @@ class _FeedPageState extends State<FeedPage>
   Widget _buildStoryItemBuilder(BuildContext context, int index) {
     if (index == 0) {
       return _buildCurrentUserStoryItem();
-    } else if (index == _followsList.length + 1) {
+    } else if (index == myGroupsList.length + 1) {
       return _buildAddStoryItem();
     } else {
-      return _buildFollowedUserStoryItem(index - 1);
+      return _buildMyGroupStoryItem(index - 1);
     }
   }
 
   Widget _buildCurrentUserStoryItem() {
     final currentUserPubkey = Account.sharedInstance.currentPubkey;
+    if(currentUserPubkey.isEmpty) {
+      return const SizedBox();
+    }
     final hasNewNotes = currentUserPubkey != null &&
         _usersWithNewNotes.contains(currentUserPubkey);
 
+    RelayGroupDBISAR? myRelayGroup = RelayGroup.sharedInstance.myGroups[currentUserPubkey]?.value;
+    if(myRelayGroup == null) {
+      return const SizedBox();
+    }
     return GestureDetector(
       onTap: () async {
         await ChuChuNavigator.pushPage(
           context,
           (context) => FeedPersonalPage(
-            userPubkey: currentUserPubkey ?? '',
+            relayGroupDB: myRelayGroup,
           ),
         );
 
@@ -332,22 +341,22 @@ class _FeedPageState extends State<FeedPage>
     );
   }
 
-  Widget _buildFollowedUserStoryItem(int userIndex) {
-    final userPubkey = _followsList[userIndex];
-    final hasNewNotes = _usersWithNewNotes.contains(userPubkey);
-    final noteCount = _userNoteCounts[userPubkey] ?? 0;
+  Widget _buildMyGroupStoryItem(int userIndex) {
+    RelayGroupDBISAR relayGroupDB = myGroupsList.values.toList()[userIndex].value;
+    bool hasNewNotes =  _notificationGroupNotes[relayGroupDB.author]?.isNotEmpty ?? false;
+    final noteCount = _notificationGroupNotes[relayGroupDB.author]?.length ?? 0;
 
     return GestureDetector(
       onTap: () async {
         await ChuChuNavigator.pushPage(
           context,
-          (context) => FeedPersonalPage(userPubkey: userPubkey),
+          (context) => FeedPersonalPage(relayGroupDB: relayGroupDB),
         );
 
         _handleNewNotesAfterNavigation(hasNewNotes);
       },
       child: _buildStoryItem(
-        name: _shortNpub(userPubkey),
+        name: _shortNpub(relayGroupDB.author),
         imageUrl: '',
         isCurrentUser: false,
         hasUnread: hasNewNotes,
@@ -593,27 +602,19 @@ class _FeedPageState extends State<FeedPage>
     if (notes.isEmpty || !mounted) return;
 
     try {
-      final currentUserPubkey = Account.sharedInstance.currentPubkey;
-
       if (mounted) {
         Future.microtask(() {
           if (mounted) {
-            _newNotesCount = notes.length;
-
-            _usersWithNewNotes.clear();
-            _userNoteCounts.clear();
-
-            for (final note in notes) {
-              final author = note.author;
-              _usersWithNewNotes.add(author);
-              _userNoteCounts[author] = (_userNoteCounts[author] ?? 0) + 1;
+            for (NoteDBISAR noteDB in notes) {
+              bool isGroupNoted = noteDB.groupId.isNotEmpty;
+              if (isGroupNoted) {
+                if(_notificationGroupNotes[noteDB.author] == null){
+                  _notificationGroupNotes[noteDB.author] = [noteDB];
+                }else{
+                  _notificationGroupNotes[noteDB.author] = [... _notificationGroupNotes[noteDB.author]!,noteDB];
+                }
+              }
             }
-
-            if (currentUserPubkey != null &&
-                _usersWithNewNotes.contains(currentUserPubkey)) {
-              _usersWithNewNotes.add(currentUserPubkey);
-            }
-
             setState(() {});
           }
         });

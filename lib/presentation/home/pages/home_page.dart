@@ -193,9 +193,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
                       setState(() {
                         _hasNotifications = false;
                       });
+
                       ChuChuNavigator.pushPage(
                         context,
-                        (context) => FeedNotificationsPage(),
+                        (context) => FeedNotificationsPage(relayGroupDB: RelayGroup.sharedInstance.myGroups[Account.sharedInstance.currentPubkey]?.value),
                       );
                     },
                     child: CommonImage(
