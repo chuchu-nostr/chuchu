@@ -192,7 +192,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
       //
       if(relayGroupDB != null){
         CommonToast.instance.show(context, 'Create Successfully !');
-        Navigator.of(context).pop();
+        Navigator.of(context).pop(true);
       }
 
     } catch (e) {

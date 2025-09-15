@@ -447,12 +447,15 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-  void _navigateToCreateCreator() {
-    Navigator.of(context).push(
+  void _navigateToCreateCreator()async {
+    final result = await Navigator.of(context).push(
       _createSlideTransition(
         pageBuilder: (context, animation, secondaryAnimation) => CreateCreatorPage(),
       ),
     );
+    if(result != null && result){
+      setState(() {});
+    }
   }
 
   PageRouteBuilder _createSlideTransition({
