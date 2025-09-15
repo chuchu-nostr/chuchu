@@ -87,6 +87,7 @@ extension EInfo on RelayGroup {
     groupDB.about = group.about;
     groupDB.private = group.private;
     groupDB.closed = group.closed;
+    groupDB.subscriptionAmount = group.subscriptionAmount;
     groupDB.lastUpdatedTime = event.createdAt;
     groupMetadataUpdatedCallBack?.call(groupDB);
     syncGroupToDB(groupDB);
