@@ -1,51 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:chuchu/core/config/subscription_config.dart';
 
 class SubscriptionTier {
   final String name;
-  final String duration;
-  final int price;
+  final SubscriptionDuration duration;
   final bool isDefault;
 
   const SubscriptionTier({
     required this.name,
     required this.duration,
-    required this.price,
     required this.isDefault,
   });
-
-  String get formattedPrice => '\$${(price / 100).toStringAsFixed(2)}';
-  String get priceText => '\$formattedPrice per $duration';
 }
 
 class SubscriptionSettingsSection extends StatefulWidget {
-  final double initialMonthlyPrice;
-  final Function(double monthlyPrice)? onPriceChanged;
+  final int initialMonthlyPrice;
+  final Function(int monthlyPrice)? onPriceChanged;
 
   const SubscriptionSettingsSection({
     super.key,
-    this.initialMonthlyPrice = 9.99,
+    this.initialMonthlyPrice = SubscriptionConfig.defaultSubscriptionPrice,
     this.onPriceChanged,
   });
 
-  static double calculatePriceForDuration(double monthlyPrice, String duration) {
-    const Map<String, double> discountRates = {
-      'month': 1.0,
-      '3 months': 0.95,
-      '6 months': 0.90,
-      'year': 0.80,
-    };
-    
-    const Map<String, int> durationMultipliers = {
-      'month': 1,
-      '3 months': 3,
-      '6 months': 6,
-      'year': 12,
-    };
-    
-    final multiplier = durationMultipliers[duration] ?? 1;
-    final discountRate = discountRates[duration] ?? 1.0;
-    
-    return monthlyPrice * multiplier * discountRate;
+  static double calculatePriceForDuration(double monthlyPrice, SubscriptionDuration duration) {
+    return SubscriptionConfig.calculatePriceForDuration(monthlyPrice, duration);
   }
 
   @override
@@ -55,12 +34,42 @@ class SubscriptionSettingsSection extends StatefulWidget {
 class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSection> {
   final TextEditingController _monthlyPriceController = TextEditingController();
   
-  static const List<SubscriptionTier> _subscriptionTiers = [
-    SubscriptionTier(name: 'Monthly', duration: 'month', price: 999, isDefault: true),
-    SubscriptionTier(name: '3 Months', duration: '3 months', price: 2499, isDefault: false),
-    SubscriptionTier(name: '6 Months', duration: '6 months', price: 4499, isDefault: false),
-    SubscriptionTier(name: '12 Months', duration: 'year', price: 7999, isDefault: false),
-  ];
+  List<SubscriptionTier> get _subscriptionTiers {
+    return SubscriptionConfig.availableDurations.map((duration) {
+      return SubscriptionTier(
+        name: _getDurationDisplayName(duration),
+        duration: duration,
+        isDefault: duration == SubscriptionDuration.month,
+      );
+    }).toList();
+  }
+  
+  String _getDurationDisplayName(SubscriptionDuration duration) {
+    switch (duration) {
+      case SubscriptionDuration.month:
+        return 'Monthly';
+      case SubscriptionDuration.threeMonths:
+        return '3 Months';
+      case SubscriptionDuration.sixMonths:
+        return '6 Months';
+      case SubscriptionDuration.year:
+        return '12 Months';
+    }
+  }
+  
+  double _getCurrentMonthlyPrice() {
+    if (_monthlyPriceController.text.isNotEmpty) {
+      final clean = _monthlyPriceController.text.replaceAll(RegExp(r'[^\d.]'), '');
+      if (clean.isNotEmpty) {
+        try {
+          return double.parse(clean);
+        } catch (_) {
+          return SubscriptionConfig.defaultSubscriptionPrice / 100.0;
+        }
+      }
+    }
+    return SubscriptionConfig.defaultSubscriptionPrice / 100.0;
+  }
 
   @override
   void initState() {
@@ -155,19 +164,12 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
 
   Widget _buildDurationDisplay(BuildContext context, SubscriptionTier tier) {
     final calculatedPrice = _calculatePrice(tier.duration);
-    const Map<String, double> discountRates = {
-      'month': 1.0,
-      '3 months': 0.95,
-      '6 months': 0.90,
-      'year': 0.80,
-    };
-    final discountRate = discountRates[tier.duration] ?? 1.0;
-    final discountPercent = ((1.0 - discountRate) * 100).toInt();
+    final discountPercent = SubscriptionConfig.getDiscountPercentage(tier.duration);
     
     String displayPrice = '\$${calculatedPrice.toStringAsFixed(2)}';
-    String durationText = tier.duration == 'year' ? 'year' : tier.duration;
+    String durationText = tier.duration == SubscriptionDuration.year ? 'year' : tier.duration.value;
     
-    final isMonthlyTier = tier.duration == 'month';
+    final isMonthlyTier = tier.duration == SubscriptionDuration.month;
     
     return Container(
       width: double.infinity,
@@ -241,32 +243,21 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     );
   }
 
-  double _calculatePrice(String duration) {
-    double monthlyPrice = 0.0;
-    if (_monthlyPriceController.text.isNotEmpty) {
-      final clean = _monthlyPriceController.text.replaceAll(RegExp(r'[^\d.]'), '');
-      if (clean.isNotEmpty) {
-        try {
-          monthlyPrice = double.parse(clean);
-        } catch (_) {
-          monthlyPrice = 0.0;
-        }
-      }
-    }
-    
+  double _calculatePrice(SubscriptionDuration duration) {
+    final monthlyPrice = _getCurrentMonthlyPrice();
     return SubscriptionSettingsSection.calculatePriceForDuration(monthlyPrice, duration);
   }
   
   void _notifyPriceChanged() {
     if (widget.onPriceChanged != null) {
-      double monthlyPrice = 0.0;
+      int monthlyPrice = 0;
       if (_monthlyPriceController.text.isNotEmpty) {
         final clean = _monthlyPriceController.text.replaceAll(RegExp(r'[^\d.]'), '');
         if (clean.isNotEmpty) {
           try {
-            monthlyPrice = double.parse(clean);
+            monthlyPrice = int.parse(clean);
           } catch (_) {
-            monthlyPrice = 0.0;
+            monthlyPrice = 0;
           }
         }
       }
