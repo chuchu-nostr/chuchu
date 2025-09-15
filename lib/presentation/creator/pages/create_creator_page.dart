@@ -1,5 +1,10 @@
+import 'package:chuchu/core/relayGroups/relayGroup+member.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/common_toast.dart';
+import '../../../core/account/account.dart';
+import '../../../core/account/relays.dart';
+import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class CreateCreatorPage extends StatefulWidget {
@@ -141,7 +146,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                       width: double.infinity,
                       height: 50,
                       child: ElevatedButton(
-                        onPressed: _onSubmit,
+                        onPressed: _createSettings,
                         style: ElevatedButton.styleFrom(
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
@@ -165,17 +170,34 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
     );
   }
 
-  Future<void> _onSubmit() async {
-    if (_nameController.text.trim().isEmpty) {
-      CommonToast.instance.show(context, 'Please enter a circle name');
-      return;
-    }
+  Future<void> _createSettings() async {
+    try {
+      if (_isPaidSubscription) {
+        String cleanPriceText = subscriptionPrice.toString().replaceAll(RegExp(r'[^\d.]'), '');
+        if (cleanPriceText.isEmpty) {
+          CommonToast.instance.show(context, 'Please enter a valid price');
+          return;
+        }
+      }
+        // Create new subscription
+      RelayGroupDBISAR? relayGroupDB = await RelayGroup.sharedInstance.createGroup(
+        Relays.sharedInstance.recommendGroupRelays.first,
+        Account.sharedInstance.currentPubkey,
+        about: _aboutController.text.isNotEmpty ? _isPaidSubscription
+            ? 'Premium content subscription - $subscriptionPrice per month'
+            : 'Free subscription content' : '',
+        closed: _isPaidSubscription,
+        name: _nameController.text.isNotEmpty ? _nameController.text : '',
+        subscriptionAmount: _isPaidSubscription ? int.tryParse(subscriptionPrice.toString()) ?? 9 : 0,
+      );
 
-    if (_aboutController.text.trim().isEmpty) {
-      CommonToast.instance.show(context, 'Please enter a circle introduction');
-      return;
-    }
+      if(relayGroupDB != null){
+        CommonToast.instance.show(context, 'Create Successfully !');
+        Navigator.of(context).pop();
+      }
 
-    CommonToast.instance.show(context, 'Creator profile created successfully!');
+    } catch (e) {
+      CommonToast.instance.show(context, 'Error creating subscription: ${e.toString()}');
+    }
   }
 }
