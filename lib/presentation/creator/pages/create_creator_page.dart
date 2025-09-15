@@ -19,7 +19,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
   final TextEditingController _aboutController = TextEditingController();
 
   bool _isPaidSubscription = true;
-  double subscriptionPrice = 9.99;
+  int subscriptionPrice = 9;
 
   @override
   Widget build(BuildContext context) {
@@ -179,18 +179,17 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
           return;
         }
       }
+
         // Create new subscription
       RelayGroupDBISAR? relayGroupDB = await RelayGroup.sharedInstance.createGroup(
         Relays.sharedInstance.recommendGroupRelays.first,
         Account.sharedInstance.currentPubkey,
-        about: _aboutController.text.isNotEmpty ? _isPaidSubscription
-            ? 'Premium content subscription - $subscriptionPrice per month'
-            : 'Free subscription content' : '',
+        about: _aboutController.text,
         closed: _isPaidSubscription,
         name: _nameController.text.isNotEmpty ? _nameController.text : '',
-        subscriptionAmount: _isPaidSubscription ? int.tryParse(subscriptionPrice.toString()) ?? 9 : 0,
+        subscriptionAmount: _isPaidSubscription ? subscriptionPrice : 0,
       );
-
+      //
       if(relayGroupDB != null){
         CommonToast.instance.show(context, 'Create Successfully !');
         Navigator.of(context).pop();
