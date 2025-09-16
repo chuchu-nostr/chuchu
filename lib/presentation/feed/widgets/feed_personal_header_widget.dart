@@ -50,6 +50,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
             personalPageHeader(user),
             personalOption(user),
             personalInfo(user),
+            const SizedBox(height: 20),
           ],
         );
       },
