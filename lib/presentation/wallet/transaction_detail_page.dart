@@ -56,8 +56,6 @@ class TransactionDetailPage extends StatelessWidget {
     }
   }
 
-
-
   Widget _buildAmountCard(WalletInvoice? invoice) {
     return Card(
       child: Padding(
@@ -192,10 +190,6 @@ class TransactionDetailPage extends StatelessWidget {
       ),
     );
   }
-
-
-
-
 
   Widget _buildDetailRow(String label, String value) {
     return Padding(

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/common_toast.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/relays.dart';
+import '../../../core/config/subscription_config.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
@@ -19,7 +20,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
   final TextEditingController _aboutController = TextEditingController();
 
   bool _isPaidSubscription = true;
-  int subscriptionPrice = 9;
+  int subscriptionPrice = SubscriptionConfig.defaultSubscriptionPrice;
 
   @override
   Widget build(BuildContext context) {

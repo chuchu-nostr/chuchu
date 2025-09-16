@@ -20,7 +20,7 @@ import '../../../core/widgets/common_image.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../../profile/pages/profile_edit_page.dart';
 import '../widgets/feed_widget.dart';
-import '../widgets/unsubscribed_ui_widget.dart';
+import '../widgets/subscribed_ui_widget.dart';
 import 'feed_info_page.dart';
 
 /// Personal feed page for displaying user's profile and content
@@ -95,6 +95,11 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
         statusBarBrightness: Brightness.dark,
       ),
     );
+  }
+
+  bool get isMyGroup {
+    String myPubkey = Account.sharedInstance.currentPubkey;
+    return widget.relayGroupDB.author == myPubkey;
   }
 
   // Build methods
@@ -216,8 +221,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     }
 
     if (adjustedIndex == 1) {
-      print('===asd');
-      return subscriptionWidget();
+      return isMyGroup ? const SizedBox() : subscriptionWidget();
     }
 
     // Build feed item
@@ -255,7 +259,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
               onMorePressed: () {
                 ChuChuNavigator.pushPage(
                   context,
-                  (context) => const ProfileEditPage(),
+                  (context) => ProfileEditPage(relayGroup: widget.relayGroupDB,),
                 );
               },
             ),
@@ -278,7 +282,6 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   }
 
   Widget subscriptionWidget(){
-    print('=asdf');
     return Column(
       children: [
         _buildAboutSection('-----'),
@@ -308,12 +311,8 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
   /// Build subscription section
   Widget _buildSubscriptionSection() {
-    return UnsubscribedUIWidget(
-      onSubscribe: _toggleSubscription,
-      onBundle3Months: _toggleSubscription,
-      onBundle6Months: _toggleSubscription,
-      onBundle12Months: _toggleSubscription,
-      onSubscribeToSeeContent: _toggleSubscription,
+    return SubscribedOptionWidget(
+      relayGroup: widget.relayGroupDB,
     );
   }
 

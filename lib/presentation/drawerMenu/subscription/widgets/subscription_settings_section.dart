@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:chuchu/core/config/subscription_config.dart';
 
 class SubscriptionTier {
@@ -23,7 +24,7 @@ class SubscriptionSettingsSection extends StatefulWidget {
     this.onPriceChanged,
   });
 
-  static double calculatePriceForDuration(double monthlyPrice, SubscriptionDuration duration) {
+  static int calculatePriceForDuration(int monthlyPrice, SubscriptionDuration duration) {
     return SubscriptionConfig.calculatePriceForDuration(monthlyPrice, duration);
   }
 
@@ -57,24 +58,21 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     }
   }
   
-  double _getCurrentMonthlyPrice() {
+  int _getCurrentMonthlyPrice() {
     if (_monthlyPriceController.text.isNotEmpty) {
-      final clean = _monthlyPriceController.text.replaceAll(RegExp(r'[^\d.]'), '');
-      if (clean.isNotEmpty) {
-        try {
-          return double.parse(clean);
-        } catch (_) {
-          return SubscriptionConfig.defaultSubscriptionPrice / 100.0;
-        }
+      try {
+        return int.parse(_monthlyPriceController.text);
+      } catch (_) {
+        return SubscriptionConfig.defaultSubscriptionPrice;
       }
     }
-    return SubscriptionConfig.defaultSubscriptionPrice / 100.0;
+    return SubscriptionConfig.defaultSubscriptionPrice;
   }
 
   @override
   void initState() {
     super.initState();
-    _monthlyPriceController.text = widget.initialMonthlyPrice.toStringAsFixed(2);
+    _monthlyPriceController.text = widget.initialMonthlyPrice.toString();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _notifyPriceChanged();
     });
@@ -121,15 +119,18 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
             Expanded(
               child: TextField(
                 controller: _monthlyPriceController,
-                keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: TextInputType.number,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                ],
                 onChanged: (value) {
                   setState(() {});
                   _notifyPriceChanged();
                 },
                 decoration: InputDecoration(
-                  prefixText: '\$ ',
-                  hintText: '9.99',
-                  labelText: 'Monthly Price',
+                  prefixText: '${SubscriptionConfig.currencyUnit} ',
+                  hintText: '1000',
+                  labelText: 'Monthly Price (${SubscriptionConfig.currencyUnit})',
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -166,7 +167,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     final calculatedPrice = _calculatePrice(tier.duration);
     final discountPercent = SubscriptionConfig.getDiscountPercentage(tier.duration);
     
-    String displayPrice = '\$${calculatedPrice.toStringAsFixed(2)}';
+    String displayPrice = '$calculatedPrice ${SubscriptionConfig.currencyUnit}';
     String durationText = tier.duration == SubscriptionDuration.year ? 'year' : tier.duration.value;
     
     final isMonthlyTier = tier.duration == SubscriptionDuration.month;
@@ -243,7 +244,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     );
   }
 
-  double _calculatePrice(SubscriptionDuration duration) {
+  int _calculatePrice(SubscriptionDuration duration) {
     final monthlyPrice = _getCurrentMonthlyPrice();
     return SubscriptionSettingsSection.calculatePriceForDuration(monthlyPrice, duration);
   }
@@ -252,13 +253,10 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     if (widget.onPriceChanged != null) {
       int monthlyPrice = 0;
       if (_monthlyPriceController.text.isNotEmpty) {
-        final clean = _monthlyPriceController.text.replaceAll(RegExp(r'[^\d.]'), '');
-        if (clean.isNotEmpty) {
-          try {
-            monthlyPrice = int.parse(clean);
-          } catch (_) {
-            monthlyPrice = 0;
-          }
+        try {
+          monthlyPrice = int.parse(_monthlyPriceController.text);
+        } catch (_) {
+          monthlyPrice = 0;
         }
       }
       widget.onPriceChanged!(monthlyPrice);
