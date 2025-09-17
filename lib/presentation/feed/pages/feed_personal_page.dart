@@ -2,6 +2,7 @@ import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+info.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
+import 'package:chuchu/presentation/feed/widgets/locked_content_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -65,15 +66,17 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     } else {
       RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance
           .getGroupMetadataFromRelay(
-        widget.relayGroupDB.groupId,
-        relay: Relays.sharedInstance.recommendGroupRelays.first,
-        author: widget.relayGroupDB.author,
-      );
+            widget.relayGroupDB.groupId,
+            relay: Relays.sharedInstance.recommendGroupRelays.first,
+            author: widget.relayGroupDB.author,
+          );
       subscriptionStatus = ESubscriptionStatus.free;
       if (relayGroup != null &&
           relayGroup.subscriptionAmount > 0 &&
           relayGroup.members != null) {
-        if (relayGroup.members!.contains(Account.sharedInstance.currentPubkey)) {
+        if (relayGroup.members!.contains(
+          Account.sharedInstance.currentPubkey,
+        )) {
           subscriptionStatus = ESubscriptionStatus.subscribed;
         } else {
           subscriptionStatus = ESubscriptionStatus.unsubscribed;
@@ -151,7 +154,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   }
 
   Widget actionWidget() {
-    if (subscriptionStatus == ESubscriptionStatus.author) {
+    if (subscriptionStatus != ESubscriptionStatus.author) {
       return const SizedBox();
     }
     return IconButton(
@@ -187,13 +190,14 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
   int _calculateItemCount() {
     if (notesList.isEmpty) return 3; // Header + subscription + content
-    if (subscriptionStatus == ESubscriptionStatus.author ||
-        subscriptionStatus == ESubscriptionStatus.free) {
-      return notesList.length + 2;
+    switch (subscriptionStatus) {
+      case ESubscriptionStatus.author:
+      case ESubscriptionStatus.free:
+      case ESubscriptionStatus.subscribed:
+        return notesList.length + 2;
+      case ESubscriptionStatus.unsubscribed:
+        return 3;
     }
-    return subscriptionStatus == ESubscriptionStatus.subscribed
-        ? notesList.length + 2
-        : 3;
   }
 
   Widget _buildListItem(BuildContext context, int index) {
@@ -216,15 +220,31 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       } else {
         return Column(
           children: [
-            SubscribedOptionWidget(relayGroup: widget.relayGroupDB),
+            SubscribedOptionWidget(
+              relayGroup: widget.relayGroupDB,
+              subscriptionStatus: subscriptionStatus,
+              onSubscriptionSuccess: () {
+                getSubscriptionStatus();
+              }
+            ),
             dividerWidget(),
           ],
         );
       }
     }
 
+    if(index == 2) {
+      if(subscriptionStatus == ESubscriptionStatus.unsubscribed) {
+        return LockedContentSection();
+      }
+      if(notesList.isEmpty){
+        return _buildEmptyState();
+      }
+    }
+
+
     final noteIndex = index - 2;
-    if (noteIndex >= 0) {
+    if (noteIndex >= 0 && noteIndex < notesList.length) {
       return Column(
         children: [
           const SizedBox(height: 20),
@@ -236,7 +256,6 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     return const SizedBox.shrink();
   }
 
-  /// Build empty state widget
   Widget _buildEmptyState() {
     return Column(
       children: [

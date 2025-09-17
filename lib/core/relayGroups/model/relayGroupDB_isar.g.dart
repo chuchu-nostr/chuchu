@@ -42,75 +42,85 @@ const RelayGroupDBISARSchema = CollectionSchema(
       name: r'groupId',
       type: IsarType.string,
     ),
-    r'identifier': PropertySchema(
+    r'groupWalletId': PropertySchema(
       id: 5,
+      name: r'groupWalletId',
+      type: IsarType.string,
+    ),
+    r'identifier': PropertySchema(
+      id: 6,
       name: r'identifier',
       type: IsarType.string,
     ),
     r'lastAdminsUpdatedTime': PropertySchema(
-      id: 6,
+      id: 7,
       name: r'lastAdminsUpdatedTime',
       type: IsarType.long,
     ),
     r'lastMembersUpdatedTime': PropertySchema(
-      id: 7,
+      id: 8,
       name: r'lastMembersUpdatedTime',
       type: IsarType.long,
     ),
     r'lastUpdatedTime': PropertySchema(
-      id: 8,
+      id: 9,
       name: r'lastUpdatedTime',
       type: IsarType.long,
     ),
     r'level': PropertySchema(
-      id: 9,
+      id: 10,
       name: r'level',
       type: IsarType.long,
     ),
     r'members': PropertySchema(
-      id: 10,
+      id: 11,
       name: r'members',
       type: IsarType.stringList,
     ),
     r'mute': PropertySchema(
-      id: 11,
+      id: 12,
       name: r'mute',
       type: IsarType.bool,
     ),
     r'name': PropertySchema(
-      id: 12,
+      id: 13,
       name: r'name',
       type: IsarType.string,
     ),
     r'picture': PropertySchema(
-      id: 13,
+      id: 14,
       name: r'picture',
       type: IsarType.string,
     ),
     r'pinned': PropertySchema(
-      id: 14,
+      id: 15,
       name: r'pinned',
       type: IsarType.stringList,
     ),
     r'point': PropertySchema(
-      id: 15,
+      id: 16,
       name: r'point',
       type: IsarType.long,
     ),
     r'private': PropertySchema(
-      id: 16,
+      id: 17,
       name: r'private',
       type: IsarType.bool,
     ),
     r'relay': PropertySchema(
-      id: 17,
+      id: 18,
       name: r'relay',
       type: IsarType.string,
     ),
     r'relayPubkey': PropertySchema(
-      id: 18,
+      id: 19,
       name: r'relayPubkey',
       type: IsarType.string,
+    ),
+    r'subscriptionAmount': PropertySchema(
+      id: 20,
+      name: r'subscriptionAmount',
+      type: IsarType.long,
     )
   },
   estimateSize: _relayGroupDBISAREstimateSize,
@@ -156,6 +166,7 @@ int _relayGroupDBISAREstimateSize(
   }
   bytesCount += 3 + object.author.length * 3;
   bytesCount += 3 + object.groupId.length * 3;
+  bytesCount += 3 + object.groupWalletId.length * 3;
   bytesCount += 3 + object.identifier.length * 3;
   {
     final list = object.members;
@@ -199,20 +210,22 @@ void _relayGroupDBISARSerialize(
   writer.writeString(offsets[2], object.author);
   writer.writeBool(offsets[3], object.closed);
   writer.writeString(offsets[4], object.groupId);
-  writer.writeString(offsets[5], object.identifier);
-  writer.writeLong(offsets[6], object.lastAdminsUpdatedTime);
-  writer.writeLong(offsets[7], object.lastMembersUpdatedTime);
-  writer.writeLong(offsets[8], object.lastUpdatedTime);
-  writer.writeLong(offsets[9], object.level);
-  writer.writeStringList(offsets[10], object.members);
-  writer.writeBool(offsets[11], object.mute);
-  writer.writeString(offsets[12], object.name);
-  writer.writeString(offsets[13], object.picture);
-  writer.writeStringList(offsets[14], object.pinned);
-  writer.writeLong(offsets[15], object.point);
-  writer.writeBool(offsets[16], object.private);
-  writer.writeString(offsets[17], object.relay);
-  writer.writeString(offsets[18], object.relayPubkey);
+  writer.writeString(offsets[5], object.groupWalletId);
+  writer.writeString(offsets[6], object.identifier);
+  writer.writeLong(offsets[7], object.lastAdminsUpdatedTime);
+  writer.writeLong(offsets[8], object.lastMembersUpdatedTime);
+  writer.writeLong(offsets[9], object.lastUpdatedTime);
+  writer.writeLong(offsets[10], object.level);
+  writer.writeStringList(offsets[11], object.members);
+  writer.writeBool(offsets[12], object.mute);
+  writer.writeString(offsets[13], object.name);
+  writer.writeString(offsets[14], object.picture);
+  writer.writeStringList(offsets[15], object.pinned);
+  writer.writeLong(offsets[16], object.point);
+  writer.writeBool(offsets[17], object.private);
+  writer.writeString(offsets[18], object.relay);
+  writer.writeString(offsets[19], object.relayPubkey);
+  writer.writeLong(offsets[20], object.subscriptionAmount);
 }
 
 RelayGroupDBISAR _relayGroupDBISARDeserialize(
@@ -227,19 +240,21 @@ RelayGroupDBISAR _relayGroupDBISARDeserialize(
     author: reader.readStringOrNull(offsets[2]) ?? '',
     closed: reader.readBoolOrNull(offsets[3]) ?? false,
     groupId: reader.readStringOrNull(offsets[4]) ?? '',
-    lastAdminsUpdatedTime: reader.readLongOrNull(offsets[6]) ?? 0,
-    lastMembersUpdatedTime: reader.readLongOrNull(offsets[7]) ?? 0,
-    lastUpdatedTime: reader.readLongOrNull(offsets[8]) ?? 0,
-    level: reader.readLongOrNull(offsets[9]) ?? 0,
-    members: reader.readStringList(offsets[10]),
-    mute: reader.readBoolOrNull(offsets[11]) ?? false,
-    name: reader.readStringOrNull(offsets[12]) ?? '',
-    picture: reader.readStringOrNull(offsets[13]) ?? '',
-    pinned: reader.readStringList(offsets[14]),
-    point: reader.readLongOrNull(offsets[15]) ?? 0,
-    private: reader.readBoolOrNull(offsets[16]) ?? false,
-    relay: reader.readStringOrNull(offsets[17]) ?? '',
-    relayPubkey: reader.readStringOrNull(offsets[18]) ?? '',
+    groupWalletId: reader.readStringOrNull(offsets[5]) ?? '',
+    lastAdminsUpdatedTime: reader.readLongOrNull(offsets[7]) ?? 0,
+    lastMembersUpdatedTime: reader.readLongOrNull(offsets[8]) ?? 0,
+    lastUpdatedTime: reader.readLongOrNull(offsets[9]) ?? 0,
+    level: reader.readLongOrNull(offsets[10]) ?? 0,
+    members: reader.readStringList(offsets[11]),
+    mute: reader.readBoolOrNull(offsets[12]) ?? false,
+    name: reader.readStringOrNull(offsets[13]) ?? '',
+    picture: reader.readStringOrNull(offsets[14]) ?? '',
+    pinned: reader.readStringList(offsets[15]),
+    point: reader.readLongOrNull(offsets[16]) ?? 0,
+    private: reader.readBoolOrNull(offsets[17]) ?? false,
+    relay: reader.readStringOrNull(offsets[18]) ?? '',
+    relayPubkey: reader.readStringOrNull(offsets[19]) ?? '',
+    subscriptionAmount: reader.readLongOrNull(offsets[20]) ?? 0,
   );
   object.id = id;
   return object;
@@ -263,9 +278,9 @@ P _relayGroupDBISARDeserializeProp<P>(
     case 4:
       return (reader.readStringOrNull(offset) ?? '') as P;
     case 5:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset) ?? '') as P;
     case 6:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
+      return (reader.readString(offset)) as P;
     case 7:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 8:
@@ -273,23 +288,27 @@ P _relayGroupDBISARDeserializeProp<P>(
     case 9:
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 10:
-      return (reader.readStringList(offset)) as P;
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     case 11:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
+      return (reader.readStringList(offset)) as P;
     case 12:
-      return (reader.readStringOrNull(offset) ?? '') as P;
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 13:
       return (reader.readStringOrNull(offset) ?? '') as P;
     case 14:
-      return (reader.readStringList(offset)) as P;
-    case 15:
-      return (reader.readLongOrNull(offset) ?? 0) as P;
-    case 16:
-      return (reader.readBoolOrNull(offset) ?? false) as P;
-    case 17:
       return (reader.readStringOrNull(offset) ?? '') as P;
+    case 15:
+      return (reader.readStringList(offset)) as P;
+    case 16:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 17:
+      return (reader.readBoolOrNull(offset) ?? false) as P;
     case 18:
       return (reader.readStringOrNull(offset) ?? '') as P;
+    case 19:
+      return (reader.readStringOrNull(offset) ?? '') as P;
+    case 20:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -1056,6 +1075,142 @@ extension RelayGroupDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'groupId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'groupWalletId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdGreaterThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'groupWalletId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'groupWalletId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdBetween(
+    String lower,
+    String upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'groupWalletId',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.startsWith(
+        property: r'groupWalletId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.endsWith(
+        property: r'groupWalletId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.contains(
+        property: r'groupWalletId',
+        value: value,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.matches(
+        property: r'groupWalletId',
+        wildcard: pattern,
+        caseSensitive: caseSensitive,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'groupWalletId',
+        value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      groupWalletIdIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        property: r'groupWalletId',
         value: '',
       ));
     });
@@ -2582,6 +2737,62 @@ extension RelayGroupDBISARQueryFilter
       ));
     });
   }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      subscriptionAmountEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'subscriptionAmount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      subscriptionAmountGreaterThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'subscriptionAmount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      subscriptionAmountLessThan(
+    int value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'subscriptionAmount',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterFilterCondition>
+      subscriptionAmountBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'subscriptionAmount',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
 }
 
 extension RelayGroupDBISARQueryObject
@@ -2658,6 +2869,20 @@ extension RelayGroupDBISARQuerySortBy
       sortByGroupIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterSortBy>
+      sortByGroupWalletId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupWalletId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterSortBy>
+      sortByGroupWalletIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupWalletId', Sort.desc);
     });
   }
 
@@ -2823,6 +3048,20 @@ extension RelayGroupDBISARQuerySortBy
       return query.addSortBy(r'relayPubkey', Sort.desc);
     });
   }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterSortBy>
+      sortBySubscriptionAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'subscriptionAmount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterSortBy>
+      sortBySubscriptionAmountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'subscriptionAmount', Sort.desc);
+    });
+  }
 }
 
 extension RelayGroupDBISARQuerySortThenBy
@@ -2893,6 +3132,20 @@ extension RelayGroupDBISARQuerySortThenBy
       thenByGroupIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'groupId', Sort.desc);
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterSortBy>
+      thenByGroupWalletId() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupWalletId', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterSortBy>
+      thenByGroupWalletIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'groupWalletId', Sort.desc);
     });
   }
 
@@ -3071,6 +3324,20 @@ extension RelayGroupDBISARQuerySortThenBy
       return query.addSortBy(r'relayPubkey', Sort.desc);
     });
   }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterSortBy>
+      thenBySubscriptionAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'subscriptionAmount', Sort.asc);
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QAfterSortBy>
+      thenBySubscriptionAmountDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'subscriptionAmount', Sort.desc);
+    });
+  }
 }
 
 extension RelayGroupDBISARQueryWhereDistinct
@@ -3107,6 +3374,14 @@ extension RelayGroupDBISARQueryWhereDistinct
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'groupId', caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QDistinct>
+      distinctByGroupWalletId({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'groupWalletId',
+          caseSensitive: caseSensitive);
     });
   }
 
@@ -3206,6 +3481,13 @@ extension RelayGroupDBISARQueryWhereDistinct
       return query.addDistinctBy(r'relayPubkey', caseSensitive: caseSensitive);
     });
   }
+
+  QueryBuilder<RelayGroupDBISAR, RelayGroupDBISAR, QDistinct>
+      distinctBySubscriptionAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'subscriptionAmount');
+    });
+  }
 }
 
 extension RelayGroupDBISARQueryProperty
@@ -3244,6 +3526,13 @@ extension RelayGroupDBISARQueryProperty
   QueryBuilder<RelayGroupDBISAR, String, QQueryOperations> groupIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'groupId');
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, String, QQueryOperations>
+      groupWalletIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'groupWalletId');
     });
   }
 
@@ -3335,6 +3624,13 @@ extension RelayGroupDBISARQueryProperty
       relayPubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'relayPubkey');
+    });
+  }
+
+  QueryBuilder<RelayGroupDBISAR, int, QQueryOperations>
+      subscriptionAmountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'subscriptionAmount');
     });
   }
 }

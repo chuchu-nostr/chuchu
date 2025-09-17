@@ -6,6 +6,7 @@ import '../../../core/account/relays.dart';
 import '../../../core/config/subscription_config.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
+import '../../../core/wallet/wallet.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class CreateCreatorPage extends StatefulWidget {
@@ -173,6 +174,25 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
 
   Future<void> _createSettings() async {
     try {
+
+      // Get wallet instance
+      final wallet = Wallet();
+
+      // Ensure wallet is connected
+      if (!wallet.isConnected) {
+        await wallet.connectToWallet();
+      }
+
+      if (!wallet.isConnected) {
+        CommonToast.instance.show(context, 'Wallet not connected. Please try again.');
+        return;
+      }
+
+      if(wallet.walletInfo?.walletId == null) {
+        CommonToast.instance.show(context, 'Wallet id is not fund.');
+        return;
+      }
+
       if (_isPaidSubscription) {
         String cleanPriceText = subscriptionPrice.toString().replaceAll(RegExp(r'[^\d.]'), '');
         if (cleanPriceText.isEmpty) {
@@ -189,8 +209,10 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
         closed: _isPaidSubscription,
         name: _nameController.text.isNotEmpty ? _nameController.text : '',
         subscriptionAmount: _isPaidSubscription ? subscriptionPrice : 0,
+        groupWalletId: wallet.walletInfo?.walletId ?? '',
       );
       //
+      print('=====>relayGroupDB==$relayGroupDB');
       if(relayGroupDB != null){
         CommonToast.instance.show(context, 'Create Successfully !');
         Navigator.of(context).pop(true);

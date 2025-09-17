@@ -8,6 +8,7 @@ import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 
+import '../../../core/account/relays.dart';
 import '../../../core/nostr_dart/src/nips/nip_019.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
@@ -326,9 +327,6 @@ class _SearchPageState extends State<SearchPage> {
         pubkey = trimmedQuery;
       }
 
-
-
-
       if (pubkey == null || pubkey.isEmpty) {
         setState(() {
           _isSearching = false;
@@ -338,8 +336,13 @@ class _SearchPageState extends State<SearchPage> {
       }
 
       // Get user info from Account
-      RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance.searchGroupsMetadataWithGroupID(pubkey,null);
-
+      RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance.searchGroupsMetadataWithGroupID(pubkey,Relays.sharedInstance.recommendGroupRelays.first);
+      print('🔍npub: $trimmedQuery');
+      print('🔍pubkey: $pubkey');
+      print('🔍relayGroup: $relayGroup');
+      print('🔍relayGroupId: ${relayGroup?.groupId}');
+      print('🔍name: ${relayGroup?.name}');
+      print('🔍subscriptionAmount: ${relayGroup?.subscriptionAmount}');
       if (mounted) {
         setState(() {
           _isSearching = false;

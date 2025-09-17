@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
@@ -40,8 +41,9 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<UserDBISAR>(
-      valueListenable: Account.sharedInstance.getUserNotifier(
+    print('== widget.relayGroupDB.author,==${ widget.relayGroupDB.author}');
+    return ValueListenableBuilder<RelayGroupDBISAR>(
+      valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(
         widget.relayGroupDB.author,
       ),
       builder: (context, user, child) {
@@ -57,8 +59,8 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     );
   }
 
-  Widget personalPageHeader(UserDBISAR user) {
-    final badgeUrl = user.badges ?? '';
+  Widget personalPageHeader(RelayGroupDBISAR user) {
+    final badgeUrl = user.picture ?? '';
     DecorationImage? image;
     if (badgeUrl.isNotEmpty) {
       image = DecorationImage(
@@ -80,7 +82,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     );
   }
 
-  Widget _buildNavigationBar(UserDBISAR user) {
+  Widget _buildNavigationBar(RelayGroupDBISAR user) {
     return Row(
       children: [
         IconButton(
@@ -92,7 +94,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
           child: Row(
             children: [
               Text(
-                user.name ?? '',
+                user.name,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 18,
@@ -151,7 +153,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     );
   }
 
-  Widget personalOption(UserDBISAR user) {
+  Widget personalOption(RelayGroupDBISAR user) {
     return SizedBox(
       width: double.infinity,
       height: 60,
@@ -162,45 +164,54 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     );
   }
 
-  Widget _buildProfileImage(UserDBISAR user) {
+  Widget _buildProfileImage(RelayGroupDBISAR user) {
     placeholder(_, __) => FeedWidgetsUtils.badgePlaceholderImage();
     errorWidget(_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage();
-    return Positioned(
-      top: -35,
-      left: 18,
-      child: Container(
-        width: 100,
-        height: 100,
-        decoration: BoxDecoration(
-          borderRadius: const BorderRadius.all(Radius.circular(100)),
-          border: Border.all(color: Colors.white, width: 0.5),
-        ),
-        child: Container(
-          width: 100,
-          height: 100,
-          decoration: BoxDecoration(
-            color: Colors.pink.withValues(alpha: 0.3),
-            shape: BoxShape.circle,
-            border: Border.all(color: Colors.white, width: 4),
-          ),
-          child: GestureDetector(
-            onTap: () {},
-            child: FeedWidgetsUtils.clipImage(
-              borderRadius: 100,
-              imageSize: 100,
-              child: ChuChuCachedNetworkImage(
-                imageUrl: user.picture ?? '',
-                fit: BoxFit.cover,
-                placeholder: placeholder,
-                errorWidget: errorWidget,
-                width: 100,
-                height: 100,
+    return ValueListenableBuilder<UserDBISAR>(
+      valueListenable: Account.sharedInstance.getUserNotifier(
+        user.author,
+      ),
+      builder: (context, user, child) {
+        return Positioned(
+          top: -35,
+          left: 18,
+          child: Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              borderRadius: const BorderRadius.all(Radius.circular(100)),
+              border: Border.all(color: Colors.white, width: 0.5),
+            ),
+            child: Container(
+              width: 100,
+              height: 100,
+              decoration: BoxDecoration(
+                color: Colors.pink.withValues(alpha: 0.3),
+                shape: BoxShape.circle,
+                border: Border.all(color: Colors.white, width: 4),
+              ),
+              child: GestureDetector(
+                onTap: () {},
+                child: FeedWidgetsUtils.clipImage(
+                  borderRadius: 100,
+                  imageSize: 100,
+                  child: ChuChuCachedNetworkImage(
+                    imageUrl: user.picture ?? '',
+                    fit: BoxFit.cover,
+                    placeholder: placeholder,
+                    errorWidget: errorWidget,
+                    width: 100,
+                    height: 100,
+                  ),
+                ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
+
+
   }
 
   /// Build actions row
@@ -242,7 +253,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     );
   }
 
-  Widget personalInfo(UserDBISAR user) {
+  Widget personalInfo(RelayGroupDBISAR user) {
     return Column(
       children: [
         Container(
@@ -261,7 +272,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
           width: double.infinity,
           margin: const EdgeInsets.only(left: 18),
           child: Text(
-            '@${user.dns}',
+            user.about,
             style: const TextStyle(color: kIconState, fontSize: 16),
           ),
         ),
