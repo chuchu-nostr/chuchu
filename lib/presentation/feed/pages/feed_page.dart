@@ -286,7 +286,7 @@ class _FeedPageState extends State<FeedPage>
                       child: ListView.builder(
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.symmetric(horizontal: 16),
-                        itemCount: myGroupsList.length + 2,
+                        itemCount: myGroupsList.length + 1,
                         itemBuilder: _buildStoryItemBuilder,
                       ),
                     ),
@@ -299,13 +299,10 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Widget _buildStoryItemBuilder(BuildContext context, int index) {
-    if (index == 0) {
-      return _buildCurrentUserStoryItem();
-    } else if (index == myGroupsList.length + 1) {
+    if(index == myGroupsList.length) {
       return _buildAddStoryItem();
-    } else {
-      return _buildMyGroupStoryItem(index - 1);
     }
+    return _buildMyGroupStoryItem(index);
   }
 
   Widget _buildCurrentUserStoryItem() {
@@ -346,6 +343,7 @@ class _FeedPageState extends State<FeedPage>
     bool hasNewNotes =  _notificationGroupNotes[relayGroupDB.author]?.isNotEmpty ?? false;
     final noteCount = _notificationGroupNotes[relayGroupDB.author]?.length ?? 0;
 
+    bool isMyGroup = relayGroupDB.author == Account.sharedInstance.currentPubkey;
     return GestureDetector(
       onTap: () async {
         await ChuChuNavigator.pushPage(
@@ -356,7 +354,7 @@ class _FeedPageState extends State<FeedPage>
         _handleNewNotesAfterNavigation(hasNewNotes);
       },
       child: _buildStoryItem(
-        name: _shortNpub(relayGroupDB.author),
+        name: isMyGroup ? "You" : relayGroupDB.showName,
         imageUrl: '',
         isCurrentUser: false,
         hasUnread: hasNewNotes,
@@ -364,14 +362,6 @@ class _FeedPageState extends State<FeedPage>
         storyCount: noteCount,
       ),
     );
-  }
-
-  String _shortNpub(String pubkey) {
-    final npub = Nip19.encodePubkey(pubkey);
-    if (npub.length < 13) return npub;
-    final start = npub.substring(0, 6);
-    final end = npub.substring(npub.length - 6);
-    return '$start:$end';
   }
 
   Widget _buildAddStoryItem() {
@@ -412,35 +402,39 @@ class _FeedPageState extends State<FeedPage>
       noteCount = storyCount;
     }
 
-    return Container(
-      width: storyItemWidth,
-      height: storyItemHeight,
-      margin: EdgeInsets.only(right: marginRight),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          isAddButton
-              ? _buildAddButton()
-              : StoryCircle(
-                  imageUrl: imageUrl,
-                  size: avatarSize.toDouble(),
-                  segmentCount: noteCount > 0 ? noteCount : 0,
-                  gapRatio: 0.1,
-                ),
-          const SizedBox(height: 8),
-          Text(
-            name,
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurface,
-              fontSize: 15,
+    return GestureDetector(
+      onTap: () {
+      },
+      child: Container(
+        width: storyItemWidth,
+        height: storyItemHeight,
+        margin: EdgeInsets.only(right: marginRight),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            isAddButton
+                ? _buildAddButton()
+                : StoryCircle(
+                    imageUrl: imageUrl,
+                    size: avatarSize.toDouble(),
+                    segmentCount: noteCount > 0 ? noteCount : 0,
+                    gapRatio: 0.1,
+                  ),
+            const SizedBox(height: 8),
+            Text(
+              name,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurface,
+                fontSize: 15,
+              ),
+              overflow: TextOverflow.ellipsis,
+              maxLines: 1,
+              textAlign: TextAlign.center,
             ),
-            overflow: TextOverflow.ellipsis,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -733,4 +727,8 @@ class _SegmentedBorderPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+
+  @override
+  didGroupsNoteCallBack(NoteDBISAR notes) {
+  }
 }
