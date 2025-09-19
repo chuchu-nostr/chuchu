@@ -69,8 +69,10 @@ class ChuChuFeedManager {
     _notes = notes;
     List<NoteDBISAR> personalNoteDBList = [];
     for (NoteDBISAR noteDB in notes) {
+
       bool isGroupNoted = noteDB.groupId.isNotEmpty;
-      if(!isGroupNoted) {
+
+      if(isGroupNoted) {
         personalNoteDBList.add(noteDB);
       }
     }
