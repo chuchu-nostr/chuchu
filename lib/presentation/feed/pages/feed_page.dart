@@ -55,11 +55,7 @@ class _FeedPageState extends State<FeedPage>
   final Map<String,List<NoteDBISAR>> _notificationGroupNotes = {};
 
   bool _isInitialLoading = true;
-  // List<String> _followsList = [];
   Map<String, ValueNotifier<RelayGroupDBISAR>> myGroupsList = {};
-  int _newNotesCount = 0;
-  Set<String> _usersWithNewNotes = {};
-  Map<String, int> _userNoteCounts = {};
 
   ThemeData? _cachedTheme;
 
@@ -132,7 +128,6 @@ class _FeedPageState extends State<FeedPage>
   void _resetData() {
     notesList = [];
     _allNotesFromDBLastTimestamp = null;
-    _newNotesCount = 0;
     if (mounted) {
       setState(() {});
     }
@@ -150,7 +145,6 @@ class _FeedPageState extends State<FeedPage>
   void _clearNewNotesIndicator(String userPubkey) {
     if (mounted) {
       setState(() {
-        _usersWithNewNotes.remove(userPubkey);
       });
     }
   }
@@ -158,9 +152,6 @@ class _FeedPageState extends State<FeedPage>
   void _clearAvatarBorders() {
     if (mounted) {
       setState(() {
-        _usersWithNewNotes.clear();
-        _userNoteCounts.clear();
-        _newNotesCount = 0;
       });
     }
   }
@@ -171,19 +162,10 @@ class _FeedPageState extends State<FeedPage>
     }
   }
 
-  void _handleNewNotesAfterNavigation(bool hasNewNotes, {bool clearUserNoteCounts = false}) {
+  void _handleNewNotesAfterNavigation(RelayGroupDBISAR relayGroupDB, bool hasNewNotes) {
     if (mounted) {
-      if (clearUserNoteCounts) {
-        _userNoteCounts.clear();
-      } else {
-        _usersWithNewNotes.clear();
-      }
-      
-      if (hasNewNotes) {
-        updateNotesList(true);
-      } else {
-        setState(() {});
-      }
+      _notificationGroupNotes[relayGroupDB.groupId] = [];
+      setState(() {});
     }
   }
 
@@ -305,45 +287,11 @@ class _FeedPageState extends State<FeedPage>
     return _buildMyGroupStoryItem(index);
   }
 
-  Widget _buildCurrentUserStoryItem() {
-    final currentUserPubkey = Account.sharedInstance.currentPubkey;
-    if(currentUserPubkey.isEmpty) {
-      return const SizedBox();
-    }
-    final hasNewNotes = currentUserPubkey != null &&
-        _usersWithNewNotes.contains(currentUserPubkey);
-
-    RelayGroupDBISAR? myRelayGroup = RelayGroup.sharedInstance.myGroups[currentUserPubkey]?.value;
-    if(myRelayGroup == null) {
-      return const SizedBox();
-    }
-    return GestureDetector(
-      onTap: () async {
-        await ChuChuNavigator.pushPage(
-          context,
-          (context) => FeedPersonalPage(
-            relayGroupDB: myRelayGroup,
-          ),
-        );
-
-        _handleNewNotesAfterNavigation(hasNewNotes, clearUserNoteCounts: true);
-      },
-      child: _buildStoryItem(
-        name: "You",
-        imageUrl: ChuChuUserInfoManager.sharedInstance.currentUserInfo?.picture ?? '',
-        isCurrentUser: true,
-        hasUnread: hasNewNotes,
-        marginRight: 12,
-      ),
-    );
-  }
-
   Widget _buildMyGroupStoryItem(int userIndex) {
     RelayGroupDBISAR relayGroupDB = myGroupsList.values.toList()[userIndex].value;
-    bool hasNewNotes =  _notificationGroupNotes[relayGroupDB.author]?.isNotEmpty ?? false;
-    final noteCount = _notificationGroupNotes[relayGroupDB.author]?.length ?? 0;
+    bool hasNewNotes =  _notificationGroupNotes[relayGroupDB.groupId]?.isNotEmpty ?? false;
+    final noteCount = _notificationGroupNotes[relayGroupDB.groupId]?.length ?? 0;
 
-    bool isMyGroup = relayGroupDB.author == Account.sharedInstance.currentPubkey;
     return GestureDetector(
       onTap: () async {
         await ChuChuNavigator.pushPage(
@@ -351,10 +299,10 @@ class _FeedPageState extends State<FeedPage>
           (context) => FeedPersonalPage(relayGroupDB: relayGroupDB),
         );
 
-        _handleNewNotesAfterNavigation(hasNewNotes);
+        _handleNewNotesAfterNavigation(relayGroupDB,hasNewNotes);
       },
       child: _buildStoryItem(
-        name: isMyGroup ? "You" : relayGroupDB.showName,
+        relayGroup: relayGroupDB,
         imageUrl: '',
         isCurrentUser: false,
         hasUnread: hasNewNotes,
@@ -370,7 +318,6 @@ class _FeedPageState extends State<FeedPage>
         ChuChuNavigator.pushPage(context, (context) => SearchPage());
       },
       child: _buildStoryItem(
-        name: "Add",
         imageUrl: "",
         isCurrentUser: false,
         hasUnread: false,
@@ -382,7 +329,7 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Widget _buildStoryItem({
-    required String name,
+    RelayGroupDBISAR? relayGroup,
     required String imageUrl,
     required bool isCurrentUser,
     required bool hasUnread,
@@ -392,49 +339,37 @@ class _FeedPageState extends State<FeedPage>
   }) {
     final theme = Theme.of(context);
 
-    int noteCount = 0;
-    if (isCurrentUser) {
-      final currentUserPubkey = Account.sharedInstance.currentPubkey;
-      if (currentUserPubkey != null) {
-        noteCount = _userNoteCounts[currentUserPubkey] ?? 0;
-      }
-    } else if (hasUnread) {
-      noteCount = storyCount;
-    }
+    int noteCount = _notificationGroupNotes[relayGroup?.groupId]?.length ?? 0;
 
-    return GestureDetector(
-      onTap: () {
-      },
-      child: Container(
-        width: storyItemWidth,
-        height: storyItemHeight,
-        margin: EdgeInsets.only(right: marginRight),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            isAddButton
-                ? _buildAddButton()
-                : StoryCircle(
-                    imageUrl: imageUrl,
-                    size: avatarSize.toDouble(),
-                    segmentCount: noteCount > 0 ? noteCount : 0,
-                    gapRatio: 0.1,
-                  ),
-            const SizedBox(height: 8),
-            Text(
-              name,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurface,
-                fontSize: 15,
-              ),
-              overflow: TextOverflow.ellipsis,
-              maxLines: 1,
-              textAlign: TextAlign.center,
+    return Container(
+      width: storyItemWidth,
+      height: storyItemHeight,
+      margin: EdgeInsets.only(right: marginRight),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          isAddButton
+              ? _buildAddButton()
+              : StoryCircle(
+                  imageUrl: imageUrl,
+                  size: avatarSize.toDouble(),
+                  segmentCount: noteCount > 0 ? noteCount : 0,
+                  gapRatio: 0.1,
+                ),
+          const SizedBox(height: 8),
+          Text(
+            relayGroup?.name ?? 'Add',
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurface,
+              fontSize: 15,
             ),
-          ],
-        ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 1,
+            textAlign: TextAlign.center,
+          ),
+        ],
       ),
     );
   }
