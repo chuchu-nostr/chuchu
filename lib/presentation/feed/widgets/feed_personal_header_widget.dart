@@ -41,10 +41,9 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
 
   @override
   Widget build(BuildContext context) {
-    print('== widget.relayGroupDB.author,==${ widget.relayGroupDB.author}');
     return ValueListenableBuilder<RelayGroupDBISAR>(
       valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(
-        widget.relayGroupDB.author,
+        widget.relayGroupDB.groupId,
       ),
       builder: (context, user, child) {
         return Column(
