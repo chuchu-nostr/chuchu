@@ -1,8 +1,8 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
-import '../../../core/account/account.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
-import '../../../core/relayGroups/relayGroup.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class ProfileEditPage extends StatefulWidget {
@@ -34,6 +34,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final TextEditingController _aboutController = TextEditingController();
 
   String? _selectedAvatarPath;
+  String? _selectedCoverPhotoPath;
   bool _isLoading = false;
 
   late RelayGroupDBISAR groupInfo;
@@ -100,6 +101,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         children: [
           _buildAvatarSection(),
           const SizedBox(height: 40),
+          _buildCoverPhotoSection(),
+          const SizedBox(height: 40),
           _buildFormSection(),
           const SizedBox(height: 40),
           _subscriptionWidget(),
@@ -129,8 +132,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               child:
                   _selectedAvatarPath != null
                       ? ClipOval(
-                        child: Image.asset(
-                          _selectedAvatarPath!,
+                        child: Image.file(
+                          File(_selectedAvatarPath!),
                           fit: BoxFit.cover,
                         ),
                       )
@@ -142,16 +145,122 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             ),
           ),
           const SizedBox(height: 16),
-          Text(
-            _setAvatarText,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.primary,
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
+          GestureDetector(
+            onTap: () {
+              _setImages();
+            },
+            child: Text(
+              _setAvatarText,
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.primary,
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  // Build cover photo section
+  Widget _buildCoverPhotoSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Section header
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Cover Photo',
+              style: Theme.of(
+                context,
+              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            TextButton(
+              onPressed: _setImages,
+              child: Text(
+                'Edit',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ),
+          ],
+        ),
+        // Cover photo display
+        Container(
+          width: double.infinity,
+          height: 200,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              width: 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.05),
+                spreadRadius: 1,
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: _selectedCoverPhotoPath != null
+                ? Image.file(
+                    File(_selectedCoverPhotoPath!),
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: 200,
+                  )
+                : Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                          Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                        ],
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.add_photo_alternate_rounded,
+                          size: 48,
+                          color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          'Add Cover Photo',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                            color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          'Tap to select image',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+          ),
+        ),
+      ],
     );
   }
 
@@ -281,10 +390,39 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     );
   }
 
+  Future<void> _setImages() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (picked != null) {
+        setState(() {
+          _selectedCoverPhotoPath = picked.path;
+        });
+      }
+    } catch (e) {
+      _showMessage('Failed to pick image: $e', isError: true);
+    }
+  }
+
   // Action methods
-  void _selectAvatar() {
-    // TODO: Implement avatar selection with image picker
-    debugPrint('Select avatar');
+  Future<void> _selectAvatar() async {
+    try {
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      if (picked != null) {
+        setState(() {
+          _selectedAvatarPath = picked.path;
+        });
+      }
+    } catch (e) {
+      _showMessage('Failed to pick avatar: $e', isError: true);
+    }
   }
 
   Future<void> _saveProfile() async {
