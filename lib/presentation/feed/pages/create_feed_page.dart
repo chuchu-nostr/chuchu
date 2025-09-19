@@ -70,22 +70,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     }
   }
 
-  Future<void> _pickVideos() async {
-    final picker = ImagePicker();
-    final picked = await picker.pickVideo(source: ImageSource.gallery);
-    if (picked != null) {
-      setState(() {
-        _selectedVideos.add(File(picked.path));
-        // Initialize upload status for new video
-        final index = _selectedVideos.length - 1;
-        _videoUploadingStatus[index] = false;
-      });
-      
-      // Generate thumbnail and auto-upload
-      _generateVideoThumbnail(File(picked.path), _selectedVideos.length - 1);
-      _uploadNewVideos();
-    }
-  }
 
   void _removeImage(int index) {
     setState(() {
@@ -324,10 +308,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                     IconButton(
                       icon: const Icon(Icons.image),
                       onPressed: _pickImages,
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.videocam),
-                      onPressed: _pickVideos,
                     ),
                   ],
                 ),
