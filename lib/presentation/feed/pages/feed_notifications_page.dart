@@ -97,7 +97,12 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     List<AggregatedNotification> aggregatedNotifications =
         _getAggregatedNotifications(notificationList);
     _aggregatedNotifications.addAll(aggregatedNotifications);
-    _lastTimestamp = notificationList.last.createAt;
+    
+    // Only update _lastTimestamp if we have notifications
+    if (notificationList.isNotEmpty) {
+      _lastTimestamp = notificationList.last.createAt;
+    }
+    
     // notificationList.length < _limit ? _refreshController.loadNoData() : _refreshController.loadComplete();
     _isLoading = false;
     setState(() {});
