@@ -127,6 +127,7 @@ class _FeedPageState extends State<FeedPage>
 
   void _resetData() {
     notesList = [];
+    myGroupsList = {};
     _allNotesFromDBLastTimestamp = null;
     if (mounted) {
       setState(() {});
