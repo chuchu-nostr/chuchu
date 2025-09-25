@@ -299,7 +299,7 @@ class _FeedPageState extends State<FeedPage>
           context,
           (context) => FeedPersonalPage(relayGroupDB: relayGroupDB),
         );
-
+        updateNotesList(true);
         _handleNewNotesAfterNavigation(relayGroupDB,hasNewNotes);
       },
       child: _buildStoryItem(
