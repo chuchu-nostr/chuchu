@@ -15,7 +15,12 @@ extension Notification on Feed {
         .sortByCreateAtDesc()
         .limit(limit)
         .findAll();
-    latestNotificationTime = notifications.first.createAt;
+    
+    // Only update latestNotificationTime if we have notifications
+    if (notifications.isNotEmpty) {
+      latestNotificationTime = notifications.first.createAt;
+    }
+    
     return notifications;
   }
 

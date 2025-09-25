@@ -7,6 +7,7 @@ import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/services/blossom_uploader.dart';
+import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
@@ -454,7 +455,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         await _uploadCoverPhoto();
       }
     } catch (e) {
-      _showMessage('Failed to pick image: $e', isError: true);
+      FeedWidgetsUtils.showMessage(context,'Failed to pick image: $e', isError: true);
     }
   }
 
@@ -474,7 +475,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         await _uploadAvatar();
       }
     } catch (e) {
-      _showMessage('Failed to pick avatar: $e', isError: true);
+      FeedWidgetsUtils.showMessage(context,'Failed to pick avatar: $e', isError: true);
     }
   }
 
@@ -545,24 +546,11 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
   }
 
-  void _showMessage(String message, {bool isError = false}) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        backgroundColor:
-            isError
-                ? Theme.of(context).colorScheme.error
-                : Theme.of(context).colorScheme.primary,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-    );
-  }
 
   Future<void> _saveProfile() async {
     // Validate inputs
     if (_usernameController.text.trim().isEmpty) {
-      _showMessage('Username cannot be empty', isError: true);
+      FeedWidgetsUtils.showMessage(context,'Username cannot be empty', isError: true);
       return;
     }
 
@@ -592,15 +580,15 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
       if (mounted) {
         if (event.status) {
-          _showMessage('Profile updated successfully');
+          FeedWidgetsUtils.showMessage(context,'Profile updated successfully');
           Navigator.of(context).pop(true); // Return true to indicate success
         } else {
-          _showMessage(event.message, isError: true);
+          FeedWidgetsUtils.showMessage(context,event.message, isError: true);
         }
       }
     } catch (e) {
       if (mounted) {
-        _showMessage('Error updating profile: $e', isError: true);
+        FeedWidgetsUtils.showMessage(context,'Error updating profile: $e', isError: true);
       }
     } finally {
       if (mounted) {
