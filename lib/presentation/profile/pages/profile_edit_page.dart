@@ -27,12 +27,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   static const double _avatarSize = 120.0;
   static const double _avatarIconSize = 60.0;
-  static const double _borderWidth = 2.0;
-  static const EdgeInsets _bodyPadding = EdgeInsets.all(20);
-  static const EdgeInsets _textFieldPadding = EdgeInsets.symmetric(
-    horizontal: 16,
-    vertical: 12,
-  );
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
@@ -74,25 +68,61 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   // Build app bar with close and save buttons
   PreferredSizeWidget _buildAppBar() {
+    final theme = Theme.of(context);
+    
     return AppBar(
-      title: const Text(_pageTitle),
+      title: Text(
+        _pageTitle,
+        style: TextStyle(
+          fontSize: 20,
+          fontWeight: FontWeight.w600,
+          color: theme.colorScheme.onSurface,
+        ),
+      ),
+      backgroundColor: theme.colorScheme.surface,
+      foregroundColor: theme.colorScheme.onSurface,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
       leading: IconButton(
-        icon: const Icon(Icons.close, size: 28),
+        icon: Icon(
+          Icons.close, 
+          size: 24,
+          color: theme.colorScheme.onSurface,
+        ),
         onPressed: () => Navigator.of(context).pop(),
       ),
       actions: [
         _isLoading
-            ? const Padding(
-              padding: EdgeInsets.all(14),
+            ? Padding(
+              padding: const EdgeInsets.all(16),
               child: SizedBox(
                 width: 20,
                 height: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             )
-            : IconButton(
-              icon: const Icon(Icons.check, size: 28),
-              onPressed: _saveProfile,
+            : Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ElevatedButton(
+                onPressed: _saveProfile,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.colorScheme.primary,
+                  foregroundColor: Colors.white,
+                  shape: const StadiumBorder(),
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  elevation: 0,
+                ),
+                child: const Text(
+                  'Save',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
             ),
       ],
     );
@@ -100,25 +130,32 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   // Build main body content
   Widget _buildBody() {
-    return SingleChildScrollView(
-      padding: _bodyPadding,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _buildAvatarSection(),
-          const SizedBox(height: 40),
-          _buildCoverPhotoSection(),
-          const SizedBox(height: 40),
-          _buildFormSection(),
-          const SizedBox(height: 40),
-          _subscriptionWidget(),
-        ],
+    final theme = Theme.of(context);
+    
+    return Scaffold(
+      backgroundColor: theme.colorScheme.surface,
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            _buildAvatarSection(),
+            const SizedBox(height: 32),
+            _buildCoverPhotoSection(),
+            const SizedBox(height: 32),
+            _buildFormSection(),
+            const SizedBox(height: 32),
+            _subscriptionWidget(),
+          ],
+        ),
       ),
     );
   }
 
   // Build avatar section
   Widget _buildAvatarSection() {
+    final theme = Theme.of(context);
+    
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -130,11 +167,18 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               height: _avatarSize,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Theme.of(context).colorScheme.surfaceVariant,
+                color: theme.colorScheme.surfaceContainerHighest,
                 border: Border.all(
-                  color: Theme.of(context).colorScheme.outline,
-                  width: _borderWidth,
+                  color: theme.colorScheme.outline.withOpacity(0.2),
+                  width: 3,
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
               ),
               child: Stack(
                 children: [
@@ -194,6 +238,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   // Build cover photo section
   Widget _buildCoverPhotoSection() {
+    final theme = Theme.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -203,16 +249,18 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           children: [
             Text(
               'Cover Photo',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
             TextButton(
               onPressed: _setImages,
               child: Text(
                 'Edit',
                 style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
+                  color: theme.colorScheme.primary,
                   fontSize: 16,
                   fontWeight: FontWeight.w500,
                 ),
@@ -220,27 +268,27 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             ),
           ],
         ),
+        const SizedBox(height: 12),
         // Cover photo display
         Container(
           width: double.infinity,
           height: 200,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              color: theme.colorScheme.outline.withOpacity(0.2),
               width: 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
-                spreadRadius: 1,
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(16),
             child: Stack(
               children: [
                 // Always show local image or placeholder
@@ -392,14 +440,18 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     required TextEditingController controller,
     int maxLines = 1,
   }) {
+    final theme = Theme.of(context);
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           label,
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: theme.colorScheme.onSurface,
+          ),
         ),
         const SizedBox(height: 12),
         _buildTextField(controller, maxLines: maxLines),
@@ -413,29 +465,47 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     String? hintText,
     int maxLines = 1,
   }) {
+    final theme = Theme.of(context);
+    
     return TextField(
       controller: controller,
       maxLines: maxLines,
+      style: TextStyle(
+        fontSize: 16,
+        color: theme.colorScheme.onSurface,
+        fontWeight: FontWeight.w400,
+      ),
       decoration: InputDecoration(
         hintText: hintText,
-        border: const OutlineInputBorder(
-          borderRadius: BorderRadius.all(Radius.circular(12)),
+        hintStyle: TextStyle(
+          color: theme.colorScheme.onSurface.withOpacity(0.6),
+          fontSize: 16,
+          fontWeight: FontWeight.w400,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.outline,
-            width: 1.5,
+            color: theme.colorScheme.outline.withOpacity(0.2),
+            width: 1,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          borderRadius: BorderRadius.circular(16),
           borderSide: BorderSide(
-            color: Theme.of(context).colorScheme.primary,
+            color: theme.colorScheme.primary,
             width: 2,
           ),
         ),
-        contentPadding: _textFieldPadding,
+        filled: true,
+        fillColor: theme.colorScheme.surfaceContainerHighest,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 16,
+        ),
       ),
     );
   }
