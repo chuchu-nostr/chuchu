@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 
 import '../../../core/wallet/wallet.dart';
 import '../../../core/widgets/common_toast.dart';
+import '../../../core/account/relays.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../drawerMenu/subscription/widgets/subscription_payment_dialog.dart';
 
 enum ESubscriptionStatus {
@@ -550,14 +552,47 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
   }
 
   /// Handle successful payment
-  void _handlePaymentSuccess(String groupId, int months) {
-    // TODO: Update subscription status in database
-    // TODO: Refresh UI to show active subscription
-    print('Payment successful for group $groupId, months: $months');
-    CommonToast.instance.show(context, 'Subscription payment successful!');
-    if (widget.onSubscriptionSuccess != null) {
-      widget.onSubscriptionSuccess!();
+  void _handlePaymentSuccess(String groupId, int months) async {
+    try {
+      print('Payment successful for group $groupId, months: $months');
+      
+      // Sync my groups from relays to get the latest data
+      await _syncMyGroupsFromRelays();
+      
+      CommonToast.instance.show(context, 'Subscription payment successful!');
+      
+      if (widget.onSubscriptionSuccess != null) {
+        widget.onSubscriptionSuccess!();
+      }
+      
+      Navigator.pop(context);
+    } catch (e) {
+      print('Error handling payment success: $e');
+      CommonToast.instance.show(context, 'Payment successful but failed to sync groups');
+      Navigator.pop(context);
     }
-    Navigator.pop(context);
+  }
+
+  /// Sync my groups from relays
+  Future<void> _syncMyGroupsFromRelays() async {
+    try {
+      // Get the recommend group relays
+      final relays = Relays.sharedInstance.recommendGroupRelays;
+      
+      if (relays.isNotEmpty) {
+        // Call searchMyGroupsMetadataFromRelays to sync my groups
+        // This method will automatically sync myGroups
+        final groups = await RelayGroup.sharedInstance.searchMyGroupsMetadataFromRelays(
+          relays,
+          (groups) {
+            print('Synced ${groups.length} groups from relays');
+          },
+        );
+        print('Successfully synced ${groups.length} groups from relays');
+      }
+    } catch (e) {
+      print('Error syncing my groups from relays: $e');
+      rethrow;
+    }
   }
 }

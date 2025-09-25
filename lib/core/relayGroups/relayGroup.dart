@@ -84,6 +84,7 @@ class RelayGroup {
       }
     });
     await _loadAllGroupsFromDB();
+    await searchMyGroupsMetadataFromRelays(groupRelays, null);
     updateGroupSubscription();
   }
 

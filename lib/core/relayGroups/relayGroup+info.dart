@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chuchu/core/relayGroups/relayGroup.dart';
+import 'package:flutter/foundation.dart';
 import 'package:isar/isar.dart';
 
 import '../account/account.dart';
@@ -241,6 +242,53 @@ extension EInfo on RelayGroup {
       Connect.sharedInstance.closeConnects([relay], RelayKind.temp);
       if (!completer.isCompleted) {
         completer.complete(RelayGroupDBISAR(groupId: groupId, relay: relay));
+      }
+    });
+    return completer.future;
+  }
+
+  Future<List<RelayGroupDBISAR>> searchMyGroupsMetadataFromRelays(
+      List<String> relays, GroupSearchCallBack? groupCallback) async {
+    if (relays.isEmpty) return [];
+    Map<String, RelayGroupDBISAR> result = {};
+    List<RelayGroupDBISAR> resultFromDB = await searchGroupsFromDB(relays);
+    for (var db in resultFromDB) {
+      result[db.groupId] = db;
+    }
+    groupCallback?.call(resultFromDB);
+    await Connect.sharedInstance.connectRelays(relays, relayKind: RelayKind.temp);
+    Completer<List<RelayGroupDBISAR>> completer = Completer<List<RelayGroupDBISAR>>();
+    Filter f = Filter(kinds: [39002], p: [pubkey]);
+    Connect.sharedInstance.addSubscription([f], relays: relays,
+        eventCallBack: (event, relay) async {
+      RelayGroupDBISAR? groupDB;
+      if (event.kind == 39000) {
+        groupDB = handleGroupMetadata(event, relay);
+      } else if (event.kind == 39002) {
+        groupDB = handleGroupMembers(event, relay);
+      }
+      if (groupDB != null) {
+        result[groupDB.groupId] = groupDB;
+      }
+    }, eoseCallBack: (requestId, ok, relay, unCompletedRelays) async {
+      // for (var groupDB in List.from(result.values.toList())) {
+      //   groupDB = await searchGroupMembersFromRelays(groupDB);
+      //   result[groupDB.groupId] = groupDB;
+      // }
+      
+      // Reset myGroups with the result groups
+      if (unCompletedRelays.isEmpty) {
+        myGroups.clear();
+        for (var groupDB in result.values) {
+          myGroups[groupDB.groupId] = ValueNotifier<RelayGroupDBISAR>(groupDB);
+        }
+        // Sync to database
+        await syncMyGroupListToRelay();
+      }
+      
+      groupCallback?.call(result.values.toList());
+      if (unCompletedRelays.isEmpty && !completer.isCompleted) {
+        completer.complete(result.values.toList());
       }
     });
     return completer.future;
