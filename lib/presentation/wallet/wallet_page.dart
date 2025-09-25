@@ -1509,6 +1509,7 @@ class _WalletPageState extends State<WalletPage> {
       context: context,
       builder:
           (context) => AlertDialog(
+            insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
             title: Text('Invoice Created'),
             content: Column(
               mainAxisSize: MainAxisSize.min,
@@ -1551,16 +1552,35 @@ class _WalletPageState extends State<WalletPage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  Clipboard.setData(ClipboardData(text: invoice.bolt11));
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Invoice copied to clipboard')),
-                  );
+                  _copyToClipboard(invoice.bolt11);
                 },
                 child: Text('Copy'),
               ),
             ],
           ),
     );
+  }
+
+  /// Copy text to clipboard
+  Future<void> _copyToClipboard(String text) async {
+    try {
+      await Clipboard.setData(ClipboardData(text: text));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Copied to clipboard'),
+          backgroundColor: Colors.green,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to copy to clipboard'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _showScanDialog() {
