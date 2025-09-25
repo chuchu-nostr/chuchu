@@ -3,6 +3,7 @@ import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/core/manager/chuchu_user_info_manager.dart';
+import 'package:chuchu/core/utils/feed_widgets_utils.dart';
 import '../../home/pages/home_page.dart';
 
 class LoginForm extends StatefulWidget {
@@ -171,46 +172,39 @@ class _LoginFormState extends State<LoginForm> {
       return;
     }
     
-    final privKey = UserDBISAR.decodePrivkey(input);
+    try {
+      final privKey = UserDBISAR.decodePrivkey(input);
 
-    if (privKey == null) {
-      setState(() {
-        _hasError = true;
-        _errorMessage = 'Invalid private key format. Please check your input.';
-      });
-      return;
+      if (privKey == null) {
+        FeedWidgetsUtils.showMessage(context, 'Invalid private key format. Please check your input and try again.');
+        return;
+      }
+
+      final pubKey = Account.getPublicKey(privKey);
+      final ChuChuUserInfoManager instance = ChuChuUserInfoManager.sharedInstance;
+      final currentUserPubKey = instance.currentUserInfo?.pubKey ?? '';
+
+      await instance.initDB(pubKey);
+
+      var userDB = await Account.sharedInstance.loginWithPriKey(privKey);
+      userDB = await instance.handleSwitchFailures(
+        userDB,
+        currentUserPubKey,
+      );
+
+      if (userDB == null) {
+        FeedWidgetsUtils.showMessage(context, 'Login failed. Please check your credentials and try again.');
+        return;
+      }
+
+      ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
+      ChuChuNavigator.pushReplacement(context, const HomePage());
+      
+    } catch (e) {
+      print('Login error: $e');
+      FeedWidgetsUtils.showMessage(context, 'Login error occurred. Please check your private key format and try again.');
     }
-
-    final pubKey = Account.getPublicKey(privKey);
-    final ChuChuUserInfoManager instance = ChuChuUserInfoManager.sharedInstance;
-    final currentUserPubKey = instance.currentUserInfo?.pubKey ?? '';
-
-    await instance.initDB(pubKey);
-
-    var userDB = await Account.sharedInstance.loginWithPriKey(privKey);
-    userDB = await instance.handleSwitchFailures(
-      userDB,
-      currentUserPubKey,
-    );
-
-    if (userDB == null) {
-      setState(() {
-        _hasError = true;
-        _errorMessage = 'Private key validation failed. Please check your credentials.';
-      });
-      return;
-    }
-
-    ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
-    ChuChuNavigator.pushReplacement(context, const HomePage());
   }
 
-  void _showSnack(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(msg),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
+
 } 
