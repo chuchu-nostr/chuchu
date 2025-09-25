@@ -13,14 +13,12 @@ import '../../../core/nostr_dart/src/nips/nip_019.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
-import '../../../core/widgets/common_toast.dart';
 import '../../backup/pages/backup_page.dart';
 import '../../creator/pages/create_creator_page.dart';
 import '../../feed/pages/feed_personal_page.dart';
 import '../../relay/pages/relay_pages.dart';
 import '../../search/pages/search_page.dart';
 import '../../wallet/wallet_page.dart';
-import '../../drawerMenu/subscription/pages/subscription_settings_page.dart';
 
 class DrawerMenu extends StatefulWidget {
   const DrawerMenu({super.key});
@@ -144,10 +142,65 @@ class _DrawerMenuState extends State<DrawerMenu>
               Icons.person_outline,
               "My Posts",
               onTap: () {
-                Navigator.of(context).pop(); // Close drawer first
                 RelayGroupDBISAR? myRelayGroup = RelayGroup.sharedInstance.myGroups[Account.sharedInstance.currentPubkey]?.value;
                 if(myRelayGroup == null){
-                  CommonToast.instance.show(context, "Creator not enabled");
+                  Navigator.of(context).pop(); // Close drawer first
+                  showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return AlertDialog(
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                        title: Row(
+                          children: [
+                            Icon(
+                              Icons.star,
+                              color: Theme.of(context).colorScheme.primary,
+                              size: 28,
+                            ),
+                            const SizedBox(width: 12),
+                            const Text('Become a Creator'),
+                          ],
+                        ),
+                        content: const Text(
+                          'You need to become a creator to post content. Create your creator profile to start sharing with your audience!',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                            },
+                            child: const Text(
+                              'Cancel',
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              Navigator.of(context).pop();
+                              Navigator.of(context).push(
+                                FeedWidgetsUtils.createSlideTransition(
+                                  pageBuilder: (context, animation, secondaryAnimation) => CreateCreatorPage(),
+                                ),
+                              );
+                            },
+                            style: ElevatedButton.styleFrom(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                            ),
+                            child: const Text(
+                              'Become Creator',
+                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  );
                   return;
                 }
                 ChuChuNavigator.pushPage(

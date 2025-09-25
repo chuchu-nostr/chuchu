@@ -9,6 +9,7 @@ import 'dart:ui';
 import '../../../core/account/account.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
+import '../../../core/utils/feed_widgets_utils.dart';
 import '../../drawerMenu/subscription/pages/subscription_settings_page.dart';
 import '../../feed/pages/create_feed_page.dart';
 import '../../feed/pages/feed_notifications_page.dart';
@@ -401,7 +402,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         if (hasExistingGroup) {
           _navigateToCreatePost();
         } else {
-          _showBecomeCreatorDialog();
+          FeedWidgetsUtils.showBecomeCreatorDialog(context,callback:_navigateToCreateCreator);
         }
       },
       child: Container(
@@ -441,7 +442,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   void _navigateToCreatePost() {
     Navigator.of(context).push(
-      _createSlideTransition(
+      FeedWidgetsUtils.createSlideTransition(
         pageBuilder: (context, animation, secondaryAnimation) => CreateFeedPage(),
       ),
     );
@@ -449,90 +450,12 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
 
   void _navigateToCreateCreator()async {
     final result = await Navigator.of(context).push(
-      _createSlideTransition(
+      FeedWidgetsUtils.createSlideTransition(
         pageBuilder: (context, animation, secondaryAnimation) => CreateCreatorPage(),
       ),
     );
     if(result != null && result){
       setState(() {});
     }
-  }
-
-  PageRouteBuilder _createSlideTransition({
-    required Widget Function(BuildContext, Animation<double>, Animation<double>) pageBuilder,
-  }) {
-    return PageRouteBuilder(
-      pageBuilder: pageBuilder,
-      transitionsBuilder: (context, animation, secondaryAnimation, child) {
-        const begin = Offset(0.0, 1.0);
-        const end = Offset.zero;
-        const curve = Curves.easeInOut;
-        
-        var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
-        var offsetAnimation = animation.drive(tween);
-        
-        return SlideTransition(
-          position: offsetAnimation,
-          child: child,
-        );
-      },
-      transitionDuration: const Duration(milliseconds: 300),
-      reverseTransitionDuration: const Duration(milliseconds: 250),
-    );
-  }
-
-  void _showBecomeCreatorDialog() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Row(
-            children: [
-              Icon(
-                Icons.star,
-                color: Theme.of(context).colorScheme.primary,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              const Text('Become a Creator'),
-            ],
-          ),
-          content: const Text(
-            'You need to become a creator to post content. Create your creator profile to start sharing with your audience!',
-            style: TextStyle(fontSize: 16),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text(
-                'Cancel',
-                style: TextStyle(fontSize: 16),
-              ),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                _navigateToCreateCreator();
-              },
-              style: ElevatedButton.styleFrom(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              ),
-              child: const Text(
-                'Become Creator',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
-          ],
-        );
-      },
-    );
   }
 }
