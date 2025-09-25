@@ -225,8 +225,8 @@ class _DrawerMenuState extends State<DrawerMenu>
             ),
             _menuItem(
               context,
-              Icons.link,
-              "Relays",
+              Icons.dns,
+              "Servers",
               onTap: () {
                 Navigator.of(context).pop(); // Close drawer first
                 ChuChuNavigator.pushPage(context, (context) => RelaysPage());

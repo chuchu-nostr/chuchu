@@ -67,7 +67,7 @@ class _RelaysPageState extends State<RelaysPage> with WidgetsBindingObserver, Na
       appBar: AppBar(
         centerTitle: true,
         title: Text(
-          'Relays',
+          'Servers',
           style: theme.textTheme.titleLarge?.copyWith(
             fontWeight: FontWeight.w600,
           ),
@@ -105,7 +105,7 @@ class _RelaysPageState extends State<RelaysPage> with WidgetsBindingObserver, Na
                         padding: EdgeInsets.only(top: 32.px, bottom: 16.px),
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'CHUCHU RELAYS',
+                          'Relays',
                           style: TextStyle(
                             color: Theme.of(context).colorScheme.onSurface,
                             fontSize: 16.px,
@@ -134,6 +134,22 @@ class _RelaysPageState extends State<RelaysPage> with WidgetsBindingObserver, Na
                           padding: EdgeInsets.zero,
                         ),
                       ),
+                      SizedBox(height: 32.px),
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.only(bottom: 16.px),
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'File Server',
+                          style: TextStyle(
+                            color: Theme.of(context).colorScheme.onSurface,
+                            fontSize: 16.px,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                      _buildFileServerSection(),
                     ],
                   ).setPadding(EdgeInsets.symmetric(horizontal: 18.0)),
                 ],
@@ -239,6 +255,83 @@ class _RelaysPageState extends State<RelaysPage> with WidgetsBindingObserver, Na
   @override
   void didPopNext() {
     _pingLifecycleController.isPaused.value = false;
+  }
+
+  Widget _buildFileServerSection() {
+    final theme = Theme.of(context);
+    
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16.px),
+        color: theme.colorScheme.surface,
+        boxShadow: [
+          BoxShadow(
+            color: theme.shadowColor.withValues(alpha: 0.05),
+            blurRadius: 8.px,
+            offset: Offset(0, 2.px),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 20.px, vertical: 16.px),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(8.px),
+                  decoration: BoxDecoration(
+                    color: theme.colorScheme.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12.px),
+                  ),
+                  child: Icon(
+                    Icons.storage,
+                    size: 24.px,
+                    color: theme.colorScheme.primary,
+                  ),
+                ),
+                Expanded(
+                  child: Container(
+                    margin: EdgeInsets.symmetric(horizontal: 16.px),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'File Storage Server',
+                          style: TextStyle(
+                            color: theme.colorScheme.onSurface,
+                            fontSize: 16.px,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        PingDelayTimeWidget(
+                          host: 'file.chuchu.app',
+                          controller: _pingLifecycleController,
+                        ).setPaddingOnly(top: 6.px)
+                      ],
+                    ),
+                  ),
+                ),
+                // Show connection status (read-only)
+                Container(
+                  padding: EdgeInsets.all(8.px),
+                  decoration: BoxDecoration(
+                    color: Colors.green.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(8.px),
+                  ),
+                  child: Icon(
+                    Icons.check_circle,
+                    size: 20.px,
+                    color: Colors.green,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
