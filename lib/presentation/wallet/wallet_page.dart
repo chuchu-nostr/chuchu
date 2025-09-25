@@ -565,53 +565,51 @@ class _WalletPageState extends State<WalletPage> {
                 ),
 
                 // Amount and status
-                Flexible(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // Amount
-                      Text(
-                        '${tx.isIncoming ? '+' : '-'}${tx.amount} sats',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          color:
-                              tx.isIncoming
-                                  ? Colors.green[600]
-                                  : Colors.red[600],
-                        ),
-                        textAlign: TextAlign.end,
-                        overflow: TextOverflow.ellipsis,
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Amount
+                    Text(
+                      '${tx.isIncoming ? '+' : '-'}${tx.amount} sats',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color:
+                        tx.isIncoming
+                            ? Colors.green[600]
+                            : Colors.red[600],
                       ),
-                      SizedBox(height: 4),
+                      textAlign: TextAlign.end,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4),
 
-                      // Status badge
-                      Container(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 3,
-                        ),
-                        decoration: BoxDecoration(
-                          color: _getStatusColor(tx.status).withOpacity(0.1),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: _getStatusColor(tx.status).withOpacity(0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          _getStatusText(tx.status),
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w600,
-                            color: _getStatusColor(tx.status),
-                          ),
+                    // Status badge
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 3,
+                      ),
+                      decoration: BoxDecoration(
+                        color: _getStatusColor(tx.status).withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(
+                          color: _getStatusColor(tx.status).withOpacity(0.3),
+                          width: 1,
                         ),
                       ),
-                    ],
-                  ),
-                ),
+                      child: Text(
+                        _getStatusText(tx.status),
+                        style: TextStyle(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w600,
+                          color: _getStatusColor(tx.status),
+                        ),
+                      ),
+                    ),
+                  ],
+                )
               ],
             ),
           ),
