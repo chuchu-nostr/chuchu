@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'package:chuchu/core/relayGroups/relayGroup+admin.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class ProfileEditPage extends StatefulWidget {
@@ -18,8 +21,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   static const String _usernameLabel = 'Username';
   static const String _aboutLabel = 'About';
   static const String _setAvatarText = 'Set Avatar';
-  static const String _profileSavedMessage = 'Profile saved successfully';
-  static const String _saveFailedMessage = 'Failed to save profile';
 
   static const double _avatarSize = 120.0;
   static const double _avatarIconSize = 60.0;
@@ -425,34 +426,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
   }
 
-  Future<void> _saveProfile() async {
-    // Validate inputs
-    if (_usernameController.text.trim().isEmpty) {
-      _showMessage('Username cannot be empty', isError: true);
-      return;
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      // TODO: Implement actual profile save logic
-      await Future.delayed(const Duration(seconds: 1));
-
-      if (mounted) {
-        _showMessage(_profileSavedMessage);
-        Navigator.of(context).pop(true); // Return true to indicate success
-      }
-    } catch (e) {
-      if (mounted) {
-        _showMessage('$_saveFailedMessage: $e', isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
-    }
-  }
-
   void _showMessage(String message, {bool isError = false}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -465,5 +438,55 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
       ),
     );
+  }
+
+  Future<void> _saveProfile() async {
+    // Validate inputs
+    if (_usernameController.text.trim().isEmpty) {
+      _showMessage('Username cannot be empty', isError: true);
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      RelayGroupDBISAR relayGroup = widget.relayGroup;
+
+      // Prepare updated parameters
+      final updatedName = _usernameController.text.trim();
+      final updatedAbout = _aboutController.text.trim();
+      final updatedPicture = _selectedAvatarPath ?? relayGroup.picture;
+      final updatedSubscriptionAmount = subscriptionPrice;
+
+      // Call editMetadata with user input parameters
+      OKEvent event = await RelayGroup.sharedInstance.editMetadata(
+        relayGroup.groupId,
+        updatedName,
+        updatedAbout,
+        updatedPicture,
+        relayGroup.closed,
+        relayGroup.private,
+        'Profile updated',
+        subscriptionAmount: updatedSubscriptionAmount,
+        groupWalletId: relayGroup.groupWalletId,
+      );
+
+      if (mounted) {
+        if (event.status) {
+          _showMessage('Profile updated successfully');
+          Navigator.of(context).pop(true); // Return true to indicate success
+        } else {
+          _showMessage(event.message, isError: true);
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        _showMessage('Error updating profile: $e', isError: true);
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
+    }
   }
 }
