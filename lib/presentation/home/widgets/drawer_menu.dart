@@ -188,24 +188,24 @@ class _DrawerMenuState extends State<DrawerMenu>
                 ChuChuNavigator.pushPage(context, (context) => SearchPage());
               },
             ),
-            _menuItem(
-              context,
-              Icons.subscriptions,
-              "Subscription Settings",
-              onTap: () {
-                Navigator.of(context).pop(); // Close drawer first
-                ChuChuNavigator.pushPage(context, (context) => const SubscriptionSettingsPage());
-              },
-            ),
-            _menuItem(
-              context,
-              Icons.star_outline,
-              "Creator Center",
-              onTap: () {
-                Navigator.of(context).pop(); // Close drawer first
-                ChuChuNavigator.pushPage(context, (context) => const CreateCreatorPage());
-              },
-            ),
+            // _menuItem(
+            //   context,
+            //   Icons.subscriptions,
+            //   "Subscription Settings",
+            //   onTap: () {
+            //     Navigator.of(context).pop(); // Close drawer first
+            //     ChuChuNavigator.pushPage(context, (context) => const SubscriptionSettingsPage());
+            //   },
+            // ),
+            // _menuItem(
+            //   context,
+            //   Icons.star_outline,
+            //   "Creator Center",
+            //   onTap: () {
+            //     Navigator.of(context).pop(); // Close drawer first
+            //     ChuChuNavigator.pushPage(context, (context) => const CreateCreatorPage());
+            //   },
+            // ),
             
 
             Divider(color: theme.dividerColor.withAlpha(50)),
