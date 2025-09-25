@@ -7,6 +7,7 @@ import '../../../core/wallet/wallet.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../core/account/relays.dart';
 import '../../../core/relayGroups/relayGroup.dart';
+import '../../../core/relayGroups/relayGroup+info.dart';
 import '../../drawerMenu/subscription/widgets/subscription_payment_dialog.dart';
 
 enum ESubscriptionStatus {
