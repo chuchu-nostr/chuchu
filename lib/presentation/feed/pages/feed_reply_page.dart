@@ -43,11 +43,20 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
-        elevation: 0.5,
+        foregroundColor: theme.colorScheme.onSurface,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
         leadingWidth: 100,
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(fontSize: 16)),
+          child: Text(
+            'Cancel', 
+            style: TextStyle(
+              color: theme.colorScheme.onSurface,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
         actions: [
           Padding(
@@ -61,7 +70,13 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 elevation: 0,
               ),
-              child: const Text('Publish', style: TextStyle(fontSize: 16)),
+              child: const Text(
+                'Publish', 
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ),
           ),
         ],
@@ -73,21 +88,38 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           // Reply input area
           Expanded(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18),
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const CommonImage(iconName: 'icon_user_default.png',size: 40,),
-                  const SizedBox(width: 10),
+                  CircleAvatar(
+                    radius: 24,
+                    backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+                    child: Icon(
+                      Icons.person, 
+                      color: theme.colorScheme.primary,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
                   Expanded(
                     child: TextField(
                       controller: _textController,
                       maxLines: null,
                       minLines: 3,
-                      decoration: const InputDecoration(
+                      style: TextStyle(
+                        fontSize: 18,
+                        color: theme.colorScheme.onSurface,
+                        fontWeight: FontWeight.w400,
+                      ),
+                      decoration: InputDecoration(
                         hintText: 'Post your reply',
+                        hintStyle: TextStyle(
+                          color: theme.colorScheme.onSurface.withOpacity(0.6),
+                          fontSize: 18,
+                          fontWeight: FontWeight.w400,
+                        ),
                         border: InputBorder.none,
-                        hintStyle: TextStyle(color: Colors.grey, fontSize: 16),
                       ),
                     ),
                   ),
@@ -99,13 +131,48 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           SafeArea(
             child: Padding(
               padding: EdgeInsets.only(
-                left: 8.px,
-                bottom: MediaQuery.of(context).viewInsets.bottom,
+                left: 18,
+                right: 18,
+                bottom: MediaQuery.of(context).viewInsets.bottom + 8,
               ),
-              child: Row(
-                children: [
-                  IconButton(icon: const Icon(Icons.image), onPressed: () {}),
-                ],
+              child: Container(
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: theme.colorScheme.outline.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {},
+                      child: Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Icon(
+                          Icons.image,
+                          color: theme.colorScheme.primary,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Add medias',
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
