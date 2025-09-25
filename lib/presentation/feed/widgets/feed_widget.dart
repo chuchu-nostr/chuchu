@@ -1,9 +1,12 @@
+import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
+import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
@@ -69,6 +72,8 @@ class _FeedWidgetState extends State<FeedWidget> {
   static const double _mediaWidthRatio = 0.64;
 
   NotedUIModel? notedUIModel;
+
+  RelayGroupDBISAR? relayGroup;
 
   ThemeData? _cachedTheme;
   MediaQueryData? _cachedMediaQuery;
@@ -196,12 +201,14 @@ class _FeedWidgetState extends State<FeedWidget> {
     return RepaintBoundary(
       child: GestureDetector(
         onTap: () {
-          if (notedUIModel != null) {
-            // ChuChuNavigator.pushPage(
-            //   context,
-            //   (context) =>
-            //       FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author),
-            // );
+          if (relayGroup != null) {
+            ChuChuNavigator.pushPage(
+              context,
+              (context) =>
+                  FeedPersonalPage(relayGroupDB: relayGroup!),
+            );
+          }else {
+            CommonToast.instance.show(context, "The creator couldn't be found");
           }
         },
         child: FeedWidgetsUtils.clipImage(
@@ -450,13 +457,23 @@ class _FeedWidgetState extends State<FeedWidget> {
   Future<void> _dataInit() async {
     final model = widget.notedUIModel;
     if (model == null) return;
-
+    getRelayGroup();
     notedUIModel = model;
     await _getFeedUserInfo(model);
 
     Future.microtask(() {
       if (mounted) setState(() {});
     });
+  }
+
+  void getRelayGroup() {
+    Map<String, ValueNotifier<RelayGroupDBISAR>> groupMap =  RelayGroup.sharedInstance.groups;
+    if(groupMap[widget.notedUIModel?.noteDB.author] != null){
+      relayGroup = groupMap[widget.notedUIModel?.noteDB.author]!.value;
+    }
+    if(mounted){
+      setState(() {});
+    }
   }
 
   Future<void> _getFeedUserInfo(NotedUIModel model) async {
