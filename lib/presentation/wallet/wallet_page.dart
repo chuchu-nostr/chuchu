@@ -959,103 +959,217 @@ class _WalletPageState extends State<WalletPage> {
 
     showDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+      builder: (context) => Dialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+        ),
+        elevation: 8,
+        child: SingleChildScrollView(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
-            elevation: 8,
-            child: Container(
-              padding: EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.white, Colors.grey[50]!],
-                ),
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Colors.grey[50]!],
               ),
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+              },
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   // Header with icon
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.withOpacity(0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.payment_rounded,
-                      size: 32,
-                      color: Colors.orange[600],
-                    ),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.payment_rounded,
+                        size: 24,
+                        color: Colors.orange[600],
+                      ),
+                      SizedBox(width: 12),
+                      // Title
+                      Text(
+                        'Confirm Payment',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey[800],
+                        ),
+                      ),
+                    ],
                   ),
                   SizedBox(height: 20),
 
-                  // Title
-                  Text(
-                    'Confirm Payment',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
-                  SizedBox(height: 8),
-
-                  // Subtitle
-                  Text(
-                    'Review payment details before sending',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                    textAlign: TextAlign.center,
-                  ),
-                  SizedBox(height: 24),
-
                   // Payment details card
                   Container(
-                    padding: EdgeInsets.all(20),
                     decoration: BoxDecoration(
-                      color: Colors.grey[50],
                       borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[200]!),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.1),
+                          spreadRadius: 1,
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
                     ),
                     child: Column(
                       children: [
-                        _buildPaymentDetailRow('Amount', '$amount sats'),
+                        // Amount field
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[50],
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: Colors.grey[200]!, width: 1),
+                          ),
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.bolt_rounded,
+                                color: Colors.green[600],
+                                size: 24,
+                              ),
+                              SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Amount',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey[600],
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      '$amount sats',
+                                      style: TextStyle(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.grey[800],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.green[100],
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'Lightning',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w600,
+                                    color: Colors.green[700],
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
                         if (description.isNotEmpty) ...[
                           SizedBox(height: 12),
-                          _buildPaymentDetailRow('Description', description),
+                          Container(
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.grey[200]!, width: 1),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.description_rounded,
+                                  color: Colors.blue[600],
+                                  size: 24,
+                                ),
+                                SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Description',
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey[600],
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        description,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w500,
+                                          color: Colors.grey[800],
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ],
                       ],
                     ),
                   ),
-                  SizedBox(height: 32),
+
+                  SizedBox(height: 12),
+
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      'Review payment details before sending',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.grey[600],
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  SizedBox(height: 24),
 
                   // Action buttons
                   Row(
                     children: [
-                      Expanded(
-                        child: Container(
-                          height: 50,
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.pop(context),
-                            style: OutlinedButton.styleFrom(
-                              side: BorderSide(
-                                color: Colors.grey[300]!,
-                                width: 1.5,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
+                      Container(
+                        height: 50,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: Colors.grey[300]!,
+                              width: 1.5,
                             ),
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[600],
-                              ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.grey[600],
                             ),
                           ),
                         ),
@@ -1097,50 +1211,11 @@ class _WalletPageState extends State<WalletPage> {
               ),
             ),
           ),
+        ),
+      ),
     );
   }
 
-  Widget _buildPaymentDetailRow(String label, String value) {
-    return Container(
-      padding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[200]!),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(6),
-            ),
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ),
-          SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w500,
-                color: Colors.grey[800],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   Future<void> _sendPayment(String invoice, String description) async {
     Navigator.pop(context); // Close confirm dialog
