@@ -93,12 +93,22 @@ class _WalletPageState extends State<WalletPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Wallet'),
-        backgroundColor: Theme.of(context).colorScheme.primary,
-        foregroundColor: Colors.white,
+        title: Text(
+          'Wallet',
+          style: TextStyle(
+            color: Colors.black87,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        // backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Colors.black87,
         actions: [
           IconButton(
-            icon: Icon(Icons.refresh),
+            icon: Icon(
+              Icons.refresh,
+              color: Theme.of(context).colorScheme.primary,
+            ),
             onPressed: _isLoading ? null : _refreshData,
           ),
         ],
@@ -265,7 +275,7 @@ class _WalletPageState extends State<WalletPage> {
               ],
             ),
             SizedBox(height: 16),
-            
+
             // Action buttons
             Row(
               children: [
@@ -331,10 +341,7 @@ class _WalletPageState extends State<WalletPage> {
             decoration: BoxDecoration(
               color: color.withOpacity(0.05),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: color.withOpacity(0.2),
-                width: 1,
-              ),
+              border: Border.all(color: color.withOpacity(0.2), width: 1),
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -345,11 +352,7 @@ class _WalletPageState extends State<WalletPage> {
                     color: color.withOpacity(0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(
-                    icon,
-                    color: color,
-                    size: 24,
-                  ),
+                  child: Icon(icon, color: color, size: 24),
                 ),
                 SizedBox(height: 8),
                 Text(
