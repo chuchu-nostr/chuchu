@@ -61,7 +61,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 elevation: 0,
               ),
-              child: const Text('Push', style: TextStyle(fontSize: 16)),
+              child: const Text('Publish', style: TextStyle(fontSize: 16)),
             ),
           ),
         ],

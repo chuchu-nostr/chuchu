@@ -262,24 +262,51 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0.5,
-        leadingWidth: 75,
+        backgroundColor: theme.colorScheme.surface,
+        foregroundColor: theme.colorScheme.onSurface,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        leadingWidth: 100,
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel', style: TextStyle(color: Colors.black)),
+          child: Text(
+            'Cancel', 
+            style: TextStyle(
+              color: theme.colorScheme.onSurface,
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
         ),
         actions: [
-          TextButton(
-            onPressed: _postMoment,
-            child: const Text('Push'),
+          Padding(
+            padding: const EdgeInsets.only(right: 12),
+            child: ElevatedButton(
+              onPressed: _postMoment,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: theme.colorScheme.primary,
+                foregroundColor: Colors.white,
+                shape: const StadiumBorder(),
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                elevation: 0,
+              ),
+              child: const Text(
+                'Publish', 
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
           ),
         ],
       ),
-      backgroundColor: Colors.white,
+      backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: Column(
           children: [
@@ -291,24 +318,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                     _buildTextInputArea(), 
                     _buildImageDisplayArea(),
                     _buildVideoDisplayArea(),
-                  ],
-                ),
-              ),
-            ),
-
-            Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
-              child: Container(
-                color: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                child: Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.image),
-                      onPressed: _pickImages,
-                    ),
+                    _buildMediaToolbar(),
                   ],
                 ),
               ),
@@ -320,24 +330,95 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   }
 
   Widget _buildTextInputArea() {
+    final theme = Theme.of(context);
+    
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12.0),
+      padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const CircleAvatar(
-            radius: 20,
-            backgroundColor: Colors.grey,
-            child: Icon(Icons.person, color: Colors.white),
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
+            child: Icon(
+              Icons.person, 
+              color: theme.colorScheme.primary,
+              size: 24,
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 16),
           Expanded(
             child: TextField(
               controller: _controller,
               maxLines: null,
-              decoration: const InputDecoration(
+              style: TextStyle(
+                fontSize: 18,
+                color: theme.colorScheme.onSurface,
+                fontWeight: FontWeight.w400,
+              ),
+              decoration: InputDecoration(
                 hintText: "What's new?",
+                hintStyle: TextStyle(
+                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                  fontSize: 18,
+                  fontWeight: FontWeight.w400,
+                ),
                 border: InputBorder.none,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMediaToolbar() {
+    final theme = Theme.of(context);
+    
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 8.0),
+      child: Row(
+        children: [
+          const SizedBox(width: 40), // Align with text input
+          Expanded(
+            child: Container(
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: theme.colorScheme.outline.withOpacity(0.2),
+                  width: 1,
+                ),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              child: GestureDetector(
+                onTap: _pickImages,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: theme.colorScheme.primary.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Icon(
+                        Icons.image,
+                        color: theme.colorScheme.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Text(
+                      'Add medias',
+                      style: TextStyle(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -348,48 +429,76 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   Widget _buildImageDisplayArea() {
     if (_selectedImages.isEmpty) return const SizedBox();
+    final theme = Theme.of(context);
+    
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(scale: animation, child: child),
-          );
-        },
-        child:
-            _selectedImages.length == 1
-                ? _buildSingleImage(
-                  _selectedImages[0],
-                  0,
-                  key: const ValueKey('single'),
-                )
-                : _buildImageCarousel(key: const ValueKey('multi')),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: theme.colorScheme.outline.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(scale: animation, child: child),
+              );
+            },
+            child:
+                _selectedImages.length == 1
+                    ? _buildSingleImage(
+                      _selectedImages[0],
+                      0,
+                      key: const ValueKey('single'),
+                    )
+                    : _buildImageCarousel(key: const ValueKey('multi')),
+          ),
+        ),
       ),
     );
   }
 
   Widget _buildVideoDisplayArea() {
     if (_selectedVideos.isEmpty) return const SizedBox();
+    final theme = Theme.of(context);
+    
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 300),
-        transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: ScaleTransition(scale: animation, child: child),
-          );
-        },
-        child:
-            _selectedVideos.length == 1
-                ? _buildSingleVideo(
-                  _selectedVideos[0],
-                  0,
-                  key: const ValueKey('single_video'),
-                )
-                : _buildVideoCarousel(key: const ValueKey('multi_video')),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: theme.colorScheme.outline.withOpacity(0.2),
+            width: 1,
+          ),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: AnimatedSwitcher(
+            duration: const Duration(milliseconds: 300),
+            transitionBuilder: (child, animation) {
+              return FadeTransition(
+                opacity: animation,
+                child: ScaleTransition(scale: animation, child: child),
+              );
+            },
+            child:
+                _selectedVideos.length == 1
+                    ? _buildSingleVideo(
+                      _selectedVideos[0],
+                      0,
+                      key: const ValueKey('single_video'),
+                    )
+                    : _buildVideoCarousel(key: const ValueKey('multi_video')),
+          ),
+        ),
       ),
     );
   }
