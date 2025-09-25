@@ -6,6 +6,8 @@ import 'package:image_picker/image_picker.dart';
 import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
+import '../../../core/services/blossom_uploader.dart';
+import '../../../core/widgets/common_toast.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class ProfileEditPage extends StatefulWidget {
@@ -37,6 +39,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   String? _selectedAvatarPath;
   String? _selectedCoverPhotoPath;
   bool _isLoading = false;
+  bool _isUploadingAvatar = false;
+  bool _isUploadingCoverPhoto = false;
 
   late RelayGroupDBISAR groupInfo;
 
@@ -116,6 +120,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   Widget _buildAvatarSection() {
     return Center(
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           GestureDetector(
             onTap: _selectAvatar,
@@ -130,26 +135,48 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                   width: _borderWidth,
                 ),
               ),
-              child:
+              child: Stack(
+                children: [
+                  // Always show local image or default icon
                   _selectedAvatarPath != null
-                      ? ClipOval(
-                        child: Image.file(
-                          File(_selectedAvatarPath!),
-                          fit: BoxFit.cover,
-                        ),
-                      )
-                      : Icon(
-                        Icons.person,
-                        size: _avatarIconSize,
-                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ? SizedBox(
+                    width: _avatarSize,
+                    height: _avatarSize,
+                    child:ClipOval(
+                      child: Image.file(
+                        File(_selectedAvatarPath!),
+                        fit: BoxFit.cover,
                       ),
+                    ) ,
+                  )
+                      : Center(
+                          child: Icon(
+                            Icons.person,
+                            size: _avatarIconSize,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                  // Show loading overlay when uploading
+                  if (_isUploadingAvatar)
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withOpacity(0.5),
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
           GestureDetector(
-            onTap: () {
-              _setImages();
-            },
+            onTap: _selectAvatar,
             child: Text(
               _setAvatarText,
               style: TextStyle(
@@ -213,52 +240,73 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           ),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(12),
-            child: _selectedCoverPhotoPath != null
-                ? Image.file(
-                    File(_selectedCoverPhotoPath!),
-                    fit: BoxFit.cover,
-                    width: double.infinity,
-                    height: 200,
-                  )
-                : Container(
+            child: Stack(
+              children: [
+                // Always show local image or placeholder
+                _selectedCoverPhotoPath != null
+                    ? Image.file(
+                        File(_selectedCoverPhotoPath!),
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: 200,
+                      )
+                    : Container(
+                        width: double.infinity,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                              Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                            ],
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(
+                              Icons.add_photo_alternate_rounded,
+                              size: 48,
+                              color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Add Cover Photo',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Tap to select image',
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                // Show loading overlay when uploading
+                if (_isUploadingCoverPhoto)
+                  Container(
                     decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                          Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                        ],
+                      borderRadius: BorderRadius.circular(12),
+                      color: Colors.black.withOpacity(0.5),
+                    ),
+                    child: const Center(
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
                       ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.add_photo_alternate_rounded,
-                          size: 48,
-                          color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          'Add Cover Photo',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                            color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          'Tap to select image',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                          ),
-                        ),
-                      ],
-                    ),
                   ),
+              ],
+            ),
           ),
         ),
       ],
@@ -295,46 +343,46 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         },
       );
     }
-     return Container(
-       width: double.infinity,
-       padding: const EdgeInsets.all(16),
-       decoration: BoxDecoration(
-         color: Theme.of(context).colorScheme.primaryContainer,
-         borderRadius: BorderRadius.circular(12),
-         border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
-       ),
-       child: Row(
-         children: [
-           Icon(
-             Icons.check_circle,
-             color: Theme.of(context).colorScheme.primary,
-             size: 24,
-           ),
-           const SizedBox(width: 12),
-           Expanded(
-             child: Column(
-               crossAxisAlignment: CrossAxisAlignment.start,
-               children: [
-                 Text(
-                   'Free Subscription',
-                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                     fontWeight: FontWeight.w600,
-                     color: Theme.of(context).colorScheme.onPrimaryContainer,
-                   ),
-                 ),
-                 const SizedBox(height: 4),
-                 Text(
-                   'Users can access your content without payment',
-                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                     color: Theme.of(context).colorScheme.onPrimaryContainer,
-                   ),
-                 ),
-               ],
-             ),
-           ),
-         ],
-       ),
-     );
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primaryContainer,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.check_circle,
+            color: Theme.of(context).colorScheme.primary,
+            size: 24,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Free Subscription',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Users can access your content without payment',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.onPrimaryContainer,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   // Build input section with label and text field
@@ -402,6 +450,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         setState(() {
           _selectedCoverPhotoPath = picked.path;
         });
+        // Auto-upload cover photo after showing local image
+        await _uploadCoverPhoto();
       }
     } catch (e) {
       _showMessage('Failed to pick image: $e', isError: true);
@@ -420,9 +470,78 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         setState(() {
           _selectedAvatarPath = picked.path;
         });
+        // Auto-upload avatar after showing local image
+        await _uploadAvatar();
       }
     } catch (e) {
       _showMessage('Failed to pick avatar: $e', isError: true);
+    }
+  }
+
+  // Upload avatar image
+  Future<void> _uploadAvatar() async {
+    if (_selectedAvatarPath == null || _isUploadingAvatar) return;
+
+    setState(() {
+      _isUploadingAvatar = true;
+    });
+
+    try {
+      final imageFile = File(_selectedAvatarPath!);
+      final imageUrl = await BolssomUploader.upload(
+        'https://blossom.band',
+        imageFile.path,
+        fileName: imageFile.path.split('/').last,
+      );
+
+      if (imageUrl != null && mounted) {
+        CommonToast.instance.show(context, 'Avatar uploaded successfully');
+      } else {
+        throw Exception('Upload returned empty URL');
+      }
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, 'Avatar upload failed: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingAvatar = false;
+        });
+      }
+    }
+  }
+
+  // Upload cover photo
+  Future<void> _uploadCoverPhoto() async {
+    if (_selectedCoverPhotoPath == null || _isUploadingCoverPhoto) return;
+
+    setState(() {
+      _isUploadingCoverPhoto = true;
+    });
+
+    try {
+      final imageFile = File(_selectedCoverPhotoPath!);
+      final imageUrl = await BolssomUploader.upload(
+        'https://blossom.band',
+        imageFile.path,
+        fileName: imageFile.path.split('/').last,
+      );
+      if (imageUrl != null && mounted) {
+        CommonToast.instance.show(context, 'Cover photo uploaded successfully');
+      } else {
+        throw Exception('Upload returned empty URL');
+      }
+    } catch (e) {
+      if (mounted) {
+        CommonToast.instance.show(context, 'Cover photo upload failed: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingCoverPhoto = false;
+        });
+      }
     }
   }
 
