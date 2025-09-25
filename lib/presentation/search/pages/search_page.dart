@@ -1,19 +1,16 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+info.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
-import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 
 import '../../../core/account/relays.dart';
-import '../../../core/nostr_dart/src/nips/nip_019.dart';
 import '../../../core/relayGroups/relayGroup.dart';
-import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
-import '../../../core/widgets/chuchu_cached_network_Image.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -25,7 +22,7 @@ class SearchPage extends StatefulWidget {
 class _SearchPageState extends State<SearchPage> {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
-  
+
   // Search state
   bool _isSearching = false;
   List<RelayGroupDBISAR> _searchResults = [];
@@ -139,9 +136,9 @@ class _SearchPageState extends State<SearchPage> {
               ),
             ),
           ),
-          
+
           SizedBox(width: 12.px),
-          
+
           // Cancel button
           GestureDetector(
             onTap: () {
@@ -229,81 +226,158 @@ class _SearchPageState extends State<SearchPage> {
       padding: EdgeInsets.symmetric(vertical: 8.px),
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
-        return _buildSearchResultItem(_searchResults[index]);
+        return _authorCard(_searchResults[index]);
       },
     );
   }
 
-    Widget _buildSearchResultItem(RelayGroupDBISAR group) {
+
+  Widget _authorCard(RelayGroupDBISAR relayGroup) {
+    final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(
-          MaterialPageRoute(
-            builder: (context) => FeedPersonalPage(
-              relayGroupDB: group,
-            ),
-          ),
-        );
+        ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(relayGroupDB: relayGroup,));
       },
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
-        child: Row(
-          children: [
-            // Avatar
-            GestureDetector(
-              onTap: () {
-                ChuChuNavigator.pushPage(
-                  context,
-                      (context) =>
-                      FeedPersonalPage(relayGroupDB: group),
-                );
-              },
-              child: FeedWidgetsUtils.clipImage(
-                borderRadius: 48,
-                imageSize: 48,
-                child: ChuChuCachedNetworkImage(
-                  imageUrl: group.picture ?? '',
+        margin: EdgeInsets.symmetric(horizontal: 16),
+        height: Adapt.px(140),
+        width: double.infinity,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child:
+                relayGroup.picture.isNotEmpty
+                    ? CachedNetworkImage(
+                  imageUrl: relayGroup.picture,
                   fit: BoxFit.cover,
-                  placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-                  errorWidget:
-                      (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-                  width: 48,
-                  height: 48,
-                ),
-              ),
-            ),
-
-            SizedBox(width: 12.px),
-
-            // User info
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    group.name ?? 'Unknown',
-                    style: TextStyle(
-                      fontSize: 16.px,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.black87,
+                )
+                    : Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        theme.colorScheme.primary,
+                        theme.colorScheme.primaryContainer,
+                      ],
                     ),
                   ),
-                  SizedBox(height: 2.px),
-                  // Text(
-                  //   '@${user.dns ?? user.pubKey.substring(0, 8)}',
-                  //   style: TextStyle(
-                  //     fontSize: 14.px,
-                  //     color: Colors.grey.shade600,
-                  //   ),
-                  // ),
-                ],
+                ),
               ),
-            ),
-          ],
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [Colors.transparent, Colors.black.withOpacity(0.4)],
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                left: 12,
+                bottom: 12,
+                right: 12,
+                child: Row(
+                  children: [
+                    _followsUserPicWidget(relayGroup),
+                    SizedBox(width: 8),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          relayGroup.name,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 24,
+                          ),
+                        ),
+                        Text(
+                          relayGroup.about,
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-
     );
+  }
+
+  Widget _followsUserPicWidget(RelayGroupDBISAR relayGroup) {
+    Widget picWidget;
+    if (relayGroup.picture.isNotEmpty) {
+      picWidget = CachedNetworkImage(
+        imageUrl: relayGroup.picture,
+        fit: BoxFit.contain,
+        // placeholder: (context, url) => _badgePlaceholderImage,
+        // errorWidget: (context, url, error) => _badgePlaceholderImage,
+        width: Adapt.px(80),
+        height: Adapt.px(80),
+      );
+    } else {
+      picWidget = CommonImage(
+        iconName: 'icon_user_default.png',
+        width: Adapt.px(80),
+        height: Adapt.px(80),
+      );
+    }
+
+    return GestureDetector(
+      onTap: () {
+      },
+      child: Container(
+        width: Adapt.px(80),
+        height: Adapt.px(80),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: Colors.white, width: 3),
+        ),
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(Adapt.px(40)),
+          child: picWidget,
+        ),
+      ),
+    );
+
+    //
+  }
+
+  /// Validate npub1 format
+  /// npub1 format: starts with 'npub1' followed by bech32 encoded data
+  bool _isValidNpub1(String input) {
+    if (!input.startsWith('npub1')) {
+      return false;
+    }
+    
+    // npub1 should be at least 63 characters long (npub1 + 58 chars of bech32 data)
+    if (input.length < 63) {
+      return false;
+    }
+    
+    // Extract the bech32 part (after 'npub1')
+    String bech32Part = input.substring(5);
+    
+    // Check if it contains only valid bech32 characters (qpzry9x8gf2tvdw0s3jn54khce6mua7l)
+    RegExp bech32Regex = RegExp(r'^[qpzry9x8gf2tvdw0s3jn54khce6mua7l]+$');
+    if (!bech32Regex.hasMatch(bech32Part)) {
+      return false;
+    }
+    
+    // Additional length check for npub1 (should be around 63 characters)
+    if (input.length != 63) {
+      return false;
+    }
+    
+    return true;
   }
 
   void _performSearch(String query) async {
@@ -318,16 +392,26 @@ class _SearchPageState extends State<SearchPage> {
 
     try {
       String? pubkey;
-      if (trimmedQuery.startsWith('npub')) {
+      if (trimmedQuery.startsWith('npub1')) {
+        // Validate npub1 format
+        if (!_isValidNpub1(trimmedQuery)) {
+          print('🔍Invalid npub1 format: $trimmedQuery');
+          setState(() {
+            _isSearching = false;
+            _searchResults = [];
+          });
+          return;
+        }
         // Decode npub to get pubkey
         pubkey = UserDBISAR.decodePubkey(trimmedQuery);
-
+        print('🔍Valid npub1 format, decoded pubkey: $pubkey');
       } else {
         // Assume it's already a pubkey
         pubkey = trimmedQuery;
       }
 
       if (pubkey == null || pubkey.isEmpty) {
+        print('🔍Failed to decode pubkey from: $trimmedQuery');
         setState(() {
           _isSearching = false;
           _searchResults = [];
