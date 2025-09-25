@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
 import 'transaction_detail_page.dart';
@@ -1550,7 +1551,7 @@ class _WalletPageState extends State<WalletPage> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  // Copy to clipboard functionality would go here
+                  Clipboard.setData(ClipboardData(text: invoice.bolt11));
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Invoice copied to clipboard')),
                   );
