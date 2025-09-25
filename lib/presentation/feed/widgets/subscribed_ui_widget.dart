@@ -533,7 +533,6 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
                     ? DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000)
                     : DateTime.now().add(const Duration(minutes: 15)),
                 onPaymentSuccess: () {
-                  Navigator.of(context).pop();
                   _handlePaymentSuccess(groupId, months);
                 },
               ),
