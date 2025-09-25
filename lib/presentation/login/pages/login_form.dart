@@ -49,6 +49,14 @@ class _LoginFormState extends State<LoginForm> {
     });
   }
 
+  void _clearText() {
+    setState(() {
+      _privateKeyController.clear();
+      _hasError = false;
+      _errorMessage = '';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -95,19 +103,42 @@ class _LoginFormState extends State<LoginForm> {
               suffixIcon: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
+                  // Clear button - only show when there's text
+                  if (_privateKeyController.text.isNotEmpty) ...[
+                    GestureDetector(
+                      onTap: _clearText,
+                      child: Container(
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          shape: BoxShape.circle,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                        child: Icon(
+                          Icons.close,
+                          size: 12,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  ],
+                  // Visibility toggle button
                   IconButton(
                     icon: Icon(
                       _isObscured ? Icons.visibility_off : Icons.visibility,
                       color: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                     onPressed: _toggleObscure,
+                    tooltip: _isObscured ? 'Show text' : 'Hide text',
                   ),
-                  if (_hasError)
+                  // Error icon
+                  if (_hasError) ...[
                     Icon(
                       Icons.error,
                       color: Theme.of(context).colorScheme.error,
                       size: 20,
                     ),
+                  ],
                 ],
               ),
             ),
