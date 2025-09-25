@@ -16,7 +16,7 @@ class Relays {
   Map<String, RelayDBISAR> relays = {};
 
   List<String> recommendGeneralRelays = [
-    'wss://relay.0xchat.com',
+    'ws://127.0.0.1:5577',
   ];
 
   List<String> recommendDMRelays = [

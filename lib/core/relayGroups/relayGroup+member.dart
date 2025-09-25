@@ -35,7 +35,7 @@ extension EMember on RelayGroup {
     Completer<RelayGroupDBISAR?> completer = Completer<RelayGroupDBISAR?>();
     Event event = await Nip29.encodeCreateGroup(groupId, pubkey, privkey);
     Connect.sharedInstance.sendEvent(event, toRelays: [relay], sendCallBack: (OKEvent ok, relay) async {
-      if (ok.status) {
+      if (ok.status || (!ok.status && ok.message == "duplicate: group already exists")) {
         RelayGroupDBISAR relayGroupDB = RelayGroupDBISAR(
             groupId: groupId,
             relay: relay,

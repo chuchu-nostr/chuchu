@@ -81,11 +81,13 @@ class WalletTransaction {
 
   /// Create from JSON map
   factory WalletTransaction.fromJson(Map<String, dynamic> json) {
+    final amount = _parseInt(json['amount']) ?? 0;
+    
     return WalletTransaction(
       transactionId: json['transaction_id'] ?? '',
       type: _parseTransactionType(json['type']),
       status: _parseTransactionStatus(json['status']),
-      amount: _parseInt(json['amount']) ?? 0,
+      amount: amount,
       fee: _parseInt(json['fee']) ?? 0,
       description: json['description'],
       invoice: json['invoice'],
@@ -133,7 +135,9 @@ class WalletTransaction {
       case 'outgoing':
         return TransactionType.outgoing;
       default:
-        return TransactionType.outgoing;
+        // For pending transactions without explicit type, 
+        // we'll determine type based on amount sign in the UI
+        return TransactionType.incoming; // Default to incoming for pending payments
     }
   }
 
