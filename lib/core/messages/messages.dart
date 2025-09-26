@@ -389,7 +389,7 @@ class Messages {
     }
     // relay group
     else if (chatType == 4) {
-      // RelayGroup.sharedInstance.loadGroupMessages(groupId, since, until, limit);
+      RelayGroup.sharedInstance.loadGroupMessages(groupId, since, until, limit);
     }
   }
 
