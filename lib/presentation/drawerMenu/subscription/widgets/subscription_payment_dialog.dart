@@ -550,7 +550,6 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       );
 
       if (transaction != null) {
-        CommonToast.instance.show(context, 'Payment successful!');
         // Navigator.of(context).pop();
         widget.onPaymentSuccess?.call();
       } else {

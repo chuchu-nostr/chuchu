@@ -509,7 +509,6 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
           // Set up payment status callback
           wallet.onPaymentStatusChanged = (paymentHash, isPaid, details) {
             if (isPaid) {
-              CommonToast.instance.show(context, 'Payment completed successfully!');
               // Handle payment success - update UI, etc.
               _handlePaymentSuccess(groupId, months);
             }
@@ -532,9 +531,6 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
                 expiresAt: expiresAt != null
                     ? DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000)
                     : DateTime.now().add(const Duration(minutes: 15)),
-                onPaymentSuccess: () {
-                  _handlePaymentSuccess(groupId, months);
-                },
               ),
             );
           }
