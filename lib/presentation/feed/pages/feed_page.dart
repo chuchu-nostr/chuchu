@@ -72,6 +72,12 @@ class _FeedPageState extends State<FeedPage>
     super.initState();
     ChuChuUserInfoManager.sharedInstance.addObserver(this);
     ChuChuFeedManager.sharedInstance.addObserver(this);
+    
+    // Listen for group updates
+    RelayGroup.sharedInstance.myGroupsUpdatedCallBack = () {
+      _loadSubscriptionList();
+    };
+    
     _initData();
     _setupScrollListener();
   }
@@ -397,6 +403,9 @@ class _FeedPageState extends State<FeedPage>
   void dispose() {
     ChuChuUserInfoManager.sharedInstance.removeObserver(this);
     ChuChuFeedManager.sharedInstance.removeObserver(this);
+
+    // Clear the callback
+    RelayGroup.sharedInstance.myGroupsUpdatedCallBack = null;
 
     final scrollController = widget.scrollController ?? feedScrollController;
     scrollController.removeListener(_onScroll);
