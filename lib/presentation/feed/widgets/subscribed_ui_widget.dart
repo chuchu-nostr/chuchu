@@ -506,13 +506,6 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
         final expiresAt = result['expires_at'] as int?;
 
         if (bolt11 != null && amount != null) {
-          // Set up payment status callback
-          wallet.onPaymentStatusChanged = (paymentHash, isPaid, details) {
-            if (isPaid) {
-              // Handle payment success - update UI, etc.
-              _handlePaymentSuccess(groupId, months);
-            }
-          };
 
           // Show payment dialog
           if (mounted) {
@@ -531,6 +524,9 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
                 expiresAt: expiresAt != null
                     ? DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000)
                     : DateTime.now().add(const Duration(minutes: 15)),
+                onPaymentSuccess:(){
+                  _handlePaymentSuccess(groupId, months);
+                }
               ),
             );
           }

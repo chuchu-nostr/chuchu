@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../core/wallet/wallet.dart';
@@ -387,9 +388,10 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
 
   Widget _buildPaymentOption(String value, String title, String subtitle, IconData icon) {
     final isSelected = _selectedPaymentMethod == value;
+    final isDisabled = _isPaying; // Disable during payment
     
     return InkWell(
-      onTap: () {
+      onTap: isDisabled ? null : () {
         setState(() {
           _selectedPaymentMethod = value;
         });
@@ -398,14 +400,18 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected 
-              ? Theme.of(context).colorScheme.primaryContainer
-              : Theme.of(context).colorScheme.surface,
+          color: isDisabled 
+              ? Theme.of(context).colorScheme.surface.withOpacity(0.5)
+              : (isSelected 
+                  ? Theme.of(context).colorScheme.primaryContainer
+                  : Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: isSelected 
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            color: isDisabled
+                ? Theme.of(context).colorScheme.outline.withOpacity(0.2)
+                : (isSelected 
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.outline.withOpacity(0.3)),
             width: isSelected ? 2 : 1,
           ),
         ),
@@ -413,9 +419,11 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
           children: [
             Icon(
               icon,
-              color: isSelected 
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.onSurface,
+              color: isDisabled
+                  ? Theme.of(context).colorScheme.onSurface.withOpacity(0.4)
+                  : (isSelected 
+                      ? Theme.of(context).colorScheme.primary
+                      : Theme.of(context).colorScheme.onSurface),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -426,15 +434,19 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                     title,
                     style: Theme.of(context).textTheme.titleSmall?.copyWith(
                       fontWeight: FontWeight.w600,
-                      color: isSelected 
-                          ? Theme.of(context).colorScheme.primary
-                          : Theme.of(context).colorScheme.onSurface,
+                      color: isDisabled
+                          ? Theme.of(context).colorScheme.onSurface.withOpacity(0.4)
+                          : (isSelected 
+                              ? Theme.of(context).colorScheme.primary
+                              : Theme.of(context).colorScheme.onSurface),
                     ),
                   ),
                   Text(
                     subtitle,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      color: isDisabled
+                          ? Theme.of(context).colorScheme.onSurfaceVariant.withOpacity(0.4)
+                          : Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
                   ),
                 ],
@@ -443,7 +455,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
             Radio<String>(
               value: value,
               groupValue: _selectedPaymentMethod,
-              onChanged: (value) {
+              onChanged: isDisabled ? null : (value) {
                 setState(() {
                   _selectedPaymentMethod = value!;
                 });
@@ -536,27 +548,67 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
 
   Future<void> _payWithWallet() async {
     try {
+      // Initialize wallet instance
       final wallet = Wallet();
-      
+
+      // Check wallet connection status
       if (!wallet.isConnected) {
         CommonToast.instance.show(context, 'Wallet not connected');
         return;
       }
 
-      // Pay using internal wallet
+      // Execute payment using internal wallet
       final transaction = await wallet.sendPayment(
         widget.bolt11,
         description: widget.description,
       );
 
+      // Handle payment result
       if (transaction != null) {
-        // Navigator.of(context).pop();
-        widget.onPaymentSuccess?.call();
+
+        // Wait for payment status callback to complete
+        await _waitForPaymentStatusCallback(wallet);
+
       } else {
+        // Payment failed - show error message
         CommonToast.instance.show(context, 'Payment failed');
       }
+
     } catch (e) {
+      // Handle any unexpected errors during payment
       CommonToast.instance.show(context, 'Payment error: ${e.toString()}');
+    }
+  }
+
+  /// Wait for payment status callback to complete
+  Future<void> _waitForPaymentStatusCallback(Wallet wallet) async {
+    final completer = Completer<void>();
+    
+    // Set up payment status callback
+    wallet.onPaymentStatusChanged = (paymentHash, isPaid, details) {
+      if (isPaid) {
+        // Handle payment success - update UI, etc.
+        widget.onPaymentSuccess?.call();
+        
+        // Complete the completer to signal callback is done
+        if (!completer.isCompleted) {
+          completer.complete();
+        }
+      }
+    };
+    
+    // Wait for the callback to complete (with timeout)
+    try {
+      await completer.future.timeout(
+        const Duration(seconds: 30),
+        onTimeout: () {
+          print('Payment status callback timeout');
+          // Return null instead of throwing exception
+          return null;
+        },
+      );
+    } catch (e) {
+      print('Error waiting for payment status callback: $e');
     }
   }
 
