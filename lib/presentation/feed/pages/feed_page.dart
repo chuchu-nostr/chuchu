@@ -23,7 +23,6 @@ import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/chuchu_smart_refresher.dart';
 import '../../../data/models/noted_ui_model.dart';
-import '../../../core/nostr_dart/nostr.dart';
 
 import '../../search/pages/search_page.dart';
 import '../widgets/feed_widget.dart';
@@ -93,9 +92,42 @@ class _FeedPageState extends State<FeedPage>
 
   void _loadSubscriptionList() {
     myGroupsList = RelayGroup.sharedInstance.myGroups;
+    _sortMyGroupsList();
     if(mounted){
       setState(() {});
     }
+  }
+
+  void _sortMyGroupsList() {
+    final currentPubkey = Account.sharedInstance.currentPubkey;
+    
+    // Convert to list for sorting
+    final groupsList = myGroupsList.entries.toList();
+    
+    // Sort the list
+    groupsList.sort((a, b) {
+      final groupA = a.value.value;
+      final groupB = b.value.value;
+      
+      // Current user's group always comes first
+      if (groupA.groupId == currentPubkey) return -1;
+      if (groupB.groupId == currentPubkey) return 1;
+      
+      // Get notification counts
+      final countA = _notificationGroupNotes[groupA.groupId]?.length ?? 0;
+      final countB = _notificationGroupNotes[groupB.groupId]?.length ?? 0;
+      
+      // Sort by notification count (descending)
+      return countB.compareTo(countA);
+    });
+    
+    // Rebuild the map with sorted order
+    final sortedMap = <String, ValueNotifier<RelayGroupDBISAR>>{};
+    for (final entry in groupsList) {
+      sortedMap[entry.key] = entry.value;
+    }
+    
+    myGroupsList = sortedMap;
   }
 
   void _setupScrollListener() {
@@ -149,12 +181,6 @@ class _FeedPageState extends State<FeedPage>
     }
   }
 
-  void _clearNewNotesIndicator(String userPubkey) {
-    if (mounted) {
-      setState(() {
-      });
-    }
-  }
 
   void _clearAvatarBorders() {
     if (mounted) {
@@ -172,6 +198,8 @@ class _FeedPageState extends State<FeedPage>
   void _handleNewNotesAfterNavigation(RelayGroupDBISAR relayGroupDB, bool hasNewNotes) {
     if (mounted) {
       _notificationGroupNotes[relayGroupDB.groupId] = [];
+      // Re-sort the groups list after clearing notifications
+      _sortMyGroupsList();
       setState(() {});
     }
   }
@@ -455,14 +483,6 @@ class _FeedPageState extends State<FeedPage>
     }
   }
 
-  Future<List<NoteDBISAR>> _getNoteTypeToDB(bool isInit) async {
-    int? until = isInit ? null : _allNotesFromDBLastTimestamp;
-    return await Feed.sharedInstance.loadAllNotesFromDB(
-          until: until,
-          limit: _limit,
-        ) ??
-        [];
-  }
 
   Future<List<NoteDBISAR>> _getNoteTypeToRelay() async {
     return await Feed.sharedInstance.loadContactsNewNotesFromRelay(
@@ -547,13 +567,15 @@ class _FeedPageState extends State<FeedPage>
             for (NoteDBISAR noteDB in notes) {
               bool isGroupNoted = noteDB.groupId.isNotEmpty;
               if (isGroupNoted) {
-                if(_notificationGroupNotes[noteDB.author] == null){
-                  _notificationGroupNotes[noteDB.author] = [noteDB];
+                if(_notificationGroupNotes[noteDB.groupId] == null){
+                  _notificationGroupNotes[noteDB.groupId] = [noteDB];
                 }else{
-                  _notificationGroupNotes[noteDB.author] = [... _notificationGroupNotes[noteDB.author]!,noteDB];
+                  _notificationGroupNotes[noteDB.groupId] = [... _notificationGroupNotes[noteDB.groupId]!,noteDB];
                 }
               }
             }
+            // Re-sort the groups list after updating notifications
+            _sortMyGroupsList();
             setState(() {});
           }
         });
@@ -604,7 +626,7 @@ class StoryCircle extends StatelessWidget {
         children: [
           ClipOval(
             child: ChuChuCachedNetworkImage(
-              imageUrl: imageUrl ?? '',
+              imageUrl: imageUrl,
               fit: BoxFit.cover,
               placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
               errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
@@ -673,7 +695,4 @@ class _SegmentedBorderPainter extends CustomPainter {
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 
-  @override
-  didGroupsNoteCallBack(NoteDBISAR notes) {
-  }
 }
