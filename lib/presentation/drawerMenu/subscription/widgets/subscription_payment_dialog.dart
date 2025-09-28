@@ -33,6 +33,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   String _selectedPaymentMethod = 'wallet';
   int _currentStep = 1; // 1: Show payment info, 2: Select wallet type
   bool _showQRCode = false; // Control QR code display
+  bool _isExternalWalletDialogOpen = false; // Track external wallet dialog state
 
   @override
   Widget build(BuildContext context) {
@@ -103,8 +104,8 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
           width: 40,
           color:
               _currentStep >= 2
-                  ? Theme.of(context).colorScheme.primary
-                  : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+              ? Theme.of(context).colorScheme.primary
+              : Theme.of(context).colorScheme.outline.withOpacity(0.3),
         ),
         _buildStepItem(2, 'Select Wallet', _currentStep >= 2),
       ],
@@ -120,8 +121,8 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
           decoration: BoxDecoration(
             color:
                 isActive
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
             shape: BoxShape.circle,
           ),
           child: Center(
@@ -130,8 +131,8 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
               style: TextStyle(
                 color:
                     isActive
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Theme.of(context).colorScheme.onSurface,
+                    ? Theme.of(context).colorScheme.onPrimary
+                    : Theme.of(context).colorScheme.onSurface,
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
               ),
@@ -144,8 +145,8 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
           style: Theme.of(context).textTheme.bodySmall?.copyWith(
             color:
                 isActive
-                    ? Theme.of(context).colorScheme.primary
-                    : Theme.of(context).colorScheme.onSurfaceVariant,
+                ? Theme.of(context).colorScheme.primary
+                : Theme.of(context).colorScheme.onSurfaceVariant,
             fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
           ),
         ),
@@ -331,15 +332,15 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   String _formatExpirationTime(DateTime expiresAt) {
     final now = DateTime.now();
     final difference = expiresAt.difference(now);
-
+    
     if (difference.isNegative) {
       return 'Expired';
     }
-
+    
     final minutes = difference.inMinutes;
     final hours = difference.inHours;
     final days = difference.inDays;
-
+    
     if (days > 0) {
       return '${days}d ${hours % 24}h ${minutes % 60}m';
     } else if (hours > 0) {
@@ -385,16 +386,16 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   ) {
     final isSelected = _selectedPaymentMethod == value;
     final isDisabled = _isPaying; // Disable during payment
-
+    
     return InkWell(
       onTap:
           isDisabled
               ? null
               : () {
-                setState(() {
-                  _selectedPaymentMethod = value;
-                });
-              },
+        setState(() {
+          _selectedPaymentMethod = value;
+        });
+      },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -403,7 +404,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
               isDisabled
                   ? Theme.of(context).colorScheme.surface.withOpacity(0.5)
                   : (isSelected
-                      ? Theme.of(context).colorScheme.primaryContainer
+              ? Theme.of(context).colorScheme.primaryContainer
                       : Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -411,7 +412,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                 isDisabled
                     ? Theme.of(context).colorScheme.outline.withOpacity(0.2)
                     : (isSelected
-                        ? Theme.of(context).colorScheme.primary
+                ? Theme.of(context).colorScheme.primary
                         : Theme.of(
                           context,
                         ).colorScheme.outline.withOpacity(0.3)),
@@ -426,7 +427,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                   isDisabled
                       ? Theme.of(context).colorScheme.onSurface.withOpacity(0.4)
                       : (isSelected
-                          ? Theme.of(context).colorScheme.primary
+                  ? Theme.of(context).colorScheme.primary
                           : Theme.of(context).colorScheme.onSurface),
             ),
             const SizedBox(width: 12),
@@ -444,7 +445,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                                 context,
                               ).colorScheme.onSurface.withOpacity(0.4)
                               : (isSelected
-                                  ? Theme.of(context).colorScheme.primary
+                          ? Theme.of(context).colorScheme.primary
                                   : Theme.of(context).colorScheme.onSurface),
                     ),
                   ),
@@ -469,10 +470,10 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                   isDisabled
                       ? null
                       : (value) {
-                        setState(() {
-                          _selectedPaymentMethod = value!;
-                        });
-                      },
+                setState(() {
+                  _selectedPaymentMethod = value!;
+                });
+              },
             ),
           ],
         ),
@@ -513,10 +514,10 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                 _isPaying
                     ? null
                     : () {
-                      setState(() {
-                        _currentStep = 1;
-                      });
-                    },
+              setState(() {
+                _currentStep = 1;
+              });
+            },
             child: const Text('Back'),
           ),
         ),
@@ -526,12 +527,12 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
             onPressed: _isPaying ? null : _handlePayment,
             child:
                 _isPaying
-                    ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                    : const Text('Pay Now'),
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Text('Pay Now'),
           ),
         ),
       ],
@@ -567,7 +568,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
     try {
       // Initialize wallet instance
       final wallet = Wallet();
-
+      
       // Check wallet connection status
       if (!wallet.isConnected) {
         CommonToast.instance.show(context, 'Wallet not connected');
@@ -583,7 +584,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       // Handle payment result
       if (transaction != null) {
         // Wait for payment status callback to complete
-        await _waitForPaymentStatusCallback(wallet);
+        await _waitForPaymentStatusCallback();
       } else {
         // Payment failed - show error message
         CommonToast.instance.show(context, 'Payment failed');
@@ -595,7 +596,14 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   }
 
   /// Wait for payment status callback to complete
-  Future<void> _waitForPaymentStatusCallback(Wallet wallet) async {
+  Future<void> _waitForPaymentStatusCallback() async {
+    final wallet = Wallet();
+
+    // Check wallet connection status
+    if (!wallet.isConnected) {
+      CommonToast.instance.show(context, 'Wallet not connected');
+      return;
+    }
     final completer = Completer<void>();
 
     // Set up payment status callback
@@ -627,10 +635,36 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   }
 
   Future<void> _payWithExternalWallet() async {
+    // Initialize wallet instance
+    final wallet = Wallet();
+
+    // Check wallet connection status
+    if (!wallet.isConnected) {
+      CommonToast.instance.show(context, 'Wallet not connected');
+      return;
+    }
+    
+    // Set up payment status callback
+    wallet.onPaymentStatusChanged = (paymentHash, isPaid, details) {
+      if (isPaid) {
+        // Handle payment success - update UI, etc.
+        widget.onPaymentSuccess?.call();
+        
+        // Check if external wallet dialog is still open and close it
+        if (_isExternalWalletDialogOpen && mounted) {
+          Navigator.of(context).pop();
+          _isExternalWalletDialogOpen = false;
+        }
+      }
+    };
+    
     _showExternalWalletInstructions();
   }
 
   void _showExternalWalletInstructions() {
+    // Mark that external wallet dialog is open
+    _isExternalWalletDialogOpen = true;
+    
     showDialog(
       context: context,
       builder:
@@ -645,9 +679,9 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
                       // Header
                       Row(
                         children: [
@@ -676,13 +710,16 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                               ),
                             ),
                           ),
-                          IconButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            icon: const Icon(Icons.close),
-                            style: IconButton.styleFrom(
-                              backgroundColor: Colors.grey[100],
-                            ),
-                          ),
+                           IconButton(
+                             onPressed: () {
+                               Navigator.of(context).pop();
+                               _isExternalWalletDialogOpen = false;
+                             },
+                             icon: const Icon(Icons.close),
+                             style: IconButton.styleFrom(
+                               backgroundColor: Colors.grey[100],
+                             ),
+                           ),
                         ],
                       ),
                       const SizedBox(height: 24),
@@ -871,24 +908,27 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                       // Action Button
                       SizedBox(
                         width: double.infinity,
-                        child: ElevatedButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue[600],
-                            foregroundColor: Colors.white,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: const Text(
-                            'Got it!',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
+                         child: ElevatedButton(
+                           onPressed: () {
+                             Navigator.of(context).pop();
+                             _isExternalWalletDialogOpen = false;
+                           },
+                           style: ElevatedButton.styleFrom(
+                             backgroundColor: Colors.blue[600],
+                             foregroundColor: Colors.white,
+                             padding: const EdgeInsets.symmetric(vertical: 16),
+                             shape: RoundedRectangleBorder(
+                               borderRadius: BorderRadius.circular(12),
+                             ),
+                           ),
+                           child: const Text(
+                             'Got it!',
+                             style: TextStyle(
+                               fontSize: 16,
+                               fontWeight: FontWeight.w600,
+                             ),
+                           ),
+                         ),
                       ),
                     ],
                   ),
