@@ -14,6 +14,7 @@ import '../network/connect.dart';
 import '../network/eventCache.dart';
 import '../nostr_dart/nostr.dart';
 import '../utils/log_utils.dart';
+import '../wallet/wallet.dart';
 import 'model/userDB_isar.dart';
 import 'notification.dart';
 
@@ -334,6 +335,7 @@ class Account {
     Contacts.sharedInstance.allContacts.clear();
     Relays.sharedInstance.relays.clear();
     EventCache.sharedInstance.cacheIds.clear();
+    Wallet.sharedInstance.logout();
     me = null;
     currentPubkey = '';
     currentPrivkey = '';

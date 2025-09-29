@@ -211,6 +211,30 @@ class Wallet {
     _walletInfo = null;
   }
 
+  /// Logout and clear all wallet data
+  void logout() {
+    LogUtils.d(() => 'Starting wallet logout process...');
+    
+    // Use dispose method to clean up resources (timers, callbacks, pending requests)
+    dispose();
+    
+    // Clear wallet info
+    _walletInfo = null;
+    
+    // Clear transaction data
+    _transactions.clear();
+    _pendingTransactions.clear();
+    
+    // Clear cached exchange rate
+    _btcToUsdRate = null;
+    _rateLastUpdated = null;
+    
+    // Clear payment status callback (not handled by dispose)
+    onPaymentStatusChanged = null;
+    
+    LogUtils.i(() => 'Wallet logout completed successfully');
+  }
+
   /// Refresh wallet balance
   Future<void> refreshBalance() async {
     if (_walletInfo == null) return;
@@ -834,10 +858,32 @@ class Wallet {
   /// Clear all wallet data from database
   Future<void> clearWalletDataFromDB() async {
     try {
-      // Clear all wallet data from local database
-      LogUtils.v(() => 'Wallet data cleared from DB');
+      LogUtils.d(() => 'Clearing all wallet data from database...');
+      
+      final isar = DBISAR.sharedInstance.isar;
+      
+      // Clear wallet info
+      await isar.writeTxn(() async {
+        await isar.walletInfos.clear();
+        LogUtils.d(() => 'Cleared wallet info from database');
+      });
+      
+      // Clear transactions
+      await isar.writeTxn(() async {
+        await isar.walletTransactions.clear();
+        LogUtils.d(() => 'Cleared transactions from database');
+      });
+      
+      // Clear invoices
+      await isar.writeTxn(() async {
+        await isar.walletInvoices.clear();
+        LogUtils.d(() => 'Cleared invoices from database');
+      });
+      
+      LogUtils.i(() => 'All wallet data cleared from database successfully');
     } catch (e) {
       LogUtils.e(() => 'Error clearing wallet data from DB: $e');
+      rethrow;
     }
   }
 
@@ -1306,4 +1352,6 @@ class Wallet {
     // Stop all polling timers
     stopAllPaymentPolling();
   }
+
+
 }
