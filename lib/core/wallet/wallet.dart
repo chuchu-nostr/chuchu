@@ -15,6 +15,9 @@ import '../network/connect.dart';
 import '../relayGroups/relayGroup.dart';
 import '../nostr_dart/nostr.dart';
 import '../nostr_dart/src/nips/nip_047.dart';
+import '../nostr_dart/src/nips/nip_044.dart';
+import '../nostr_dart/src/nips/nip_078.dart';
+import 'dart:convert';
 
 /// NIP-47 Wallet Manager
 /// Handles Lightning Network payments through Nostr Wallet Connect
@@ -178,8 +181,19 @@ class Wallet {
       LogUtils.d(() => 'Loading wallet info from database');
       WalletInfo? walletInfo = await _loadWalletInfo();
       if (walletInfo == null) {
-        LogUtils.d(() => 'No existing wallet found, creating new wallet');
-        walletInfo = await createNewWallet(pubkey, privkey);
+        LogUtils.d(() => 'No existing wallet found, trying to load from relay');
+        // Try to load wallet info from relay first
+        walletInfo = await _loadWalletInfoFromRelay(pubkey, privkey);
+        if (walletInfo == null) {
+          LogUtils.d(() => 'No wallet found on relay, creating new wallet');
+          walletInfo = await createNewWallet(pubkey, privkey);
+          // Save wallet info to relay after creating
+          await _saveWalletInfoToRelay(walletInfo, pubkey, privkey);
+        } else {
+          LogUtils.d(() => 'Found wallet on relay: ${walletInfo?.walletId ?? "unknown"}');
+          // Save to local database for future use
+          await _saveWalletInfoToDB(walletInfo);
+        }
       } else {
         LogUtils.d(() => 'Found existing wallet: ${walletInfo?.walletId ?? "unknown"}');
       }
@@ -1331,6 +1345,146 @@ class Wallet {
       );
     } catch (e) {
       LogUtils.e(() => 'Error sending event to group relay: $e');
+      return false;
+    }
+  }
+
+  /// Load wallet info from relay using NIP-78 event with d=chuchu-wallet
+  Future<WalletInfo?> _loadWalletInfoFromRelay(String pubkey, String privkey) async {
+    try {
+      LogUtils.d(() => 'Loading wallet info from relay for pubkey: $pubkey');
+      
+      // Create filter to query kind 30078 events with d=chuchu-wallet
+      Filter filter = Filter(
+        kinds: [30078],
+        authors: [pubkey],
+        d: ['chuchu-wallet'],
+        limit: 1,
+      );
+      
+      Completer<WalletInfo?> completer = Completer<WalletInfo?>();
+      List<Event> events = [];
+      
+      // Query relay for wallet info
+      Connect.sharedInstance.addSubscription(
+        [filter],
+        eventCallBack: (event, relay) async {
+          LogUtils.d(() => 'Received wallet event from relay: ${event.id}');
+          events.add(event);
+        },
+        eoseCallBack: (requestId, ok, relay, unRelays) async {
+          if (unRelays.isEmpty) {
+            if (events.isNotEmpty) {
+              try {
+                // Get the latest event
+                Event latestEvent = events.first;
+                
+                // Decode NIP-78 app data
+                AppData appData = Nip78.decodeAppData(latestEvent);
+                
+                // Decrypt content using NIP-44
+                String decryptedContent = await Nip44.decryptContent(
+                  appData.content,
+                  pubkey, // peer pubkey (same as our pubkey for self-encryption)
+                  pubkey, // my pubkey
+                  privkey,
+                );
+                
+                LogUtils.d(() => 'Decrypted wallet content: ${decryptedContent.substring(0, 50)}...');
+                
+                // Parse JSON to WalletInfo
+                Map<String, dynamic> walletJson = jsonDecode(decryptedContent);
+                WalletInfo walletInfo = WalletInfo.fromJson(walletJson);
+                
+                LogUtils.d(() => 'Successfully loaded wallet from relay: ${walletInfo.walletId}');
+                if (!completer.isCompleted) {
+                  completer.complete(walletInfo);
+                }
+              } catch (e) {
+                LogUtils.e(() => 'Error processing wallet event from relay: $e');
+                if (!completer.isCompleted) {
+                  completer.complete(null);
+                }
+              }
+            } else {
+              LogUtils.d(() => 'No wallet events found on relay');
+              if (!completer.isCompleted) {
+                completer.complete(null);
+              }
+            }
+          }
+        },
+      );
+      
+      // Wait for query to complete
+      return await completer.future;
+    } catch (e) {
+      LogUtils.e(() => 'Error loading wallet info from relay: $e');
+      return null;
+    }
+  }
+
+  /// Save wallet info to relay using NIP-78 event with d=chuchu-wallet
+  Future<bool> _saveWalletInfoToRelay(WalletInfo walletInfo, String pubkey, String privkey) async {
+    try {
+      LogUtils.d(() => 'Saving wallet info to relay: ${walletInfo.walletId}');
+      
+      // Convert wallet info to JSON string
+      String walletJsonString = jsonEncode(walletInfo.toJson());
+      
+      // Encrypt content using NIP-44 (self-encryption)
+      String encryptedContent = await Nip44.encryptContent(
+        walletJsonString,
+        pubkey, // peer pubkey (same as our pubkey for self-encryption)
+        pubkey, // my pubkey
+        privkey,
+      );
+      
+      LogUtils.d(() => 'Encrypted wallet content for relay storage');
+      
+      // Create NIP-78 event
+      Event walletEvent = Nip78.encodeAppData(
+        pubkey: pubkey,
+        content: encryptedContent,
+        d: 'chuchu-wallet',
+      );
+      
+      // Sign the event
+      Event signedEvent = await Event.from(
+        kind: walletEvent.kind,
+        pubkey: walletEvent.pubkey,
+        createdAt: walletEvent.createdAt,
+        tags: walletEvent.tags,
+        content: walletEvent.content,
+        privkey: privkey,
+      );
+      
+      LogUtils.d(() => 'Created signed wallet event: ${signedEvent.id}');
+      
+      // Send to relay
+      Completer<bool> completer = Completer<bool>();
+      
+      Connect.sharedInstance.sendEvent(
+        signedEvent,
+        sendCallBack: (ok, relay) {
+          if (ok.status) {
+            LogUtils.d(() => 'Wallet info saved to relay successfully: $relay');
+            if (!completer.isCompleted) {
+              completer.complete(true);
+            }
+          } else {
+            LogUtils.e(() => 'Failed to save wallet info to relay $relay: ${ok.message}');
+            if (!completer.isCompleted) {
+              completer.complete(false);
+            }
+          }
+        },
+      );
+      
+      // Wait for send to complete
+      return await completer.future;
+    } catch (e) {
+      LogUtils.e(() => 'Error saving wallet info to relay: $e');
       return false;
     }
   }

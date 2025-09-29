@@ -16,7 +16,41 @@ class Nip78 {
       return AppData(
           dTag(event.tags), event.pubkey, event.createdAt, event.content);
     }
-    throw Exception("${event.kind} is not nip1 compatible");
+    throw Exception("${event.kind} is not nip78 compatible");
+  }
+
+  /// Encode app data to NIP-78 event
+  /// Creates a kind 30078 event with the provided app data
+  static Event encodeAppData({
+    required String pubkey,
+    required String content,
+    String? d,
+    List<List<String>>? additionalTags,
+    int? createdAt,
+  }) {
+    List<List<String>> tags = [];
+    
+    // Add d tag if provided
+    if (d != null && d.isNotEmpty) {
+      tags.add(["d", d]);
+    }
+    
+    // Add additional tags if provided
+    if (additionalTags != null) {
+      tags.addAll(additionalTags);
+    }
+    
+    // Create unsigned event - signature will be added later
+    return Event(
+      "", // id - will be calculated when signed
+      pubkey,
+      createdAt ?? DateTime.now().millisecondsSinceEpoch ~/ 1000,
+      30078, // kind
+      tags,
+      content,
+      "", // sig - will be added when signed
+      verify: false, // Don't verify unsigned event
+    );
   }
 }
 
