@@ -59,9 +59,11 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     if (picked.isNotEmpty) {
       setState(() {
         _selectedImages.addAll(picked.map((x) => File(x.path)));
-        // Initialize upload status for new images
+        // Initialize upload status for new images only (don't override existing upload status)
         for (int i = _uploadedImageUrls.length; i < _selectedImages.length; i++) {
-          _uploadingStatus[i] = false;
+          if (!_uploadingStatus.containsKey(i)) {
+            _uploadingStatus[i] = false;
+          }
         }
       });
       
@@ -186,6 +188,9 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           }
         } catch (e) {
           if (mounted) {
+            setState(() {
+              _uploadingStatus[i] = false; // Reset upload status on failure
+            });
             CommonToast.instance.show(context, 'Image ${i + 1} upload failed: $e');
           }
         }
