@@ -4,6 +4,7 @@ import 'package:chuchu/core/nostr_dart/nostr.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:video_thumbnail/video_thumbnail.dart';
 
@@ -171,10 +172,13 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             });
           }
           
+          // Remove EXIF data before upload
+          final processedImageFile = await removeExifWithCompress(imageFile);
+          if(processedImageFile == null) return;
           final imageUrl = await BolssomUploader.upload(
             'https://blossom.band',
-            imageFile.path,
-            fileName: imageFile.path.split('/').last,
+            processedImageFile.path,
+            fileName: processedImageFile.path.split('/').last,
           );
           if (imageUrl != null) {
             if (mounted) {
@@ -894,6 +898,22 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       ChuChuLoading.dismiss();
       _postFeedTag = false;
     }
+  }
+
+
+  Future<File?> removeExifWithCompress(File file) async {
+    final targetPath = Path.join(
+      Path.dirname(file.path),
+      '${Path.basenameWithoutExtension(file.path)}_noexif.jpg',
+    );
+
+    final result = await FlutterImageCompress.compressAndGetFile(
+      file.absolute.path,
+      targetPath,
+      quality: 95,
+    );
+
+    return result != null ? File(result.path) : null;
   }
 
   @override
