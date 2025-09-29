@@ -434,13 +434,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.2),
-            width: 1,
-          ),
-        ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: AnimatedSwitcher(
@@ -599,7 +592,12 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                 clipBehavior: Clip.hardEdge,
                 child: Stack(
                   children: [
-                    Image.file(image, fit: BoxFit.cover),
+                    SizedBox.expand(
+                      child: Image.file(
+                        image,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
                     if (isUploading)
                       Positioned.fill(
                         child: Container(
