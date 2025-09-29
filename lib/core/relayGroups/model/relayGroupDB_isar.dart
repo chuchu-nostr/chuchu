@@ -36,6 +36,9 @@ class RelayGroupDBISAR {
   String picture;
   List<String>? pinned;
   List<String>? members;
+  String? memberSubscriptionExpiryJson; // JSON string for subscription expiry data
+  @ignore
+  Map<String, int>? memberSubscriptionExpiry; // Map of pubkey -> subscription expiry timestamp
   int level; // group level
   int point; // group point
   int subscriptionAmount; // subscription amount in satoshis
@@ -58,6 +61,8 @@ class RelayGroupDBISAR {
       this.picture = '',
       this.pinned,
       this.members,
+      this.memberSubscriptionExpiryJson,
+      this.memberSubscriptionExpiry,
       this.level = 0,
       this.point = 0,
       this.subscriptionAmount = 0,
@@ -138,4 +143,85 @@ RelayGroupDBISAR _groupInfoFromMap(Map<String, dynamic> map) {
     subscriptionAmount: map['subscriptionAmount'] ?? 0,
     groupWalletId: map['groupWalletId']?.toString() ?? '',
   );
+}
+
+extension RelayGroupDBISARSubscription on RelayGroupDBISAR {
+  /// Load subscription expiry data from JSON string
+  void _loadSubscriptionExpiryFromJson() {
+    if (memberSubscriptionExpiryJson != null && memberSubscriptionExpiryJson!.isNotEmpty) {
+      try {
+        Map<String, dynamic> jsonMap = jsonDecode(memberSubscriptionExpiryJson!);
+        memberSubscriptionExpiry = jsonMap.map((key, value) => MapEntry(key, value as int));
+      } catch (e) {
+        memberSubscriptionExpiry = null;
+      }
+    } else {
+      memberSubscriptionExpiry = null;
+    }
+  }
+  
+  /// Save subscription expiry data to JSON string
+  void _saveSubscriptionExpiryToJson() {
+    if (memberSubscriptionExpiry != null && memberSubscriptionExpiry!.isNotEmpty) {
+      memberSubscriptionExpiryJson = jsonEncode(memberSubscriptionExpiry);
+    } else {
+      memberSubscriptionExpiryJson = null;
+    }
+  }
+  
+  /// Batch update subscription expiry for multiple members
+  void setMemberSubscriptionExpiryBatch(Map<String, int?> memberExpiryMap) {
+    _loadSubscriptionExpiryFromJson();
+    memberSubscriptionExpiry ??= {};
+    
+    for (String pubkey in memberExpiryMap.keys) {
+      int? timestamp = memberExpiryMap[pubkey];
+      if (timestamp != null) {
+        memberSubscriptionExpiry![pubkey] = timestamp;
+      } else {
+        memberSubscriptionExpiry!.remove(pubkey);
+      }
+    }
+    
+    _saveSubscriptionExpiryToJson();
+  }
+  
+  /// Get subscription expiry timestamp for a specific member
+  int? getMemberSubscriptionExpiry(String pubkey) {
+    _loadSubscriptionExpiryFromJson();
+    return memberSubscriptionExpiry?[pubkey];
+  }
+  
+  /// Check if a member's subscription is expired
+  bool isMemberSubscriptionExpired(String pubkey) {
+    int? expiry = getMemberSubscriptionExpiry(pubkey);
+    if (expiry == null) return false; // No expiry means permanent
+    return DateTime.now().millisecondsSinceEpoch ~/ 1000 > expiry;
+  }
+  
+  /// Get all members with expired subscriptions
+  List<String> getExpiredMembers() {
+    if (members == null || memberSubscriptionExpiry == null) return [];
+    
+    List<String> expiredMembers = [];
+    for (String pubkey in members!) {
+      if (isMemberSubscriptionExpired(pubkey)) {
+        expiredMembers.add(pubkey);
+      }
+    }
+    return expiredMembers;
+  }
+  
+  /// Get all members with active subscriptions
+  List<String> getActiveMembers() {
+    if (members == null) return [];
+    
+    List<String> activeMembers = [];
+    for (String pubkey in members!) {
+      if (!isMemberSubscriptionExpired(pubkey)) {
+        activeMembers.add(pubkey);
+      }
+    }
+    return activeMembers;
+  }
 }

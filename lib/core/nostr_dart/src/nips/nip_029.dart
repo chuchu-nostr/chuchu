@@ -90,14 +90,21 @@ class Nip29 {
     return regex.hasMatch(input);
   }
 
-  static List<String> decodeGroupMembers(Event event) {
+  static List<GroupMember> decodeGroupMembers(Event event) {
     if (event.kind != 39002) {
       throw Exception("${event.kind} is not nip29 compatible");
     }
 
-    List<String> members = [];
+    List<GroupMember> members = [];
     for (var tag in event.tags) {
-      if (tag[0] == "p" && isHexadecimalString(tag[1])) members.add(tag[1]);
+      if (tag[0] == "p" && isHexadecimalString(tag[1])) {
+        // Parse subscription expiry timestamp from tag[2] if present
+        int? subscriptionExpiryTimestamp;
+        if (tag.length > 2 && tag[2].isNotEmpty) {
+          subscriptionExpiryTimestamp = int.tryParse(tag[2]);
+        }
+        members.add(GroupMember(tag[1], subscriptionExpiryTimestamp));
+      }
     }
     return members;
   }
@@ -468,7 +475,6 @@ class Nip29 {
       case GroupActionKind.createInvite:
         return encodeCreateInvite(
             moderation.groupId, moderation.inviteCode, moderation.previous, pubkey, privkey);
-        break;
     }
   }
 }
@@ -552,6 +558,27 @@ class GroupAdmin {
 
   List<dynamic> toJson() {
     return [pubkey, role, ...permissions.map((p) => p.name)];
+  }
+}
+
+class GroupMember {
+  String pubkey;
+  int? subscriptionExpiryTimestamp;
+
+  GroupMember(this.pubkey, this.subscriptionExpiryTimestamp);
+
+  factory GroupMember.fromJson(List<dynamic> json) {
+    String pubkey = json[0];
+    int? subscriptionExpiryTimestamp = json.length > 2 ? int.tryParse(json[2]) : null;
+    return GroupMember(pubkey, subscriptionExpiryTimestamp);
+  }
+
+  List<dynamic> toJson() {
+    List<dynamic> result = [pubkey];
+    if (subscriptionExpiryTimestamp != null) {
+      result.add(subscriptionExpiryTimestamp);
+    }
+    return result;
   }
 }
 

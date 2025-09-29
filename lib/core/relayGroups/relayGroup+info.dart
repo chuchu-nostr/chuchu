@@ -51,15 +51,25 @@ extension EInfo on RelayGroup {
           groupDB.lastAdminsUpdatedTime = event.createdAt;
           break;
         case 39002:
-          List<String> members = Nip29.decodeGroupMembers(event);
-          if ((!checkInGroup(groupId) && members.contains(pubkey)) ||
-              (checkInGroup(groupId) && !members.contains(pubkey))) {
-            groupDB!.members = members;
+          List<GroupMember> members = Nip29.decodeGroupMembers(event);
+          List<String> memberPubkeys = members.map((m) => m.pubkey).toList();
+          
+          // Create batch update map for subscription expiry
+          Map<String, int?> memberExpiryMap = {};
+          for (GroupMember member in members) {
+            memberExpiryMap[member.pubkey] = member.subscriptionExpiryTimestamp;
+          }
+          
+          if ((!checkInGroup(groupId) && memberPubkeys.contains(pubkey)) ||
+              (checkInGroup(groupId) && !memberPubkeys.contains(pubkey))) {
+            groupDB!.members = memberPubkeys;
+            groupDB.setMemberSubscriptionExpiryBatch(memberExpiryMap);
             groupDB.lastMembersUpdatedTime = event.createdAt;
             await syncGroupToDB(groupDB);
             updateGroupSubscription();
           } else {
-            groupDB!.members = members;
+            groupDB!.members = memberPubkeys;
+            groupDB.setMemberSubscriptionExpiryBatch(memberExpiryMap);
             groupDB.lastMembersUpdatedTime = event.createdAt;
           }
           break;
@@ -121,11 +131,20 @@ extension EInfo on RelayGroup {
 
   RelayGroupDBISAR handleGroupMembers(Event event, String relay) {
     String groupId = Nip29.getGroupIdFromEvent(event) ?? '';
-    List<String> members = Nip29.decodeGroupMembers(event);
+    List<GroupMember> members = Nip29.decodeGroupMembers(event);
+    List<String> memberPubkeys = members.map((m) => m.pubkey).toList();
+    
+    // Create batch update map for subscription expiry
+    Map<String, int?> memberExpiryMap = {};
+    for (GroupMember member in members) {
+      memberExpiryMap[member.pubkey] = member.subscriptionExpiryTimestamp;
+    }
+    
     RelayGroupDBISAR? groupDB = groups[groupId]?.value;
     groupDB ??= RelayGroupDBISAR(groupId: groupId, relay: relay);
     if (event.createdAt < groupDB.lastMembersUpdatedTime) return groupDB;
-    groupDB.members = members;
+    groupDB.members = memberPubkeys;
+    groupDB.setMemberSubscriptionExpiryBatch(memberExpiryMap);
     groupDB.lastMembersUpdatedTime = event.createdAt;
     groupMetadataUpdatedCallBack?.call(groupDB);
     syncGroupToDB(groupDB);
