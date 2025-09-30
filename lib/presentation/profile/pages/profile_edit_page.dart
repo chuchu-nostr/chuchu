@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'package:chuchu/core/account/account+profile.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+admin.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../../core/account/account.dart';
+import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
@@ -40,11 +43,54 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   late RelayGroupDBISAR groupInfo;
 
   int subscriptionPrice = 0;
+  late ValueNotifier<bool> _hasChangesNotifier;
 
   @override
   void initState() {
     super.initState();
+    _hasChangesNotifier = ValueNotifier<bool>(false);
     getGroupInfo();
+    _addListeners();
+  }
+
+
+  void _addListeners() {
+    // Listen to text field changes
+    _usernameController.addListener(_onFieldChanged);
+    _aboutController.addListener(_onFieldChanged);
+  }
+
+  void _onFieldChanged() {
+    _hasChangesNotifier.value = _hasChanges();
+  }
+
+  // Check if user avatar has changed
+  bool _hasAvatarChanges() {
+    return _selectedAvatarPath != null;
+  }
+
+  // Check if relay group metadata has changed
+  bool _hasGroupMetadataChanges() {
+    final originalName = widget.relayGroup.name;
+    final originalAbout = widget.relayGroup.about;
+    final originalPicture = widget.relayGroup.picture;
+    final originalSubscriptionAmount = widget.relayGroup.subscriptionAmount;
+    
+    final updatedName = _usernameController.text.trim();
+    final updatedAbout = _aboutController.text.trim();
+    final updatedPicture = _selectedCoverPhotoPath ?? originalPicture;
+    final updatedSubscriptionAmount = subscriptionPrice;
+    
+    // Check if any group metadata values have actually changed
+    return updatedName != originalName ||
+           updatedAbout != originalAbout ||
+           updatedPicture != originalPicture ||
+           updatedSubscriptionAmount != originalSubscriptionAmount;
+  }
+
+  // Check if any values have changed (for UI state)
+  bool _hasChanges() {
+    return _hasAvatarChanges() || _hasGroupMetadataChanges();
   }
 
   void getGroupInfo() {
@@ -56,6 +102,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   @override
   void dispose() {
+    _hasChangesNotifier.dispose();
     _usernameController.dispose();
     _aboutController.dispose();
     super.dispose();
@@ -106,22 +153,31 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             )
             : Padding(
               padding: const EdgeInsets.only(right: 8),
-              child: ElevatedButton(
-                onPressed: _saveProfile,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: theme.colorScheme.primary,
-                  foregroundColor: Colors.white,
-                  shape: const StadiumBorder(),
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                  elevation: 0,
-                ),
-                child: const Text(
-                  'Save',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
+              child: ValueListenableBuilder<bool>(
+                valueListenable: _hasChangesNotifier,
+                builder: (context, hasChanges, child) {
+                  return ElevatedButton(
+                    onPressed: hasChanges ? _saveProfile : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: hasChanges
+                          ? theme.colorScheme.primary 
+                          : theme.colorScheme.outline.withOpacity(0.3),
+                      foregroundColor: hasChanges
+                          ? Colors.white 
+                          : theme.colorScheme.onSurface.withOpacity(0.5),
+                      shape: const StadiumBorder(),
+                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                      elevation: 0,
+                    ),
+                    child: const Text(
+                      'Save',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
       ],
@@ -134,10 +190,12 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: GestureDetector(
-          onTap: () => FocusScope.of(context).requestFocus(FocusNode()),
+      body: GestureDetector(
+        onTap:() {
+          FocusScope.of(context).requestFocus(FocusNode());
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -185,26 +243,54 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
               ),
               child: Stack(
                 children: [
-                  // Always show local image or default icon
-                  _selectedAvatarPath != null
-                      ? SizedBox(
-                    width: _avatarSize,
-                    height: _avatarSize,
-                    child:ClipOval(
-                      child: Image.file(
-                        File(_selectedAvatarPath!),
-                        fit: BoxFit.cover,
-                      ),
-                    ) ,
-                  )
-                      : Center(
+                  ValueListenableBuilder<UserDBISAR>(
+                    valueListenable: Account.sharedInstance.getUserNotifier(
+                      Account.sharedInstance.currentPubkey,
+                    ),
+                    builder: (context, user, child) {
+                      // Priority: 1. Selected avatar, 2. User's existing picture, 3. Default icon
+                      if (_selectedAvatarPath != null) {
+                        return SizedBox(
+                          width: _avatarSize,
+                          height: _avatarSize,
+                          child: ClipOval(
+                            child: Image.file(
+                              File(_selectedAvatarPath!),
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        );
+                      } else if (user.picture != null && user.picture!.isNotEmpty) {
+                        return SizedBox(
+                          width: _avatarSize,
+                          height: _avatarSize,
+                          child: ClipOval(
+                            child: Image.network(
+                              user.picture!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return Center(
+                                  child: Icon(
+                                    Icons.person,
+                                    size: _avatarIconSize,
+                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        );
+                      } else {
+                        return Center(
                           child: Icon(
                             Icons.person,
                             size: _avatarIconSize,
                             color: Theme.of(context).colorScheme.onSurfaceVariant,
                           ),
-                        ),
-                  // Show loading overlay when uploading
+                        );
+                      }
+                    },
+                  ),
                   if (_isUploadingAvatar)
                     Container(
                       decoration: BoxDecoration(
@@ -294,7 +380,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             borderRadius: BorderRadius.circular(16),
             child: Stack(
               children: [
-                // Always show local image or placeholder
+                // Show local image, existing picture, or placeholder
                 _selectedCoverPhotoPath != null
                     ? Image.file(
                         File(_selectedCoverPhotoPath!),
@@ -302,47 +388,97 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                         width: double.infinity,
                         height: 200,
                       )
-                    : Container(
-                        width: double.infinity,
-                        height: 200,
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topLeft,
-                            end: Alignment.bottomRight,
-                            colors: [
-                              Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                              Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                            ],
+                    : widget.relayGroup.picture.isNotEmpty
+                        ? Image.network(
+                            widget.relayGroup.picture,
+                            fit: BoxFit.cover,
+                            width: double.infinity,
+                            height: 200,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                width: double.infinity,
+                                height: 200,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                      Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                                    ],
+                                  ),
+                                ),
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.add_photo_alternate_rounded,
+                                      size: 48,
+                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      'Add Cover Photo',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      'Tap to select image',
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          )
+                        : Container(
+                            width: double.infinity,
+                            height: 200,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
+                                  Theme.of(context).colorScheme.primary.withOpacity(0.05),
+                                ],
+                              ),
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.add_photo_alternate_rounded,
+                                  size: 48,
+                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  'Add Cover Photo',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w500,
+                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Tap to select image',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.add_photo_alternate_rounded,
-                              size: 48,
-                              color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
-                            ),
-                            const SizedBox(height: 12),
-                            Text(
-                              'Add Cover Photo',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Tap to select image',
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
                 // Show loading overlay when uploading
                 if (_isUploadingCoverPhoto)
                   Container(
@@ -389,9 +525,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         initialMonthlyPrice: widget.relayGroup.subscriptionAmount,
         onPriceChanged: (monthlyPrice) {
           subscriptionPrice = monthlyPrice;
-          if (mounted) {
-            setState(() {});
-          }
+          _hasChangesNotifier.value = _hasChanges();
         },
       );
     }
@@ -524,6 +658,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         setState(() {
           _selectedCoverPhotoPath = picked.path;
         });
+        _hasChangesNotifier.value = _hasChanges();
         // Auto-upload cover photo after showing local image
         await _uploadCoverPhoto();
       }
@@ -544,6 +679,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         setState(() {
           _selectedAvatarPath = picked.path;
         });
+        _hasChangesNotifier.value = _hasChanges();
         // Auto-upload avatar after showing local image
         await _uploadAvatar();
       }
@@ -602,6 +738,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         fileName: imageFile.path.split('/').last,
       );
       if (imageUrl != null && mounted) {
+        _selectedCoverPhotoPath = imageUrl;
+
         CommonToast.instance.show(context, 'Cover photo uploaded successfully');
       } else {
         throw Exception('Upload returned empty URL');
@@ -621,47 +759,86 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
 
   Future<void> _saveProfile() async {
-    // Validate inputs
-    if (_usernameController.text.trim().isEmpty) {
-      FeedWidgetsUtils.showMessage(context,'Username cannot be empty', isError: true);
+    // Check if there are any changes to save
+    if (!_hasChanges()) {
+      FeedWidgetsUtils.showMessage(context, 'No changes to save', isError: false);
       return;
+    }
+
+    // Validate inputs for group metadata changes
+    if (_hasGroupMetadataChanges()) {
+      final updatedName = _usernameController.text.trim();
+      if (updatedName.isEmpty) {
+        FeedWidgetsUtils.showMessage(context, 'Username cannot be empty', isError: true);
+        return;
+      }
     }
 
     setState(() => _isLoading = true);
 
     try {
-      RelayGroupDBISAR relayGroup = widget.relayGroup;
+      bool avatarSaved = false;
+      bool groupMetadataSaved = false;
 
-      // Prepare updated parameters
-      final updatedName = _usernameController.text.trim();
-      final updatedAbout = _aboutController.text.trim();
-      final updatedPicture = _selectedAvatarPath ?? relayGroup.picture;
-      final updatedSubscriptionAmount = subscriptionPrice;
-
-      // Call editMetadata with user input parameters
-      OKEvent event = await RelayGroup.sharedInstance.editMetadata(
-        relayGroup.groupId,
-        updatedName,
-        updatedAbout,
-        updatedPicture,
-        relayGroup.closed,
-        relayGroup.private,
-        'Profile updated',
-        subscriptionAmount: updatedSubscriptionAmount,
-        groupWalletId: relayGroup.groupWalletId,
-      );
-
-      if (mounted) {
-        if (event.status) {
-          FeedWidgetsUtils.showMessage(context,'Profile updated successfully');
-          Navigator.of(context).pop(true); // Return true to indicate success
-        } else {
-          FeedWidgetsUtils.showMessage(context,event.message, isError: true);
+      // Part 1: Update user avatar if changed
+      if (_hasAvatarChanges()) {
+        UserDBISAR? user = Account.sharedInstance.me;
+        if (user != null) {
+          user.picture = _selectedAvatarPath;
+          Account.sharedInstance.updateProfile(user);
+          avatarSaved = true;
         }
+      }
+
+      // Part 2: Update relay group metadata if changed
+      if (_hasGroupMetadataChanges()) {
+        RelayGroupDBISAR relayGroup = widget.relayGroup;
+
+        // Prepare updated parameters
+        final updatedName = _usernameController.text.trim();
+        final updatedAbout = _aboutController.text.trim();
+        final updatedPicture = _selectedCoverPhotoPath ?? relayGroup.picture;
+        final updatedSubscriptionAmount = subscriptionPrice;
+
+        // Call editMetadata with user input parameters
+        OKEvent event = await RelayGroup.sharedInstance.editMetadata(
+          relayGroup.groupId,
+          updatedName,
+          updatedAbout,
+          updatedPicture,
+          relayGroup.closed,
+          relayGroup.private,
+          'Profile updated',
+          subscriptionAmount: updatedSubscriptionAmount,
+          groupWalletId: relayGroup.groupWalletId,
+        );
+
+        if (event.status) {
+          groupMetadataSaved = true;
+        } else {
+          if (mounted) {
+            FeedWidgetsUtils.showMessage(context, event.message, isError: true);
+          }
+          return;
+        }
+      }
+
+      // Show success message based on what was saved
+      if (mounted) {
+        if (avatarSaved && groupMetadataSaved) {
+          FeedWidgetsUtils.showMessage(context, 'Profile updated successfully');
+        } else if (avatarSaved) {
+          FeedWidgetsUtils.showMessage(context, 'Avatar updated successfully');
+        } else if (groupMetadataSaved) {
+          FeedWidgetsUtils.showMessage(context, 'Profile updated successfully');
+        }
+        
+        _hasChangesNotifier.value = false; // Reset changes flag after successful save
+        Navigator.of(context).pop(true); // Return true to indicate success
       }
     } catch (e) {
       if (mounted) {
-        FeedWidgetsUtils.showMessage(context,'Error updating profile: $e', isError: true);
+        FeedWidgetsUtils.showMessage(context, 'Error updating profile: $e', isError: true);
       }
     } finally {
       if (mounted) {
