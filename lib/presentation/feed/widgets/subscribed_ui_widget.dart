@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import '../../../core/wallet/wallet.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../core/account/relays.dart';
+import '../../../core/account/account.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/relayGroups/relayGroup+info.dart';
 import '../../drawerMenu/subscription/widgets/subscription_payment_dialog.dart';
@@ -419,6 +420,41 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
   }
 
   String _getNextMonthDate() {
+    // Get current user's pubkey
+    final currentPubkey = Account.sharedInstance.currentPubkey;
+    
+    // Get subscription expiry from memberSubscriptionExpiry
+    final memberSubscriptionExpiry = widget.relayGroup.memberSubscriptionExpiry;
+    
+    if (memberSubscriptionExpiry != null && 
+        memberSubscriptionExpiry.containsKey(currentPubkey)) {
+      // Get timestamp for current user
+      final timestamp = memberSubscriptionExpiry[currentPubkey];
+      
+      if (timestamp != null) {
+        // Convert timestamp to DateTime
+        final expiryDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+        
+        const months = [
+          'Jan',
+          'Feb',
+          'Mar',
+          'Apr',
+          'May',
+          'Jun',
+          'Jul',
+          'Aug',
+          'Sep',
+          'Oct',
+          'Nov',
+          'Dec',
+        ];
+        
+        return '${months[expiryDate.month - 1]} ${expiryDate.day}, ${expiryDate.year}';
+      }
+    }
+    
+    // Fallback to next month calculation if no expiry data found
     final now = DateTime.now();
     final nextMonth = DateTime(now.year, now.month + 1, now.day);
 
