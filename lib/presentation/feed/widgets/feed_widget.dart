@@ -6,6 +6,7 @@ import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
+import '../../../core/nostr_dart/src/nips/nip_019.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
@@ -362,7 +363,11 @@ class _FeedWidgetState extends State<FeedWidget> {
     );
   }
 
-  Widget _buildUserNameAndTime(UserDBISAR user, NotedUIModel model) {
+  Widget _buildUserNameAndTime(RelayGroupDBISAR user, NotedUIModel model) {
+    String getUserNupbStr() {
+      String nupKey = Nip19.encodePubkey(model.noteDB.author);
+      return '${nupKey.substring(0, 6)}:${nupKey.substring(nupKey.length - 6)}';
+    }
     return Flexible(
       child: RepaintBoundary(
         child: Column(
@@ -374,7 +379,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Text(
-                    user.name ?? '--',
+                    user.name,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
                       fontSize: 18.px,
@@ -385,7 +390,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                   Row(
                     children: [
                       Text(
-                        FeedUtils.getUserMomentInfo(user, model.createAtStr)[2],
+                        model.createAtStr,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.outline,
                           fontSize: 16.px,
@@ -406,7 +411,7 @@ class _FeedWidgetState extends State<FeedWidget> {
               ),
             ),
             Text(
-              FeedUtils.getUserMomentInfo(user, model.createAtStr)[1],
+              getUserNupbStr(),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.outline,
                 fontSize: 16.px,
@@ -421,16 +426,33 @@ class _FeedWidgetState extends State<FeedWidget> {
     );
   }
 
-  Widget _buildUserInfoRow(UserDBISAR user, NotedUIModel model) {
+  Widget _buildUserInfoRow() {
+    final model = notedUIModel;
+    if(model == null) return const SizedBox();
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (widget.feedWidgetLayout == EFeedWidgetLayout.fullScreen)
           GestureDetector(
             onTap: () async {},
-            child: _buildAvatarWidget(imageUrl: user.picture),
+            child: ValueListenableBuilder<UserDBISAR>(
+              valueListenable:  Account.sharedInstance.getUserNotifier(
+                model.noteDB.author,
+              ),
+              builder: (context, user, child) {
+                return _buildAvatarWidget(imageUrl: user.picture);
+              },
+            ),
           ).setPaddingOnly(right: _rightPadding),
-        _buildUserNameAndTime(user, model),
+        ValueListenableBuilder<RelayGroupDBISAR>(
+          valueListenable:  RelayGroup.sharedInstance.getRelayGroupNotifier(
+            model.noteDB.author,
+          ),
+          builder: (context, user, child) {
+            return _buildUserNameAndTime(user, model);
+          },
+        ),
+
       ],
     );
   }
@@ -444,12 +466,7 @@ class _FeedWidgetState extends State<FeedWidget> {
     return RepaintBoundary(
       child: Container(
         padding: EdgeInsets.only(bottom: _bottomSpacing.px),
-        child: ValueListenableBuilder<UserDBISAR>(
-          valueListenable: Account.sharedInstance.getUserNotifier(pubKey),
-          builder: (context, user, child) {
-            return _buildUserInfoRow(user, model);
-          },
-        ),
+        child: _buildUserInfoRow(),
       ),
     );
   }
