@@ -3,7 +3,6 @@ import 'dart:developer';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
-import 'package:dio/io.dart';
 import 'package:mime/mime.dart';
 
 import '../account/account.dart';
@@ -62,6 +61,11 @@ class BolssomUploader {
     );
 
     Map<String, String>? headers = {};
+    
+    // Set Content-Length header (required by server)
+    headers["Content-Length"] = fileSize.toString();
+    
+    // Set Content-Type header based on file type
     if (StringUtil.isNotBlank(fileName)) {
       var mt = lookupMimeType(fileName!);
       if (StringUtil.isNotBlank(mt)) {
@@ -72,7 +76,8 @@ class BolssomUploader {
       if (multipartFile.contentType != null) {
         headers["Content-Type"] = multipartFile.contentType!.mimeType;
       } else {
-        headers["Content-Type"] = "multipart/form-data";
+        // Default to application/octet-stream for unknown types
+        headers["Content-Type"] = "application/octet-stream";
       }
     }
 
@@ -90,23 +95,14 @@ class BolssomUploader {
         content: "Upload $fileName",
         pubkey: Account.sharedInstance.currentPubkey,
         privkey: Account.sharedInstance.currentPrivkey);
-    headers["Authorization"] =
-        "Nostr ${base64Url.encode(utf8.encode(jsonEncode(nip98Event.toJson())))}";
+        headers["Authorization"] =
+            "Nostr ${base64Url.encode(utf8.encode(jsonEncode(nip98Event.toJson())))}";
 
-    bool isVideo = false;
-    if (StringUtil.isNotBlank(fileName)) {
-      final extension = fileName!.toLowerCase();
-      isVideo = extension.endsWith('.mp4') || 
-                extension.endsWith('.mov') || 
-                extension.endsWith('.avi') || 
-                extension.endsWith('.mkv') ||
-                extension.endsWith('.webm');
-    }
-    
     try {
       var response = await dio.put(
         uploadApiPath,
-        data: isVideo ? bytes : Stream.fromIterable(bytes.map((e) => [e])),
+        data: bytes, // Use bytes directly for both images and videos
+
         options: Options(
           headers: headers,
           validateStatus: (status) {
