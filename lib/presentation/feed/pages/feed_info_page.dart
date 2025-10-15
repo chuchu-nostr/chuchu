@@ -1,4 +1,5 @@
 import 'package:chuchu/core/feed/feed+load.dart';
+import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
@@ -9,6 +10,7 @@ import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/nostr_dart/src/ok.dart';
+import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
@@ -95,45 +97,12 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     }
   }
 
-
-
-  void _handleMessageTap() {
-    if (widget.notedUIModel == null) return;
-    
-    final author = widget.notedUIModel!.noteDB.author;
-    
-    // Show message dialog or navigate to message page
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Send Message'),
-          content: Text('Send a message to ${widget.notedUIModel!.noteDB.author}?'),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                CommonToast.instance.show(context, 'Message functionality coming soon');
-                // You can implement message functionality here
-              },
-              child: Text('Send'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _handleLikeTap() async {
     if (widget.notedUIModel == null) return;
-    
+
     final noteDB = widget.notedUIModel!.noteDB;
     final bool isCurrentlyLiked = noteDB.reactionCountByMe > 0;
-    
+
     bool isSuccess = false;
     if (noteDB.groupId.isEmpty) {
       try {
@@ -337,44 +306,57 @@ class _FeedInfoPageState extends State<FeedInfoPage>
       child: Scaffold(
         backgroundColor: theme.colorScheme.surface,
         appBar: AppBar(
-          title:  ValueListenableBuilder<UserDBISAR>(
-            valueListenable: Account.sharedInstance.getUserNotifier(widget.notedUIModel!.noteDB.author),
-            builder: (context, value, child) {
-              return RepaintBoundary(
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: (){
-                        // if(notedUIModel != null){
-                        //   ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author,));
-                        // }
-                      },
-                      child: FeedWidgetsUtils.clipImage(
+          title: RepaintBoundary(
+            child: Row(
+              children: [
+                GestureDetector(
+                  onTap: () {
+                    // if(notedUIModel != null){
+                    //   ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(userPubkey: notedUIModel!.noteDB.author,));
+                    // }
+                  },
+                  child: ValueListenableBuilder<UserDBISAR>(
+                    valueListenable: Account.sharedInstance.getUserNotifier(
+                      widget.notedUIModel!.noteDB.author,
+                    ),
+                    builder: (context, value, child) {
+                      return FeedWidgetsUtils.clipImage(
                         borderRadius: 32,
                         imageSize: 32,
                         child: ChuChuCachedNetworkImage(
                           imageUrl: value.picture ?? '',
                           fit: BoxFit.cover,
-                          placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-                          errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+                          placeholder:
+                              (_, __) =>
+                                  FeedWidgetsUtils.badgePlaceholderImage(),
+                          errorWidget:
+                              (_, __, ___) =>
+                                  FeedWidgetsUtils.badgePlaceholderImage(),
                           width: 32,
                           height: 32,
                         ),
-                      ),
-                    ).setPaddingOnly(right: 12.0),
-                    Text(
+                      );
+                    },
+                  ),
+                ).setPaddingOnly(right: 12.0),
+                ValueListenableBuilder<RelayGroupDBISAR>(
+                  valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(
+                    widget.notedUIModel!.noteDB.author,
+                  ),
+                  builder: (context, value, child) {
+                    return Text(
                       value.name ?? '--',
                       style: TextStyle(
-                        color:Theme.of(context).colorScheme.onSurface,
+                        color: Theme.of(context).colorScheme.onSurface,
                         fontSize: 24.px,
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
+                    );
+                  },
                 ),
-              );
-            },
+              ],
+            ),
           ),
           titleTextStyle: TextStyle(
             color: theme.colorScheme.onSurface,
