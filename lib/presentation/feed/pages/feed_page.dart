@@ -512,8 +512,9 @@ class _FeedPageState extends State<FeedPage>
   }
 
   List<NoteDBISAR> _filterNotes(List<NoteDBISAR> list) {
+
     return list
-        .where((NoteDBISAR note) => !note.isReaction && note.getReplyLevel(null) < 2)
+        .where((NoteDBISAR note) => !note.isReaction && (note.root == null || note.root!.isEmpty))
         .toList();
   }
 
