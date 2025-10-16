@@ -14,9 +14,6 @@ import 'hash_util.dart';
 class BolssomUploader {
   static var dio = Dio();
 
-
-
-
   static Future<String?> upload(String? endPoint, String filePath, {
     String? fileName,
     Function(double progress)? onProgress,

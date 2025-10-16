@@ -399,10 +399,10 @@ class _FeedWidgetState extends State<FeedWidget> {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
-                      CommonImage(
-                        iconName: 'more_icon.png',
-                        size: 24,
-                      ).setPaddingOnly(left: 13.0),
+                      // CommonImage(
+                      //   iconName: 'more_icon.png',
+                      //   size: 24,
+                      // ).setPaddingOnly(left: 13.0),
                     ],
                   ),
 
