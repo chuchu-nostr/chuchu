@@ -190,23 +190,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
-      body: GestureDetector(
-        onTap:() {
-          FocusScope.of(context).requestFocus(FocusNode());
-        },
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildAvatarSection(),
-              const SizedBox(height: 32),
-              _buildCoverPhotoSection(),
-              const SizedBox(height: 32),
-              _buildFormSection(),
-              const SizedBox(height: 32),
-              _subscriptionWidget(),
-            ],
+      body: SafeArea(
+        child: GestureDetector(
+          onTap:() {
+            FocusScope.of(context).requestFocus(FocusNode());
+          },
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildAvatarSection(),
+                const SizedBox(height: 32),
+                _buildCoverPhotoSection(),
+                const SizedBox(height: 32),
+                _buildFormSection(),
+                const SizedBox(height: 32),
+                _subscriptionWidget(),
+              ],
+            ),
           ),
         ),
       ),

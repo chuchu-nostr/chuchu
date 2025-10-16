@@ -238,7 +238,7 @@ class _FeedPageState extends State<FeedPage>
             ),
           ),
         ],
-      ),
+      ).setPaddingOnly(bottom: 100.0),
     );
   }
 
