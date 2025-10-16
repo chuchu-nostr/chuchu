@@ -76,7 +76,12 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
         image: image,
       ),
       child: SafeArea(
-        child: Column(children: [_buildNavigationBar(user), _buildDataRow()]),
+        child: Column(
+            children: [
+              _buildNavigationBar(user),
+              // _buildDataRow(),
+            ],
+        ),
       ),
     );
   }

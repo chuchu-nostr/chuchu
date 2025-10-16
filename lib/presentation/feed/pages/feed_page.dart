@@ -50,6 +50,7 @@ class _FeedPageState extends State<FeedPage>
 
   final ScrollController feedScrollController = ScrollController();
   final RefreshController refreshController = RefreshController();
+  final ScrollController storiesScrollController = ScrollController();
 
   final Map<String,List<NoteDBISAR>> _notificationGroupNotes = {};
 
@@ -128,6 +129,19 @@ class _FeedPageState extends State<FeedPage>
     }
     
     myGroupsList = sortedMap;
+    
+    // Scroll to the beginning (leftmost position) after sorting
+    _scrollToBeginning();
+  }
+
+  void _scrollToBeginning() {
+    if (storiesScrollController.hasClients) {
+      storiesScrollController.animateTo(
+        0.0,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
   }
 
   void _setupScrollListener() {
@@ -301,6 +315,7 @@ class _FeedPageState extends State<FeedPage>
                     child: SizedBox(
                       height: kStoriesSectionHeight,
                       child: ListView.builder(
+                        controller: storiesScrollController,
                         scrollDirection: Axis.horizontal,
                         padding: EdgeInsets.symmetric(horizontal: 16),
                         itemCount: myGroupsList.length + 1,

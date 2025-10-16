@@ -265,32 +265,33 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
   Widget _buildSubscriptionBundles(BuildContext context, int monthlyPrice) {
     return Column(
       children: [
-        Row(
-          children: [
-            const Text(
-              'SUBSCRIPTION BUNDLES',
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-                color: Colors.black87,
+        GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            setState(() {
+              _isBundlesExpanded = !_isBundlesExpanded;
+            });
+          },
+          child: Row(
+            children: [
+              const Text(
+                'SUBSCRIPTION BUNDLES',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                ),
               ),
-            ),
-            const Spacer(),
-            GestureDetector(
-              onTap: () {
-                setState(() {
-                  _isBundlesExpanded = !_isBundlesExpanded;
-                });
-              },
-              child: Icon(
+              const Spacer(),
+              Icon(
                 _isBundlesExpanded
                     ? Icons.keyboard_arrow_down
                     : Icons.keyboard_arrow_up,
                 color: Colors.grey[600],
                 size: 24,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         const SizedBox(height: 16),
         if (_isBundlesExpanded) ...[

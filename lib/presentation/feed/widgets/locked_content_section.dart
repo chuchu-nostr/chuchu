@@ -18,35 +18,35 @@ class _LockedContentSectionState extends State<LockedContentSection> {
       child: Column(
         children: [
           // Content tabs
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.only(bottom: 8),
-                decoration: const BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(color: Colors.blue, width: 2),
-                  ),
-                ),
-                child: const Text(
-                  '335 POSTS',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.blue,
-                  ),
-                ),
-              ),
-              // const SizedBox(width: 24),
-              // Text(
-              //   '1212 MEDIA',
-              //   style: TextStyle(
-              //     fontSize: 16,
-              //     fontWeight: FontWeight.w500,
-              //     color: Colors.grey[600],
-              //   ),
-              // ),
-            ],
-          ),
+          // Row(
+          //   children: [
+          //     Container(
+          //       padding: const EdgeInsets.only(bottom: 8),
+          //       decoration: const BoxDecoration(
+          //         border: Border(
+          //           bottom: BorderSide(color: Colors.blue, width: 2),
+          //         ),
+          //       ),
+          //       child: const Text(
+          //         '335 POSTS',
+          //         style: TextStyle(
+          //           fontSize: 16,
+          //           fontWeight: FontWeight.w600,
+          //           color: Colors.blue,
+          //         ),
+          //       ),
+          //     ),
+          //     // const SizedBox(width: 24),
+          //     // Text(
+          //     //   '1212 MEDIA',
+          //     //   style: TextStyle(
+          //     //     fontSize: 16,
+          //     //     fontWeight: FontWeight.w500,
+          //     //     color: Colors.grey[600],
+          //     //   ),
+          //     // ),
+          //   ],
+          // ),
 
           const SizedBox(height: 40),
 
@@ -54,16 +54,16 @@ class _LockedContentSectionState extends State<LockedContentSection> {
 
           const SizedBox(height: 24),
 
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              _buildLockedStatItem(icon: Icons.landscape, value: '1.4K'),
-              const SizedBox(width: 32),
-              _buildLockedStatItem(icon: Icons.videocam, value: '334'),
-              const SizedBox(width: 32),
-              _buildLockedStatItem(icon: Icons.favorite, value: '621K'),
-            ],
-          ),
+          // Row(
+          //   mainAxisAlignment: MainAxisAlignment.center,
+          //   children: [
+          //     _buildLockedStatItem(icon: Icons.landscape, value: '1.4K'),
+          //     const SizedBox(width: 32),
+          //     _buildLockedStatItem(icon: Icons.videocam, value: '334'),
+          //     const SizedBox(width: 32),
+          //     _buildLockedStatItem(icon: Icons.favorite, value: '621K'),
+          //   ],
+          // ),
 
           const SizedBox(height: 40),
 
@@ -115,3 +115,4 @@ class _LockedContentSectionState extends State<LockedContentSection> {
     );
   }
 }
+
