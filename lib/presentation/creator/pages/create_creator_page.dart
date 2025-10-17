@@ -54,8 +54,15 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                     const SizedBox(height: 8),
                     TextField(
                       controller: _nameController,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Enter your circle name',
+                        hintStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -79,8 +86,15 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                     TextField(
                       controller: _aboutController,
                       maxLines: 4,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface,
+                        fontWeight: FontWeight.w600,
+                      ),
                       decoration: InputDecoration(
                         hintText: 'Circle introduction',
+                        hintStyle: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -138,7 +152,6 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                     const SizedBox(height: 24),
                     if (_isPaidSubscription)
                       SubscriptionSettingsSection(
-                      initialMonthlyPrice: subscriptionPrice,
                       onPriceChanged: (monthlyPrice) {
                         subscriptionPrice = monthlyPrice;
                       },

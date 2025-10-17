@@ -163,7 +163,10 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
       height: 60,
       child: Stack(
         clipBehavior: Clip.none,
-        children: [_buildProfileImage(user), _buildActionsRow()],
+        children: [
+          _buildProfileImage(user),
+          // _buildActionsRow(),
+        ],
       ),
     );
   }

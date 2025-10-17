@@ -164,7 +164,11 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
           (context) => ProfileEditPage(relayGroup: widget.relayGroupDB),
         );
       },
-      icon: const Icon(Icons.more_vert, color: Colors.white, size: 24),
+      icon: CommonImage(
+        iconName: 'setting_icon.png',
+        size: 24,
+        color: Colors.white,
+      ),
     );
   }
 

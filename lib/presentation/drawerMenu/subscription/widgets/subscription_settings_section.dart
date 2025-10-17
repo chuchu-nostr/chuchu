@@ -127,10 +127,24 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
                   setState(() {});
                   _notifyPriceChanged();
                 },
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontWeight: FontWeight.w600,
+                ),
                 decoration: InputDecoration(
                   prefixText: '${SubscriptionConfig.currencyUnit} ',
-                  hintText: '1000',
+                  prefixStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    fontWeight: FontWeight.w600,
+
+                  ),
+                  hintText: '',
                   labelText: 'Monthly Price (${SubscriptionConfig.currencyUnit})',
+                  labelStyle: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontWeight: FontWeight.w600,
+
+                  ),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),

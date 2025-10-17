@@ -612,14 +612,14 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       style: TextStyle(
         fontSize: 16,
         color: theme.colorScheme.onSurface,
-        fontWeight: FontWeight.w400,
+        fontWeight: FontWeight.w600,
       ),
       decoration: InputDecoration(
         hintText: hintText,
         hintStyle: TextStyle(
           color: theme.colorScheme.onSurface.withOpacity(0.6),
           fontSize: 16,
-          fontWeight: FontWeight.w400,
+          fontWeight: FontWeight.w600,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
