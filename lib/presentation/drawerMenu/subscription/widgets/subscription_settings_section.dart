@@ -15,12 +15,12 @@ class SubscriptionTier {
 }
 
 class SubscriptionSettingsSection extends StatefulWidget {
-  final int initialMonthlyPrice;
+  final int? initialMonthlyPrice;
   final Function(int monthlyPrice)? onPriceChanged;
 
   const SubscriptionSettingsSection({
     super.key,
-    this.initialMonthlyPrice = SubscriptionConfig.defaultSubscriptionPrice,
+    this.initialMonthlyPrice,
     this.onPriceChanged,
   });
 
@@ -72,7 +72,9 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
   @override
   void initState() {
     super.initState();
-    _monthlyPriceController.text = widget.initialMonthlyPrice.toString();
+    if(widget.initialMonthlyPrice != null){
+      _monthlyPriceController.text = widget.initialMonthlyPrice.toString();
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _notifyPriceChanged();
     });
@@ -91,15 +93,15 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
       children: [
         _buildPriceControls(context),
         const SizedBox(height: 24),
-        Text(
-          'What subscribers get:',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-        ),
-        const SizedBox(height: 16),
-        _buildBenefitItem(context, 'Exclusive content access'),
-        _buildBenefitItem(context, 'Direct messaging with you'),
-        _buildBenefitItem(context, 'Early access to new posts'),
-        _buildBenefitItem(context, 'Cancel anytime'),
+        // Text(
+        //   'What subscribers get:',
+        //   style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+        // ),
+        // const SizedBox(height: 16),
+        // _buildBenefitItem(context, 'Exclusive content access'),
+        // _buildBenefitItem(context, 'Direct messaging with you'),
+        // _buildBenefitItem(context, 'Early access to new posts'),
+        // _buildBenefitItem(context, 'Cancel anytime'),
       ],
     );
   }

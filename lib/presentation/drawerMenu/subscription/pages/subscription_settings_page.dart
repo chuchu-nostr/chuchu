@@ -340,18 +340,18 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
                       
                       const SizedBox(height: 24),
                       
-                      Text(
-                        'What subscribers get:',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      _buildBenefitItem('Exclusive content access'),
-                      _buildBenefitItem('Direct messaging with you'),
-                      _buildBenefitItem('Early access to new posts'),
-                      _buildBenefitItem('Cancel anytime'),
+                      // Text(
+                      //   'What subscribers get:',
+                      //   style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      //     fontWeight: FontWeight.bold,
+                      //   ),
+                      // ),
+                      // const SizedBox(height: 16),
+                      //
+                      // _buildBenefitItem('Exclusive content access'),
+                      // _buildBenefitItem('Direct messaging with you'),
+                      // _buildBenefitItem('Early access to new posts'),
+                      // _buildBenefitItem('Cancel anytime'),
                   ],
                 ),
               ),
