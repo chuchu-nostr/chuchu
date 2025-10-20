@@ -16,7 +16,14 @@ class Relays {
   Map<String, RelayDBISAR> relays = {};
 
   List<String> recommendGeneralRelays = [
-    'ws://54.186.137.75:5577',
+    'wss://relay.0xchat.com',
+    'wss://yabu.me',
+    'wss://relay.siamstr.com',
+    'wss://relay.damus.io',
+    'wss://relay.nostr.band',
+    'wss://nos.lol',
+    'wss://nostr.wine',
+    'wss://eden.nostr.land'
   ];
 
   List<String> recommendDMRelays = [
