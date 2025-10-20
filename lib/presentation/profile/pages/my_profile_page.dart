@@ -1,12 +1,17 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/account/account+profile.dart';
+import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/adapt.dart';
+import '../../../core/services/blossom_uploader.dart';
+import '../../../core/widgets/common_toast.dart';
 import '../../backup/pages/backup_page.dart';
 
 class MyProfilePage extends StatefulWidget {
@@ -19,9 +24,9 @@ class MyProfilePage extends StatefulWidget {
 class _MyProfilePageState extends State<MyProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
-  final TextEditingController _dnsController = TextEditingController();
 
-  String? _currentPicture;
+  String? _selectedAvatarPath;
+  bool _isUploadingAvatar = false;
 
   @override
   void initState() {
@@ -31,15 +36,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
 
   void _loadUserProfile() {
     final userInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
-    print('🔍 _loadUserProfile: userInfo = $userInfo');
-    print('🔍 _loadUserProfile: name = ${userInfo?.name}, nickName = ${userInfo?.nickName}');
     if (userInfo != null) {
       // Use name field first, fallback to nickName if name is empty
       _nameController.text = (userInfo.name?.isNotEmpty == true) ? userInfo.name! : (userInfo.nickName ?? '');
       _aboutController.text = userInfo.about ?? '';
-      _dnsController.text = userInfo.dns ?? '';
-      _currentPicture = userInfo.picture;
-      print('🔍 _loadUserProfile: loaded name = ${_nameController.text}');
     }
   }
 
@@ -47,7 +47,6 @@ class _MyProfilePageState extends State<MyProfilePage> {
   void dispose() {
     _nameController.dispose();
     _aboutController.dispose();
-    _dnsController.dispose();
     super.dispose();
   }
 
@@ -88,16 +87,78 @@ class _MyProfilePageState extends State<MyProfilePage> {
     return Center(
       child: Column(
         children: [
-          FeedWidgetsUtils.clipImage(
-            borderRadius: 100.px,
-            imageSize: 100.px,
-            child: ChuChuCachedNetworkImage(
-              imageUrl: _currentPicture ?? '',
-              fit: BoxFit.cover,
-              placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-              errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+          GestureDetector(
+            onTap: _changeProfilePicture,
+            child: Container(
               width: 100.px,
               height: 100.px,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                  width: 2,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Stack(
+                children: [
+                  // Show selected local image, existing picture, or placeholder
+                  if (_selectedAvatarPath != null)
+                    ClipOval(
+                      child: Image.file(
+                        File(_selectedAvatarPath!),
+                        fit: BoxFit.cover,
+                        width: 100.px,
+                        height: 100.px,
+                      ),
+                    )
+                  else
+                    ValueListenableBuilder<UserDBISAR>(
+                      valueListenable: Account.sharedInstance.getUserNotifier(
+                        Account.sharedInstance.currentPubkey,
+                      ),
+                      builder: (context, user, child) {
+                        if (user.picture != null && user.picture!.isNotEmpty) {
+                          return FeedWidgetsUtils.clipImage(
+                            borderRadius: 100.px,
+                            imageSize: 100.px,
+                            child: ChuChuCachedNetworkImage(
+                              imageUrl: user.picture!,
+                              fit: BoxFit.cover,
+                              placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                              errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+                              width: 100.px,
+                              height: 100.px,
+                            ),
+                          );
+                        } else {
+                          return FeedWidgetsUtils.badgePlaceholderImage();
+                        }
+                      },
+                    ),
+                  
+                  // Show loading overlay when uploading
+                  if (_isUploadingAvatar)
+                    Container(
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.black.withOpacity(0.5),
+                      ),
+                      child: const Center(
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
           ),
           const SizedBox(height: 16),
@@ -475,42 +536,87 @@ class _MyProfilePageState extends State<MyProfilePage> {
   }
 
 
-  void _changeProfilePicture() async {
+  Future<void> _changeProfilePicture() async {
     try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
+      final picker = ImagePicker();
+      final picked = await picker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 80,
+      );
+      
+      if (picked != null) {
+        setState(() {
+          _selectedAvatarPath = picked.path;
+        });
+        
+        // Auto-upload avatar after showing local image
+        await _uploadAvatar();
+      }
+    } catch (e) {
+      _showErrorSnackBar('Failed to pick avatar: $e');
+    }
+  }
+
+  // Upload avatar image
+  Future<void> _uploadAvatar() async {
+    if (_selectedAvatarPath == null || _isUploadingAvatar) return;
+
+    setState(() {
+      _isUploadingAvatar = true;
+    });
+
+    try {
+      final imageFile = File(_selectedAvatarPath!);
+      final imageUrl = await BolssomUploader.upload(
+        'https://blossom.band',
+        imageFile.path,
+        fileName: imageFile.path.split('/').last,
       );
 
+      if (imageUrl != null && mounted) {
+        // Update user profile with new avatar URL
+        await _updateUserAvatar(imageUrl);
+        CommonToast.instance.show(context, 'Avatar uploaded successfully');
+      } else {
+        throw Exception('Upload returned empty URL');
+      }
+    } catch (e) {
+      if (mounted) {
+        _showErrorSnackBar('Avatar upload failed: $e');
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploadingAvatar = false;
+        });
+      }
+    }
+  }
+
+  // Update user avatar in profile
+  Future<void> _updateUserAvatar(String imageUrl) async {
+    try {
       // Get current user info
       final currentUserInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
       if (currentUserInfo == null) {
-        Navigator.of(context).pop(); // Close loading dialog
         _showErrorSnackBar('User info not found');
         return;
       }
 
-      // TODO: Implement image picker logic here
-      // For now, we'll just show a placeholder message
-      Navigator.of(context).pop(); // Close loading dialog
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Profile picture change feature coming soon!'),
-          backgroundColor: Colors.orange,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(12)),
-          ),
-        ),
-      );
+      // Update picture field
+      currentUserInfo.picture = imageUrl;
+      
+      // Update profile through Account
+      final result = await Account.sharedInstance.updateProfile(currentUserInfo);
+      
+      if (result != null) {
+        // Update ChuChuUserInfoManager's currentUserInfo
+        ChuChuUserInfoManager.sharedInstance.currentUserInfo = result;
+      } else {
+        throw Exception('Failed to update profile');
+      }
     } catch (e) {
-      Navigator.of(context).pop(); // Close loading dialog
-      _showErrorSnackBar('Failed to change profile picture: $e');
+      _showErrorSnackBar('Failed to update avatar: $e');
     }
   }
 
@@ -542,13 +648,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
       }
 
       // Create updated user info using the new value from dialog
-      print('🔍 _updateProfile: fieldName = $fieldName, newValue = "$newValue"');
       if (fieldName == 'Nickname') {
         currentUserInfo.name = newValue.trim();
-        print('🔍 _updateProfile: set name to "${currentUserInfo.name}"');
       } else if (fieldName == 'Bio') {
         currentUserInfo.about = newValue.trim();
-        print('🔍 _updateProfile: set about to "${currentUserInfo.about}"');
       }
 
       // Update profile through Account
