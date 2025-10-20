@@ -1,11 +1,8 @@
 import 'dart:io';
-import 'package:chuchu/core/account/account+profile.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+admin.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../core/account/account.dart';
-import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/nostr_dart/src/ok.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
@@ -26,18 +23,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   static const String _pageTitle = 'Edit Profile';
   static const String _usernameLabel = 'Username';
   static const String _aboutLabel = 'About';
-  static const String _setAvatarText = 'Set Avatar';
 
-  static const double _avatarSize = 120.0;
-  static const double _avatarIconSize = 60.0;
 
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
 
-  String? _selectedAvatarPath;
   String? _selectedCoverPhotoPath;
   bool _isLoading = false;
-  bool _isUploadingAvatar = false;
   bool _isUploadingCoverPhoto = false;
 
   late RelayGroupDBISAR groupInfo;
@@ -64,10 +56,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     _hasChangesNotifier.value = _hasChanges();
   }
 
-  // Check if user avatar has changed
-  bool _hasAvatarChanges() {
-    return _selectedAvatarPath != null;
-  }
 
   // Check if relay group metadata has changed
   bool _hasGroupMetadataChanges() {
@@ -90,7 +78,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   // Check if any values have changed (for UI state)
   bool _hasChanges() {
-    return _hasAvatarChanges() || _hasGroupMetadataChanges();
+    return _hasGroupMetadataChanges();
   }
 
   void getGroupInfo() {
@@ -200,8 +188,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildAvatarSection(),
-                const SizedBox(height: 32),
                 _buildCoverPhotoSection(),
                 const SizedBox(height: 32),
                 _buildFormSection(),
@@ -215,117 +201,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     );
   }
 
-  // Build avatar section
-  Widget _buildAvatarSection() {
-    final theme = Theme.of(context);
-    
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          GestureDetector(
-            onTap: _selectAvatar,
-            child: Container(
-              width: _avatarSize,
-              height: _avatarSize,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: theme.colorScheme.surfaceContainerHighest,
-                border: Border.all(
-                  color: theme.colorScheme.outline.withOpacity(0.2),
-                  width: 3,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  ValueListenableBuilder<UserDBISAR>(
-                    valueListenable: Account.sharedInstance.getUserNotifier(
-                      Account.sharedInstance.currentPubkey,
-                    ),
-                    builder: (context, user, child) {
-                      // Priority: 1. Selected avatar, 2. User's existing picture, 3. Default icon
-                      if (_selectedAvatarPath != null) {
-                        return SizedBox(
-                          width: _avatarSize,
-                          height: _avatarSize,
-                          child: ClipOval(
-                            child: Image.file(
-                              File(_selectedAvatarPath!),
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        );
-                      } else if (user.picture != null && user.picture!.isNotEmpty) {
-                        return SizedBox(
-                          width: _avatarSize,
-                          height: _avatarSize,
-                          child: ClipOval(
-                            child: Image.network(
-                              user.picture!,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Center(
-                                  child: Icon(
-                                    Icons.person,
-                                    size: _avatarIconSize,
-                                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                  ),
-                                );
-                              },
-                            ),
-                          ),
-                        );
-                      } else {
-                        return Center(
-                          child: Icon(
-                            Icons.person,
-                            size: _avatarIconSize,
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                          ),
-                        );
-                      }
-                    },
-                  ),
-                  if (_isUploadingAvatar)
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withOpacity(0.5),
-                      ),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          GestureDetector(
-            onTap: _selectAvatar,
-            child: Text(
-              _setAvatarText,
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   // Build cover photo section
   Widget _buildCoverPhotoSection() {
@@ -670,59 +545,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   // Action methods
-  Future<void> _selectAvatar() async {
-    try {
-      final picker = ImagePicker();
-      final picked = await picker.pickImage(
-        source: ImageSource.gallery,
-        imageQuality: 80,
-      );
-      if (picked != null) {
-        setState(() {
-          _selectedAvatarPath = picked.path;
-        });
-        _hasChangesNotifier.value = _hasChanges();
-        // Auto-upload avatar after showing local image
-        await _uploadAvatar();
-      }
-    } catch (e) {
-      FeedWidgetsUtils.showMessage(context,'Failed to pick avatar: $e', isError: true);
-    }
-  }
 
-  // Upload avatar image
-  Future<void> _uploadAvatar() async {
-    if (_selectedAvatarPath == null || _isUploadingAvatar) return;
-
-    setState(() {
-      _isUploadingAvatar = true;
-    });
-
-    try {
-      final imageFile = File(_selectedAvatarPath!);
-      final imageUrl = await BolssomUploader.upload(
-        'https://blossom.band',
-        imageFile.path,
-        fileName: imageFile.path.split('/').last,
-      );
-
-      if (imageUrl != null && mounted) {
-        CommonToast.instance.show(context, 'Avatar uploaded successfully');
-      } else {
-        throw Exception('Upload returned empty URL');
-      }
-    } catch (e) {
-      if (mounted) {
-        CommonToast.instance.show(context, 'Avatar upload failed: $e');
-      }
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isUploadingAvatar = false;
-        });
-      }
-    }
-  }
 
   // Upload cover photo
   Future<void> _uploadCoverPhoto() async {
@@ -779,20 +602,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     setState(() => _isLoading = true);
 
     try {
-      bool avatarSaved = false;
       bool groupMetadataSaved = false;
 
-      // Part 1: Update user avatar if changed
-      if (_hasAvatarChanges()) {
-        UserDBISAR? user = Account.sharedInstance.me;
-        if (user != null) {
-          user.picture = _selectedAvatarPath;
-          Account.sharedInstance.updateProfile(user);
-          avatarSaved = true;
-        }
-      }
-
-      // Part 2: Update relay group metadata if changed
+      // Update relay group metadata if changed
       if (_hasGroupMetadataChanges()) {
         RelayGroupDBISAR relayGroup = widget.relayGroup;
 
@@ -827,11 +639,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
       // Show success message based on what was saved
       if (mounted) {
-        if (avatarSaved && groupMetadataSaved) {
-          FeedWidgetsUtils.showMessage(context, 'Profile updated successfully');
-        } else if (avatarSaved) {
-          FeedWidgetsUtils.showMessage(context, 'Avatar updated successfully');
-        } else if (groupMetadataSaved) {
+        if (groupMetadataSaved) {
           FeedWidgetsUtils.showMessage(context, 'Profile updated successfully');
         }
         
