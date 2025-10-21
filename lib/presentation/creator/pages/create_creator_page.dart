@@ -46,7 +46,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Circle Name',
+                      'Poster name',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -59,7 +59,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Enter your circle name',
+                        hintText: 'Enter your Poster name',
                         hintStyle: TextStyle(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -91,7 +91,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: InputDecoration(
-                        hintText: 'Circle introduction',
+                        hintText: 'Poster introduction',
                         hintStyle: TextStyle(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
