@@ -60,12 +60,12 @@ class _MyProfilePageState extends State<MyProfilePage> {
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        actions: [
-          IconButton(
-            onPressed: _refreshProfile,
-            icon: const Icon(Icons.refresh),
-          ),
-        ],
+        // actions: [
+        //   IconButton(
+        //     onPressed: _refreshProfile,
+        //     icon: const Icon(Icons.refresh),
+        //   ),
+        // ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -138,7 +138,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
                             ),
                           );
                         } else {
-                          return FeedWidgetsUtils.badgePlaceholderImage();
+                          return FeedWidgetsUtils.badgePlaceholderImage(size:  100);
                         }
                       },
                     ),
