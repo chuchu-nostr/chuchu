@@ -260,13 +260,13 @@ class _MyProfilePageState extends State<MyProfilePage> {
     return InkWell(
       onTap: onTap,
       child: Container(
-        height: 56,
-        padding:  EdgeInsets.symmetric(horizontal: 16),
+        height: label == 'Bio' ? null : 56,
+        padding:  EdgeInsets.symmetric(horizontal: 16, vertical: label == 'Bio' ? 8 : 0),
         child: Row(
           children: [
             Container(
               width: 40,
-              height: 56,
+              height: 40,
               decoration: BoxDecoration(
                 color: Theme.of(context).colorScheme.primary,
                 shape: BoxShape.circle,
@@ -280,7 +280,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
             const SizedBox(width: 16),
             Expanded(
               child: Container(
-                height: 56,
+                height: label == 'Bio' ? null : 56,
                 decoration: isShowUnderline ? BoxDecoration(
                   border: Border(
                     bottom: BorderSide(

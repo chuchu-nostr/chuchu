@@ -130,7 +130,7 @@ class _SearchPageState extends State<SearchPage> {
                       controller: _searchController,
                       focusNode: _searchFocusNode,
                       decoration: InputDecoration(
-                        hintText: 'Search users or npub...',
+                        hintText: 'Search npub...',
                         hintStyle: TextStyle(
                           color: theme.colorScheme.onSurface.withOpacity(0.6),
                           fontSize: 16.px,
