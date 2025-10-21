@@ -273,17 +273,17 @@ class _DrawerMenuState extends State<DrawerMenu>
             //   },
             // ),
             
-
-            Divider(color: theme.dividerColor.withAlpha(50)),
-            _menuItem(
-              context, 
-              Icons.lock_outline, 
-              "Back Up",
-              onTap: () {
-                Navigator.of(context).pop(); // Close drawer first
-                ChuChuNavigator.pushPage(context, (context) => const BackupPage());
-              },
-            ),
+            //
+            // Divider(color: theme.dividerColor.withAlpha(50)),
+            // _menuItem(
+            //   context,
+            //   Icons.lock_outline,
+            //   "Back Up",
+            //   onTap: () {
+            //     Navigator.of(context).pop(); // Close drawer first
+            //     ChuChuNavigator.pushPage(context, (context) => const BackupPage());
+            //   },
+            // ),
           ],
         ),
       ),
