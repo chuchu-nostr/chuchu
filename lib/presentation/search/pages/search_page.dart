@@ -478,9 +478,6 @@ class _SearchPageState extends State<SearchPage> {
         // Decode npub to get pubkey
         pubkey = UserDBISAR.decodePubkey(trimmedQuery);
         print('🔍Valid npub1 format, decoded pubkey: $pubkey');
-      } else {
-        // Assume it's already a pubkey
-        pubkey = trimmedQuery;
       }
 
       if (pubkey == null || pubkey.isEmpty) {
