@@ -145,8 +145,8 @@ class Connect {
 
   void listenConnectivity() {
     _connectivitySubscription ??=
-        Connectivity().onConnectivityChanged.listen((ConnectivityResult result) {
-          if (result != ConnectivityResult.none) {
+        Connectivity().onConnectivityChanged.listen((List<ConnectivityResult> results) {
+          if (!results.contains(ConnectivityResult.none)) {
             resetConnection(force: false);
           }
         });
