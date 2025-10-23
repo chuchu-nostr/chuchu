@@ -481,7 +481,6 @@ class _FeedPageState extends State<FeedPage>
           _setInitialLoadingFalse();
         }
 
-        if (!isInit) await _getNotesFromRelay();
         return;
       }
 
@@ -489,38 +488,10 @@ class _FeedPageState extends State<FeedPage>
       _updateUI(showList, isInit, list.length);
 
       if (list.length < _limit) {
-        !isInit ? await _getNotesFromRelay() : refreshController.loadNoData();
+        refreshController.loadNoData();
       }
     } catch (e) {
       debugPrint('Error loading notes: $e');
-      refreshController.loadFailed();
-      _setInitialLoadingFalse();
-    }
-  }
-
-
-  Future<List<NoteDBISAR>> _getNoteTypeToRelay() async {
-    return await Feed.sharedInstance.loadContactsNewNotesFromRelay(
-          until: _allNotesFromDBLastTimestamp,
-          limit: _limit,
-        ) ??
-        [];
-  }
-
-  Future<void> _getNotesFromRelay() async {
-    try {
-      List<NoteDBISAR> list = await _getNoteTypeToRelay();
-
-      if (list.isEmpty) {
-        refreshController.loadNoData();
-        _setInitialLoadingFalse();
-        return;
-      }
-
-      List<NoteDBISAR> showList = _filterNotes(list);
-      _updateUI(showList, false, list.length);
-    } catch (e) {
-      debugPrint('Error loading notes from relay: $e');
       refreshController.loadFailed();
       _setInitialLoadingFalse();
     }

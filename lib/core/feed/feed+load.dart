@@ -414,10 +414,8 @@ extension Load on Feed {
 
   Future<List<NoteDBISAR>?> loadContactsNewNotesFromRelay(
       {int? until, int? since, int? limit}) async {
-    List<String> authors = ['75a4f515d60478a10d2ab1655e37269399c31454a3c88c8815b228a9cda2aad1', '93d90b8741ff6f85fbc5b2f17fc753bcb8054e48b2d4ca6fbe1dd5526ce23daa', '7adb520c3ac7cb6dc8253508df0ce1d975da49fefda9b5c956744a049d230ace'];
-    // Contacts.sharedInstance.allContacts.keys.toList();
-    // authors.add(pubkey);
-    print('===authors==$authors');
+    List<String> authors = Contacts.sharedInstance.allContacts.keys.toList();
+    authors.add(pubkey);
     return await loadNewNotesFromRelay(limit: limit, authors: authors, until: until, since: since);
   }
 
