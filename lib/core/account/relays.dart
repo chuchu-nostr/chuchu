@@ -33,7 +33,7 @@ class Relays {
   ];
 
   List<String> recommendGroupRelays = [
-    'ws://54.186.137.75:5577',
+    'ws://54.183.141.200:5577',
   ];
 
   List<String> recommendSecretChatRelays = [
