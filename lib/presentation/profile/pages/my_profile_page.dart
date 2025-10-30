@@ -2,6 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:flutter_image_compress/flutter_image_compress.dart';
+import 'package:path/path.dart' as Path;
 
 import '../../../core/account/account.dart';
 import '../../../core/account/account+profile.dart';
@@ -567,10 +569,13 @@ class _MyProfilePageState extends State<MyProfilePage> {
 
     try {
       final imageFile = File(_selectedAvatarPath!);
+      // Remove EXIF (GPS) by re-encoding image before upload
+      final processed = await _removeExifWithCompress(imageFile);
+      final uploadFilePath = (processed ?? imageFile).path;
       final imageUrl = await BolssomUploader.upload(
         'https://blossom.band',
-        imageFile.path,
-        fileName: imageFile.path.split('/').last,
+        uploadFilePath,
+        fileName: uploadFilePath.split('/').last,
       );
 
       if (imageUrl != null && mounted) {
@@ -590,6 +595,24 @@ class _MyProfilePageState extends State<MyProfilePage> {
           _isUploadingAvatar = false;
         });
       }
+    }
+  }
+
+  // Remove EXIF metadata (including GPS) by re-compressing the image
+  Future<File?> _removeExifWithCompress(File file) async {
+    try {
+      final targetPath = Path.join(
+        Path.dirname(file.path),
+        '${Path.basenameWithoutExtension(file.path)}_noexif.jpg',
+      );
+      final result = await FlutterImageCompress.compressAndGetFile(
+        file.absolute.path,
+        targetPath,
+        quality: 95,
+      );
+      return result != null ? File(result.path) : null;
+    } catch (_) {
+      return null;
     }
   }
 
