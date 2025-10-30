@@ -77,6 +77,7 @@ class _SearchPageState extends State<SearchPage> {
       ),
       body: SafeArea(
         child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
           onTap: () {
             FocusScope.of(context).requestFocus(FocusNode());
           },
