@@ -670,16 +670,33 @@ class _SegmentedBorderPainter extends CustomPainter {
     if (segmentCount == 1) {
       canvas.drawArc(rect, 0, 2 * pi, false, borderPaint);
     } else {
-      for (int i = 0; i < segmentCount; i++) {
-        final startAngle = (2 * pi / segmentCount) * i;
-        final sweepAngle = (2 * pi / segmentCount) * (1 - gapRatio);
+      // Base sector angle per segment
+      final double sector = (2 * pi) / segmentCount;
+      // Make the gap grow with segmentCount, so more segments -> larger gaps
+      // gapAngle is absolute radians, clamped below the sector size
+      final double baseGapAngle = sector * gapRatio; // start from provided ratio
+      final double growthPerSegment = 0.03; // gentler growth (~1.7° per extra segment)
+      final double gapAngle = (baseGapAngle + growthPerSegment * (segmentCount - 1))
+          .clamp(0.0, sector * 0.6);
 
-        canvas.drawArc(rect, startAngle, sweepAngle, false, borderPaint);
+      final double minSweep = 0.06; // ensure each segment still visible (~3.4°)
+      final double sweep = (sector - gapAngle).clamp(minSweep, sector);
+
+      for (int i = 0; i < segmentCount; i++) {
+        final double startAngle = sector * i;
+        canvas.drawArc(rect, startAngle, sweep, false, borderPaint);
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) {
+    if (oldDelegate is _SegmentedBorderPainter) {
+      return oldDelegate.segmentCount != segmentCount ||
+          oldDelegate.gapRatio != gapRatio ||
+          oldDelegate.isShowBorder != isShowBorder;
+    }
+    return true;
+  }
 
 }

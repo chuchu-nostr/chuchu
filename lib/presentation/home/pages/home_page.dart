@@ -380,7 +380,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     );
   }
 
-    Widget _buildCurrentPage() {
+  Widget _buildCurrentPage() {
     return IndexedStack(
       index: _currentTab.index,
       children: [
