@@ -317,22 +317,28 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       ),
       backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
-        child: Column(
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: Column(
-                  children: [
-                    _buildTextInputArea(), 
-                    _buildImageDisplayArea(),
-                    _buildVideoDisplayArea(),
-                    _buildMediaToolbar(),
-                  ],
+        child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
+          onTap: () {
+            FocusScope.of(context).requestFocus(FocusNode());
+          },
+          child: Column(
+            children: [
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Column(
+                    children: [
+                      _buildTextInputArea(),
+                      _buildImageDisplayArea(),
+                      _buildVideoDisplayArea(),
+                      _buildMediaToolbar(),
+                    ],
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
