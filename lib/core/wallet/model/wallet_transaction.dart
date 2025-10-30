@@ -81,15 +81,13 @@ class WalletTransaction {
 
   /// Create from JSON map
   factory WalletTransaction.fromJson(Map<String, dynamic> json) {
-    // LNbits API returns amount in millisats, convert to sats
-    final amountMsats = _parseInt(json['amount']) ?? 0;
-    final amount = (amountMsats.abs() ~/ 1000); // Convert millisats to sats (absolute value)
+    final amount = _parseInt(json['amount']) ?? 0;
     
     return WalletTransaction(
       transactionId: json['transaction_id'] ?? '',
       type: _parseTransactionType(json['type']),
       status: _parseTransactionStatus(json['status']),
-      amount: amount, // Now in sats
+      amount: amount,
       fee: _parseInt(json['fee']) ?? 0,
       description: json['description'],
       invoice: json['invoice'],
