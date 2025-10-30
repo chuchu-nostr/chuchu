@@ -362,7 +362,6 @@ class _FeedPageState extends State<FeedPage>
       },
       child: _buildStoryItem(
         relayGroup: relayGroupDB,
-        imageUrl: '',
         isCurrentUser: false,
         hasUnread: hasNewNotes,
         marginRight: 12,
@@ -377,7 +376,6 @@ class _FeedPageState extends State<FeedPage>
         ChuChuNavigator.pushPage(context, (context) => SearchPage());
       },
       child: _buildStoryItem(
-        imageUrl: "",
         isCurrentUser: false,
         hasUnread: false,
         marginRight: 12,
@@ -389,7 +387,6 @@ class _FeedPageState extends State<FeedPage>
 
   Widget _buildStoryItem({
     RelayGroupDBISAR? relayGroup,
-    required String imageUrl,
     required bool isCurrentUser,
     required bool hasUnread,
     double marginRight = 0,
@@ -411,12 +408,21 @@ class _FeedPageState extends State<FeedPage>
         children: [
           isAddButton
               ? _buildAddButton()
-              : StoryCircle(
-                  imageUrl: imageUrl,
-                  size: avatarSize.toDouble(),
-                  segmentCount: noteCount > 0 ? noteCount : 0,
-                  gapRatio: 0.1,
-                ),
+              :
+          ValueListenableBuilder<UserDBISAR>(
+            valueListenable: Account.sharedInstance.getUserNotifier(
+              relayGroup?.groupId ?? '',
+            ),
+            builder: (context, user, child) {
+              return  StoryCircle(
+                imageUrl: user.picture ?? '',
+                size: avatarSize.toDouble(),
+                segmentCount: noteCount > 0 ? noteCount : 0,
+                gapRatio: 0.1,
+              );
+            },
+          ),
+
           const SizedBox(height: 8),
           Text(
             relayGroup?.name ?? 'Add',
