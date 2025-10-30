@@ -59,6 +59,9 @@ class _FeedPageState extends State<FeedPage>
 
   ThemeData? _cachedTheme;
 
+  // Track processed note ids to prevent duplicate handling across callbacks
+  final Set<String> _seenNoteIds = <String>{};
+
   double avatarSize = 80;
   double storyItemWidth = 85;
   double storyItemHeight = 128;
@@ -181,6 +184,7 @@ class _FeedPageState extends State<FeedPage>
     notesList = [];
     myGroupsList = {};
     _allNotesFromDBLastTimestamp = null;
+    _seenNoteIds.clear();
     if (mounted) {
       setState(() {});
     }
@@ -211,6 +215,11 @@ class _FeedPageState extends State<FeedPage>
 
   void _handleNewNotesAfterNavigation(RelayGroupDBISAR relayGroupDB, bool hasNewNotes) {
     if (mounted) {
+      // Mark current group's notifications as seen to prevent reappearing
+      final cleared = _notificationGroupNotes[relayGroupDB.groupId] ?? [];
+      for (final note in cleared) {
+        _seenNoteIds.add(note.noteId);
+      }
       _notificationGroupNotes[relayGroupDB.groupId] = [];
       // Re-sort the groups list after clearing notifications
       _sortMyGroupsList();
@@ -541,7 +550,15 @@ class _FeedPageState extends State<FeedPage>
 
   @override
   didNewNotesCallBackCallBack(List<NoteDBISAR> notes) {
-    _notificationUpdateNotes(notes);
+    // Only process notes that haven't been seen yet (by noteId)
+    final List<NoteDBISAR> incremental = notes
+        .where((n) => !_seenNoteIds.contains(n.noteId))
+        .toList(growable: false);
+
+    if (incremental.isEmpty) return;
+
+    _seenNoteIds.addAll(incremental.map((n) => n.noteId));
+    _notificationUpdateNotes(incremental);
   }
 
   void _notificationUpdateNotes(List<NoteDBISAR> notes) async {
