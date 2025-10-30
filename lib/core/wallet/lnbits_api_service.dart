@@ -5,8 +5,8 @@ import 'package:chuchu/core/utils/log_utils.dart';
 
 /// LNbits API service for HTTP requests
 class LnbitsApiService {
-  static const String _defaultLnbitsUrl = 'http://54.186.137.75:5000';
-  
+  static const String _defaultLnbitsUrl = 'http://54.183.141.200:5000';
+
   final String baseUrl;
   
   LnbitsApiService({String? lnbitsUrl}) : baseUrl = lnbitsUrl ?? _defaultLnbitsUrl;

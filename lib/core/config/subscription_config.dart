@@ -11,7 +11,7 @@ enum SubscriptionDuration {
 class SubscriptionConfig {
   static const String currencyUnit = 'Sats';
   static const int defaultSubscriptionPrice = 1;
-  static const relayPubkey = '1956bd49a0042940264ae46f25da2bec83d486bcd560a0fed6ac90c7f4636965';
+  static const relayPubkey = '993c243e35e95cb6760eb1d4f0ddad41c548f54e7b1f4a434e57c98fc310a003';
 
   static const Map<SubscriptionDuration, double> discountRates = {
     SubscriptionDuration.month: 1.0,

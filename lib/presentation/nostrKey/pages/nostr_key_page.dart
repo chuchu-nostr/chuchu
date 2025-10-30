@@ -37,7 +37,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'nostr key',
+          'Nostr key',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
@@ -251,7 +251,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Copied'),
+        content: Text('$keyType copied to clipboard'),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         backgroundColor: Theme.of(context).colorScheme.primary,
