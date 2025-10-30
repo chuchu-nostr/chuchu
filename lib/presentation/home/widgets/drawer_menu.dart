@@ -13,7 +13,7 @@ import '../../../core/nostr_dart/src/nips/nip_019.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
-import '../../backup/pages/backup_page.dart';
+import '../../nostrKey/pages/nostr_key_page.dart';
 import '../../creator/pages/create_creator_page.dart';
 import '../../feed/pages/feed_personal_page.dart';
 import '../../profile/pages/my_profile_page.dart';
@@ -236,15 +236,15 @@ class _DrawerMenuState extends State<DrawerMenu>
                 );
               }
             ),
-            _menuItem(
-              context,
-              Icons.dns,
-              "Servers",
-              onTap: () {
-                Navigator.of(context).pop(); // Close drawer first
-                ChuChuNavigator.pushPage(context, (context) => RelaysPage());
-              },
-            ),
+            // _menuItem(
+            //   context,
+            //   Icons.dns,
+            //   "Servers",
+            //   onTap: () {
+            //     Navigator.of(context).pop(); // Close drawer first
+            //     ChuChuNavigator.pushPage(context, (context) => RelaysPage());
+            //   },
+            // ),
             _menuItem(
               context,
               Icons.search,

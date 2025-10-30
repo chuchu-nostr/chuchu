@@ -12,7 +12,7 @@ import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/adapt.dart';
 import '../../../core/services/blossom_uploader.dart';
 import '../../../core/widgets/common_toast.dart';
-import '../../backup/pages/backup_page.dart';
+import '../../nostrKey/pages/nostr_key_page.dart';
 
 class MyProfilePage extends StatefulWidget {
   const MyProfilePage({super.key});
@@ -623,7 +623,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
   void _navigateToBackup() {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => const BackupPage(),
+        builder: (context) => const NostrKeyPage(),
       ),
     );
   }

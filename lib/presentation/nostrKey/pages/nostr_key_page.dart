@@ -37,7 +37,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Nostr key',
+          'nostr key',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
@@ -60,8 +60,8 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
             SizedBox(height: 24.px),
             _buildKeySection(
               theme: theme,
-              title: 'Public Key (npub)',
-              subtitle: 'Your public identifier - safe to share',
+              title: 'Public key (npub)',
+              subtitle: 'Public identifier — safe to share',
               value: _npubKey,
               icon: Icons.public,
               iconColor: theme.colorScheme.primary,
@@ -69,8 +69,8 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
             SizedBox(height: 20.px),
             _buildKeySection(
               theme: theme,
-              title: 'Private Key (nsec)',
-              subtitle: 'Keep this secret - never share with anyone',
+              title: 'Private key (nsec)',
+              subtitle: 'Secret — never share with anyone',
               value: _nsecKey,
               icon: Icons.lock,
               iconColor: Colors.red.shade600,
@@ -88,7 +88,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Account Backup',
+          'Your Nostr keys',
           style: TextStyle(
             fontSize: 24.px,
             fontWeight: FontWeight.w700,
@@ -97,7 +97,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
         ),
         SizedBox(height: 8.px),
         Text(
-          'Save your keys to restore access to your account',
+          'Back up these keys to restore your account if needed',
           style: TextStyle(
             fontSize: 16.px,
             color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
@@ -251,7 +251,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$keyType copied to clipboard'),
+        content: Text('Copied'),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         backgroundColor: Theme.of(context).colorScheme.primary,
