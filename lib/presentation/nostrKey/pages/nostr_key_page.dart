@@ -5,14 +5,14 @@ import '../../../core/account/account.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/nostr_dart/src/nips/nip_019.dart';
 
-class BackupPage extends StatefulWidget {
-  const BackupPage({super.key});
+class NostrKeyPage extends StatefulWidget {
+  const NostrKeyPage({super.key});
 
   @override
-  State<BackupPage> createState() => _BackupPageState();
+  State<NostrKeyPage> createState() => _NostrKeyPageState();
 }
 
-class _BackupPageState extends State<BackupPage> {
+class _NostrKeyPageState extends State<NostrKeyPage> {
   bool _isPrivateKeyVisible = false;
   
   String get _npubKey {
@@ -37,7 +37,7 @@ class _BackupPageState extends State<BackupPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Back Up',
+          'Nostr key',
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w600,
