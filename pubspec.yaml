@@ -83,6 +83,10 @@ dependencies:
   uuid: ^4.3.3
   http: ^1.2.0
   bolt11_decoder: ^1.0.2
+  image_gallery_saver_plus:
+    git:
+      url: https://github.com/ArmanKT/image_gallery_saver_plus.git
+      ref: master
 
 dev_dependencies:
   flutter_test:

@@ -9,7 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
-
+import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';
 import '../utils/navigator/navigator.dart';
 import '../manager/common_file_cache_manager.dart';
 import 'chuchu_Loading.dart';
@@ -540,18 +540,18 @@ class _CustomControlsState extends State<CustomControls> {
             : 'video_$timestamp.mp4';
         }
         
-        // final result = await ImageGallerySaver.saveFile(
-        //   videoPath,
-        //   name: uniqueFileName,
-        // );
+        final result = await ImageGallerySaverPlus.saveFile(
+          videoPath,
+          name: uniqueFileName,
+        );
 
-        // ChuChuLoading.dismiss();
-        //
-        // if (result['isSuccess'] == true) {
-        //   _showToast('Video saved to gallery: $uniqueFileName');
-        // } else {
-        //   _showToast('Failed to save to gallery');
-        // }
+        ChuChuLoading.dismiss();
+
+        if (result['isSuccess'] == true) {
+          _showToast('Video saved to gallery: $uniqueFileName');
+        } else {
+          _showToast('Failed to save to gallery');
+        }
       } else {
         ChuChuLoading.dismiss();
         _showToast('Invalid video file path');
