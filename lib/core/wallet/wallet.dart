@@ -51,11 +51,11 @@ class Wallet {
   Future<List<WalletTransaction>> getAllTransactions() async {
     final all = <WalletTransaction>[];
     all.addAll(_transactions);
-
+    
     // Add all invoices as transactions (pending and paid)
     try {
       final invoices = await _loadInvoicesFromDB();
-
+      
       for (final invoice in invoices) {
         // Determine transaction status
         TransactionStatus status;
@@ -69,7 +69,7 @@ class Wallet {
         } else {
           status = TransactionStatus.pending;
         }
-
+        
         final transaction = WalletTransaction(
           transactionId: invoice.invoiceId,
           amount: invoice.amount,
@@ -88,10 +88,15 @@ class Wallet {
     } catch (e) {
       LogUtils.e(() => 'Failed to load invoices: $e');
     }
-
+    
+    // Filter out transactions with invalid timestamps (createdAt <= 0 or before 2000-01-01)
+    // Unix timestamp 0 = 1970-01-01, which indicates invalid/missing timestamp
+    const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
+    all.removeWhere((tx) => tx.createdAt <= 0 || tx.createdAt < minValidTimestamp);
+    
     // Sort by creation time (newest first)
     all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
+    
     return all;
   }
 
@@ -122,7 +127,7 @@ class Wallet {
   Future<WalletInfo> createNewWallet(String pubkey, String privkey) async {
     try {
       LogUtils.d(() => 'Creating new wallet for pubkey: ${pubkey.substring(0, 8)}...');
-
+      
       // Create wallet with random name
       final accountResponse = await lnbitsApi.createWallet();
       final walletId = accountResponse['id'] as String;
@@ -130,7 +135,7 @@ class Wallet {
       final invoiceKey = accountResponse['invoice'] as String;
       final readKey = accountResponse['read'] as String;
       final walletName = accountResponse['name'] as String;
-
+      
       // Create wallet info object
       final walletInfoObj = WalletInfo(
         walletId: walletId,
@@ -147,10 +152,10 @@ class Wallet {
         reservedBalance: 0,
         lastUpdated: DateTime.now().millisecondsSinceEpoch ~/ 1000,
       );
-
+      
       // Save to database
       await _saveWalletInfoToDB(walletInfoObj);
-
+      
       LogUtils.i(() => 'Successfully created wallet: $walletId');
       return walletInfoObj;
     } catch (e) {
@@ -171,7 +176,7 @@ class Wallet {
         LogUtils.e(() => 'No current pubkey or privkey available');
         return false;
       }
-
+      
       // Load wallet info from database
       LogUtils.d(() => 'Loading wallet info from database');
       WalletInfo? walletInfo = await _loadWalletInfo();
@@ -200,10 +205,10 @@ class Wallet {
       await refreshBalance();
       // Get recent transactions
       await refreshTransactions();
-
+      
       // Start invoice checking timer
       _startInvoiceCheckTimer();
-
+      
       LogUtils.i(() => 'Successfully connected to wallet: ${walletInfo?.walletId ?? "unknown"}');
       return true;
     } catch (e) {
@@ -216,38 +221,38 @@ class Wallet {
   void disconnect() {
     // Stop invoice checking timer
     _stopInvoiceCheckTimer();
-
+    
     _walletInfo = null;
   }
 
   /// Logout and clear all wallet data
   void logout() {
     LogUtils.d(() => 'Starting wallet logout process...');
-
+    
     // Use dispose method to clean up resources (timers, callbacks, pending requests)
     dispose();
-
+    
     // Clear wallet info
     _walletInfo = null;
-
+    
     // Clear transaction data
     _transactions.clear();
     _pendingTransactions.clear();
-
+    
     // Clear cached exchange rate
     _btcToUsdRate = null;
     _rateLastUpdated = null;
-
+    
     // Clear payment status callback (not handled by dispose)
     onPaymentStatusChanged = null;
-
+    
     LogUtils.i(() => 'Wallet logout completed successfully');
   }
 
   /// Refresh wallet balance
   Future<void> refreshBalance() async {
     if (_walletInfo == null) return;
-
+    
     try {
       final balance = await _getBalance();
       if (balance != null && _walletInfo != null) {
@@ -263,15 +268,18 @@ class Wallet {
   /// Send payment
   Future<WalletTransaction?> sendPayment(String invoice, {String? description}) async {
     if (_walletInfo == null || _walletInfo!.adminKey.isEmpty) return null;
-
+    
     try {
       final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
-      final response = await lnbitsApi.payInvoice(adminKey: _walletInfo!.adminKey, bolt11: invoice);
-
+      final response = await lnbitsApi.payInvoice(
+        adminKey: _walletInfo!.adminKey,
+        bolt11: invoice,
+      );
+      
       // LNbits returns amount in msats as negative value for outgoing payments
       final amountMsats = response['amount'] as int;
       final amountSats = (amountMsats.abs() ~/ 1000); // Convert msats to sats and make positive
-
+      
       final transaction = WalletTransaction(
         transactionId: response['payment_hash'] as String,
         type: TransactionType.outgoing,
@@ -285,7 +293,7 @@ class Wallet {
         walletId: _walletInfo!.walletId,
         preimage: response['preimage'] as String?,
       );
-
+      
       _addTransaction(transaction);
       await refreshBalance();
       return transaction;
@@ -298,20 +306,17 @@ class Wallet {
   /// Create invoice for receiving payment
   Future<WalletInvoice?> createInvoice(int amountSats, {String? description}) async {
     if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) return null;
-
+    
     try {
-      LogUtils.d(
-        () =>
-            'Creating invoice for ${amountSats} sats${description != null ? ' with description: $description' : ''}',
-      );
-
+      LogUtils.d(() => 'Creating invoice for ${amountSats} sats${description != null ? ' with description: $description' : ''}');
+      
       final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
       final response = await lnbitsApi.createInvoice(
         apiKey: _walletInfo!.invoiceKey,
         amount: amountSats,
         memo: description,
       );
-
+      
       final invoice = WalletInvoice(
         invoiceId: response['payment_hash'] as String,
         bolt11: response['bolt11'] as String,
@@ -325,13 +330,13 @@ class Wallet {
       );
 
       LogUtils.d(() => 'Created invoice: ${invoice.toJson()}');
-
+      
       // Save invoice to database
       await _saveInvoiceToDB(invoice);
-
+      
       // Trigger UI update for new invoice
       onTransactionAdded?.call();
-
+      
       LogUtils.i(() => 'Successfully created invoice: ${invoice.invoiceId}');
       return invoice;
     } catch (e) {
@@ -343,7 +348,7 @@ class Wallet {
   /// Refresh transaction history with smart sync strategy
   Future<void> refreshTransactions() async {
     if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) return;
-
+    
     try {
       // Step 1: Load existing transactions from database first
       final existingTransactions = await _loadTransactionsFromDB();
@@ -352,24 +357,23 @@ class Wallet {
         LogUtils.d(() => 'Loaded ${existingTransactions.length} existing transactions from DB');
         onTransactionAdded?.call();
       }
-
+      
       // Step 2: Fetch latest transactions from API
       final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
-      final payments = await lnbitsApi.getPayments(apiKey: _walletInfo!.invoiceKey, limit: 10);
-
-      final apiTransactions =
-          payments.map((payment) => WalletTransaction.fromJson(payment)).toList();
-
+      final payments = await lnbitsApi.getPayments(
+        apiKey: _walletInfo!.invoiceKey,
+        limit: 10,
+      );
+      
+      final apiTransactions = payments.map((payment) => WalletTransaction.fromJson(payment)).toList();
+      
       // Step 3: Compare and merge transactions
       final mergedTransactions = _mergeTransactions(existingTransactions, apiTransactions);
-
+      
       if (mergedTransactions.isNotEmpty) {
         _transactions = mergedTransactions;
         await _saveTransactionsToDB(apiTransactions); // Save new transactions from API
-        LogUtils.d(
-          () =>
-              'Refreshed transactions: ${apiTransactions.length} from API, ${mergedTransactions.length} total',
-        );
+        LogUtils.d(() => 'Refreshed transactions: ${apiTransactions.length} from API, ${mergedTransactions.length} total');
         onTransactionAdded?.call();
       }
     } catch (e) {
@@ -391,21 +395,21 @@ class Wallet {
     List<WalletTransaction> newTransactions,
   ) {
     final Map<String, WalletTransaction> transactionMap = {};
-
+    
     // Add existing transactions
     for (final transaction in existing) {
       transactionMap[transaction.transactionId] = transaction;
     }
-
+    
     // Add/update with new transactions (API data takes precedence)
     for (final transaction in newTransactions) {
       transactionMap[transaction.transactionId] = transaction;
     }
-
+    
     // Sort by creation time (newest first)
     final merged = transactionMap.values.toList();
     merged.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
+    
     return merged;
   }
 
@@ -415,10 +419,10 @@ class Wallet {
     if (transaction.status == TransactionStatus.pending) {
       _pendingTransactions.add(transaction);
     }
-
+    
     // Save to database
     _saveTransactionToDB(transaction);
-
+    
     onTransactionAdded?.call();
   }
 
@@ -432,16 +436,17 @@ class Wallet {
     }
   }
 
+
   /// Get wallet balance from LNbits API
   Future<int?> _getBalance() async {
     if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) {
       return null;
     }
-
+    
     try {
       final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
       final walletInfo = await lnbitsApi.getWalletInfo(apiKey: _walletInfo!.invoiceKey);
-
+      
       // LNbits returns balance in msats, convert to sats
       final balanceMsats = walletInfo['balance'] as int?;
       if (balanceMsats != null) {
@@ -455,7 +460,6 @@ class Wallet {
       return null;
     }
   }
-
   /// Save transactions to database
   Future<void> _saveTransactionsToDB(List<WalletTransaction> transactions) async {
     try {
@@ -474,8 +478,13 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final transactions = await isar.walletTransactions.where().findAll();
-      LogUtils.d(() => 'Loaded ${transactions.length} transactions from database');
-      return transactions;
+      // Filter out transactions with invalid timestamps (createdAt <= 0 or before 2000-01-01)
+      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
+      final validTransactions = transactions.where((tx) => 
+        tx.createdAt > 0 && tx.createdAt >= minValidTimestamp
+      ).toList();
+      LogUtils.d(() => 'Loaded ${validTransactions.length} valid transactions from database (filtered ${transactions.length - validTransactions.length} invalid)');
+      return validTransactions;
     } catch (e) {
       LogUtils.e(() => 'Failed to load transactions from DB: $e');
       return [];
@@ -488,13 +497,13 @@ class Wallet {
       // Load wallet info from local database
       final isar = DBISAR.sharedInstance.isar;
       final walletInfos = await isar.walletInfos.where().findAll();
-
+      
       if (walletInfos.isNotEmpty) {
         final walletInfo = walletInfos.first;
         LogUtils.d(() => 'Found existing wallet in database: ${walletInfo.walletId}');
         return walletInfo;
       }
-
+      
       LogUtils.d(() => 'No wallet found in database');
       return null;
     } catch (e) {
@@ -502,6 +511,8 @@ class Wallet {
       return null;
     }
   }
+
+
 
   /// Save wallet info to database
   Future<void> _saveWalletInfoToDB(WalletInfo walletInfo) async {
@@ -554,7 +565,7 @@ class Wallet {
         invoice.status = status;
         await DBISAR.sharedInstance.saveToDB(invoice);
         LogUtils.d(() => 'Updated invoice status: $invoiceId -> $status');
-
+        
         // Trigger UI update when invoice status changes
         onTransactionAdded?.call();
       }
@@ -570,29 +581,28 @@ class Wallet {
       LogUtils.d(() => 'Skipping checkPendingInvoices: walletInfo is null or invoiceKey is empty');
       return;
     }
-
+    
     try {
       LogUtils.d(() => 'Checking pending invoices for payment status...');
-
+      
       // First refresh balance to get latest value
       await refreshBalance();
-
+      
       // Get all pending invoices from database
       final isar = DBISAR.sharedInstance.isar;
       final allInvoices = await isar.walletInvoices.where().findAll();
-      final pendingInvoices =
-          allInvoices.where((invoice) => invoice.status == InvoiceStatus.pending).toList();
-
+      final pendingInvoices = allInvoices.where((invoice) => invoice.status == InvoiceStatus.pending).toList();
+      
       if (pendingInvoices.isEmpty) {
         LogUtils.d(() => 'No pending invoices to check');
         return;
       }
-
+      
       LogUtils.d(() => 'Found ${pendingInvoices.length} pending invoices to check');
-
+      
       final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
       int updatedCount = 0;
-
+      
       // Check each pending invoice
       for (final invoice in pendingInvoices) {
         try {
@@ -604,32 +614,30 @@ class Wallet {
             updatedCount++;
             continue;
           }
-
+          
           // Check payment status via API
           try {
             final paymentInfo = await lnbitsApi.getPayment(
               apiKey: _walletInfo!.invoiceKey,
               paymentHash: invoice.paymentHash,
             );
-
+            
             if (paymentInfo['paid'] == true) {
               await updateInvoiceStatus(invoice.invoiceId, InvoiceStatus.paid);
               LogUtils.d(() => 'Invoice paid: ${invoice.invoiceId}');
               updatedCount++;
-
+              
               // Refresh balance after successful payment
               await refreshBalance();
             }
           } catch (e) {
-            LogUtils.d(
-              () => 'getPayment failed for ${invoice.invoiceId}, checking balance change: $e',
-            );
+            LogUtils.d(() => 'getPayment failed for ${invoice.invoiceId}, checking balance change: $e');
           }
         } catch (e) {
           LogUtils.e(() => 'Error checking invoice ${invoice.invoiceId}: $e');
         }
       }
-
+      
       LogUtils.i(() => 'Invoice status check completed. Updated $updatedCount invoices.');
     } catch (e) {
       LogUtils.e(() => 'Failed to check pending invoices: $e');
@@ -641,8 +649,7 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allInvoices = await isar.walletInvoices.where().findAll();
-      final pendingInvoices =
-          allInvoices.where((invoice) => invoice.status == InvoiceStatus.pending).toList();
+      final pendingInvoices = allInvoices.where((invoice) => invoice.status == InvoiceStatus.pending).toList();
       // Sort by creation time (newest first)
       pendingInvoices.sort((a, b) => b.createdAt.compareTo(a.createdAt));
       return pendingInvoices;
@@ -658,25 +665,27 @@ class Wallet {
     await checkPendingInvoices();
   }
 
+
+
   /// Lookup invoice by payment hash or bolt11
   Future<WalletInvoice?> lookupInvoice(String invoice) async {
     if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) return null;
-
+    
     try {
       final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
-
+      
       // Try to get payment info from LNbits API
       final response = await lnbitsApi.getPayment(
         apiKey: _walletInfo!.invoiceKey,
         paymentHash: invoice,
       );
-
+      
       if (response.isNotEmpty) {
         // Update local invoice status if found
         await updateInvoiceStatus(invoice, InvoiceStatus.paid);
         LogUtils.d(() => 'Invoice found and marked as paid: $invoice');
       }
-
+      
       return null; // For now, return null as we need to implement proper mapping
     } catch (e) {
       LogUtils.e(() => 'Failed to lookup invoice: $e');
@@ -697,7 +706,7 @@ class Wallet {
 
     try {
       LogUtils.d(() => 'Creating subscription invoice for group: $groupId, month: $month');
-
+      
       // Get current account's private key
       final privkey = Account.sharedInstance.currentPrivkey;
       if (privkey.isEmpty) {
@@ -706,25 +715,33 @@ class Wallet {
       }
 
       // Create NIP-47 request event
-      final event = await Nip47.makeSubscriptionInvoice(groupId, month, relayPubkey, privkey);
+      final event = await Nip47.makeSubscriptionInvoice(
+        groupId,
+        month,
+        relayPubkey,
+        privkey,
+      );
 
       LogUtils.d(() => 'Created NIP-47 subscription invoice event: ${event.id}');
-
+      
       // Create completer for this request
       final completer = Completer<Map<String, dynamic>?>();
       _pendingRequests[event.id] = completer;
-
+      
       // Send event to group relay
       final sendSuccess = await _sendEventToGroupRelay(event, groupId);
       if (!sendSuccess) {
         LogUtils.e(() => 'Failed to send subscription invoice event to group relay');
         _pendingRequests.remove(event.id);
         if (!completer.isCompleted) {
-          completer.complete({'error': true, 'message': 'Failed to send event to relay'});
+          completer.complete({
+            'error': true,
+            'message': 'Failed to send event to relay',
+          });
         }
         return completer.future;
       }
-
+      
       // Set timeout for response (30 seconds)
       Timer(const Duration(seconds: 30), () {
         if (_pendingRequests.containsKey(event.id)) {
@@ -734,19 +751,20 @@ class Wallet {
           }
         }
       });
-
+      
       // Wait for response
       final response = await completer.future;
-
+      
       // If successful, start polling for payment status
-      if (response != null &&
-          !response.containsKey('error') &&
+      if (response != null && 
+          !response.containsKey('error') && 
           response.containsKey('payment_hash')) {
         final paymentHash = response['payment_hash'] as String;
         _startPollingPaymentStatus(paymentHash, relayPubkey);
       }
-
+      
       return response;
+      
     } catch (e) {
       LogUtils.e(() => 'Failed to create subscription invoice: $e');
       return null;
@@ -765,7 +783,7 @@ class Wallet {
 
     try {
       LogUtils.d(() => 'Looking up subscription invoice: $paymentHash');
-
+      
       // Get current account's private key
       final privkey = Account.sharedInstance.currentPrivkey;
       if (privkey.isEmpty) {
@@ -774,25 +792,32 @@ class Wallet {
       }
 
       // Create NIP-47 request event
-      final event = await Nip47.lookupSubscriptionInvoice(paymentHash, relayPubkey, privkey);
+      final event = await Nip47.lookupSubscriptionInvoice(
+        paymentHash,
+        relayPubkey,
+        privkey,
+      );
 
       LogUtils.d(() => 'Created NIP-47 lookup subscription invoice event: ${event.id}');
-
+      
       // Create completer for this request
       final completer = Completer<Map<String, dynamic>?>();
       _pendingRequests[event.id] = completer;
-
+      
       // Send event to group relay
       final sendSuccess = await _sendEventToGroupRelay(event, '');
       if (!sendSuccess) {
         LogUtils.e(() => 'Failed to send lookup subscription invoice event to group relay');
         _pendingRequests.remove(event.id);
         if (!completer.isCompleted) {
-          completer.complete({'error': true, 'message': 'Failed to send event to relay'});
+          completer.complete({
+            'error': true,
+            'message': 'Failed to send event to relay',
+          });
         }
         return completer.future;
       }
-
+      
       // Set timeout for response (30 seconds)
       Timer(const Duration(seconds: 30), () {
         if (_pendingRequests.containsKey(event.id)) {
@@ -802,10 +827,11 @@ class Wallet {
           }
         }
       });
-
+      
       // Wait for response
       final response = await completer.future;
       return response;
+      
     } catch (e) {
       LogUtils.e(() => 'Failed to create lookup subscription invoice: $e');
       return null;
@@ -854,27 +880,27 @@ class Wallet {
   Future<void> clearWalletDataFromDB() async {
     try {
       LogUtils.d(() => 'Clearing all wallet data from database...');
-
+      
       final isar = DBISAR.sharedInstance.isar;
-
+      
       // Clear wallet info
       await isar.writeTxn(() async {
         await isar.walletInfos.clear();
         LogUtils.d(() => 'Cleared wallet info from database');
       });
-
+      
       // Clear transactions
       await isar.writeTxn(() async {
         await isar.walletTransactions.clear();
         LogUtils.d(() => 'Cleared transactions from database');
       });
-
+      
       // Clear invoices
       await isar.writeTxn(() async {
         await isar.walletInvoices.clear();
         LogUtils.d(() => 'Cleared invoices from database');
       });
-
+      
       LogUtils.i(() => 'All wallet data cleared from database successfully');
     } catch (e) {
       LogUtils.e(() => 'Error clearing wallet data from DB: $e');
@@ -886,8 +912,7 @@ class Wallet {
   Future<WalletTransaction?> getTransactionById(String transactionId) async {
     try {
       final isar = DBISAR.sharedInstance.isar;
-      final transaction =
-          await isar.walletTransactions.where().transactionIdEqualTo(transactionId).findFirst();
+      final transaction = await isar.walletTransactions.where().transactionIdEqualTo(transactionId).findFirst();
       return transaction;
     } catch (e) {
       LogUtils.e(() => 'Error getting transaction by ID: $e');
@@ -908,18 +933,25 @@ class Wallet {
   }
 
   /// Get transactions by date range
-  Future<List<WalletTransaction>> getTransactionsByDateRange(int startTime, int endTime) async {
+  Future<List<WalletTransaction>> getTransactionsByDateRange(
+    int startTime,
+    int endTime,
+  ) async {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allTransactions = await isar.walletTransactions.where().findAll();
-      final filteredTransactions =
-          allTransactions.where((transaction) {
-            return transaction.createdAt >= startTime && transaction.createdAt <= endTime;
-          }).toList();
-
+      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
+      final filteredTransactions = allTransactions.where((transaction) {
+        // Filter out invalid timestamps
+        if (transaction.createdAt <= 0 || transaction.createdAt < minValidTimestamp) {
+          return false;
+        }
+        return transaction.createdAt >= startTime && transaction.createdAt <= endTime;
+      }).toList();
+      
       // Sort by creation time (newest first)
       filteredTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
+      
       return filteredTransactions;
     } catch (e) {
       LogUtils.e(() => 'Error getting transactions by date range: $e');
@@ -942,14 +974,18 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allTransactions = await isar.walletTransactions.where().findAll();
-      final filteredTransactions =
-          allTransactions.where((transaction) {
-            return transaction.type == type;
-          }).toList();
-
+      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
+      final filteredTransactions = allTransactions.where((transaction) {
+        // Filter out invalid timestamps
+        if (transaction.createdAt <= 0 || transaction.createdAt < minValidTimestamp) {
+          return false;
+        }
+        return transaction.type == type;
+      }).toList();
+      
       // Sort by creation time (newest first)
       filteredTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
+      
       return filteredTransactions;
     } catch (e) {
       LogUtils.e(() => 'Error getting transactions by type: $e');
@@ -962,14 +998,18 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allTransactions = await isar.walletTransactions.where().findAll();
-      final filteredTransactions =
-          allTransactions.where((transaction) {
-            return transaction.status == status;
-          }).toList();
-
+      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
+      final filteredTransactions = allTransactions.where((transaction) {
+        // Filter out invalid timestamps
+        if (transaction.createdAt <= 0 || transaction.createdAt < minValidTimestamp) {
+          return false;
+        }
+        return transaction.status == status;
+      }).toList();
+      
       // Sort by creation time (newest first)
       filteredTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
+      
       return filteredTransactions;
     } catch (e) {
       LogUtils.e(() => 'Error getting transactions by status: $e');
@@ -978,18 +1018,25 @@ class Wallet {
   }
 
   /// Get transactions by amount range
-  Future<List<WalletTransaction>> getTransactionsByAmountRange(int minAmount, int maxAmount) async {
+  Future<List<WalletTransaction>> getTransactionsByAmountRange(
+    int minAmount,
+    int maxAmount,
+  ) async {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allTransactions = await isar.walletTransactions.where().findAll();
-      final filteredTransactions =
-          allTransactions.where((transaction) {
-            return transaction.amount >= minAmount && transaction.amount <= maxAmount;
-          }).toList();
-
+      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
+      final filteredTransactions = allTransactions.where((transaction) {
+        // Filter out invalid timestamps
+        if (transaction.createdAt <= 0 || transaction.createdAt < minValidTimestamp) {
+          return false;
+        }
+        return transaction.amount >= minAmount && transaction.amount <= maxAmount;
+      }).toList();
+      
       // Sort by creation time (newest first)
       filteredTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
-
+      
       return filteredTransactions;
     } catch (e) {
       LogUtils.e(() => 'Error getting transactions by amount range: $e');
@@ -1000,15 +1047,15 @@ class Wallet {
   /// Start invoice checking timer
   void _startInvoiceCheckTimer() {
     _stopInvoiceCheckTimer(); // Stop any existing timer
-
+    
     LogUtils.d(() => 'Starting invoice checking timer...');
-
+    
     // Check every 30 seconds for pending invoices
     _invoiceCheckTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
       LogUtils.d(() => 'Timer tick: calling checkPendingInvoices');
       checkPendingInvoices();
     });
-
+    
     LogUtils.d(() => 'Started invoice checking timer (30s interval)');
   }
 
@@ -1022,8 +1069,8 @@ class Wallet {
   /// Get BTC to USD exchange rate (with caching)
   Future<double> getBtcToUsdRate() async {
     // Check if we have a cached rate that's less than 5 minutes old
-    if (_btcToUsdRate != null &&
-        _rateLastUpdated != null &&
+    if (_btcToUsdRate != null && 
+        _rateLastUpdated != null && 
         DateTime.now().difference(_rateLastUpdated!).inMinutes < 5) {
       return _btcToUsdRate!;
     }
@@ -1051,15 +1098,12 @@ class Wallet {
   Future<Map<String, dynamic>?> parseInvoice(String bolt11) async {
     try {
       LogUtils.d(() => 'Parsing invoice: ${bolt11.substring(0, 20)}...');
-
+      
       // Use local BOLT11 decoder instead of API call
       final decoded = _decodeBolt11Invoice(bolt11);
-
+      
       if (decoded != null) {
-        LogUtils.d(
-          () =>
-              'Invoice parsed successfully: amount=${decoded['amount']}, description=${decoded['description']}',
-        );
+        LogUtils.d(() => 'Invoice parsed successfully: amount=${decoded['amount']}, description=${decoded['description']}');
         return decoded;
       } else {
         LogUtils.e(() => 'Failed to parse invoice');
@@ -1075,12 +1119,12 @@ class Wallet {
   Map<String, dynamic>? _decodeBolt11Invoice(String invoice) {
     try {
       final Bolt11PaymentRequest req = Bolt11PaymentRequest(invoice);
-
+      
       // Extract information from tagged fields
       String description = '';
       String paymentHash = '';
       int expiry = 0;
-
+      
       for (final tag in req.tags) {
         switch (tag.type) {
           case 'description':
@@ -1094,10 +1138,10 @@ class Wallet {
             break;
         }
       }
-
+      
       // Convert amount from BTC to sats
       final amountInSats = (req.amount * Decimal.fromInt(100000000)).round().toBigInt().toInt();
-
+      
       return {
         'amount': amountInSats,
         'description': description,
@@ -1115,7 +1159,7 @@ class Wallet {
   Future<void> handleNIP47Response(Event event, String relay) async {
     try {
       LogUtils.d(() => 'Received NIP-47 response: ${event.id} from $relay');
-
+      
       // Extract request ID from 'e' tag
       String? requestId;
       for (var tag in event.tags) {
@@ -1124,19 +1168,19 @@ class Wallet {
           break;
         }
       }
-
+      
       if (requestId == null) {
         LogUtils.w(() => 'No request ID found in NIP-47 response');
         return;
       }
-
+      
       // Check if we have a pending request for this ID
       final completer = _pendingRequests[requestId];
       if (completer == null) {
         LogUtils.w(() => 'No pending request found for ID: $requestId');
         return;
       }
-
+      
       // Get current account's private key
       final privkey = Account.sharedInstance.currentPrivkey;
       if (privkey.isEmpty) {
@@ -1144,7 +1188,7 @@ class Wallet {
         completer.complete(null);
         return;
       }
-
+      
       // Get current account's public key
       final pubkey = Account.sharedInstance.currentPubkey;
       if (pubkey.isEmpty) {
@@ -1152,7 +1196,7 @@ class Wallet {
         completer.complete(null);
         return;
       }
-
+      
       // Parse NIP-47 response
       // For NIP-47 responses: sender is event.pubkey (relay), receiver is user pubkey
       final nwcResponse = await Nip47.response(
@@ -1161,7 +1205,7 @@ class Wallet {
         pubkey, // receiver (our pubkey)
         privkey,
       );
-
+      
       if (nwcResponse != null) {
         if (!nwcResponse.isSuccess) {
           LogUtils.e(() => 'NIP-47 response error: ${nwcResponse.errorMessage}');
@@ -1180,9 +1224,10 @@ class Wallet {
         LogUtils.w(() => 'Failed to parse NIP-47 response');
         completer.complete(null);
       }
-
+      
       // Remove from pending requests
       _pendingRequests.remove(requestId);
+      
     } catch (e) {
       LogUtils.e(() => 'Error handling NIP-47 response: $e');
       // Complete with error
@@ -1190,13 +1235,16 @@ class Wallet {
       if (requestId != null) {
         final completer = _pendingRequests[requestId];
         if (completer != null && !completer.isCompleted) {
-          completer.complete({'error': true, 'message': e.toString()});
+          completer.complete({
+            'error': true,
+            'message': e.toString(),
+          });
           _pendingRequests.remove(requestId);
         }
       }
     }
   }
-
+  
   /// Extract request ID from event tags
   String? _extractRequestId(Event event) {
     for (var tag in event.tags) {
@@ -1206,14 +1254,17 @@ class Wallet {
     }
     return null;
   }
+  
+  
+  
 
   /// Start polling payment status for a subscription invoice
   void _startPollingPaymentStatus(String paymentHash, String relayPubkey) {
     // Stop existing polling if any
     _stopPollingPaymentStatus(paymentHash);
-
+    
     LogUtils.d(() => 'Starting payment status polling for: $paymentHash');
-
+    
     // Start polling every 15 seconds
     final timer = Timer.periodic(const Duration(seconds: 15), (timer) async {
       try {
@@ -1221,13 +1272,13 @@ class Wallet {
           paymentHash: paymentHash,
           relayPubkey: relayPubkey,
         );
-
+        
         if (status != null && !status.containsKey('error')) {
           final isPaid = status['paid'] as bool? ?? false;
-
+          
           // Notify about status change
           onPaymentStatusChanged?.call(paymentHash, isPaid, status);
-
+          
           // If paid, stop polling
           if (isPaid) {
             LogUtils.d(() => 'Payment completed for: $paymentHash');
@@ -1238,10 +1289,10 @@ class Wallet {
         LogUtils.e(() => 'Error polling payment status for $paymentHash: $e');
       }
     });
-
+    
     _pollingTimers[paymentHash] = timer;
   }
-
+  
   /// Stop polling payment status for a specific invoice
   void _stopPollingPaymentStatus(String paymentHash) {
     final timer = _pollingTimers[paymentHash];
@@ -1251,7 +1302,7 @@ class Wallet {
       LogUtils.d(() => 'Stopped payment status polling for: $paymentHash');
     }
   }
-
+  
   /// Stop all payment status polling
   void stopAllPaymentPolling() {
     for (var timer in _pollingTimers.values) {
@@ -1260,13 +1311,16 @@ class Wallet {
     _pollingTimers.clear();
     LogUtils.d(() => 'Stopped all payment status polling');
   }
-
+  
   /// Manually check payment status (can be called by upper layer)
   Future<Map<String, dynamic>?> checkPaymentStatus({
     required String paymentHash,
     required String relayPubkey,
   }) async {
-    return await lookupSubscriptionInvoice(paymentHash: paymentHash, relayPubkey: relayPubkey);
+    return await lookupSubscriptionInvoice(
+      paymentHash: paymentHash,
+      relayPubkey: relayPubkey,
+    );
   }
 
   /// Send event to group relay
@@ -1326,16 +1380,20 @@ class Wallet {
   Future<WalletInfo?> _loadWalletInfoFromRelay(String pubkey, String privkey) async {
     try {
       LogUtils.d(() => 'Loading wallet info from relay for pubkey: $pubkey');
-
+      
       // Create filter to query kind 30078 events with d=chuchu-wallet
-      Filter filter = Filter(kinds: [30078], authors: [pubkey], d: ['chuchu-wallet'], limit: 1);
-
+      Filter filter = Filter(
+        kinds: [30078],
+        authors: [pubkey],
+        d: ['chuchu-wallet'],
+        limit: 1,
+      );
+      
       Completer<WalletInfo?> completer = Completer<WalletInfo?>();
       List<Event> events = [];
-
+      
       // Query relay for wallet info
       Connect.sharedInstance.addSubscription(
-        relayKind: RelayKind.relayGroup,
         [filter],
         eventCallBack: (event, relay) async {
           LogUtils.d(() => 'Received wallet event from relay: ${event.id}');
@@ -1347,10 +1405,10 @@ class Wallet {
               try {
                 // Get the latest event
                 Event latestEvent = events.first;
-
+                
                 // Decode NIP-78 app data
                 AppData appData = Nip78.decodeAppData(latestEvent);
-
+                
                 // Decrypt content using NIP-44
                 String decryptedContent = await Nip44.decryptContent(
                   appData.content,
@@ -1358,15 +1416,13 @@ class Wallet {
                   pubkey, // my pubkey
                   privkey,
                 );
-
-                LogUtils.d(
-                  () => 'Decrypted wallet content: ${decryptedContent.substring(0, 50)}...',
-                );
-
+                
+                LogUtils.d(() => 'Decrypted wallet content: ${decryptedContent.substring(0, 50)}...');
+                
                 // Parse JSON to WalletInfo
                 Map<String, dynamic> walletJson = jsonDecode(decryptedContent);
                 WalletInfo walletInfo = WalletInfo.fromJson(walletJson);
-
+                
                 LogUtils.d(() => 'Successfully loaded wallet from relay: ${walletInfo.walletId}');
                 if (!completer.isCompleted) {
                   completer.complete(walletInfo);
@@ -1386,7 +1442,7 @@ class Wallet {
           }
         },
       );
-
+      
       // Wait for query to complete
       return await completer.future;
     } catch (e) {
@@ -1399,10 +1455,10 @@ class Wallet {
   Future<bool> _saveWalletInfoToRelay(WalletInfo walletInfo, String pubkey, String privkey) async {
     try {
       LogUtils.d(() => 'Saving wallet info to relay: ${walletInfo.walletId}');
-
+      
       // Convert wallet info to JSON string
       String walletJsonString = jsonEncode(walletInfo.toJson());
-
+      
       // Encrypt content using NIP-44 (self-encryption)
       String encryptedContent = await Nip44.encryptContent(
         walletJsonString,
@@ -1410,16 +1466,16 @@ class Wallet {
         pubkey, // my pubkey
         privkey,
       );
-
+      
       LogUtils.d(() => 'Encrypted wallet content for relay storage');
-
+      
       // Create NIP-78 event
       Event walletEvent = Nip78.encodeAppData(
         pubkey: pubkey,
         content: encryptedContent,
         d: 'chuchu-wallet',
       );
-
+      
       // Sign the event
       Event signedEvent = await Event.from(
         kind: walletEvent.kind,
@@ -1429,14 +1485,13 @@ class Wallet {
         content: walletEvent.content,
         privkey: privkey,
       );
-
+      
       LogUtils.d(() => 'Created signed wallet event: ${signedEvent.id}');
-
+      
       // Send to relay
       Completer<bool> completer = Completer<bool>();
-
+      
       Connect.sharedInstance.sendEvent(
-        relayKinds: [RelayKind.relayGroup],
         signedEvent,
         sendCallBack: (ok, relay) {
           if (ok.status) {
@@ -1452,7 +1507,7 @@ class Wallet {
           }
         },
       );
-
+      
       // Wait for send to complete
       return await completer.future;
     } catch (e) {
@@ -1466,7 +1521,7 @@ class Wallet {
     _stopInvoiceCheckTimer();
     onBalanceChanged = null;
     onTransactionAdded = null;
-
+    
     // Complete all pending requests with null
     for (var completer in _pendingRequests.values) {
       if (!completer.isCompleted) {
@@ -1474,8 +1529,10 @@ class Wallet {
       }
     }
     _pendingRequests.clear();
-
+    
     // Stop all polling timers
     stopAllPaymentPolling();
   }
+
+
 }
