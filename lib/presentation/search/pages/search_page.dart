@@ -9,6 +9,7 @@ import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 
 import '../../../core/account/relays.dart';
+import '../../../core/config/config.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/navigator/navigator.dart';
 
@@ -491,7 +492,7 @@ class _SearchPageState extends State<SearchPage> {
       }
 
       // Get user info from Account
-      RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance.searchGroupsMetadataWithGroupID(pubkey,Relays.sharedInstance.recommendGroupRelays.first);
+      RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance.searchGroupsMetadataWithGroupID(pubkey,Config.sharedInstance.recommendGroupRelays.first);
       print('🔍npub: $trimmedQuery');
       print('🔍pubkey: $pubkey');
       print('🔍relayGroup: $relayGroup');

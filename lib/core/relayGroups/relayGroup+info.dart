@@ -7,6 +7,7 @@ import 'package:isar/isar.dart';
 import '../account/account.dart';
 import '../account/model/userDB_isar.dart';
 import '../account/relays.dart';
+import '../config/config.dart';
 import '../database/db_isar.dart';
 import '../network/connect.dart';
 import '../nostr_dart/src/event.dart';
@@ -183,7 +184,7 @@ extension EInfo on RelayGroup {
   Future<List<RelayGroupDBISAR>> searchAllGroupsFromRelays(
       GroupSearchCallBack? groupCallback) async {
     Set<String> relays = Set.from(groupRelays);
-    relays.addAll(Relays.sharedInstance.recommendGroupRelays);
+    relays.addAll(Config.sharedInstance.recommendGroupRelays);
     return await searchGroupsMetadataFromRelays(relays.toList(), groupCallback);
   }
 

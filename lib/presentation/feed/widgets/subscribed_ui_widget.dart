@@ -7,6 +7,7 @@ import '../../../core/wallet/wallet.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../core/account/relays.dart';
 import '../../../core/account/account.dart';
+import '../../../core/config/config.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/relayGroups/relayGroup+info.dart';
 import '../../drawerMenu/subscription/widgets/subscription_payment_dialog.dart';
@@ -606,7 +607,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
   Future<void> _syncMyGroupsFromRelays() async {
     try {
       // Get the recommend group relays
-      final relays = Relays.sharedInstance.recommendGroupRelays;
+      final relays = Config.sharedInstance.recommendGroupRelays;
       
       if (relays.isNotEmpty) {
         // Call searchMyGroupsMetadataFromRelays to sync my groups

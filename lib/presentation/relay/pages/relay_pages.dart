@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/relayDB_isar.dart';
 import '../../../core/account/relays.dart';
+import '../../../core/config/config.dart';
 import '../../../core/network/connect.dart';
 import '../../../core/utils/navigator/navigator_observer_mixin.dart';
 import '../widgets/ping_delay_time_widget.dart';
@@ -48,7 +49,7 @@ class _RelaysPageState extends State<RelaysPage> with WidgetsBindingObserver, Na
 
   void _initDefault() async {
     // Only initialize group relays from recommendGroupRelays
-    _groupRelays = Relays.sharedInstance.recommendGroupRelays.map((url) => RelayDBISAR(url: url)).toList();
+    _groupRelays = Config.sharedInstance.recommendGroupRelays.map((url) => RelayDBISAR(url: url)).toList();
     if (mounted) setState(() {});
   }
 

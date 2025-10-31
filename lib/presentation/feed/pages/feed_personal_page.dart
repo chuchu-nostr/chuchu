@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/account/relays.dart';
+import '../../../core/config/config.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
@@ -67,7 +68,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance
           .getGroupMetadataFromRelay(
             widget.relayGroupDB.groupId,
-            relay: Relays.sharedInstance.recommendGroupRelays.first,
+            relay: Config.sharedInstance.recommendGroupRelays.first,
             author: widget.relayGroupDB.author,
           );
       subscriptionStatus = ESubscriptionStatus.free;

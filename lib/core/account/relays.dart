@@ -15,31 +15,10 @@ class Relays {
   // ALL relays list
   Map<String, RelayDBISAR> relays = {};
 
-  List<String> recommendGeneralRelays = [
-    'wss://relay.0xchat.com',
-    'wss://yabu.me',
-    'wss://relay.siamstr.com',
-    'wss://relay.damus.io',
-    'wss://relay.nostr.band',
-    'wss://nos.lol',
-    'wss://nostr.wine',
-    'wss://eden.nostr.land'
-  ];
-
   List<String> recommendDMRelays = [
-    'wss://auth.nostr1.com',
-    'wss://relay.0xchat.com',
-    'wss://inbox.nostr.wine',
-  ];
-
-  List<String> recommendGroupRelays = [
-    'ws://54.183.141.200:5577',
   ];
 
   List<String> recommendSecretChatRelays = [
-    'wss://auth.nostr1.com',
-    'wss://inbox.nostr.wine',
-    'wss://relay.0xchat.com'
   ];
 
   Future<void> init() async {
@@ -49,8 +28,8 @@ class Relays {
       relays = {for (var item in result) item.url: item};
     }
     connectGeneralRelays();
-    connectDMRelays();
-    connectInboxOutboxRelays();
+    // connectDMRelays();
+    // connectInboxOutboxRelays();
   }
 
   Future<void> connectGeneralRelays() async {
@@ -67,8 +46,9 @@ class Relays {
     }
     else {
       // startup relays
-      Connect.sharedInstance.connectRelays(recommendGeneralRelays, relayKind: RelayKind.general);
+      Connect.sharedInstance.connectRelays(Config.sharedInstance.recommendGeneralRelays, relayKind: RelayKind.general);
     }
+    Connect.sharedInstance.connectRelays(Config.sharedInstance.recommendGroupRelays, relayKind: RelayKind.relayGroup);
   }
 
   Future<void> connectDMRelays() async {

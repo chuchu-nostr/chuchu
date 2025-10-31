@@ -12,6 +12,7 @@ import '../account/account.dart';
 import '../account/model/relayDB_isar.dart';
 import '../account/model/userDB_isar.dart';
 import '../account/relays.dart';
+import '../config/config.dart';
 import '../database/db_isar.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../messages/messages.dart';
@@ -157,7 +158,7 @@ class RelayGroup {
     UserDBISAR? me = Account.sharedInstance.me;
     if (me != null && me.relayGroupsList != null && me.relayGroupsList!.isNotEmpty) {
       List<String> groupList = me.relayGroupsList!;
-      groupRelays = Relays.sharedInstance.recommendGroupRelays;
+      groupRelays = Config.sharedInstance.recommendGroupRelays;
       for (String id in groupList) {
         SimpleGroups simpleGroups = getHostAndGroupId(id);
         String groupId = simpleGroups.groupId;

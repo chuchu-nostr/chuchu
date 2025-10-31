@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/widgets/common_toast.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/relays.dart';
+import '../../../core/config/config.dart';
 import '../../../core/config/subscription_config.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
@@ -222,7 +223,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
 
         // Create new subscription
       RelayGroupDBISAR? relayGroupDB = await RelayGroup.sharedInstance.createGroup(
-        Relays.sharedInstance.recommendGroupRelays.first,
+        Config.sharedInstance.recommendGroupRelays.first,
         Account.sharedInstance.currentPubkey,
         about: _aboutController.text,
         closed: _isPaidSubscription,

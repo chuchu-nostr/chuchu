@@ -3,6 +3,7 @@ import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+member.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/account/relays.dart';
+import '../../../../core/config/config.dart';
 import '../../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../../core/relayGroups/relayGroup.dart';
 import '../../../../core/widgets/common_toast.dart';
@@ -39,7 +40,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
   bool _isPaidSubscription = true;
   final Map<String, String> _customPrices = {};
 
-  String _subscriptionRelay = Relays.sharedInstance.recommendGroupRelays.first;
+  String _subscriptionRelay = Config.sharedInstance.recommendGroupRelays.first;
   
   final List<SubscriptionTier> _subscriptionTiers = [
     SubscriptionTier(

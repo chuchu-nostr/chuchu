@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:chuchu/core/account/relays.dart';
+import '../config/config.dart';
 import '../contacts/contacts.dart';
 import '../network/connect.dart';
 import '../nostr_dart/nostr.dart';
@@ -46,7 +47,7 @@ extension AccountRelay on Account {
   }
 
   List<RelayDBISAR> getMyRecommendGeneralRelaysList() {
-    List<String> dmRelays = Relays.sharedInstance.recommendGeneralRelays;
+    List<String> dmRelays = Config.sharedInstance.recommendGeneralRelays;
     List<RelayDBISAR> result = [];
     for (var relay in dmRelays) {
       result.add(Relays.sharedInstance.relays[relay] ?? RelayDBISAR(url: relay));

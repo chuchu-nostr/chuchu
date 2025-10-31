@@ -2,14 +2,20 @@ import 'dart:convert';
 import 'package:chuchu/core/nostr_dart/src/utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:chuchu/core/utils/log_utils.dart';
+import '../config/config.dart';
 
 /// LNbits API service for HTTP requests
 class LnbitsApiService {
-  static const String _defaultLnbitsUrl = 'http://54.183.141.200:5000';
-
-  final String baseUrl;
+  final String _baseUrl;
   
-  LnbitsApiService({String? lnbitsUrl}) : baseUrl = lnbitsUrl ?? _defaultLnbitsUrl;
+  LnbitsApiService({String? lnbitsUrl}) 
+      : _baseUrl = lnbitsUrl ?? Config.sharedInstance.defaultLnbitsUrl;
+
+  /// Get the actual base URL with hostConfig mapping applied
+  String get baseUrl {
+    String? mappedHost = Config.sharedInstance.hostConfig[_baseUrl];
+    return mappedHost ?? _baseUrl;
+  }
   
   /// Create a new wallet with random name
   Future<Map<String, dynamic>> createWallet({

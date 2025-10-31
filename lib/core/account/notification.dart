@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:chuchu/core/account/relays.dart';
 
+import '../config/config.dart';
 import '../network/connect.dart';
 import '../nostr_dart/nostr.dart';
 import 'account.dart';
@@ -15,7 +16,7 @@ class NotificationHelper {
   // memory storage
   String serverPubkey = '';
   Timer? timer;
-  List<String> toRelays = Relays.sharedInstance.recommendGeneralRelays;
+  List<String> toRelays = Config.sharedInstance.recommendGeneralRelays;
 
   Event? unSendNotification;
 
