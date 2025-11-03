@@ -605,7 +605,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                           value: '0',
                           isMonetary: true,
                           onTap: () {
-                            CommonToast.instance.show(context, 'Zap functionality coming soon');
+                            CommonToast.instance.show(context, 'Zap coming soon');
                           }
                           // _handleZapTap,
                         ),

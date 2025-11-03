@@ -138,7 +138,10 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
           _dealWithReaction(isSuccess);
         };
       case EFeedOptionType.zaps:
-        return (){};
+        return (){
+          CommonToast.instance.show(context, 'Zap coming soon');
+
+        };
     }
   }
 
@@ -489,7 +492,6 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
 
   Widget _buildZapButton() {
     final zapAmount = widget.notedUIModel?.noteDB.zapAmount ?? 0;
-
     return GestureDetector(
       onTap: widget.onZapTap ?? _handleZapTap,
       child: Column(

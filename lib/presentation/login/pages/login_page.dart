@@ -90,47 +90,47 @@ class _LoginPageState extends State<LoginPage> {
                 Spacer(),
                 
                 // Bottom section
-                Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '©2023 chuchu',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Text(
-                          'Help',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontSize: 12,
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Text('•', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
-                        SizedBox(width: 8),
-                        Row(
-                          children: [
-                            Icon(Icons.language, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
-                            SizedBox(width: 4),
-                            Text(
-                              'Language',
-                              style: TextStyle(
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 20),
-                  ],
-                ),
+                // Column(
+                //   children: [
+                //     Row(
+                //       mainAxisAlignment: MainAxisAlignment.center,
+                //       children: [
+                //         Text(
+                //           '©2023 chuchu',
+                //           style: TextStyle(
+                //             color: Theme.of(context).colorScheme.onSurfaceVariant,
+                //             fontSize: 12,
+                //           ),
+                //         ),
+                //         SizedBox(width: 16),
+                //         Text(
+                //           'Help',
+                //           style: TextStyle(
+                //             color: Theme.of(context).colorScheme.onSurfaceVariant,
+                //             fontSize: 12,
+                //           ),
+                //         ),
+                //         SizedBox(width: 8),
+                //         Text('•', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 12)),
+                //         SizedBox(width: 8),
+                //         Row(
+                //           children: [
+                //             Icon(Icons.language, size: 12, color: Theme.of(context).colorScheme.onSurfaceVariant),
+                //             SizedBox(width: 4),
+                //             Text(
+                //               'Language',
+                //               style: TextStyle(
+                //                 color: Theme.of(context).colorScheme.onSurfaceVariant,
+                //                 fontSize: 12,
+                //               ),
+                //             ),
+                //           ],
+                //         ),
+                //       ],
+                //     ),
+                //     SizedBox(height: 20),
+                //   ],
+                // ),
               ],
             ),
           ),
