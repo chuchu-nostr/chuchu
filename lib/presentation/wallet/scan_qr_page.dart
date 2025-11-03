@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
-import '../../core/wallet/wallet.dart';
 
 /// QR Code Scanner Page
 /// Scans QR codes to get Lightning invoices
@@ -186,7 +185,7 @@ class _ScanQRPageState extends State<ScanQRPage> {
   /// Build scanning overlay with guide
   Widget _buildOverlay() {
     return CustomPaint(
-      painter: ScannerOverlayPainter(),
+      // painter: ScannerOverlayPainter(),
       child: Container(
         alignment: Alignment.center,
         child: Column(
@@ -304,26 +303,27 @@ class _ScanQRPageState extends State<ScanQRPage> {
 class ScannerOverlayPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.black54
-      ..style = PaintingStyle.fill;
-
-    // Draw dark overlay
-    canvas.drawRect(
-      Rect.fromLTWH(0, 0, size.width, size.height),
-      paint,
-    );
-
     // Calculate scanning area (center square)
     final scanSize = 250.0;
     final left = (size.width - scanSize) / 2;
     final top = (size.height - scanSize) / 2;
-    final scanArea = Rect.fromLTWH(left, top, scanSize, scanSize);
 
-    // Clear the scanning area
-    final clearPaint = Paint()
-      ..blendMode = BlendMode.clear;
-    canvas.drawRect(scanArea, clearPaint);
+    final paint = Paint()
+      ..color = Colors.black.withOpacity(0.5)
+      ..style = PaintingStyle.fill;
+
+    // Draw four rectangles around the scanning area instead of covering everything
+    final path = Path()
+      // Top rectangle
+      ..addRect(Rect.fromLTWH(0, 0, size.width, top))
+      // Bottom rectangle
+      ..addRect(Rect.fromLTWH(0, top + scanSize, size.width, size.height - top - scanSize))
+      // Left rectangle
+      ..addRect(Rect.fromLTWH(0, top, left, scanSize))
+      // Right rectangle
+      ..addRect(Rect.fromLTWH(left + scanSize, top, size.width - left - scanSize, scanSize));
+
+    canvas.drawPath(path, paint);
   }
 
   @override

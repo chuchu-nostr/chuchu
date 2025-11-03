@@ -2,18 +2,19 @@
 
 buildscript {
     repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        // Fallback to Aliyun mirrors if needed
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
         maven { url 'https://maven.aliyun.com/repository/jcenter' }
-        google()
-        mavenCentral()
-        gradlePluginPortal()
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.5.0'
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:1.9.22"
+        classpath 'com.android.tools.build:gradle:8.7.0'
+        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:2.1.0"
     }
 }
 
@@ -21,13 +22,14 @@ buildscript {
 
 allprojects {
     repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+        // Fallback to Aliyun mirrors if needed
         maven { url 'https://maven.aliyun.com/repository/google' }
         maven { url 'https://maven.aliyun.com/repository/public' }
         maven { url 'https://maven.aliyun.com/repository/gradle-plugin' }
         maven { url 'https://maven.aliyun.com/repository/jcenter' }
-        google()
-        mavenCentral()
-        gradlePluginPortal()
     }
 }
 
