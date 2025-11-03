@@ -342,8 +342,9 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
   Future<List<NoteDBISAR>> _loadNotesFromRelay() async {
     try {
-      final result = await Feed.sharedInstance.loadNewNotesFromRelay(
-        authors: [widget.relayGroupDB.author],
+      // After loading from relay, get the notes from database
+      final result = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
+        widget.relayGroupDB.groupId,
         until: _allNotesFromDBLastTimestamp,
         limit: _limit,
       );
@@ -378,7 +379,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     if (notes.isEmpty) return [];
 
     return notes
-        .where((note) => !note.isReaction && note.getReplyLevel(null) < 2)
+        .where((note) => !note.isReaction &&  (note.root == null || note.root!.isEmpty))
         .toList();
   }
 
