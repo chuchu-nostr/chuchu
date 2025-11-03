@@ -8,6 +8,7 @@ import '../../../core/config/subscription_config.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/wallet/wallet.dart';
+import '../../../core/widgets/chuchu_Loading.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class CreateCreatorPage extends StatefulWidget {
@@ -194,7 +195,15 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
 
   Future<void> _createSettings() async {
     try {
+      if (_isPaidSubscription) {
+        String cleanPriceText = subscriptionPrice.toString().replaceAll(RegExp(r'[^\d.]'), '');
+        if (cleanPriceText.isEmpty) {
+          CommonToast.instance.show(context, 'Please enter a valid price');
+          return;
+        }
+      }
 
+      ChuChuLoading.show();
       // Get wallet instance
       final wallet = Wallet();
 
@@ -205,20 +214,16 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
 
       if (!wallet.isConnected) {
         CommonToast.instance.show(context, 'Wallet not connected. Please try again.');
+        ChuChuLoading.dismiss();
+
         return;
       }
 
       if(wallet.walletInfo?.walletId == null) {
         CommonToast.instance.show(context, 'Wallet id is not fund.');
-        return;
-      }
+        ChuChuLoading.dismiss();
 
-      if (_isPaidSubscription) {
-        String cleanPriceText = subscriptionPrice.toString().replaceAll(RegExp(r'[^\d.]'), '');
-        if (cleanPriceText.isEmpty) {
-          CommonToast.instance.show(context, 'Please enter a valid price');
-          return;
-        }
+        return;
       }
 
         // Create new subscription
@@ -235,11 +240,15 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
       print('=====>relayGroupDB==$relayGroupDB');
       if(relayGroupDB != null){
         CommonToast.instance.show(context, 'Create Successfully !');
+        ChuChuLoading.dismiss();
+
         Navigator.of(context).pop(true);
       }
 
     } catch (e) {
       CommonToast.instance.show(context, 'Error creating subscription: ${e.toString()}');
+      ChuChuLoading.dismiss();
+
     }
   }
 }
