@@ -66,58 +66,82 @@ class _DrawerMenuState extends State<DrawerMenu>
                   ),
                   builder: (context, user, child) {
                     final avatarSize = 40;
-                    return FeedWidgetsUtils.clipImage(
-                      borderRadius: avatarSize.px,
-                      imageSize: avatarSize.px,
-                      child: ChuChuCachedNetworkImage(
-                        imageUrl: user.picture ?? '',
-                        fit: BoxFit.cover,
-                        placeholder:
-                            (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-                        errorWidget:
-                            (_, __, ___) =>
-                                FeedWidgetsUtils.badgePlaceholderImage(),
-                        width: avatarSize.px,
-                        height: avatarSize.px,
+                    return GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () {
+                          Navigator.of(context).pop(); // Close drawer first
+                          ChuChuNavigator.pushPage(
+                            context,
+                                (context) => MyProfilePage(),
+                          );
+                        },
+                      child: FeedWidgetsUtils.clipImage(
+                        borderRadius: avatarSize.px,
+                        imageSize: avatarSize.px,
+                        child: ChuChuCachedNetworkImage(
+                          imageUrl: user.picture ?? '',
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                          errorWidget:
+                              (_, __, ___) =>
+                              FeedWidgetsUtils.badgePlaceholderImage(),
+                          width: avatarSize.px,
+                          height: avatarSize.px,
+                        ),
                       ),
                     );
                   },
                 ),
                 const SizedBox(width: 6),
                 Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  child: Row(
                     children: [
-                      Text(
-                        nikName,
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          fontSize: 18,
-                          color: theme.colorScheme.onBackground,
+                      GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () {
+                          Navigator.of(context).pop(); // Close drawer first
+                          ChuChuNavigator.pushPage(
+                            context,
+                            (context) => MyProfilePage(),
+                          );
+                        },
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              nikName,
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                                color: theme.colorScheme.onBackground,
+                              ),
+                            ),
+                            Text(
+                              _getUserNupbStr,
+                              style: TextStyle(
+                                fontWeight: FontWeight.normal,
+                                fontSize: 12,
+                                color: theme.colorScheme.onBackground.withOpacity(
+                                  0.6,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            _getUserNupbStr,
-                            style: TextStyle(
-                              fontWeight: FontWeight.normal,
-                              fontSize: 12,
-                              color: theme.colorScheme.onBackground.withOpacity(
-                                0.6,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 12),
+                          const SizedBox(width: 16),
                           GestureDetector(
                             onTap: () async {
                               bool? status = await ChuChuCacheManager
                                   .defaultOXCacheManager
                                   .saveForeverData(
-                                    StorageKeyTool.CHUCHU_USER_PUBKEY,
-                                    '',
-                                  );
+                                StorageKeyTool.CHUCHU_USER_PUBKEY,
+                                '',
+                              );
 
                               if (status) {
                                 await ChuChuUserInfoManager.sharedInstance
@@ -138,18 +162,18 @@ class _DrawerMenuState extends State<DrawerMenu>
               ],
             ),
             const SizedBox(height: 20),
-            _menuItem(
-              context,
-              Icons.person_outline,
-              "Nostr profile",
-              onTap: () {
-                Navigator.of(context).pop(); // Close drawer first
-                ChuChuNavigator.pushPage(
-                  context,
-                  (context) => MyProfilePage(),
-                );
-              }
-            ),
+            // _menuItem(
+            //   context,
+            //   Icons.person_outline,
+            //   "Nostr profile",
+            //   onTap: () {
+            //     Navigator.of(context).pop(); // Close drawer first
+            //     ChuChuNavigator.pushPage(
+            //       context,
+            //       (context) => MyProfilePage(),
+            //     );
+            //   }
+            // ),
             _menuItem(
               context,
               Icons.article_outlined,

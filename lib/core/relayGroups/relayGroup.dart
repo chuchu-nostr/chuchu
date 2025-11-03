@@ -73,6 +73,8 @@ class RelayGroup {
     pubkey = Account.sharedInstance.currentPubkey;
     myGroupsUpdatedCallBack = callBack;
 
+    groupRelays = Config.sharedInstance.recommendGroupRelays;
+
     Account.sharedInstance.relayGroupListUpdateCallback = () {
       groupListUpdated();
     };

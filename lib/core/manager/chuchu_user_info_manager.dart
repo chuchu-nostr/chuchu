@@ -215,6 +215,7 @@ class ChuChuUserInfoManager {
       Feed.sharedInstance.init();
       Zaps.sharedInstance.init();
       RelayGroup.sharedInstance.init(callBack: RelayGroup.sharedInstance.myGroupsUpdatedCallBack);
+
       _initMessage();
     });
   }
@@ -229,7 +230,7 @@ class ChuChuUserInfoManager {
       await ThreadPoolManager.sharedInstance.initialize();
       Connect.sharedInstance.startHeartBeat();
       Account.sharedInstance.startHeartBeat();
-      NotificationHelper.sharedInstance.startHeartBeat();
+      // NotificationHelper.sharedInstance.startHeartBeat();
     }
   }
 }

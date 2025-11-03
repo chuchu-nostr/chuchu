@@ -88,35 +88,35 @@ class _RegisterFormState extends State<RegisterForm> {
         SizedBox(height: 16),
         
         // Terms and Privacy Policy text
-        RichText(
-          textAlign: TextAlign.center,
-          text: TextSpan(
-            style: TextStyle(
-              fontSize: 12,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              height: 1.4,
-            ),
-            children: [
-              TextSpan(text: 'By signing up you agree to our '),
-              TextSpan(
-                text: 'Terms of Service',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              TextSpan(text: ' and '),
-              TextSpan(
-                text: 'Privacy Policy',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-              TextSpan(text: ', and confirm that you are at least 18 years old.'),
-            ],
-          ),
-        ),
+        // RichText(
+        //   textAlign: TextAlign.center,
+        //   text: TextSpan(
+        //     style: TextStyle(
+        //       fontSize: 12,
+        //       color: Theme.of(context).colorScheme.onSurfaceVariant,
+        //       height: 1.4,
+        //     ),
+        //     children: [
+        //       TextSpan(text: 'By signing up you agree to our '),
+        //       TextSpan(
+        //         text: 'Terms of Service',
+        //         style: TextStyle(
+        //           color: Theme.of(context).colorScheme.primary,
+        //           fontWeight: FontWeight.w500,
+        //         ),
+        //       ),
+        //       TextSpan(text: ' and '),
+        //       TextSpan(
+        //         text: 'Privacy Policy',
+        //         style: TextStyle(
+        //           color: Theme.of(context).colorScheme.primary,
+        //           fontWeight: FontWeight.w500,
+        //         ),
+        //       ),
+        //       TextSpan(text: ', and confirm that you are at least 18 years old.'),
+        //     ],
+        //   ),
+        // ),
       ],
     );
   }
