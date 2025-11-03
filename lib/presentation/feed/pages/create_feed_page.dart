@@ -73,6 +73,33 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     }
   }
 
+  Future<void> _pickVideos() async {
+    final picker = ImagePicker();
+    // Note: ImagePicker doesn't support multi-video selection, so we'll allow multiple single selections
+    // or use pickVideo() for single selection. For better UX, let's allow selecting multiple videos one by one
+    // by calling pickVideo() in a loop until user cancels, or show a dialog
+    
+    // For now, we'll use pickVideo() for single video selection
+    // In a production app, you might want to implement a custom multi-video picker
+    final picked = await picker.pickVideo(source: ImageSource.gallery);
+    if (picked != null) {
+      final videoFile = File(picked.path);
+      setState(() {
+        _selectedVideos.add(videoFile);
+        // Initialize upload status for new video
+        final index = _selectedVideos.length - 1;
+        if (!_videoUploadingStatus.containsKey(index)) {
+          _videoUploadingStatus[index] = false;
+        }
+        // Generate thumbnail
+        _generateVideoThumbnail(videoFile, index);
+      });
+      
+      // Auto-upload newly selected video
+      _uploadNewVideos();
+    }
+  }
+
 
   void _removeImage(int index) {
     setState(() {
@@ -396,45 +423,94 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         children: [
           const SizedBox(width: 40), // Align with text input
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(8),
-                border: Border.all(
-                  color: theme.colorScheme.outline.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              child: GestureDetector(
-                onTap: _pickImages,
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(
-                        Icons.image,
-                        color: theme.colorScheme.primary,
-                        size: 20,
+            child: Row(
+              children: [
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2),
+                        width: 1,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    Text(
-                      'Add medias',
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: GestureDetector(
+                      onTap: _pickImages,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Icon(
+                              Icons.image,
+                              color: theme.colorScheme.primary,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Add images',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(0.7),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
+                  ),
                 ),
-              ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.surface,
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: theme.colorScheme.outline.withOpacity(0.2),
+                        width: 1,
+                      ),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: GestureDetector(
+                      onTap: _pickVideos,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: theme.colorScheme.primary.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Icon(
+                              Icons.videocam,
+                              color: theme.colorScheme.primary,
+                              size: 20,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Text(
+                            'Add video',
+                            style: TextStyle(
+                              color: theme.colorScheme.onSurface.withOpacity(0.7),
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],
@@ -444,7 +520,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   Widget _buildImageDisplayArea() {
     if (_selectedImages.isEmpty) return const SizedBox();
-    final theme = Theme.of(context);
     
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
@@ -482,10 +557,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       child: Container(
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(
-            color: theme.colorScheme.outline.withOpacity(0.2),
-            width: 1,
-          ),
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
