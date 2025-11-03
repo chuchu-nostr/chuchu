@@ -2,7 +2,6 @@ import 'package:chuchu/core/account/account+relay.dart';
 import 'package:chuchu/core/manager/thread_pool_manager.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import '../account/notification.dart';
 import '../config/storage_key_tool.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../feed/model/notificationDB_isar.dart';
@@ -230,7 +229,6 @@ class ChuChuUserInfoManager {
       await ThreadPoolManager.sharedInstance.initialize();
       Connect.sharedInstance.startHeartBeat();
       Account.sharedInstance.startHeartBeat();
-      // NotificationHelper.sharedInstance.startHeartBeat();
     }
   }
 }

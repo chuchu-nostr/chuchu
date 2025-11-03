@@ -97,64 +97,65 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
                 Expanded(
                   child: Row(
                     children: [
-                      GestureDetector(
-                        behavior: HitTestBehavior.translucent,
-                        onTap: () {
-                          Navigator.of(context).pop(); // Close drawer first
-                          ChuChuNavigator.pushPage(
-                            context,
-                            (context) => MyProfilePage(),
-                          );
-                        },
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              nikName,
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                                color: theme.colorScheme.onBackground,
-                              ),
-                            ),
-                            Text(
-                              _getUserNupbStr,
-                              style: TextStyle(
-                                fontWeight: FontWeight.normal,
-                                fontSize: 12,
-                                color: theme.colorScheme.onBackground.withOpacity(
-                                  0.6,
+                      Expanded(
+                        child: GestureDetector(
+                          behavior: HitTestBehavior.translucent,
+                          onTap: () {
+                            Navigator.of(context).pop(); // Close drawer first
+                            ChuChuNavigator.pushPage(
+                              context,
+                              (context) => MyProfilePage(),
+                            );
+                          },
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                nikName,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                  color: theme.colorScheme.onBackground,
                                 ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
                               ),
-                            ),
-                          ],
+                              Text(
+                                _getUserNupbStr,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 12,
+                                  color: theme.colorScheme.onBackground.withOpacity(
+                                    0.6,
+                                  ),
+                                ),
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                              ),
+                            ],
+                          ),
                         ),
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const SizedBox(width: 16),
-                          GestureDetector(
-                            onTap: () async {
-                              bool? status = await ChuChuCacheManager
-                                  .defaultOXCacheManager
-                                  .saveForeverData(
-                                StorageKeyTool.CHUCHU_USER_PUBKEY,
-                                '',
-                              );
+                      const SizedBox(width: 16),
+                      GestureDetector(
+                        onTap: () async {
+                          bool? status = await ChuChuCacheManager
+                              .defaultOXCacheManager
+                              .saveForeverData(
+                            StorageKeyTool.CHUCHU_USER_PUBKEY,
+                            '',
+                          );
 
-                              if (status) {
-                                await ChuChuUserInfoManager.sharedInstance
-                                    .logout(needObserver: true);
-                                ChuChuNavigator.pushReplacement(
-                                  context,
-                                  const LoginPage(),
-                                );
-                              }
-                            },
-                            child: Icon(Icons.logout, size: 18),
-                          ),
-                        ],
+                          if (status) {
+                            await ChuChuUserInfoManager.sharedInstance
+                                .logout(needObserver: true);
+                            ChuChuNavigator.pushReplacement(
+                              context,
+                              const LoginPage(),
+                            );
+                          }
+                        },
+                        child: Icon(Icons.logout, size: 18),
                       ),
                     ],
                   ),

@@ -16,7 +16,6 @@ import '../nostr_dart/nostr.dart';
 import '../utils/log_utils.dart';
 import '../wallet/wallet.dart';
 import 'model/userDB_isar.dart';
-import 'notification.dart';
 
 
 enum NIP46ConnectionStatus {
@@ -330,7 +329,6 @@ class Account {
   }
 
   Future<void> logout() async {
-    // await NotificationHelper.sharedInstance.logout();
     await Connect.sharedInstance.closeAllConnects();
     Contacts.sharedInstance.allContacts.clear();
     Relays.sharedInstance.relays.clear();
