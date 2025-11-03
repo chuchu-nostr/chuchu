@@ -96,6 +96,7 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
                 const SizedBox(width: 6),
                 Expanded(
                   child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: GestureDetector(

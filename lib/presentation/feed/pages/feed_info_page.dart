@@ -602,9 +602,12 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         SizedBox(width: 16.px),
                         _buildEngagementItem(
                           iconName: 'zap_icon.png',
-                          value: '\$${zapAmount.toStringAsFixed(0)}',
+                          value: '0',
                           isMonetary: true,
-                          onTap: _handleZapTap,
+                          onTap: () {
+                            CommonToast.instance.show(context, 'Zap functionality coming soon');
+                          }
+                          // _handleZapTap,
                         ),
                       ],
                     ),
@@ -646,8 +649,12 @@ class _FeedInfoPageState extends State<FeedInfoPage>
 
     if (onTap != null) {
       return GestureDetector(
+        behavior: HitTestBehavior.opaque,
         onTap: onTap,
-        child: content,
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 16.px),
+          child: content,
+        ),
       );
     }
 

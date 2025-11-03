@@ -154,15 +154,16 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   }
 
   void _onBookmarkTap() {
-    setState(() {
-      _bookmarkTag = !_bookmarkTag;
-    });
-    
-    if (_bookmarkTag) {
-      CommonToast.instance.show(context, 'Bookmarked');
-    } else {
-      CommonToast.instance.show(context, 'Bookmark removed');
-    }
+    CommonToast.instance.show(context, 'Bookmarks coming soon');
+    // setState(() {
+    //   _bookmarkTag = !_bookmarkTag;
+    // });
+    //
+    // if (_bookmarkTag) {
+    //   CommonToast.instance.show(context, 'Bookmarked');
+    // } else {
+    //   CommonToast.instance.show(context, 'Bookmark removed');
+    // }
   }
 
 
