@@ -336,13 +336,17 @@ class _CustomControlsState extends State<CustomControls> {
                 ),
               ),
               _buildPlayPause(),
-              GestureDetector(
-                onTap: toggleFullScreen,
-                child: CommonImage(
-                  iconName: 'video_screen_icon.png',
-                  size: 24.px,
-                ),
+              Container(
+                width: 24,
+                height: 24,
               ),
+              // GestureDetector(
+              //   onTap: toggleFullScreen,
+              //   child: CommonImage(
+              //     iconName: 'video_screen_icon.png',
+              //     size: 24.px,
+              //   ),
+              // ),
             ],
           ),
         );

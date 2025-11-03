@@ -217,7 +217,6 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
                 ),
               ),
               width: double.infinity,
-              // height: 154.px, // Remove fixed height to allow adaptive height
             ),
             
             // Thumbnail image
@@ -227,7 +226,6 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
             if (_isLoadingThumbnail)
               Container(
                 width: double.infinity,
-                // height: 154.px, // Remove fixed height to allow adaptive height
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.3),
                   borderRadius: BorderRadius.all(
@@ -274,7 +272,6 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
           errorBuilder: (context, error, stackTrace) {
             return Container(
               width: double.infinity,
-              // height: double.infinity, // 移除固定高度，让错误状态也自适应
               color: Colors.grey.shade400,
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
