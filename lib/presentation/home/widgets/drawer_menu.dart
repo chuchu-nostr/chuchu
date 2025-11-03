@@ -28,8 +28,7 @@ class DrawerMenu extends StatefulWidget {
   State createState() => _DrawerMenuState();
 }
 
-class _DrawerMenuState extends State<DrawerMenu>
-    with SingleTickerProviderStateMixin {
+class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateMixin {
   String get _getUserNupbStr {
     UserDBISAR? userInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
     if (userInfo == null) return '--';
@@ -40,9 +39,10 @@ class _DrawerMenuState extends State<DrawerMenu>
 
   @override
   Widget build(BuildContext context) {
-    String? nikName =
-        ChuChuUserInfoManager.sharedInstance.currentUserInfo?.nickName;
-    if (nikName == null || nikName.isEmpty) {
+    UserDBISAR? userInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
+
+    String? nikName = userInfo?.name ?? userInfo?.nickName ?? '';
+    if (nikName.isEmpty) {
       nikName = _getUserNupbStr;
     }
     final theme = Theme.of(context);
