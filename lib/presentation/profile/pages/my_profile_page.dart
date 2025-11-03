@@ -14,6 +14,10 @@ import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/adapt.dart';
 import '../../../core/services/blossom_uploader.dart';
 import '../../../core/widgets/common_toast.dart';
+import '../../../core/config/storage_key_tool.dart';
+import '../../../core/manager/cache/chuchu_cache_manager.dart';
+import '../../../core/utils/navigator/navigator.dart';
+import '../../login/pages/login_page.dart';
 import '../../nostrKey/pages/nostr_key_page.dart';
 
 class MyProfilePage extends StatefulWidget {
@@ -78,6 +82,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
               const SizedBox(height: 24),
               _buildProfileInfoCard(),
               _buildOtherInfoCard(),
+              const SizedBox(height: 24),
+              _buildLogoutButton(),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -223,7 +230,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
   Widget _buildOtherInfoCard() {
     return Container(
       margin: EdgeInsets.only(
-        top: 50,
+        top: 10,
       ),
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -728,5 +735,104 @@ class _MyProfilePageState extends State<MyProfilePage> {
         ),
       ),
     );
+  }
+
+  Widget _buildLogoutButton() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: ElevatedButton.icon(
+        onPressed: () => _handleLogout(),
+        icon: Icon(Icons.logout, size: 20, color: Colors.red[600]),
+        label: Text(
+          'Log Out',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            color: Colors.red[600],
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.red[600],
+          elevation: 0,
+          side: BorderSide(color: Colors.red[600]!, width: 1.5),
+          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _handleLogout() async {
+    // Show confirmation dialog
+    final shouldLogout = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: Row(
+          children: [
+            Icon(
+              Icons.logout,
+              color: Colors.red[600],
+              size: 28,
+            ),
+            const SizedBox(width: 12),
+            const Text('Log Out'),
+          ],
+        ),
+        content: const Text(
+          'Are you sure you want to log out?',
+          style: TextStyle(fontSize: 16),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text(
+              'Cancel',
+              style: TextStyle(fontSize: 16),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red[600],
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+            child: const Text(
+              'Log Out',
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            ),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldLogout == true) {
+      // Clear saved user pubkey
+      await ChuChuCacheManager.defaultOXCacheManager.saveForeverData(
+        StorageKeyTool.CHUCHU_USER_PUBKEY,
+        '',
+      );
+
+      // Logout
+      await ChuChuUserInfoManager.sharedInstance.logout(needObserver: true);
+
+      // Navigate to login page
+      if (mounted) {
+        ChuChuNavigator.pushReplacement(
+          context,
+          const LoginPage(),
+        );
+      }
+    }
   }
 }
