@@ -16,6 +16,7 @@ import '../../../data/models/noted_ui_model.dart';
 import '../../home/widgets/carousel_widget.dart';
 import '../pages/feed_info_page.dart';
 import '../pages/feed_personal_page.dart';
+import '../pages/feed_reply_page.dart';
 import 'feed_article_widget.dart';
 import 'feed_option_widget.dart';
 import 'feed_reply_abbreviate_widget.dart';
@@ -178,7 +179,29 @@ class _FeedWidgetState extends State<FeedWidget> {
             overflow: TextOverflow.ellipsis,
           ).setPaddingOnly(right: 18.0),
           GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) =>
+                      FeedReplyPage(notedUIModel: notedUIModel!),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(0.0, 1.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOut;
+
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+
+                    return SlideTransition(
+                      position: offsetAnimation,
+                      child: child,
+                    );
+                  },
+                  transitionDuration: const Duration(milliseconds: 300),
+                  reverseTransitionDuration: const Duration(milliseconds: 250),
+                ),
+              );
+            },
             child: Text(
               'Reply',
               style: TextStyle(
