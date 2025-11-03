@@ -47,57 +47,19 @@ class Wallet {
   List<WalletTransaction> _transactions = [];
   List<WalletTransaction> get transactions => List.unmodifiable(_transactions);
 
-  /// Get all transactions including pending invoices
+  /// Get all transactions (only actual transactions from LNbits API, not invoices)
+  /// Invoices should be shown separately in invoice list
+  /// Filters out transactions with empty transactionId
   Future<List<WalletTransaction>> getAllTransactions() async {
-    final all = <WalletTransaction>[];
-    all.addAll(_transactions);
-    
-    // Add all invoices as transactions (pending and paid)
-    try {
-      final invoices = await _loadInvoicesFromDB();
-      
-      for (final invoice in invoices) {
-        // Determine transaction status
-        TransactionStatus status;
-        if (invoice.status == InvoiceStatus.paid) {
-          status = TransactionStatus.confirmed;
-        } else if (invoice.status == InvoiceStatus.expired) {
-          status = TransactionStatus.expired; // Use expired status for expired invoices
-        } else if (invoice.isExpired) {
-          // Check if invoice is expired based on timestamp
-          status = TransactionStatus.expired;
-        } else {
-          status = TransactionStatus.pending;
-        }
-        
-        final transaction = WalletTransaction(
-          transactionId: invoice.invoiceId,
-          amount: invoice.amount,
-          description: invoice.description,
-          status: status,
-          type: TransactionType.incoming, // Invoice is for receiving
-          createdAt: invoice.createdAt,
-          walletId: invoice.walletId,
-          invoice: invoice.bolt11,
-          paymentHash: invoice.paymentHash,
-          confirmedAt: invoice.paidAt,
-          preimage: invoice.preimage,
-        );
-        all.add(transaction);
-      }
-    } catch (e) {
-      LogUtils.e(() => 'Failed to load invoices: $e');
-    }
-    
-    // Filter out transactions with invalid timestamps (createdAt <= 0 or before 2000-01-01)
-    // Unix timestamp 0 = 1970-01-01, which indicates invalid/missing timestamp
-    const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
-    all.removeWhere((tx) => tx.createdAt <= 0 || tx.createdAt < minValidTimestamp);
+    // Filter out transactions with empty transactionId
+    final validTransactions = _transactions.where((tx) => 
+      tx.transactionId.isNotEmpty
+    ).toList();
     
     // Sort by creation time (newest first)
-    all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    validTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     
-    return all;
+    return validTransactions;
   }
 
   /// Timer for checking pending invoices
@@ -337,6 +299,9 @@ class Wallet {
       // Trigger UI update for new invoice
       onTransactionAdded?.call();
       
+      // Refresh transaction list to show any new transactions
+      await refreshTransactions();
+      
       LogUtils.i(() => 'Successfully created invoice: ${invoice.invoiceId}');
       return invoice;
     } catch (e) {
@@ -346,39 +311,46 @@ class Wallet {
   }
 
   /// Refresh transaction history with smart sync strategy
+  /// Step 1: Load and display local transactions immediately
+  /// Step 2: Fetch from remote API in background
+  /// Step 3: Update local transactions if transactionId matches
   Future<void> refreshTransactions() async {
     if (_walletInfo == null || _walletInfo!.invoiceKey.isEmpty) return;
     
     try {
-      // Step 1: Load existing transactions from database first
+      // Step 1: Load existing transactions from database first and display immediately
       final existingTransactions = await _loadTransactionsFromDB();
       if (existingTransactions.isNotEmpty) {
         _transactions = existingTransactions;
         LogUtils.d(() => 'Loaded ${existingTransactions.length} existing transactions from DB');
-        onTransactionAdded?.call();
+        onTransactionAdded?.call(); // Trigger UI update to show local data immediately
       }
       
-      // Step 2: Fetch latest transactions from API
+      // Step 2: Fetch latest transactions from API in background
       final lnbitsApi = LnbitsApiService(lnbitsUrl: _walletInfo!.lnbitsUrl);
       final payments = await lnbitsApi.getPayments(
         apiKey: _walletInfo!.invoiceKey,
         limit: 10,
       );
       
-      final apiTransactions = payments.map((payment) => WalletTransaction.fromJson(payment)).toList();
+      final apiTransactions = payments.map((payment) => WalletTransaction.fromJson(payment))
+          .where((tx) => tx.transactionId.isNotEmpty) // Filter out empty transactionId
+          .toList();
       
-      // Step 3: Compare and merge transactions
+      // Step 3: Merge transactions - update local if transactionId matches
       final mergedTransactions = _mergeTransactions(existingTransactions, apiTransactions);
       
-      if (mergedTransactions.isNotEmpty) {
-        _transactions = mergedTransactions;
-        await _saveTransactionsToDB(apiTransactions); // Save new transactions from API
-        LogUtils.d(() => 'Refreshed transactions: ${apiTransactions.length} from API, ${mergedTransactions.length} total');
-        onTransactionAdded?.call();
-      }
+      // Update local list with merged data
+      _transactions = mergedTransactions;
+      
+      // Step 4: Save/update transactions in database (only save valid transactions from API)
+      await _saveTransactionsToDB(apiTransactions);
+      
+      LogUtils.d(() => 'Refreshed transactions: ${apiTransactions.length} from API, ${mergedTransactions.length} total');
+      onTransactionAdded?.call(); // Trigger UI update with merged data
     } catch (e) {
       LogUtils.e(() => 'Failed to refresh transactions: $e');
-      // If API fails, still try to load from DB
+      // If API fails, still use local data (already loaded in Step 1)
       if (_transactions.isEmpty) {
         final existingTransactions = await _loadTransactionsFromDB();
         if (existingTransactions.isNotEmpty) {
@@ -478,13 +450,8 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final transactions = await isar.walletTransactions.where().findAll();
-      // Filter out transactions with invalid timestamps (createdAt <= 0 or before 2000-01-01)
-      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
-      final validTransactions = transactions.where((tx) => 
-        tx.createdAt > 0 && tx.createdAt >= minValidTimestamp
-      ).toList();
-      LogUtils.d(() => 'Loaded ${validTransactions.length} valid transactions from database (filtered ${transactions.length - validTransactions.length} invalid)');
-      return validTransactions;
+      LogUtils.d(() => 'Loaded ${transactions.length} transactions from database');
+      return transactions;
     } catch (e) {
       LogUtils.e(() => 'Failed to load transactions from DB: $e');
       return [];
@@ -940,12 +907,7 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allTransactions = await isar.walletTransactions.where().findAll();
-      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
       final filteredTransactions = allTransactions.where((transaction) {
-        // Filter out invalid timestamps
-        if (transaction.createdAt <= 0 || transaction.createdAt < minValidTimestamp) {
-          return false;
-        }
         return transaction.createdAt >= startTime && transaction.createdAt <= endTime;
       }).toList();
       
@@ -974,12 +936,7 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allTransactions = await isar.walletTransactions.where().findAll();
-      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
       final filteredTransactions = allTransactions.where((transaction) {
-        // Filter out invalid timestamps
-        if (transaction.createdAt <= 0 || transaction.createdAt < minValidTimestamp) {
-          return false;
-        }
         return transaction.type == type;
       }).toList();
       
@@ -998,12 +955,7 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allTransactions = await isar.walletTransactions.where().findAll();
-      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
       final filteredTransactions = allTransactions.where((transaction) {
-        // Filter out invalid timestamps
-        if (transaction.createdAt <= 0 || transaction.createdAt < minValidTimestamp) {
-          return false;
-        }
         return transaction.status == status;
       }).toList();
       
@@ -1025,12 +977,7 @@ class Wallet {
     try {
       final isar = DBISAR.sharedInstance.isar;
       final allTransactions = await isar.walletTransactions.where().findAll();
-      const int minValidTimestamp = 946684800; // 2000-01-01 00:00:00 UTC
       final filteredTransactions = allTransactions.where((transaction) {
-        // Filter out invalid timestamps
-        if (transaction.createdAt <= 0 || transaction.createdAt < minValidTimestamp) {
-          return false;
-        }
         return transaction.amount >= minAmount && transaction.amount <= maxAmount;
       }).toList();
       

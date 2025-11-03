@@ -81,20 +81,41 @@ class WalletTransaction {
 
   /// Create from JSON map
   factory WalletTransaction.fromJson(Map<String, dynamic> json) {
-    final amount = _parseInt(json['amount']) ?? 0;
+    // LNbits API returns amount in msats (millisatoshis)
+    // Need to convert to sats by dividing by 1000
+    final amountMsats = _parseInt(json['amount']) ?? 0;
+    final amountSats = (amountMsats.abs() ~/ 1000); // Convert msats to sats and make positive
+    
+    // LNbits API returns ISO 8601 datetime strings, need to parse them
+    // Try multiple possible field names for timestamp
+    final createdAtValue = _parseTimestamp(json['created_at']) ?? 
+                           _parseTimestamp(json['time']) ?? 
+                           _parseTimestamp(json['timestamp']) ??
+                           _parseTimestamp(json['created']);
+    
+    // If still no timestamp found, use current time instead of 0
+    final createdAt = createdAtValue ?? DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    
+    // Determine transaction type: LNbits returns positive amount for incoming, negative for outgoing
+    // If amountMsats is negative, it's outgoing; if positive, it's incoming
+    final TransactionType transactionType = _parseTransactionType(json['type'], amountMsats: amountMsats);
+    
+    // Determine transaction status from LNbits status field
+    // LNbits returns 'success' for completed payments, 'pending' for pending, etc.
+    final TransactionStatus transactionStatus = _parseTransactionStatus(json['status']);
     
     return WalletTransaction(
-      transactionId: json['transaction_id'] ?? '',
-      type: _parseTransactionType(json['type']),
-      status: _parseTransactionStatus(json['status']),
-      amount: amount,
-      fee: _parseInt(json['fee']) ?? 0,
-      description: json['description'],
-      invoice: json['invoice'],
-      paymentHash: json['payment_hash'],
+      transactionId: json['transaction_id'] ?? json['payment_hash'] ?? json['checking_id'] ?? '',
+      type: transactionType,
+      status: transactionStatus,
+      amount: amountSats,
+      fee: (_parseInt(json['fee']) ?? 0) ~/ 1000, // Fee is also in msats, convert to sats
+      description: json['description'] ?? json['memo'],
+      invoice: json['invoice'] ?? json['bolt11'], // LNbits returns 'bolt11' field
+      paymentHash: json['payment_hash'], // LNbits returns 'payment_hash' field
       preimage: json['preimage'],
-      createdAt: _parseInt(json['created_at']) ?? 0,
-      confirmedAt: _parseInt(json['confirmed_at']),
+      createdAt: createdAt,
+      confirmedAt: _parseTimestamp(json['confirmed_at']) ?? _parseTimestamp(json['paid_at']),
       walletId: json['wallet_id'] ?? '',
       relatedPubkey: json['related_pubkey'],
     );
@@ -104,7 +125,41 @@ class WalletTransaction {
   static int? _parseInt(dynamic value) {
     if (value == null) return null;
     if (value is int) return value;
-    if (value is String) return int.tryParse(value);
+    if (value is String) {
+      // Try parsing as integer first
+      final intValue = int.tryParse(value);
+      if (intValue != null) return intValue;
+      
+      // If not an integer, try parsing as ISO 8601 datetime string
+      try {
+        final dateTime = DateTime.parse(value);
+        return dateTime.millisecondsSinceEpoch ~/ 1000;
+      } catch (e) {
+        // Not a valid datetime string either
+        return null;
+      }
+    }
+    return null;
+  }
+  
+  /// Parse timestamp from various formats (int, string int, ISO 8601 datetime)
+  static int? _parseTimestamp(dynamic value) {
+    if (value == null) return null;
+    if (value is int) return value;
+    if (value is String) {
+      // Try parsing as integer first (Unix timestamp)
+      final intValue = int.tryParse(value);
+      if (intValue != null && intValue > 0) return intValue;
+      
+      // If not an integer, try parsing as ISO 8601 datetime string
+      try {
+        final dateTime = DateTime.parse(value);
+        return dateTime.millisecondsSinceEpoch ~/ 1000;
+      } catch (e) {
+        // Not a valid datetime string
+        return null;
+      }
+    }
     return null;
   }
 
@@ -127,17 +182,22 @@ class WalletTransaction {
     };
   }
 
-  /// Parse transaction type from string
-  static TransactionType _parseTransactionType(String? type) {
+  /// Parse transaction type from string or amount sign
+  static TransactionType _parseTransactionType(String? type, {int? amountMsats}) {
+    // If amount is provided, use it to determine type
+    if (amountMsats != null) {
+      return amountMsats < 0 ? TransactionType.outgoing : TransactionType.incoming;
+    }
+    
+    // Otherwise try to parse from type string
     switch (type?.toLowerCase()) {
       case 'incoming':
         return TransactionType.incoming;
       case 'outgoing':
         return TransactionType.outgoing;
       default:
-        // For pending transactions without explicit type, 
-        // we'll determine type based on amount sign in the UI
-        return TransactionType.incoming; // Default to incoming for pending payments
+        // Default to incoming for pending payments
+        return TransactionType.incoming;
     }
   }
 
@@ -147,13 +207,16 @@ class WalletTransaction {
       case 'pending':
         return TransactionStatus.pending;
       case 'confirmed':
+      case 'success': // LNbits returns 'success' for completed payments
+      case 'complete':
         return TransactionStatus.confirmed;
       case 'failed':
         return TransactionStatus.failed;
       case 'expired':
         return TransactionStatus.expired;
       default:
-        return TransactionStatus.pending;
+        // Default to confirmed if status is not recognized (likely means it's done)
+        return TransactionStatus.confirmed;
     }
   }
 

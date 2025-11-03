@@ -50,6 +50,6 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs access to your photo library to select images and videos for posting.</string>
 	<key>NSCameraUsageDescription</key>
-	<string>This app needs access to camera to take photos and videos.</string>
+	<string>This app needs access to camera to scan QR codes for Lightning invoices.</string>
 </dict>
 </plist>
