@@ -31,7 +31,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
 
-  String? _selectedAvatarPath;
+  String? _selectedAvatarPath; // Local file path for display
+  String? _uploadedAvatarUrl; // Network URL after upload (used when confirming)
   bool _isUploadingAvatar = false;
 
   @override
@@ -171,24 +172,69 @@ class _MyProfilePageState extends State<MyProfilePage> {
             ),
           ),
           const SizedBox(height: 16),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: GestureDetector(
-              onTap: _changeProfilePicture,
-              child: Text(
-                'Edit Photo',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
+          // Show confirm/cancel buttons if avatar is uploaded, otherwise show Edit Photo button
+          if (_uploadedAvatarUrl != null)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.surfaceVariant,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: GestureDetector(
+                    onTap: _cancelAvatarUpdate,
+                    child: Text(
+                      'Cancel',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primary,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: GestureDetector(
+                    onTap: _confirmAvatarUpdate,
+                    child: Text(
+                      'Confirm',
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onPrimary,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            )
+          else
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.surfaceVariant,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: GestureDetector(
+                onTap: _changeProfilePicture,
+                child: Text(
+                  'Edit Photo',
+                  style: TextStyle(
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
@@ -556,6 +602,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
       if (picked != null) {
         setState(() {
           _selectedAvatarPath = picked.path;
+          _uploadedAvatarUrl = null; // Clear previous uploaded URL when selecting new image
         });
         
         // Auto-upload avatar after showing local image
@@ -586,9 +633,11 @@ class _MyProfilePageState extends State<MyProfilePage> {
       );
 
       if (imageUrl != null && mounted) {
-        // Update user profile with new avatar URL
-        await _updateUserAvatar(imageUrl);
-        CommonToast.instance.show(context, 'Avatar uploaded successfully');
+        // Save uploaded URL, but don't update profile yet - wait for user confirmation
+        setState(() {
+          _uploadedAvatarUrl = imageUrl;
+        });
+        CommonToast.instance.show(context, 'Avatar uploaded successfully. Please confirm to update.');
       } else {
         throw Exception('Upload returned empty URL');
       }
@@ -621,6 +670,31 @@ class _MyProfilePageState extends State<MyProfilePage> {
     } catch (_) {
       return null;
     }
+  }
+
+  // Confirm avatar update - actually update the profile
+  Future<void> _confirmAvatarUpdate() async {
+    if (_uploadedAvatarUrl == null) return;
+    
+    try {
+      await _updateUserAvatar(_uploadedAvatarUrl!);
+      // Clear uploaded URL but keep local path for display
+      setState(() {
+        _uploadedAvatarUrl = null;
+        // Keep _selectedAvatarPath to continue showing local image
+      });
+      CommonToast.instance.show(context, 'Avatar updated successfully');
+    } catch (e) {
+      _showErrorSnackBar('Failed to update avatar: $e');
+    }
+  }
+
+  // Cancel avatar update - clear uploaded URL and selected image
+  void _cancelAvatarUpdate() {
+    setState(() {
+      _selectedAvatarPath = null;
+      _uploadedAvatarUrl = null;
+    });
   }
 
   // Update user avatar in profile
