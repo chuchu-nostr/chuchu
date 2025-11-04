@@ -28,7 +28,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
 
-  String? _selectedCoverPhotoPath;
+  String? _selectedCoverPhotoPath; // Local file path for display
+  String? _uploadedCoverPhotoUrl; // Network URL after upload (used when saving)
   bool _isLoading = false;
   bool _isUploadingCoverPhoto = false;
 
@@ -66,13 +67,16 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     
     final updatedName = _usernameController.text.trim();
     final updatedAbout = _aboutController.text.trim();
-    final updatedPicture = _selectedCoverPhotoPath ?? originalPicture;
+    // If user selected a new image (local path exists), consider it a change
+    // Use uploaded URL if available for comparison, otherwise check if local path exists
+    final hasPictureChange = _selectedCoverPhotoPath != null && 
+        (_uploadedCoverPhotoUrl != originalPicture || _uploadedCoverPhotoUrl == null);
     final updatedSubscriptionAmount = subscriptionPrice;
     
     // Check if any group metadata values have actually changed
     return updatedName != originalName ||
            updatedAbout != originalAbout ||
-           updatedPicture != originalPicture ||
+           hasPictureChange ||
            updatedSubscriptionAmount != originalSubscriptionAmount;
   }
 
@@ -291,23 +295,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                                     Icon(
                                       Icons.add_photo_alternate_rounded,
                                       size: 48,
-                                      color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
                                     ),
                                     const SizedBox(height: 12),
                                     Text(
-                                      'Add Cover Photo',
+                                      'No Cover Photo',
                                       style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w500,
-                                        color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                       ),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
-                                      'Tap to select image',
+                                      'Click "Edit" to add',
                                       style: TextStyle(
                                         fontSize: 14,
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                       ),
                                     ),
                                   ],
@@ -338,19 +342,19 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                                 ),
                                 const SizedBox(height: 12),
                                 Text(
-                                  'Add Cover Photo',
+                                  'No Cover Photo',
                                   style: TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.w500,
-                                    color: Theme.of(context).colorScheme.primary.withOpacity(0.8),
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
                                   ),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
-                                  'Tap to select image',
+                                  'Click "Edit" to add',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
                                   ),
                                 ),
                               ],
@@ -534,6 +538,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       if (picked != null) {
         setState(() {
           _selectedCoverPhotoPath = picked.path;
+          _uploadedCoverPhotoUrl = null; // Clear previous uploaded URL when selecting new image
         });
         _hasChangesNotifier.value = _hasChanges();
         // Auto-upload cover photo after showing local image
@@ -563,8 +568,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         fileName: imageFile.path.split('/').last,
       );
       if (imageUrl != null && mounted) {
-        _selectedCoverPhotoPath = imageUrl;
-
+        // Save uploaded URL separately, keep local path for display
+        _uploadedCoverPhotoUrl = imageUrl;
+        _hasChangesNotifier.value = _hasChanges();
         CommonToast.instance.show(context, 'Cover photo uploaded successfully');
       } else {
         throw Exception('Upload returned empty URL');
@@ -611,7 +617,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         // Prepare updated parameters
         final updatedName = _usernameController.text.trim();
         final updatedAbout = _aboutController.text.trim();
-        final updatedPicture = _selectedCoverPhotoPath ?? relayGroup.picture;
+        // Use uploaded URL if available, otherwise keep original picture
+        final updatedPicture = _uploadedCoverPhotoUrl ?? relayGroup.picture;
         final updatedSubscriptionAmount = subscriptionPrice;
 
         // Call editMetadata with user input parameters
