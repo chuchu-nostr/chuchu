@@ -12,6 +12,15 @@ if (localPropertiesFile.exists()) {
     }
 }
 
+// Load keystore properties for signing
+def keystoreProperties = new Properties()
+def keystorePropertiesFile = rootProject.file('app/key.properties')
+if (keystorePropertiesFile.exists()) {
+    keystorePropertiesFile.withReader('UTF-8') { reader ->
+        keystoreProperties.load(reader)
+    }
+}
+
 
 
 
@@ -24,12 +33,11 @@ android {
         minSdk 26
         targetSdk 36
         versionCode 1
-        versionName "1.0"
+        versionName "0.0.1"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
-        ndk {
-            abiFilters 'arm64-v8a', 'armeabi-v7a', 'x86', 'x86_64'
-        }
+        // Note: abiFilters removed to avoid conflict with split-per-abi builds
+        // When using --split-per-abi, Flutter automatically configures ABI splits
     }
 
     compileOptions {
@@ -42,8 +50,20 @@ android {
         freeCompilerArgs += ['-Xskip-metadata-version-check']
     }
 
+    signingConfigs {
+        release {
+            if (keystorePropertiesFile.exists()) {
+                keyAlias keystoreProperties['keyAlias']
+                keyPassword keystoreProperties['keyPassword']
+                storeFile file("${rootProject.projectDir}/app/${keystoreProperties['storeFile']}")
+                storePassword keystoreProperties['storePassword']
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig signingConfigs.release
             minifyEnabled false
             shrinkResources false
         }
