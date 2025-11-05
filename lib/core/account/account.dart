@@ -13,6 +13,7 @@ import '../database/db_isar.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
 import 'package:nostr_core_dart/nostr.dart';
+import 'package:nostr_core_dart/src/signer/external_signer_tool.dart';
 import '../utils/log_utils.dart';
 import '../wallet/wallet.dart';
 import 'model/userDB_isar.dart';
@@ -174,13 +175,17 @@ class Account {
     return null;
   }
 
-  Future<UserDBISAR?> loginWithPubKey(String pubkey, SignerApplication signerApplication) async {
+  Future<UserDBISAR?> loginWithPubKey(String pubkey, SignerApplication signerApplication, {String? androidSignerKey}) async {
     UserDBISAR? userDB = await getUserFromDB(pubkey: pubkey);
     if (userDB != null) {
       me = userDB;
       currentPubkey = userDB.pubKey;
       currentPrivkey = SignerHelper.getSignerApplicationKey(signerApplication, '');
       userDB.privkey = currentPrivkey;
+      // Save android signer key if provided
+      if (signerApplication == SignerApplication.androidSigner && androidSignerKey != null) {
+        userDB.androidSignerKey = androidSignerKey;
+      }
       userCache[currentPubkey] = ValueNotifier<UserDBISAR>(userDB);
       await saveUserToDB(userDB);
       loginSuccess();
@@ -191,9 +196,23 @@ class Account {
   Future<UserDBISAR?> loginWithPubKeyAndPassword(String pubkey) async {
     UserDBISAR? db = await _searchUserFromDB(pubkey);
     if (db == null) return null;
+    
+    // Check login type: bunker/remoteSigner
     if (db.remoteSignerURI != null) {
       return await loginWithNip46Pubkey(pubkey);
     }
+    
+    // Check login type: androidSigner
+    if (db.privkey == 'androidSigner') {
+      // Restore the saved signer if available
+      if (db.androidSignerKey != null && db.androidSignerKey!.isNotEmpty) {
+        await ExternalSignerTool.initialize();
+        await ExternalSignerTool.setSigner(db.androidSignerKey!);
+      }
+      return await loginWithPubKey(pubkey, SignerApplication.androidSigner, androidSignerKey: db.androidSignerKey);
+    }
+    
+    // Check login type: nsec (encrypted private key)
     if (db.encryptedPrivKey != null &&
         db.encryptedPrivKey!.isNotEmpty &&
         db.defaultPassword != null &&

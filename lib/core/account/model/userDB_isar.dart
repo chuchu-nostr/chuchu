@@ -103,6 +103,9 @@ class UserDBISAR {
   String? clientPrivateKey;
   String? remotePubkey;
 
+  // android signer
+  String? androidSignerKey; // 'amber', 'nostr_aegis', 'nowser'
+
   String? encodedKeyPackage;
 
   String? settings;
@@ -158,6 +161,7 @@ class UserDBISAR {
     this.clientPrivateKey,
     this.remoteSignerURI,
     this.remotePubkey,
+    this.androidSignerKey,
     this.encodedKeyPackage
   });
 
@@ -291,5 +295,6 @@ UserDBISAR _userInfoFromMap(Map<String, dynamic> map) {
     otherField: map['otherField']?.toString(),
     nwcURI: map['nwcURI']?.toString(),
     settings: map['settings']?.toString(),
+    androidSignerKey: map['androidSignerKey']?.toString(),
   );
 }
