@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:chuchu/core/account/zaps.dart';
 
 import '../network/connect.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import 'account.dart';
 
 extension Nuts on Zaps {

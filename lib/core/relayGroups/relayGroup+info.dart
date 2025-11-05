@@ -10,10 +10,10 @@ import '../account/relays.dart';
 import '../config/config.dart';
 import '../database/db_isar.dart';
 import '../network/connect.dart';
-import '../nostr_dart/src/event.dart';
-import '../nostr_dart/src/filter.dart';
-import '../nostr_dart/src/nips/nip_029.dart';
-import '../nostr_dart/src/nips/nip_051.dart';
+import 'package:nostr_core_dart/src/event.dart';
+import 'package:nostr_core_dart/src/filter.dart';
+import 'package:nostr_core_dart/src/nips/nip_029.dart';
+import 'package:nostr_core_dart/src/nips/nip_051.dart';
 import 'model/relayGroupDB_isar.dart';
 
 extension EInfo on RelayGroup {

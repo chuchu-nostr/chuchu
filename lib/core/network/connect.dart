@@ -6,7 +6,7 @@ import 'dart:io';
 import '../account/account.dart';
 import '../config/config.dart';
 import '../manager/thread_pool_manager.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import '../proxy/proxy_settings.dart';
 import '../utils/log_utils.dart';
 import 'eventCache.dart';

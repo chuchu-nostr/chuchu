@@ -13,7 +13,7 @@ import '../network/connect.dart';
 import '../network/eventCache.dart';
 import 'feed.dart';
 import 'model/noteDB_isar.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import 'model/notificationDB_isar.dart';
 
 typedef NoteCallBack = void Function(NoteDBISAR);

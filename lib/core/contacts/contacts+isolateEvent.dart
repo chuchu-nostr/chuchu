@@ -2,7 +2,7 @@ import 'dart:async';
 
 import '../account/account.dart';
 import '../manager/thread_pool_manager.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import 'contacts.dart';
 
 extension IsolateEvent on Contacts {

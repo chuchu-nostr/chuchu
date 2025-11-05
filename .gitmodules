@@ -1,0 +1,3 @@
+[submodule "packages/nostr-dart"]
+	path = packages/nostr-dart
+	url = https://github.com/nsnjx/nostr-dart.git

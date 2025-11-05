@@ -8,8 +8,8 @@ import '../../account/zaps.dart';
 import '../../contacts/contacts.dart';
 import '../../database/db_isar.dart';
 import '../../manager/thread_pool_manager.dart';
-import '../../nostr_dart/src/event.dart';
-import '../../nostr_dart/src/nips/nip_004.dart';
+import 'package:nostr_core_dart/src/event.dart';
+import 'package:nostr_core_dart/src/nips/nip_004.dart';
 import '../../utils/log_utils.dart';
 
 part 'messageDB_isar.g.dart';

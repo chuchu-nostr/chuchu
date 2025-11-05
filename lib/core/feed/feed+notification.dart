@@ -1,7 +1,7 @@
 import 'package:isar/isar.dart';
 import '../account/model/zapRecordsDB_isar.dart';
 import '../database/db_isar.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import 'feed+load.dart';
 import 'feed.dart';
 import 'model/notificationDB_isar.dart';

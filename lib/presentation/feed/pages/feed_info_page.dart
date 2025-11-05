@@ -9,7 +9,7 @@ import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
-import '../../../core/nostr_dart/src/ok.dart';
+import 'package:nostr_core_dart/src/ok.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';

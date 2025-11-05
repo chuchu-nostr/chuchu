@@ -4,7 +4,7 @@ import 'package:chuchu/core/account/relays.dart';
 import '../config/config.dart';
 import '../contacts/contacts.dart';
 import '../network/connect.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import './account.dart';
 import 'model/relayDB_isar.dart';
 import 'model/userDB_isar.dart';

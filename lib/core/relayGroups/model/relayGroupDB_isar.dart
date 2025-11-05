@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:isar/isar.dart';
 
 import '../../account/model/userDB_isar.dart';
-import '../../nostr_dart/src/nips/nip_029.dart';
+import 'package:nostr_core_dart/src/nips/nip_029.dart';
 import '../../utils/log_utils.dart';
 
 part 'relayGroupDB_isar.g.dart';

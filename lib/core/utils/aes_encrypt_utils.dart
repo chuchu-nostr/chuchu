@@ -6,7 +6,7 @@ import 'dart:typed_data';
 import 'package:crypto/crypto.dart';
 
 import '../manager/thread_pool_manager.dart';
-import '../nostr_dart/src/utils.dart';
+import 'package:nostr_core_dart/src/utils.dart';
 
 class AesEncryptUtils {
   static String _getUploadFileKey() {

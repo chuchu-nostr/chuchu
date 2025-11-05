@@ -2,7 +2,7 @@ import 'dart:convert';
 
 import 'package:isar/isar.dart';
 
-import '../../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 
 part 'noteDB_isar.g.dart';
 

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
-import 'package:chuchu/core/nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +12,7 @@ import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
-import '../../../core/nostr_dart/src/ok.dart';
+import 'package:nostr_core_dart/src/ok.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/services/file_type.dart';
 import '../../../core/services/upload_utils.dart';

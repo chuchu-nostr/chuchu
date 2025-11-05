@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 
-import '../../nostr_dart/src/nips/nip_029.dart';
+import 'package:nostr_core_dart/src/nips/nip_029.dart';
 
 
 part 'joinRequestDB_isar.g.dart';

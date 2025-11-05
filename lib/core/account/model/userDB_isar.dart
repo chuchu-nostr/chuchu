@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:isar/isar.dart';
 
-import '../../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import '../account.dart';
 import '../npub-cash.dart';
 

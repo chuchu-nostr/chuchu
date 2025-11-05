@@ -13,7 +13,7 @@ import '../account/relays.dart';
 import '../feed/feed.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import '../utils/log_utils.dart';
 
 typedef ContactUpdatedCallBack = void Function();

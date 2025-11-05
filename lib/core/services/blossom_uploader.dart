@@ -6,7 +6,7 @@ import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
 
 import '../account/account.dart';
-import '../nostr_dart/src/event.dart';
+import 'package:nostr_core_dart/src/event.dart';
 import './string_util.dart';
 import 'base64.dart';
 import 'hash_util.dart';

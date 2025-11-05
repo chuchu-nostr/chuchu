@@ -2,7 +2,7 @@ import 'package:chuchu/core/network/eventDB_isar.dart';
 import 'package:isar/isar.dart';
 
 import '../database/db_isar.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import '../utils/log_utils.dart';
 
 class EventCache {

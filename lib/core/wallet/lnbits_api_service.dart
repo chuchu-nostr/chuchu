@@ -1,5 +1,5 @@
 import 'dart:convert';
-import 'package:chuchu/core/nostr_dart/src/utils.dart';
+import 'package:nostr_core_dart/src/utils.dart';
 import 'package:http/http.dart' as http;
 import 'package:chuchu/core/utils/log_utils.dart';
 import '../config/config.dart';

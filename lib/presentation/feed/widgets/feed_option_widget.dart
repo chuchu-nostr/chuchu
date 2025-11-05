@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
-import '../../../core/nostr_dart/src/ok.dart';
+import 'package:nostr_core_dart/src/ok.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/common_toast.dart';

@@ -88,6 +88,8 @@ dependencies:
     git:
       url: https://github.com/ArmanKT/image_gallery_saver_plus.git
       ref: master
+  nostr_core_dart:
+    path: packages/nostr-dart
 
 dev_dependencies:
   flutter_test:

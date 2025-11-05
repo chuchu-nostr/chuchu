@@ -13,10 +13,10 @@ import 'model/wallet_invoice.dart';
 import 'lnbits_api_service.dart';
 import '../network/connect.dart';
 import '../relayGroups/relayGroup.dart';
-import '../nostr_dart/nostr.dart';
-import '../nostr_dart/src/nips/nip_047.dart';
-import '../nostr_dart/src/nips/nip_044.dart';
-import '../nostr_dart/src/nips/nip_078.dart';
+import 'package:nostr_core_dart/nostr.dart';
+import 'package:nostr_core_dart/src/nips/nip_047.dart';
+import 'package:nostr_core_dart/src/nips/nip_044.dart';
+import 'package:nostr_core_dart/src/nips/nip_078.dart';
 import 'dart:convert';
 
 /// NIP-47 Wallet Manager

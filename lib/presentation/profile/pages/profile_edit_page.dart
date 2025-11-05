@@ -3,7 +3,7 @@ import 'package:chuchu/core/relayGroups/relayGroup+admin.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
-import '../../../core/nostr_dart/src/ok.dart';
+import 'package:nostr_core_dart/src/ok.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/services/blossom_uploader.dart';

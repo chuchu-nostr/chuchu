@@ -6,14 +6,14 @@ import 'package:chuchu/core/relayGroups/relayGroup.dart';
 import '../feed/feed.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../network/connect.dart';
-import '../nostr_dart/src/event.dart';
-import '../nostr_dart/src/nips/nip_018.dart';
-import '../nostr_dart/src/nips/nip_019.dart';
-import '../nostr_dart/src/nips/nip_021.dart';
-import '../nostr_dart/src/nips/nip_025.dart';
-import '../nostr_dart/src/nips/nip_029.dart';
-import '../nostr_dart/src/ok.dart';
-import '../nostr_dart/src/utils.dart';
+import 'package:nostr_core_dart/src/event.dart';
+import 'package:nostr_core_dart/src/nips/nip_018.dart';
+import 'package:nostr_core_dart/src/nips/nip_019.dart';
+import 'package:nostr_core_dart/src/nips/nip_021.dart';
+import 'package:nostr_core_dart/src/nips/nip_025.dart';
+import 'package:nostr_core_dart/src/nips/nip_029.dart';
+import 'package:nostr_core_dart/src/ok.dart';
+import 'package:nostr_core_dart/src/utils.dart';
 import 'model/relayGroupDB_isar.dart';
 
 extension ENote on RelayGroup {

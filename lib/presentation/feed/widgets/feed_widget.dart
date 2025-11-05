@@ -6,7 +6,7 @@ import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
-import '../../../core/nostr_dart/src/nips/nip_019.dart';
+import 'package:nostr_core_dart/src/nips/nip_019.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';

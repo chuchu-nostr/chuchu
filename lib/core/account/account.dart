@@ -12,7 +12,7 @@ import '../contacts/contacts.dart';
 import '../database/db_isar.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import '../utils/log_utils.dart';
 import '../wallet/wallet.dart';
 import 'model/userDB_isar.dart';

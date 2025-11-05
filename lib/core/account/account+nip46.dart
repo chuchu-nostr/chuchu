@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import '../network/connect.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import '../utils/log_utils.dart';
 import 'account.dart';
 import 'model/userDB_isar.dart';

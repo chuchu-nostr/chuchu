@@ -12,7 +12,7 @@ import '../contacts/contacts.dart';
 import '../database/db_isar.dart';
 import '../feed/feed.dart';
 import '../network/connect.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import '../utils/log_utils.dart';
 import 'account.dart';
 import 'model/relayDB_isar.dart';
@@ -90,12 +90,33 @@ class Zaps {
     Completer<OKEvent> completer = Completer<OKEvent>();
     if (nwc == null) {
       completer.complete(OKEvent(invoice, false, 'nwc not exit'));
+      return completer.future;
     }
-    Event event = await Nip47.payInvoice(invoice, nwc!.server, nwc!.secret);
-    Connect.sharedInstance.sendEvent(event, toRelays: nwc!.relays,
-        sendCallBack: (ok, relay) {
-      if (!completer.isCompleted) completer.complete(ok);
-    });
+    try {
+      // Get current account's private key for signing the request
+      final privkey = Account.sharedInstance.currentPrivkey;
+      if (privkey.isEmpty) {
+        completer.complete(OKEvent(invoice, false, 'private key not available'));
+        return completer.future;
+      }
+      
+      // Create NIP-47 pay invoice request using the correct API
+      Event event = await Nip47.payInvoice(
+        invoice,
+        nwc!.server,
+        privkey,
+      );
+      
+      Connect.sharedInstance.sendEvent(event, toRelays: nwc!.relays,
+          sendCallBack: (ok, relay) {
+        if (!completer.isCompleted) completer.complete(ok);
+      });
+    } catch (e) {
+      LogUtils.e(() => 'Error creating NIP-47 pay invoice request: $e');
+      if (!completer.isCompleted) {
+        completer.complete(OKEvent(invoice, false, 'Error: ${e.toString()}'));
+      }
+    }
     return completer.future;
   }
 

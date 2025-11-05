@@ -1,6 +1,6 @@
 import 'package:isar/isar.dart';
 
-import '../../nostr_dart/src/nips/nip_057.dart';
+import 'package:nostr_core_dart/src/nips/nip_057.dart';
 import '../zaps.dart';
 
 part 'zapRecordsDB_isar.g.dart';

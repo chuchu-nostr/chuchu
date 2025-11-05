@@ -13,7 +13,7 @@ import '../database/db_isar.dart';
 import '../feed/feed+load.dart';
 import '../feed/feed.dart';
 import '../network/connect.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import '../relayGroups/relayGroup.dart';
 import '../utils/log_utils.dart';
 import 'model/messageDB_isar.dart';

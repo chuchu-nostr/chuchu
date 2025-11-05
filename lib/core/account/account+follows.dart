@@ -1,7 +1,7 @@
 import 'dart:async';
 import '../feed/feed.dart';
 import '../network/connect.dart';
-import '../nostr_dart/nostr.dart';
+import 'package:nostr_core_dart/nostr.dart';
 import './account.dart';
 import 'model/userDB_isar.dart';
 

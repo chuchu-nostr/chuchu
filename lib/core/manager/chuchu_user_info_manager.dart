@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import '../config/storage_key_tool.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../feed/model/notificationDB_isar.dart';
-import '../nostr_dart/src/nips/nip_005.dart';
+import 'package:nostr_core_dart/src/nips/nip_005.dart';
 import '../account/account.dart';
 import '../account/model/userDB_isar.dart';
 import '../account/relays.dart';

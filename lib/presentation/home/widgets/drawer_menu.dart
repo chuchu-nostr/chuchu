@@ -9,7 +9,7 @@ import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/config/storage_key_tool.dart';
 import '../../../core/manager/cache/chuchu_cache_manager.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
-import '../../../core/nostr_dart/src/nips/nip_019.dart';
+import 'package:nostr_core_dart/src/nips/nip_019.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
