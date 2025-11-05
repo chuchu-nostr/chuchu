@@ -48,7 +48,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
   // Upload state
   final List<String> _uploadedImageUrls = [];
   final Map<int, bool> _uploadingStatus = {}; // index -> uploading
-  
+
   // Video related state
   final List<File> _selectedVideos = [];
   final List<String> _uploadedVideoUrls = []; // Store uploaded video URLs
@@ -71,7 +71,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(
-            'Cancel', 
+            'Cancel',
             style: TextStyle(
               color: theme.colorScheme.onSurface,
               fontSize: 16,
@@ -95,7 +95,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 elevation: 0,
               ),
               child: const Text(
-                'Publish', 
+                'Publish',
                 style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
@@ -115,52 +115,52 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                   padding: const EdgeInsets.only(bottom: 12),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          _momentItemWidget(),
+                    children: [
+                      _momentItemWidget(),
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
                           vertical: 12,
                         ),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CircleAvatar(
-                    radius: 24,
+                        child: Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CircleAvatar(
+                              radius: 24,
                               backgroundColor: theme.colorScheme.primary
                                   .withOpacity(0.1),
-                    child: Icon(
-                      Icons.person, 
-                      color: theme.colorScheme.primary,
-                      size: 24,
-                    ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: TextField(
-                      controller: _textController,
-                      maxLines: null,
-                      minLines: 3,
-                      style: TextStyle(
-                        fontSize: 18,
-                        color: theme.colorScheme.onSurface,
-                        fontWeight: FontWeight.w400,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Post your reply',
-                        hintStyle: TextStyle(
+                              child: Icon(
+                                Icons.person,
+                                color: theme.colorScheme.primary,
+                                size: 24,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: TextField(
+                                controller: _textController,
+                                maxLines: null,
+                                minLines: 3,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: theme.colorScheme.onSurface,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                                decoration: InputDecoration(
+                                  hintText: 'Post your reply',
+                                  hintStyle: TextStyle(
                                     color: theme.colorScheme.onSurface
                                         .withOpacity(0.6),
-                          fontSize: 18,
-                          fontWeight: FontWeight.w400,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w400,
+                                  ),
+                                  border: InputBorder.none,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                        border: InputBorder.none,
                       ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
                       if (_selectedImages.isNotEmpty) ...[
                         const SizedBox(height: 12),
                         Padding(
@@ -177,12 +177,12 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                       ],
                     ],
                   ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
-            ),
+            ],
+          ),
+        ),
+      ),
       bottomNavigationBar: SafeArea(
         child: Padding(
           padding: const EdgeInsets.only(left: 18, right: 18),
@@ -206,7 +206,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
       onTap: () async {
         ChuChuNavigator.pushPage(
           context,
-              (context) => FeedInfoPage(
+          (context) => FeedInfoPage(
             notedUIModel: widget.notedUIModel,
             isShowReply: false,
           ),
@@ -227,23 +227,23 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                       ),
                       builder: (context, value, child) {
                         return FeedWidgetsUtils.clipImage(
-                      borderRadius: 40.px,
-                      imageSize: 40.px,
-                      child: GestureDetector(
-                        onTap: () {},
-                        child: ChuChuCachedNetworkImage(
-                          imageUrl: value.picture ?? '',
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) =>
-                              FeedWidgetsUtils.badgePlaceholderImage(),
-                          errorWidget:
-                              (context, url, error) =>
-                              FeedWidgetsUtils.badgePlaceholderImage(),
-                          width: 40.px,
-                          height: 40.px,
-                        ),
-                      ),
+                          borderRadius: 40.px,
+                          imageSize: 40.px,
+                          child: GestureDetector(
+                            onTap: () {},
+                            child: ChuChuCachedNetworkImage(
+                              imageUrl: value.picture ?? '',
+                              fit: BoxFit.cover,
+                              placeholder:
+                                  (context, url) =>
+                                      FeedWidgetsUtils.badgePlaceholderImage(),
+                              errorWidget:
+                                  (context, url, error) =>
+                                      FeedWidgetsUtils.badgePlaceholderImage(),
+                              width: 40.px,
+                              height: 40.px,
+                            ),
+                          ),
                         );
                       },
                     ),
@@ -272,11 +272,11 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                         notedUIModel: widget.notedUIModel,
                         isShowUserInfo: false,
                         clickMomentCallback: (
-                            NotedUIModel? notedUIModel,
-                            ) async {
+                          NotedUIModel? notedUIModel,
+                        ) async {
                           await ChuChuNavigator.pushPage(
                             context,
-                                (context) => FeedInfoPage(
+                            (context) => FeedInfoPage(
                               notedUIModel: widget.notedUIModel,
                               isShowReply: false,
                             ),
@@ -307,49 +307,52 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
     ).setPaddingOnly(left: 18.0, right: 18.0);
   }
 
-  Widget _momentReplyName(){
-    if(widget.notedUIModel.noteDB.root == null || widget.notedUIModel.noteDB.root!.isEmpty){
-      return ValueListenableBuilder<RelayGroupDBISAR>(
-          valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(
-            widget.notedUIModel.noteDB.groupId,
-          ),
-          builder: (context, value, child) {
-            return Text(
-              '@${value.name}',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontSize: 14.px,
-                fontWeight: FontWeight.w500,
-              ),
-            );
-          });
-    } else {
-      return ValueListenableBuilder<UserDBISAR>(
-          valueListenable: Account.sharedInstance.getUserNotifier(
-            widget.notedUIModel.noteDB.groupId,
-          ),
-          builder: (context, value, child) {
-            return Text(
-              '@${value.name}',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.primary,
-                fontSize: 14.px,
-                fontWeight: FontWeight.w500,
-              ),
-            );
-          }
-        );
-    }
-  }
-
-  Widget _momentUserInfoWidget() {
-    if(widget.notedUIModel.noteDB.root == null || widget.notedUIModel.noteDB.root!.isEmpty){
+  Widget _momentReplyName() {
+    if (widget.notedUIModel.noteDB.root == null ||
+        widget.notedUIModel.noteDB.root!.isEmpty) {
       return ValueListenableBuilder<RelayGroupDBISAR>(
         valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(
           widget.notedUIModel.noteDB.groupId,
         ),
         builder: (context, value, child) {
-          return  Column(
+          return Text(
+            '@${value.name}',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: 14.px,
+              fontWeight: FontWeight.w500,
+            ),
+          );
+        },
+      );
+    } else {
+      return ValueListenableBuilder<UserDBISAR>(
+        valueListenable: Account.sharedInstance.getUserNotifier(
+          widget.notedUIModel.noteDB.groupId,
+        ),
+        builder: (context, value, child) {
+          return Text(
+            '@${value.name}',
+            style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontSize: 14.px,
+              fontWeight: FontWeight.w500,
+            ),
+          );
+        },
+      );
+    }
+  }
+
+  Widget _momentUserInfoWidget() {
+    if (widget.notedUIModel.noteDB.root == null ||
+        widget.notedUIModel.noteDB.root!.isEmpty) {
+      return ValueListenableBuilder<RelayGroupDBISAR>(
+        valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(
+          widget.notedUIModel.noteDB.groupId,
+        ),
+        builder: (context, value, child) {
+          return Column(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -375,65 +378,71 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
               ),
             ],
           );
-        });
+        },
+      );
     } else {
       return ValueListenableBuilder<UserDBISAR>(
-          valueListenable: Account.sharedInstance.getUserNotifier(
-            widget.notedUIModel.noteDB.groupId,
-          ),
-          builder: (context, value, child) {
-            return  Column(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
-          children: [
-            Text(
-                      value.name ?? '--',
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 14.px,
-                fontWeight: FontWeight.w500,
+        valueListenable: Account.sharedInstance.getUserNotifier(
+          widget.notedUIModel.noteDB.groupId,
+        ),
+        builder: (context, value, child) {
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Text(
+                    value.name ?? '--',
+                    style: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurface,
+                      fontSize: 14.px,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-        Text(
-                  widget.notedUIModel.createAtStr,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 12.px,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-      ],
-    );
-          });
+              Text(
+                widget.notedUIModel.createAtStr,
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onSurface,
+                  fontSize: 12.px,
+                  fontWeight: FontWeight.w400,
+                ),
+              ),
+            ],
+          );
+        },
+      );
     }
   }
 
   void _postMoment() async {
-    if (_textController.text.isEmpty && _selectedImages.isEmpty && _selectedVideos.isEmpty) {
+    if (_textController.text.isEmpty &&
+        _selectedImages.isEmpty &&
+        _selectedVideos.isEmpty) {
       CommonToast.instance.show(context, 'content_empty_tips');
       return;
     }
     if (_postMomentTag) return;
     _postMomentTag = true;
     await ChuChuLoading.show();
-    
+
     try {
       // Wait for all images to complete upload
-      if (_selectedImages.isNotEmpty && _uploadedImageUrls.length < _selectedImages.length) {
+      if (_selectedImages.isNotEmpty &&
+          _uploadedImageUrls.length < _selectedImages.length) {
         await _uploadNewImages();
       }
-      
+
       // Wait for all videos to complete upload
-      if (_selectedVideos.isNotEmpty && _uploadedVideoUrls.length < _selectedVideos.length) {
+      if (_selectedVideos.isNotEmpty &&
+          _uploadedVideoUrls.length < _selectedVideos.length) {
         await _uploadNewVideos();
       }
-      
-    final inputText = _textController.text;
-      
+
+      final inputText = _textController.text;
+
       // Build content with image and video URLs
       String mediaContent = '';
       if (_uploadedImageUrls.isNotEmpty) {
@@ -442,7 +451,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
       if (_uploadedVideoUrls.isNotEmpty) {
         mediaContent += ' ${_uploadedVideoUrls.join(' ')}';
       }
-      
+
       String content = '$inputText$mediaContent';
       List<String> hashTags =
           FeedContentAnalyzeUtils(content).getMomentHashTagList;
@@ -455,8 +464,8 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
 
       if (event != null && event.status) {
         CommonToast.instance.show(context, 'Sent successfully');
-        ChuChuNavigator.pop(context);
-      }else {
+        ChuChuNavigator.pop(context, true);
+      } else {
         CommonToast.instance.show(context, 'Failed to send');
       }
     } finally {
@@ -483,7 +492,6 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
       mentions: getReplyUser,
     );
   }
-
 
   Future<void> _pickImages() async {
     try {
@@ -555,15 +563,15 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
   // Build media toolbar with image and video buttons
   Widget _buildMediaToolbar() {
     final theme = Theme.of(context);
-    
+
     // Hide media toolbar if video is selected
     if (_selectedVideos.isNotEmpty) {
       return const SizedBox();
     }
-    
+
     // Hide video button if images are selected
     final bool hideVideoButton = _selectedImages.isNotEmpty;
-    
+
     return Row(
       children: [
         Expanded(
@@ -671,7 +679,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           // Generate thumbnail
           _generateVideoThumbnail(videoFile, index);
         });
-        
+
         // Auto-upload newly selected video
         _uploadNewVideos();
       }
@@ -723,7 +731,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
         maxWidth: 200,
         quality: 75,
       );
-      
+
       if (thumbnail != null && mounted) {
         setState(() {
           _videoThumbnails[index] = thumbnail;
@@ -759,15 +767,16 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           }
 
           final currentTime = DateTime.now().microsecondsSinceEpoch.toString();
-          String fileName = '$currentTime${Path.basenameWithoutExtension(file.path)}.mp4';
-          
+          String fileName =
+              '$currentTime${Path.basenameWithoutExtension(file.path)}.mp4';
+
           UploadResult result = await UploadUtils.uploadFile(
-              context: context,
-              fileType: FileType.video,
-              file: file,
-              filename: fileName,
+            context: context,
+            fileType: FileType.video,
+            file: file,
+            filename: fileName,
           );
-          
+
           if (result.isSuccess && result.url.isNotEmpty) {
             if (mounted) {
               setState(() {
@@ -783,7 +792,10 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
             setState(() {
               _videoUploadingStatus[i] = false; // Reset upload status
             });
-            CommonToast.instance.show(context, 'Video ${i + 1} upload failed: $e');
+            CommonToast.instance.show(
+              context,
+              'Video ${i + 1} upload failed: $e',
+            );
           }
         }
       }
@@ -986,7 +998,9 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                   0,
                   key: const ValueKey('reply_single_video'),
                 )
-                : _buildReplyVideoCarousel(key: const ValueKey('reply_multi_video')),
+                : _buildReplyVideoCarousel(
+                  key: const ValueKey('reply_multi_video'),
+                ),
       ),
     );
   }
@@ -995,7 +1009,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
     final isUploaded = index < _uploadedVideoUrls.length;
     final isUploading = _videoUploadingStatus[index] ?? false;
     final thumbnail = _videoThumbnails[index];
-    
+
     return Stack(
       key: key,
       children: [
@@ -1007,14 +1021,23 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
             children: [
               // Show thumbnail if available, otherwise show play icon
               if (thumbnail != null)
-                Image.memory(thumbnail, fit: BoxFit.cover, width: double.infinity, height: 200)
+                Image.memory(
+                  thumbnail,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 200,
+                )
               else
                 Container(
                   width: double.infinity,
                   height: 200,
                   color: Colors.black12,
                   child: const Center(
-                    child: Icon(Icons.play_circle_outline, size: 50, color: Colors.grey),
+                    child: Icon(
+                      Icons.play_circle_outline,
+                      size: 50,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               if (isUploading)
@@ -1085,7 +1108,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           final isUploaded = index < _uploadedVideoUrls.length;
           final isUploading = _videoUploadingStatus[index] ?? false;
           final thumbnail = _videoThumbnails[index];
-          
+
           return Stack(
             children: [
               Container(
@@ -1101,14 +1124,23 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                   children: [
                     // Show thumbnail if available, otherwise show play icon
                     if (thumbnail != null)
-                      Image.memory(thumbnail, fit: BoxFit.cover, width: 120, height: 120)
+                      Image.memory(
+                        thumbnail,
+                        fit: BoxFit.cover,
+                        width: 120,
+                        height: 120,
+                      )
                     else
                       Container(
                         width: 120,
                         height: 120,
                         color: Colors.black12,
                         child: const Center(
-                          child: Icon(Icons.play_circle_outline, size: 30, color: Colors.grey),
+                          child: Icon(
+                            Icons.play_circle_outline,
+                            size: 30,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     if (isUploading)
@@ -1120,7 +1152,9 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                           ),
                           child: const Center(
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                               strokeWidth: 2,
                             ),
                           ),
@@ -1131,7 +1165,10 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                         bottom: 8,
                         left: 8,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(8),
@@ -1143,7 +1180,10 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                               SizedBox(width: 2),
                               Text(
                                 'Done',
-                                style: TextStyle(color: Colors.white, fontSize: 8),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                ),
                               ),
                             ],
                           ),

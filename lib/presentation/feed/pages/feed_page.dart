@@ -261,14 +261,12 @@ class _FeedPageState extends State<FeedPage>
     }
 
     if (notesList.isEmpty) {
-      return RepaintBoundary(
-        child: Column(
-          children: [
-            SizedBox(height: 100),
-            CommonImage(iconName: 'no_feed.png', size: 150),
-            Text('No Content', style: Theme.of(context).textTheme.titleLarge),
-          ],
-        ),
+      return Column(
+        children: [
+          SizedBox(height: 100),
+          CommonImage(iconName: 'no_feed.png', size: 150),
+          Text('No Content', style: Theme.of(context).textTheme.titleLarge),
+        ],
       );
     }
 
@@ -282,21 +280,21 @@ class _FeedPageState extends State<FeedPage>
       addRepaintBoundaries: true,
       itemBuilder: (context, index) {
         final notedUIModel = notesList[index];
-        return RepaintBoundary(
-          key: ValueKey('feed_$index'),
-          child: FeedWidget(
-            horizontalPadding: 16,
-            feedWidgetLayout: EFeedWidgetLayout.fullScreen,
-            isShowReplyWidget: true,
-            notedUIModel: notedUIModel,
-            clickMomentCallback: (NotedUIModel? notedUIModel) async {
-              await ChuChuNavigator.pushPage(
-                context,
-                (context) => FeedInfoPage(notedUIModel: notedUIModel),
-              );
-            },
-          ).setPadding(EdgeInsets.only(bottom: 12.0)),
-        );
+        // Use noteId as key to prevent widget reuse issues
+        final key = notedUIModel?.noteDB.noteId ?? 'note_$index';
+        return FeedWidget(
+          key: ValueKey(key),
+          horizontalPadding: 16,
+          feedWidgetLayout: EFeedWidgetLayout.fullScreen,
+          isShowReplyWidget: true,
+          notedUIModel: notedUIModel,
+          clickMomentCallback: (NotedUIModel? notedUIModel) async {
+            await ChuChuNavigator.pushPage(
+              context,
+                  (context) => FeedInfoPage(notedUIModel: notedUIModel),
+            );
+          },
+        ).setPadding(EdgeInsets.only(bottom: 12.0));
       },
     );
   }

@@ -91,7 +91,7 @@ class _FeedWidgetState extends State<FeedWidget> {
     _cachedTheme ??= Theme.of(context);
     _cachedMediaQuery ??= MediaQuery.of(context);
 
-    return RepaintBoundary(
+    return Container(
       child:
           widget.feedWidgetLayout == EFeedWidgetLayout.halfScreen
               ? _feedHalfItemWidget()
@@ -104,7 +104,11 @@ class _FeedWidgetState extends State<FeedWidget> {
     super.didUpdateWidget(oldWidget);
     NotedUIModel? newNote = widget.notedUIModel;
     NotedUIModel? oldNote = oldWidget.notedUIModel;
-    if (newNote != oldNote) {
+    // Update if noteId changed or replyCount changed (to catch data updates)
+    if (newNote?.noteDB.noteId != oldNote?.noteDB.noteId ||
+        newNote?.noteDB.replyCount != oldNote?.noteDB.replyCount ||
+        newNote?.noteDB.reactionCount != oldNote?.noteDB.reactionCount ||
+        newNote != oldNote) {
       _dataInit();
     }
   }
@@ -143,15 +147,16 @@ class _FeedWidgetState extends State<FeedWidget> {
         _showReplyContactWidget().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
         _showFeedContent().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
         _showFeedMediaWidget(),
-        RepaintBoundary(
+        Container(
           child: FeedReplyAbbreviateWidget(
             notedUIModel: notedUIModel,
             isShowReplyWidget: widget.isShowReplyWidget,
           ),
         ).setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
         if (widget.isShowOption)
-          RepaintBoundary(
+          Container(
             child: FeedOptionWidget(
+              key: ValueKey(notedUIModel?.noteDB.noteId ?? 'option_${notedUIModel.hashCode}'),
               notedUIModel: notedUIModel,
             ).setPaddingOnly(bottom: _verticalPadding.px),
           ).setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
@@ -222,7 +227,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildAvatarWidget({String? imageUrl}) {
-    return RepaintBoundary(
+    return Container(
       child: GestureDetector(
         onTap: () {
           if (relayGroup != null) {
@@ -254,7 +259,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   Widget _buildAvatarColumn() {
     if (notedUIModel == null) return const SizedBox();
-    return RepaintBoundary(
+    return Container(
       child: Padding(
         padding: const EdgeInsets.only(right: _rightPadding),
         child: Column(
@@ -302,7 +307,7 @@ class _FeedWidgetState extends State<FeedWidget> {
     NotedUIModel model,
     List<String> nddrlList,
   ) {
-    return RepaintBoundary(
+    return Container(
       child:
           nddrlList.contains(content)
               ? MomentArticleWidget(naddr: content)
@@ -349,7 +354,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   Widget _buildVideoWidget(String videoUrl) {
     final isYoutube =
         videoUrl.contains('youtube.com') || videoUrl.contains('youtu.be');
-    return RepaintBoundary(
+    return Container(
       child:
           isYoutube
               ? FeedWidgetsUtils.youtubeSurfaceMoment(context, videoUrl)
@@ -373,7 +378,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     final externalLinks = model.getMomentExternalLink;
     if (externalLinks.isNotEmpty) {
-      return RepaintBoundary(child: FeedUrlWidget(url: externalLinks[0]));
+      return Container(child: FeedUrlWidget(url: externalLinks[0]));
     }
 
     return const SizedBox();
@@ -381,7 +386,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   Widget _showReplyContactWidget() {
     if (!widget.isShowReply) return const SizedBox();
-    return RepaintBoundary(
+    return Container(
       child: FeedReplyContactWidget(notedUIModel: notedUIModel),
     );
   }
@@ -392,7 +397,7 @@ class _FeedWidgetState extends State<FeedWidget> {
       return '${nupKey.substring(0, 6)}:${nupKey.substring(nupKey.length - 6)}';
     }
     return Flexible(
-      child: RepaintBoundary(
+      child: Container(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -486,7 +491,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     final pubKey = model.noteDB.author;
 
-    return RepaintBoundary(
+    return Container(
       child: Container(
         padding: EdgeInsets.only(bottom: _bottomSpacing.px),
         child: _buildUserInfoRow(),

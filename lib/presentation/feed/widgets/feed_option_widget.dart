@@ -1,7 +1,9 @@
+import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 
+import '../../../core/config/config.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import 'package:nostr_core_dart/src/ok.dart';
@@ -40,8 +42,29 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
     _init();
   }
 
-  void _init(){
-    notedUIModel = widget.notedUIModel;
+  @override
+  void didUpdateWidget(FeedOptionWidget oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Update when notedUIModel changes (including noteId or replyCount changes)
+    if (widget.notedUIModel?.noteDB.noteId != oldWidget.notedUIModel?.noteDB.noteId ||
+        widget.notedUIModel?.noteDB.replyCount != oldWidget.notedUIModel?.noteDB.replyCount ||
+        widget.notedUIModel?.noteDB.reactionCount != oldWidget.notedUIModel?.noteDB.reactionCount) {
+      _init(isUpdate: false); // Re-initialize with new data
+    }
+  }
+
+  void _init({bool isUpdate = false}) async{
+    if(widget.notedUIModel == null) return;
+    if(!isUpdate){
+      notedUIModel = widget.notedUIModel;
+    }else{
+      NoteDBISAR? note = await Feed.sharedInstance.loadNoteWithNoteId(widget.notedUIModel!.noteDB.noteId, relays: Config.sharedInstance.recommendGroupRelays);
+      if(note != null){
+        notedUIModel = NotedUIModel(noteDB: note);
+      }
+    }
+
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         setState(() {});
@@ -102,7 +125,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
     switch (type) {
       case EFeedOptionType.reply:
         return () async {
-          Navigator.of(context).push(
+         final result = await  Navigator.of(context).push(
             PageRouteBuilder(
               pageBuilder: (context, animation, secondaryAnimation) => FeedReplyPage(notedUIModel:notedUIModel!),
               transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -122,6 +145,10 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
               reverseTransitionDuration: const Duration(milliseconds: 250),
             ),
           );
+
+         if(result != null && result){
+           _init(isUpdate: true);
+         }
         };
       case EFeedOptionType.like:
         return () async {
@@ -426,6 +453,8 @@ class ReusableInteractionButtons extends StatefulWidget {
 class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons> {
   bool _bookmarkTag = false;
 
+  late NotedUIModel? draftNotedUIModel;
+
   @override
   void initState() {
     super.initState();
@@ -532,10 +561,10 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
     );
   }
 
-  void _handleCommentTap() {
+  void _handleCommentTap() async {
     // Navigate to comment page or show comment dialog
     if (widget.notedUIModel != null) {
-      Navigator.of(context).push(
+      final result = await Navigator.of(context).push(
         PageRouteBuilder(
           pageBuilder: (context, animation, secondaryAnimation) =>
               FeedReplyPage(notedUIModel: widget.notedUIModel!),
@@ -556,6 +585,8 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
           reverseTransitionDuration: const Duration(milliseconds: 250),
         ),
       );
+      if(result != null && result){
+      }
     }
   }
 
