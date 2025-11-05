@@ -49,5 +49,18 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <!-- Query for Nostr signer applications via Intent -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="nostrsigner" />
+        </intent>
+        <!-- Explicitly declare package names for Content Provider access (Android 11+) -->
+        <!-- Amber signer -->
+        <package android:name="com.greenart7c3.nostrsigner" />
+        <!-- Aegis signer -->
+        <package android:name="com.aegis.app" />
+        <!-- Nowser signer -->
+        <package android:name="com.github.haorendashu.nowser" />
     </queries>
 </manifest>
