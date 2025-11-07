@@ -227,6 +227,7 @@ class FeedWidgetsUtils {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          insetPadding: EdgeInsets.symmetric(horizontal: 18),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),

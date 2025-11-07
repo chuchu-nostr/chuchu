@@ -139,22 +139,8 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
                       ),
                       const SizedBox(width: 16),
                       GestureDetector(
-                        onTap: () async {
-                          bool? status = await ChuChuCacheManager
-                              .defaultOXCacheManager
-                              .saveForeverData(
-                            StorageKeyTool.CHUCHU_USER_PUBKEY,
-                            '',
-                          );
-
-                          if (status) {
-                            await ChuChuUserInfoManager.sharedInstance
-                                .logout(needObserver: true);
-                            ChuChuNavigator.pushReplacement(
-                              context,
-                              const LoginPage(),
-                            );
-                          }
+                        onTap: () {
+                          _showLogoutConfirmDialog(context);
                         },
                         child: Icon(Icons.logout, size: 18),
                       ),
@@ -183,63 +169,14 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
               onTap: () {
                 RelayGroupDBISAR? myRelayGroup = RelayGroup.sharedInstance.myGroups[Account.sharedInstance.currentPubkey]?.value;
                 if(myRelayGroup == null){
-                  Navigator.of(context).pop(); // Close drawer first
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                  FeedWidgetsUtils.showBecomeCreatorDialog(context,callback:() {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        FeedWidgetsUtils.createSlideTransition(
+                          pageBuilder: (context, animation, secondaryAnimation) => CreateCreatorPage(),
                         ),
-                        title: Row(
-                          children: [
-                            Icon(
-                              Icons.star,
-                              color: Theme.of(context).colorScheme.primary,
-                              size: 28,
-                            ),
-                            const SizedBox(width: 12),
-                            const Text('Become a Creator'),
-                          ],
-                        ),
-                        content: const Text(
-                          'You need to become a creator to post content. Create your creator profile to start sharing with your audience!',
-                          style: TextStyle(fontSize: 16),
-                        ),
-                        actions: [
-                          TextButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text(
-                              'Cancel',
-                              style: TextStyle(fontSize: 16),
-                            ),
-                          ),
-                          ElevatedButton(
-                            onPressed: () {
-                              Navigator.of(context).pop();
-                              Navigator.of(context).push(
-                                FeedWidgetsUtils.createSlideTransition(
-                                  pageBuilder: (context, animation, secondaryAnimation) => CreateCreatorPage(),
-                                ),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                            ),
-                            child: const Text(
-                              'Become Creator',
-                              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ],
                       );
-                    },
-                  );
+                  });
                   return;
                 }
                 ChuChuNavigator.pushPage(
@@ -313,6 +250,124 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
           ],
         ),
       ),
+    );
+  }
+
+  void _showLogoutConfirmDialog(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          insetPadding:EdgeInsets.symmetric(horizontal: 18.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          backgroundColor: theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
+          title: Row(
+            children: [
+              Icon(
+                Icons.warning_amber_rounded,
+                color: colorScheme.error,
+                size: 28,
+              ),
+              const SizedBox(width: 12),
+              Text(
+                'Confirm Logout',
+                style: theme.dialogTheme.titleTextStyle ?? theme.textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Are you sure you want to logout?',
+                style: theme.dialogTheme.contentTextStyle ?? theme.textTheme.bodyLarge,
+              ),
+              const SizedBox(height: 16),
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: colorScheme.errorContainer.withOpacity(0.2),
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(
+                    color: colorScheme.error.withOpacity(0.2),
+                    width: 1,
+                  ),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Icon(
+                      Icons.info_outline,
+                      size: 20,
+                      color: colorScheme.error,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        'Please make sure you have backed up your private key before logging out. You will need it to access your account again.',
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              style: TextButton.styleFrom(
+                foregroundColor: colorScheme.onSurface,
+              ),
+              child: Text(
+                'Cancel',
+                style: theme.textTheme.labelLarge,
+              ),
+            ),
+            FilledButton.tonal(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                bool? status = await ChuChuCacheManager
+                    .defaultOXCacheManager
+                    .saveForeverData(
+                  StorageKeyTool.CHUCHU_USER_PUBKEY,
+                  '',
+                );
+
+                if (status) {
+                  await ChuChuUserInfoManager.sharedInstance
+                      .logout(needObserver: true);
+                  if (context.mounted) {
+                    ChuChuNavigator.pushReplacement(
+                      context,
+                      const LoginPage(),
+                    );
+                  }
+                }
+              },
+              child: Text(
+                'Logout',
+                style: theme.textTheme.labelLarge?.copyWith(
+                  color: Colors.black,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 
