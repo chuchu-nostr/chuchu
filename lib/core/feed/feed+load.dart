@@ -11,6 +11,7 @@ import '../database/db_isar.dart';
 import '../messages/messages.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
+import '../relayGroups/relayGroup.dart';
 import 'feed.dart';
 import 'model/noteDB_isar.dart';
 import 'package:nostr_core_dart/nostr.dart';
@@ -676,6 +677,94 @@ extension Load on Feed {
       note = note.withGrowableLevels();
       result.add(note);
     }
+    return result;
+  }
+
+  /// Load notes from all groups that the current user has joined
+  /// Similar to searchNotesFromDB but queries multiple groupIds using anyOf
+  Future<List<NoteDBISAR>> loadAllMyGroupsNotesFromDB({
+    List<String>? authors,
+    String? root,
+    String? reply,
+    String? repostId,
+    String? quoteRepostId,
+    String? reactedId,
+    bool? isReacted,
+    bool? private,
+    int? until,
+    int? limit,
+    String? keyword,
+  }) async {
+    // Get all group IDs that the current user has joined
+    List<String> myGroupIds = RelayGroup.sharedInstance.myGroups.keys.toList();
+    
+    // If user has no groups, return empty list
+    if (myGroupIds.isEmpty) {
+      return [];
+    }
+
+    final isar = DBISAR.sharedInstance.isar;
+    var queryBuilder = isar.noteDBISARs.filter();
+    
+    // Query notes from any of the user's groups using anyOf
+    queryBuilder = queryBuilder.anyOf(myGroupIds, (q, groupId) => q.groupIdEqualTo(groupId));
+    
+    // Apply other filters similar to searchNotesFromDB
+    if (authors != null) {
+      queryBuilder = queryBuilder.anyOf(authors, (q, author) => q.authorEqualTo(author));
+    }
+    if (root != null) {
+      queryBuilder = queryBuilder.rootEqualTo(root);
+    }
+    if (reply != null) {
+      queryBuilder = queryBuilder.replyEqualTo(reply);
+    }
+    if (repostId != null) {
+      queryBuilder = queryBuilder.repostIdEqualTo(repostId);
+    }
+    if (quoteRepostId != null) {
+      queryBuilder = queryBuilder.quoteRepostIdEqualTo(quoteRepostId);
+    }
+    if (reactedId != null) {
+      queryBuilder = queryBuilder.reactedIdEqualTo(reactedId);
+    }
+    if (until != null) {
+      queryBuilder = queryBuilder.createAtLessThan(until);
+    }
+    if (isReacted != null) {
+      queryBuilder =
+      isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
+    }
+    if (private != null) {
+      queryBuilder = queryBuilder.privateEqualTo(private);
+    }
+    if (keyword != null) {
+      queryBuilder = queryBuilder.contentContains(keyword);
+    }
+    
+    // Execute query and process results
+    List<NoteDBISAR> result = [];
+    if (limit != null) {
+      final searchResult =
+      await queryBuilder.idBetween(0, Isar.maxId).sortByCreateAtDesc().limit(limit).findAll();
+      for (NoteDBISAR note in searchResult) {
+        note = note.withGrowableLevels();
+        result.add(note);
+        // Update cache and latest note time
+        notesCache[note.noteId] = note;
+        latestNoteTime = note.createAt > latestNoteTime ? note.createAt : latestNoteTime;
+      }
+    } else {
+      final searchResult = await queryBuilder.idBetween(0, Isar.maxId).sortByCreateAtDesc().findAll();
+      for (NoteDBISAR note in searchResult) {
+        note = note.withGrowableLevels();
+        result.add(note);
+        // Update cache and latest note time
+        notesCache[note.noteId] = note;
+        latestNoteTime = note.createAt > latestNoteTime ? note.createAt : latestNoteTime;
+      }
+    }
+    
     return result;
   }
 

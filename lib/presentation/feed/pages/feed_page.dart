@@ -398,7 +398,6 @@ class _FeedPageState extends State<FeedPage>
     final theme = Theme.of(context);
 
     int noteCount = _notificationGroupNotes[relayGroup?.groupId]?.length ?? 0;
-
     return Container(
       width: storyItemWidth,
       height: storyItemHeight,
@@ -484,8 +483,7 @@ class _FeedPageState extends State<FeedPage>
 
     try {
       // List<NoteDBISAR> list = await _getNoteTypeToDB(isInit);
-      List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
-          Account.sharedInstance.currentPubkey,
+      List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadAllMyGroupsNotesFromDB(
           until: isInit ? null : _allNotesFromDBLastTimestamp,
           limit: _limit) ??
           [];

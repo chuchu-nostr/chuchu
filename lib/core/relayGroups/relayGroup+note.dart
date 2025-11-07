@@ -242,4 +242,14 @@ extension ENote on RelayGroup {
     }
     return notes;
   }
+
+  Future<List<NoteDBISAR>?> loadAllMyGroupsNotesFromDB({int limit = 50, int? until}) async {
+    until ??= currentUnixTimestampSeconds() + 1;
+    List<NoteDBISAR>? notes =
+        await Feed.sharedInstance.loadAllMyGroupsNotesFromDB(until: until, limit: limit);
+    for (var note in notes) {
+      Feed.sharedInstance.notesCache[note.noteId] = note;
+    }
+    return notes;
+  }
 }
