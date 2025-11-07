@@ -346,7 +346,22 @@ extension Load on Feed {
     if (noteDB.replyEventIds?.contains(replyEvent.id) == true) return;
     saveNoteToDB(replyNoteDB, ConflictAlgorithm.ignore);
     noteDB.replyEventIds?.add(replyNoteDB.noteId);
-    if (replyNoteDB.getReplyLevel(noteDB.noteId) == 1) noteDB.replyCount++;
+    
+    // Update reply count - check if this is a direct reply or root reply
+    // This logic should match loadPublicNoteActionsFromDB for consistency
+    bool shouldIncrementCount = false;
+    if (replyNoteDB.reply == noteDB.noteId) {
+      // Direct reply to this note
+      shouldIncrementCount = true;
+    } else if (replyNoteDB.root == noteDB.noteId && 
+               (replyNoteDB.reply == null || replyNoteDB.reply!.isEmpty)) {
+      // Root reply (reply to root note, not a nested reply)
+      shouldIncrementCount = true;
+    }
+    
+    if (shouldIncrementCount) {
+      noteDB.replyCount++;
+    }
     if (replyEvent.pubkey == pubkey) {
       noteDB.replyCountByMe++;
     }
