@@ -8,6 +8,7 @@ import 'package:chuchu/core/manager/chuchu_user_info_manager.dart';
 import 'package:nostr_core_dart/nostr.dart';
 import 'package:nostr_core_dart/src/signer/signer_config.dart';
 import 'package:nostr_core_dart/src/channel/core_method_channel.dart';
+import '../../../core/widgets/chuchu_Loading.dart';
 import '../../home/pages/home_page.dart';
 
 class LoginForm extends StatefulWidget {
@@ -539,6 +540,7 @@ class _LoginFormState extends State<LoginForm> {
   }
 
   Future<void> _nescLogin() async {
+
     final input = _privateKeyController.text.trim();
     
     // Validate input
@@ -549,7 +551,7 @@ class _LoginFormState extends State<LoginForm> {
       });
       return;
     }
-    
+    ChuChuLoading.show();
     try {
       final privKey = UserDBISAR.decodePrivkey(input);
 
@@ -558,6 +560,7 @@ class _LoginFormState extends State<LoginForm> {
           _hasError = true;
           _errorMessage = 'Invalid private key format';
         });
+        ChuChuLoading.dismiss();
         return;
       }
 
@@ -578,13 +581,16 @@ class _LoginFormState extends State<LoginForm> {
           _hasError = true;
           _errorMessage = 'Login failed. Please check your credentials.';
         });
+        ChuChuLoading.dismiss();
         return;
       }
 
       ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
+      ChuChuLoading.dismiss();
       ChuChuNavigator.pushReplacement(context, const HomePage());
       
     } catch (e) {
+      ChuChuLoading.dismiss();
       setState(() {
         _hasError = true;
         _errorMessage = 'Login error: ${e.toString()}';
@@ -616,7 +622,7 @@ class _LoginFormState extends State<LoginForm> {
         _hasError = false;
         _errorMessage = '';
       });
-
+      ChuChuLoading.show();
       // Initialize NIP-46 callbacks
       Account.sharedInstance.initNIP46Callback();
 
@@ -629,6 +635,7 @@ class _LoginFormState extends State<LoginForm> {
           _hasError = true;
           _errorMessage = 'Failed to connect to remote signer. Please check your URI and try again.';
         });
+        ChuChuLoading.dismiss();
         return;
       }
 
@@ -648,13 +655,16 @@ class _LoginFormState extends State<LoginForm> {
           _hasError = true;
           _errorMessage = 'Login failed. Please try again.';
         });
+        ChuChuLoading.dismiss();
         return;
       }
 
       ChuChuUserInfoManager.sharedInstance.loginSuccess(finalUserDB);
+      ChuChuLoading.dismiss();
       ChuChuNavigator.pushReplacement(context, const HomePage());
       
     } catch (e) {
+      ChuChuLoading.dismiss();
       setState(() {
         _isConnecting = false;
         _hasError = true;

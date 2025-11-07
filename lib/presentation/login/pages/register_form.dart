@@ -6,6 +6,7 @@ import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/core/manager/chuchu_user_info_manager.dart';
 import 'package:nostr_core_dart/src/keychain.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
+import '../../../core/widgets/chuchu_Loading.dart';
 import '../../home/pages/home_page.dart';
 
 class RegisterForm extends StatefulWidget {
@@ -122,6 +123,7 @@ class _RegisterFormState extends State<RegisterForm> {
   }
 
   void _createAccount() async {
+    ChuChuLoading.show();
     String pubkey = Account.getPublicKey(_keychain.private);
     await ChuChuUserInfoManager.sharedInstance.initDB(pubkey);
 
@@ -130,6 +132,7 @@ class _RegisterFormState extends State<RegisterForm> {
 
     Account.sharedInstance.updateProfile(userDB);
     await ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
+    ChuChuLoading.dismiss();
     ChuChuNavigator.pushReplacement(context, const HomePage());
   }
 } 
