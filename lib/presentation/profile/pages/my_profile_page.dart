@@ -608,8 +608,13 @@ class _MyProfilePageState extends State<MyProfilePage> {
         // Auto-upload avatar after showing local image
         await _uploadAvatar();
       }
-    } catch (e) {
-      _showErrorSnackBar('Failed to pick avatar: $e');
+    } catch (e, stackTrace) {
+      // Print detailed error for debugging
+      debugPrint('Error picking avatar: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      // Show user-friendly error message
+      _showErrorSnackBar('Unable to select photo. Please try again.');
     }
   }
 
@@ -641,9 +646,14 @@ class _MyProfilePageState extends State<MyProfilePage> {
       } else {
         throw Exception('Upload returned empty URL');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      // Print detailed error for debugging
+      debugPrint('Error uploading avatar: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
       if (mounted) {
-        _showErrorSnackBar('Avatar upload failed: $e');
+        // Show user-friendly error message
+        _showErrorSnackBar('Failed to upload photo. Please check your network connection and try again.');
       }
     } finally {
       if (mounted) {
@@ -684,8 +694,13 @@ class _MyProfilePageState extends State<MyProfilePage> {
         // Keep _selectedAvatarPath to continue showing local image
       });
       CommonToast.instance.show(context, 'Avatar updated successfully');
-    } catch (e) {
-      _showErrorSnackBar('Failed to update avatar: $e');
+    } catch (e, stackTrace) {
+      // Print detailed error for debugging
+      debugPrint('Error confirming avatar update: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      // Show user-friendly error message
+      _showErrorSnackBar('Failed to update avatar. Please try again.');
     }
   }
 
@@ -703,7 +718,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
       // Get current user info
       final currentUserInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
       if (currentUserInfo == null) {
-        _showErrorSnackBar('User info not found');
+        debugPrint('Error: User info not found when updating avatar');
+        _showErrorSnackBar('Unable to update avatar. Please try again later.');
         return;
       }
 
@@ -719,8 +735,14 @@ class _MyProfilePageState extends State<MyProfilePage> {
       } else {
         throw Exception('Failed to update profile');
       }
-    } catch (e) {
-      _showErrorSnackBar('Failed to update avatar: $e');
+    } catch (e, stackTrace) {
+      // Print detailed error for debugging
+      debugPrint('Error updating user avatar: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      // Show user-friendly error message
+      _showErrorSnackBar('Failed to update avatar. Please check your connection and try again.');
+      rethrow; // Re-throw to let caller handle if needed
     }
   }
 
@@ -747,7 +769,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
       final currentUserInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
       if (currentUserInfo == null) {
         Navigator.of(context).pop(); // Close loading dialog
-        _showErrorSnackBar('User info not found');
+        debugPrint('Error: User info not found when updating $fieldName');
+        _showErrorSnackBar('Unable to update $fieldName. Please try again later.');
         return;
       }
 
@@ -792,9 +815,15 @@ class _MyProfilePageState extends State<MyProfilePage> {
 
       // Refresh UI
       setState(() {});
-    } catch (e) {
+    } catch (e, stackTrace) {
       Navigator.of(context).pop(); // Close loading dialog
-      _showErrorSnackBar('Failed to update $fieldName: $e');
+      
+      // Print detailed error for debugging
+      debugPrint('Error updating $fieldName: $e');
+      debugPrint('Stack trace: $stackTrace');
+      
+      // Show user-friendly error message
+      _showErrorSnackBar('Failed to update $fieldName. Please check your connection and try again.');
     }
   }
 

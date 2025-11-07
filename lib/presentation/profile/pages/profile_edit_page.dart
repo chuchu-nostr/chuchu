@@ -544,8 +544,14 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         // Auto-upload cover photo after showing local image
         await _uploadCoverPhoto();
       }
-    } catch (e) {
-      FeedWidgetsUtils.showMessage(context,'Failed to pick image: $e', isError: true);
+    } catch (e, stackTrace) {
+      debugPrint('Error picking cover photo: $e');
+      debugPrint('Stack trace: $stackTrace');
+      FeedWidgetsUtils.showMessage(
+        context,
+        'Unable to open photo picker. Please try again.',
+        isError: true,
+      );
     }
   }
 
