@@ -237,30 +237,46 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   }
 
   Widget _buildQRCode() {
-    // For now, we'll create a simple placeholder QR code
-    // In a real implementation, you would use a QR code package like qr_flutter
     return Container(
       width: 200,
       height: 200,
       decoration: BoxDecoration(
-        color: Colors.grey[100],
-        borderRadius: BorderRadius.circular(4),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+        ),
       ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.qr_code, size: 80, color: Colors.grey[600]),
-          const SizedBox(height: 8),
-          Text(
-            'QR Code',
-            style: TextStyle(color: Colors.grey[600], fontSize: 12),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${widget.amount} sats',
-            style: TextStyle(color: Colors.grey[600], fontSize: 10),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: QrImageView(
+          data: widget.bolt11,
+          version: QrVersions.auto,
+          size: 184.0,
+          backgroundColor: Colors.white,
+          foregroundColor: Colors.black,
+          errorStateBuilder: (context, error) {
+            return Container(
+              width: 184,
+              height: 184,
+              decoration: BoxDecoration(
+                color: Colors.grey[100],
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.error_outline, size: 40, color: Colors.grey[600]),
+                  const SizedBox(height: 8),
+                  Text(
+                    'QR Error',
+                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }

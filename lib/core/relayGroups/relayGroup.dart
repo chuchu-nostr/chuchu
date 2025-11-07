@@ -200,26 +200,72 @@ class RelayGroup {
   }
 
   void updateGroupSubscription({String? relay}) {
-    if (myGroups.isEmpty) {
-      offlineGroupMessageFinishCallBack?.call();
-      if (!Messages.sharedInstance.groupMessageCompleter.isCompleted) {
-        Messages.sharedInstance.groupMessageCompleter.complete();
-      }
-      return;
-    }
     if (groupMessageSubscription.isNotEmpty) {
       Connect.sharedInstance.closeRequests(groupMessageSubscription, relay: relay);
     }
 
     Map<String, List<Filter>> subscriptions = {};
     List<String> groupList = [];
-    for (var g in myGroups.values) {
-      if (g.value.members?.contains(pubkey) == true) groupList.add(g.value.groupId);
+    
+    // Build group list if myGroups is not empty
+    if (myGroups.isNotEmpty) {
+      for (var g in myGroups.values) {
+        if (g.value.members?.contains(pubkey) == true) groupList.add(g.value.groupId);
+      }
     }
-    if(groupList.isEmpty) return;
+    
     if (relay == null) {
       for (String relayURL in groupRelays) {
         int groupMessageUntil = Relays.sharedInstance.getGroupMessageUntil(relayURL);
+        
+        List<Filter> filters = [];
+        
+        // Add group message filter only if groupList is not empty
+        if (groupList.isNotEmpty) {
+          Filter f = Filter(
+              h: groupList,
+              kinds: [
+                7,
+                9,
+                10,
+                11,
+                12,
+                9000,
+                9001,
+                9002,
+                9003,
+                9004,
+                9005,
+                9006,
+                9008,
+                9021,
+                9022,
+                9735,
+                // 39000,
+                // 39001,
+                // 39002
+              ],
+              since: (groupMessageUntil + 1));
+          filters.add(f);
+        }
+        
+        // Always add NIP-47 response filter for subscription invoices
+        Filter nip47Filter = Filter(
+          kinds: [23197], // NIP-47 response kind
+          p: [pubkey], // From our own pubkey
+          since: (groupMessageUntil + 1),
+        );
+        filters.add(nip47Filter);
+        
+        subscriptions[relayURL] = filters;
+      }
+    } else {
+      int groupMessageUntil = Relays.sharedInstance.getGroupMessageUntil(relay);
+      
+      List<Filter> filters = [];
+      
+      // Add group message filter only if groupList is not empty
+      if (groupList.isNotEmpty) {
         Filter f = Filter(
             h: groupList,
             kinds: [
@@ -244,74 +290,52 @@ class RelayGroup {
               // 39002
             ],
             since: (groupMessageUntil + 1));
-        
-        // Add NIP-47 response filter for subscription invoices
-        Filter nip47Filter = Filter(
-          kinds: [23197], // NIP-47 response kind
-          p: [pubkey], // From our own pubkey
-          since: (groupMessageUntil + 1),
-        );
-        
-        subscriptions[relayURL] = [f, nip47Filter];
+        filters.add(f);
       }
-    } else {
-      int groupMessageUntil = Relays.sharedInstance.getGroupMessageUntil(relay);
-      Filter f = Filter(
-          h: groupList,
-          kinds: [
-            7,
-            9,
-            10,
-            11,
-            12,
-            9000,
-            9001,
-            9002,
-            9003,
-            9004,
-            9005,
-            9006,
-            9008,
-            9021,
-            9022,
-            9735,
-            // 39000,
-            // 39001,
-            // 39002
-          ],
-          since: (groupMessageUntil + 1));
       
-      // Add NIP-47 response filter for subscription invoices
+      // Always add NIP-47 response filter for subscription invoices
       Filter nip47Filter = Filter(
         kinds: [23197], // NIP-47 response kind
         p: [pubkey], // From our own pubkey
         since: (groupMessageUntil + 1),
       );
+      filters.add(nip47Filter);
       
-      subscriptions[relay] = [f, nip47Filter];
+      subscriptions[relay] = filters;
     }
 
-    groupMessageSubscription = Connect.sharedInstance.addSubscriptions(subscriptions,
-        closeSubscription: false, eventCallBack: (event, relay) async {
-      _updateGroupMessageTime(event.createdAt, relay);
-      handleGroupEvents(event, relay);
-    }, eoseCallBack: (requestId, ok, relay, unCompletedRelays) async {
-      offlineGroupMessageFinish[relay] = true;
-      if (ok.status) {
-        _updateGroupMessageTime(currentUnixTimestampSeconds() - 1, relay);
-      } else if (Nip29.restricted(ok.message)) {
-        await Future.forEach(groupList, (g) async {
-          await getGroupMetadataFromRelay(g);
-        });
-        updateGroupSubscription(relay: relay);
-      }
-      if (unCompletedRelays.isEmpty) {
-        offlineGroupMessageFinishCallBack?.call();
-        if (!Messages.sharedInstance.groupMessageCompleter.isCompleted) {
-          Messages.sharedInstance.groupMessageCompleter.complete();
+    // Only subscribe if we have filters to subscribe to
+    if (subscriptions.isNotEmpty) {
+      groupMessageSubscription = Connect.sharedInstance.addSubscriptions(subscriptions,
+          closeSubscription: false, eventCallBack: (event, relay) async {
+        _updateGroupMessageTime(event.createdAt, relay);
+        handleGroupEvents(event, relay);
+      }, eoseCallBack: (requestId, ok, relay, unCompletedRelays) async {
+        offlineGroupMessageFinish[relay] = true;
+        if (ok.status) {
+          _updateGroupMessageTime(currentUnixTimestampSeconds() - 1, relay);
+        } else if (Nip29.restricted(ok.message)) {
+          if (groupList.isNotEmpty) {
+            await Future.forEach(groupList, (g) async {
+              await getGroupMetadataFromRelay(g);
+            });
+            updateGroupSubscription(relay: relay);
+          }
         }
+        if (unCompletedRelays.isEmpty) {
+          offlineGroupMessageFinishCallBack?.call();
+          if (!Messages.sharedInstance.groupMessageCompleter.isCompleted) {
+            Messages.sharedInstance.groupMessageCompleter.complete();
+          }
+        }
+      });
+    } else {
+      // If no subscriptions, still call callbacks
+      offlineGroupMessageFinishCallBack?.call();
+      if (!Messages.sharedInstance.groupMessageCompleter.isCompleted) {
+        Messages.sharedInstance.groupMessageCompleter.complete();
       }
-    });
+    }
   }
 
   void handleGroupEvents(Event event, String relay) {
