@@ -116,7 +116,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                         ),
                         const SizedBox(height: 24),
                         Container(
-                          padding: const EdgeInsets.all(16),
+                          padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 16),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
@@ -146,13 +146,14 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
                                 ],
                               ),
                               Switch(
+                                padding: EdgeInsets.zero,
                                 value: _isPaidSubscription,
                                 onChanged: (value) {
                                   setState(() {
                                     _isPaidSubscription = value;
                                   });
                                 },
-                              ),
+                              )
                             ],
                           ),
                         ),
