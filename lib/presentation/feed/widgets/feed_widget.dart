@@ -502,8 +502,9 @@ class _FeedWidgetState extends State<FeedWidget> {
   Future<void> _dataInit() async {
     final model = widget.notedUIModel;
     if (model == null) return;
-    getRelayGroup();
     notedUIModel = model;
+    getRelayGroup();
+  
     await _getFeedUserInfo(model);
 
     Future.microtask(() {

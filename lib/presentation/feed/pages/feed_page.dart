@@ -45,6 +45,7 @@ class _FeedPageState extends State<FeedPage>
         ChuChuUserInfoObserver,
         ChuChuFeedObserver {
   List<NotedUIModel?> notesList = [];
+  int _listVersion = 0; // Track list changes to force ListView refresh
   final int _limit = 1000;
   int? _allNotesFromDBLastTimestamp;
 
@@ -271,17 +272,20 @@ class _FeedPageState extends State<FeedPage>
     }
 
     return ListView.builder(
+      key: ValueKey('feed_list_$_listVersion'), // Force refresh when list changes
       primary: false,
       controller: null,
       shrinkWrap: false,
       itemCount: notesList.length,
-      cacheExtent: 1000,
       addAutomaticKeepAlives: true,
       addRepaintBoundaries: true,
       itemBuilder: (context, index) {
         final notedUIModel = notesList[index];
         // Use noteId as key to prevent widget reuse issues
-        final key = notedUIModel?.noteDB.noteId ?? 'note_$index';
+        // This ensures widgets are correctly identified when list order changes
+        // If notedUIModel is null, create a unique key based on index and list state
+        final key = notedUIModel?.noteDB.noteId ?? 
+            'null_note_${Object.hash(notedUIModel, index)}';
         return FeedWidget(
           key: ValueKey(key),
           horizontalPadding: 16,
@@ -554,15 +558,87 @@ class _FeedPageState extends State<FeedPage>
 
   @override
   didNewNotesCallBackCallBack(List<NoteDBISAR> notes) {
-    // Only process notes that haven't been seen yet (by noteId)
+    // Process both new notes and updates to existing notes
     final List<NoteDBISAR> incremental = notes
         .where((n) => !_seenNoteIds.contains(n.noteId))
         .toList(growable: false);
+    
+    // Update existing notes in notesList if they exist
+    bool hasUpdates = false;
+    for (NoteDBISAR note in notes) {
+      final noteId = note.noteId;
+      final index = notesList.indexWhere((n) => n?.noteDB.noteId == noteId);
+      if (index != -1 && notesList[index] != null) {
+        // Update existing note in notesList
+        notesList[index] = NotedUIModel(noteDB: note);
+        hasUpdates = true;
+      }
+    }
 
-    if (incremental.isEmpty) return;
+    if (incremental.isEmpty && !hasUpdates) return;
 
     _seenNoteIds.addAll(incremental.map((n) => n.noteId));
+    
+    // Check and insert my posts
+    _insertMyPosts(incremental);
+    
     _notificationUpdateNotes(incremental);
+    
+    // Update UI if there were updates to existing notes
+    if (hasUpdates && mounted) {
+      _listVersion++;
+      setState(() {});
+    }
+  }
+
+  /// Find and insert posts sent by current user into notesList
+  void _insertMyPosts(List<NoteDBISAR> notes) {
+    if (notes.isEmpty || !mounted) return;
+
+    try {
+      final currentPubkey = Account.sharedInstance.currentPubkey;
+      final List<NotedUIModel?> myPosts = [];
+      
+      // Find all posts sent by current user
+      for (NoteDBISAR noteDB in notes) {
+        // Check if this is a post sent by current user
+        bool isMyPost = noteDB.author == currentPubkey &&
+            !noteDB.isReaction &&
+            (noteDB.root == null || noteDB.root!.isEmpty);
+        
+        if (isMyPost) {
+          // Create NotedUIModel and add to list for insertion
+          myPosts.add(NotedUIModel(noteDB: noteDB));
+        }
+      }
+      
+      // Insert my posts to the beginning of notesList
+      if (myPosts.isNotEmpty && mounted) {
+        // Remove duplicates by noteId before inserting
+        final existingNoteIds = notesList.map((n) => n?.noteDB.noteId).toSet();
+        final newPosts = myPosts.where((post) => 
+          post != null && !existingNoteIds.contains(post.noteDB.noteId)
+        ).toList();
+        
+        if (newPosts.isNotEmpty) {
+          // Sort by createAt descending (newest first)
+          newPosts.sort((a, b) => 
+            (b?.noteDB.createAt ?? 0).compareTo(a?.noteDB.createAt ?? 0)
+          );
+          
+          // Create a new list to ensure ListView detects the change
+          notesList = [...newPosts, ...notesList];
+          _listVersion++; // Increment version to force ListView refresh
+          
+          // Update UI immediately
+          if (mounted) {
+            setState(() {});
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint('Error inserting my posts: $e');
+    }
   }
 
   void _notificationUpdateNotes(List<NoteDBISAR> notes) async {

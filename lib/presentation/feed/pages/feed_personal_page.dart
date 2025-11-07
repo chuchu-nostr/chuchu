@@ -295,82 +295,53 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   }
 
   Future<void> updateNotesList(bool isInit) async {
-    if (isInit) {
-      setState(() => _isInitialLoading = true);
-    }
-
     try {
-      final notesFromDB = await _loadNotesFromDatabase(isInit);
-
-      if (notesFromDB.isEmpty) {
-        await _handleEmptyNotesFromDB(isInit);
+      List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
+          widget.relayGroupDB.groupId,
+          until: isInit ? null : _allNotesFromDBLastTimestamp,
+          limit: _limit) ??
+          [];
+      if (list.isEmpty) {
+        isInit
+            ? _refreshController.refreshCompleted()
+            : _refreshController.loadNoData();
         return;
       }
 
-      final filteredNotes = _filterNotes(notesFromDB);
-      _updateUIWithNotes(filteredNotes, isInit, notesFromDB.length);
+      List<NoteDBISAR> showList = _filterNotes(list);
+      _updateUI(showList, isInit, list.length);
 
-      if (notesFromDB.length < _limit) {
-        if (!isInit) {
-          await _loadNotesFromRelay();
-        } else {
-          _refreshController.loadNoData();
-        }
+      if (list.length < _limit) {
+        _refreshController.loadNoData();
       }
     } catch (e) {
-      _handleLoadingError(e);
+      print('Error loading notes: $e');
+      _refreshController.loadFailed();
     }
   }
 
-  Future<List<NoteDBISAR>> _loadNotesFromDatabase(bool isInit) async {
-    try {
-      final until = isInit ? null : _allNotesFromDBLastTimestamp;
-      final result = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
-        widget.relayGroupDB.author,
-        until: until,
-        limit: _limit,
-      );
-      return result ?? [];
-    } catch (e) {
-      debugPrint('Error loading notes from DB: $e');
-      return [];
+  void _updateUI(List<NoteDBISAR> showList, bool isInit, int fetchedCount) {
+    List<NotedUIModel> list = showList
+        .map((note) => NotedUIModel(noteDB: note))
+        .toList();
+    if (isInit) {
+      notesList = list;
+    } else {
+      notesList.addAll(list);
     }
-  }
 
-  Future<List<NoteDBISAR>> _loadNotesFromRelay() async {
-    try {
-      // After loading from relay, get the notes from database
-      final result = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
-        widget.relayGroupDB.groupId,
-        until: _allNotesFromDBLastTimestamp,
-        limit: _limit,
-      );
-      return result ?? [];
-    } catch (e) {
-      debugPrint('Error loading notes from relay: $e');
-      return [];
-    }
-  }
+    _allNotesFromDBLastTimestamp = showList.last.createAt;
 
-  Future<void> _handleEmptyNotesFromDB(bool isInit) async {
     if (isInit) {
       _refreshController.refreshCompleted();
-      setState(() {
-        _isInitialLoading = false;
-        notesList = [];
-      });
     } else {
-      _refreshController.loadNoData();
+      fetchedCount < _limit
+          ? _refreshController.loadNoData()
+          : _refreshController.loadComplete();
     }
-
-    if (!isInit) {
-      final relayNotes = await _loadNotesFromRelay();
-      if (relayNotes.isNotEmpty) {
-        final filteredNotes = _filterNotes(relayNotes);
-        _updateUIWithNotes(filteredNotes, false, relayNotes.length);
-      }
-    }
+    setState(() {});
   }
+
 
   List<NoteDBISAR> _filterNotes(List<NoteDBISAR> notes) {
     if (notes.isEmpty) return [];

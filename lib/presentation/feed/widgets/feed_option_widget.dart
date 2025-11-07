@@ -49,7 +49,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
     if (widget.notedUIModel?.noteDB.noteId != oldWidget.notedUIModel?.noteDB.noteId ||
         widget.notedUIModel?.noteDB.replyCount != oldWidget.notedUIModel?.noteDB.replyCount ||
         widget.notedUIModel?.noteDB.reactionCount != oldWidget.notedUIModel?.noteDB.reactionCount) {
-      _init(isUpdate: false); // Re-initialize with new data
+      _init(isUpdate: false);
     }
   }
 
@@ -251,7 +251,38 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   }
 
   int _getClickNum(EFeedOptionType type) {
-    NoteDBISAR? noteDB = notedUIModel?.noteDB;
+    // Use widget.notedUIModel as primary source (from parent's notesList)
+    // If internal state exists and has newer data (after user action), use it temporarily
+    // until parent updates notesList through didNewNotesCallBackCallBack
+    NoteDBISAR? noteDB = widget.notedUIModel?.noteDB;
+    
+    // If we have internal state with same noteId and it might be newer, check it
+    if (notedUIModel != null && 
+        noteDB != null && 
+        notedUIModel!.noteDB.noteId == noteDB.noteId) {
+      // Compare counts to see if internal state is newer
+      int widgetCount = 0;
+      int internalCount = 0;
+      switch(type){
+        case EFeedOptionType.like:
+          widgetCount = noteDB.reactionCount;
+          internalCount = notedUIModel!.noteDB.reactionCount;
+          break;
+        case EFeedOptionType.zaps:
+          widgetCount = noteDB.zapAmount;
+          internalCount = notedUIModel!.noteDB.zapAmount;
+          break;
+        case EFeedOptionType.reply:
+          widgetCount = noteDB.replyCount;
+          internalCount = notedUIModel!.noteDB.replyCount;
+          break;
+      }
+      // Use internal if it has higher count (user action updated it)
+      if (internalCount > widgetCount) {
+        noteDB = notedUIModel!.noteDB;
+      }
+    }
+    
     if(noteDB == null) return 0;
     switch(type){
       case EFeedOptionType.like:
@@ -264,7 +295,8 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   }
 
   bool _isClickByMe(EFeedOptionType type) {
-    NoteDBISAR? noteDB = notedUIModel?.noteDB;
+    // Always use widget.notedUIModel as the source of truth
+    NoteDBISAR? noteDB = widget.notedUIModel?.noteDB;
     if(noteDB == null) return false;
     switch(type){
       case EFeedOptionType.like:
