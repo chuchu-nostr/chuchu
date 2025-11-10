@@ -584,7 +584,6 @@ class _FeedPageState extends State<FeedPage>
     
     // Update UI if there were updates to existing notes
     if (hasUpdates && mounted) {
-      _listVersion++;
       setState(() {});
     }
   }
