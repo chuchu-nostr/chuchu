@@ -126,11 +126,11 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   }
 
 
-  void _handleCommentTap() {
+  void _handleCommentTap() async{
     if (widget.notedUIModel == null) return;
 
     // Navigate to comment page
-    Navigator.of(context).push(
+    final result = await Navigator.of(context).push(
       PageRouteBuilder(
         pageBuilder:
             (context, animation, secondaryAnimation) =>
@@ -152,6 +152,10 @@ class _FeedInfoPageState extends State<FeedInfoPage>
         reverseTransitionDuration: const Duration(milliseconds: 250),
       ),
     );
+
+    if(result != null && result){
+      _updateNoted();
+    }
   }
 
   void _handleZapTap() {
