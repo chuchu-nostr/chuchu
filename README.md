@@ -30,7 +30,7 @@ ChuChu is a decentralized content subscription platform based on the Nostr proto
 - [ ] Support for Apple, Google, and X login
 - [ ] Content Grouping: Posts can be categorized as public, subscriber-only, or custom groups
 - [ ] Draft Management
-- [ ] Tipping Feature: Support tipping with built-in wallet
+- [ ] Zap Feature: Support zaps with built-in wallet
 - [ ] iOS Version Support
 - [ ] Direct Messages (DM) with video chat support
 - [ ] Enhanced Search: Search by creator name, tags, and topics
