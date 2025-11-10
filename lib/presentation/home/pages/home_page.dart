@@ -184,29 +184,43 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
             child: const SizedBox(),
           ),
           actions: [
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 200),
-              child: Stack(
-                key: ValueKey(_isScrolled),
-                children: [
-                  GestureDetector(
-                    onTap: (){
-                      setState(() {
-                        _hasNotifications = false;
-                      });
+            Stack(
+              children: [
+                GestureDetector(
+                  onTap: (){
+                    setState(() {
+                      _hasNotifications = false;
+                    });
 
-                      ChuChuNavigator.pushPage(
-                        context,
-                        (context) => FeedNotificationsPage(relayGroupDB: RelayGroup.sharedInstance.myGroups[Account.sharedInstance.currentPubkey]?.value),
-                      );
-                    },
-                    child: CommonImage(
-                      iconName: 'notification.png',
-                      size: 24,
+                    ChuChuNavigator.pushPage(
+                      context,
+                          (context) => FeedNotificationsPage(relayGroupDB: RelayGroup.sharedInstance.myGroups[Account.sharedInstance.currentPubkey]?.value),
+                    );
+                  },
+                  child: CommonImage(
+                    iconName: 'notification.png',
+                    size: 24,
+                  ),
+                ).setPaddingOnly(right: 12.0),
+                // Red dot indicator for notifications
+                if (_hasNotifications)
+                  Positioned(
+                    right: 14.0,
+                    top: 0.0,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: BoxDecoration(
+                        color: Colors.red,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: theme.colorScheme.surface,
+                          width: 1.5,
+                        ),
+                      ),
                     ),
-                  ).setPaddingOnly(right: 12.0),
-                ],
-              ),
+                  ),
+              ],
             ),
           ],
           systemOverlayStyle: SystemUiOverlayStyle.dark,
