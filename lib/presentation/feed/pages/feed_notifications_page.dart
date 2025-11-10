@@ -271,10 +271,11 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           ],
         ),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
+
           children: [
             _buildNotificationAvatar(notification),
-            SizedBox(width: 16.px),
+            SizedBox(width: 8.px),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -492,8 +493,8 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     }
 
     return Container(
-      width: 36.px,
-      height: 36.px,
+      width: 26.px,
+      height: 26.px,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
@@ -502,22 +503,22 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           width: 1.px,
         ),
       ),
-      child: Icon(icon, size: 18.px, color: color),
+      child: Icon(icon, size: 12.px, color: color),
     );
   }
 
   String _getActionText(int kind) {
     switch (kind) {
       case 7: // reaction/like
-        return 'liked your post';
+        return 'liked';
       case 1: // reply
-        return 'replied to your post';
+        return 'replied';
       case 9735: // zap
-        return 'zapped your post';
+        return 'zapped';
       case 6: // repost
-        return 'reposted your post';
+        return 'reposted';
       case 2: // quote repost
-        return 'quoted your post';
+        return 'quoted';
       default:
         return 'interacted with your post';
     }
