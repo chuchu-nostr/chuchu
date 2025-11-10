@@ -5,6 +5,7 @@ import 'package:chuchu/core/contacts/contacts+blocklist.dart';
 import 'package:chuchu/core/relayGroups/relayGroup.dart';
 
 import '../contacts/contacts.dart';
+import '../feed/feed.dart';
 import '../feed/feed+load.dart';
 import '../messages/messages.dart';
 import '../messages/model/messageDB_isar.dart';
@@ -45,6 +46,8 @@ extension EMessage on RelayGroup {
 
   Future<void> handleGroupReaction(Event event, String relay) async {
     await Messages.sharedInstance.handleReactionEvent(event);
+    
+    await Feed.sharedInstance.handleReactionEvent(event, relay, false);
   }
 
   Future<void> handleGroupZaps(Event event, String relay) async {
