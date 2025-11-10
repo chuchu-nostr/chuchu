@@ -789,7 +789,9 @@ extension Load on Feed {
       newNotes.add(noteDB);
       newNotesCallBack?.call(newNotes);
     }
-    if (noteDB.pTags?.contains(pubkey) == true) {
+    // Check if this note mentions the current user (notification condition)
+    bool hasPTag = noteDB.pTags?.contains(pubkey) == true;
+    if (hasPTag) {
       NotificationDBISAR notificationDB = NotificationDBISAR.notificationDBFromNoteDB(noteDB);
       await saveNotificationToDB(notificationDB);
       if (notificationDB.author != pubkey && notificationDB.createAt > latestNotificationTime) {

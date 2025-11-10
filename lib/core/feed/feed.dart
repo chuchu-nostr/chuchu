@@ -85,17 +85,25 @@ class Feed {
               kinds: [1, 6],
               since: momentUntil,
               limit: limit);
+          // Subscribe to reactions where p tags contain our pubkey (reactions to our notes)
           Filter f2 = Filter(
+              p: [pubkey], kinds: [7], since: momentUntil, limit: limit);
+          // Also subscribe to reactions we sent (for local updates)
+          Filter f3 = Filter(
               authors: [pubkey], kinds: [7], since: momentUntil, limit: limit);
-          subscriptions[relayURL] = [f1, f2];
+          subscriptions[relayURL] = [f1, f2, f3];
         }
       } else {
         int momentUntil = Relays.sharedInstance.getMomentUntil(relay);
         Filter f1 = Filter(
             authors: authors, kinds: [1, 6], since: momentUntil, limit: limit);
+        // Subscribe to reactions where p tags contain our pubkey (reactions to our notes)
         Filter f2 = Filter(
+            p: [pubkey], kinds: [7], since: momentUntil, limit: limit);
+        // Also subscribe to reactions we sent (for local updates)
+        Filter f3 = Filter(
             authors: [pubkey], kinds: [7], since: momentUntil, limit: limit);
-        subscriptions[relay] = [f1, f2];
+        subscriptions[relay] = [f1, f2, f3];
       }
 
       notesSubscription = Connect.sharedInstance.addSubscriptions(subscriptions,
