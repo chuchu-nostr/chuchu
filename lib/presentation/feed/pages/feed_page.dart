@@ -648,7 +648,8 @@ class _FeedPageState extends State<FeedPage>
           if (mounted) {
             for (NoteDBISAR noteDB in notes) {
               bool isGroupNoted = noteDB.groupId.isNotEmpty;
-              if (isGroupNoted) {
+              bool isRootNote = noteDB.root == null || noteDB.root!.isEmpty;
+              if (isGroupNoted && isRootNote) {
                 if(_notificationGroupNotes[noteDB.groupId] == null){
                   _notificationGroupNotes[noteDB.groupId] = [noteDB];
                 }else{
