@@ -23,7 +23,6 @@ ChuChu is a decentralized content subscription platform based on the Nostr proto
 - **Content Browsing** - Browse timeline
 - **Search Function** - Search creators
 - **Subscription Feature** - Subscribe to creator content
-- **Group Feature** - Join and manage Nostr groups
 - **Wallet Management** - View transaction history and manage wallet
 
 ### Development Roadmap
