@@ -1,5 +1,6 @@
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
+import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
@@ -97,74 +98,55 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     }
   }
 
-  void _handleLikeTap() async {
-    if (widget.notedUIModel == null) return;
+  Future<void> _handleLikeTap() async {
+    final noteDB = widget.notedUIModel?.noteDB;
+    if (noteDB == null) return;
 
-    final noteDB = widget.notedUIModel!.noteDB;
-    final bool isCurrentlyLiked = noteDB.reactionCountByMe > 0;
+    // Prevent double tap
+    if (noteDB.reactionCountByMe > 0) return;
 
     bool isSuccess = false;
-    if (noteDB.groupId.isEmpty) {
-      try {
-        if (isCurrentlyLiked) {
-          // Unlike - remove reaction
-          // Note: You might need to implement unlike functionality in Feed
-          // For now, we'll just update the UI
-          isSuccess = true;
-        } else {
-          // Like - send reaction
-          // OKEvent event = await Feed.sharedInstance.sendReaction(noteDB.noteId);
-          // isSuccess = event.status;
-        }
-      } catch (e) {
-        debugPrint('Error handling reaction: $e');
-        isSuccess = false;
-      }
+    try {
+      OKEvent event = await RelayGroup.sharedInstance.sendGroupNoteReaction(noteDB.noteId);
+      isSuccess = event.status;
+    } catch (e) {
+      debugPrint('Error sending reaction: $e');
+      isSuccess = false;
     }
-    
+
+    _dealWithReaction(isSuccess);
+  }
+  void _dealWithReaction(bool isSuccess) {
     if (isSuccess) {
-      // Update the local state immediately for better UX
-      if (isCurrentlyLiked) {
-        // Unlike
-        widget.notedUIModel!.noteDB.reactionCountByMe = 0;
-        widget.notedUIModel!.noteDB.reactionCount = 
-            (widget.notedUIModel!.noteDB.reactionCount - 1).clamp(0, double.infinity).toInt();
-        CommonToast.instance.show(context, 'Unlike success');
-      } else {
-        // Like
-        widget.notedUIModel!.noteDB.reactionCountByMe = 1;
-        widget.notedUIModel!.noteDB.reactionCount += 1;
-        CommonToast.instance.show(context, 'Like success tips');
-      }
-      
       _updateNoteDB();
-      // Refresh the UI to show updated like count and icon
-      setState(() {});
+      CommonToast.instance.show(context, 'Like success tips');
     } else {
-      CommonToast.instance.show(context, isCurrentlyLiked ? 'Unlike failed' : 'Like fail tips');
+      CommonToast.instance.show(context, 'Like fail tips');
     }
   }
 
+
   void _handleCommentTap() {
     if (widget.notedUIModel == null) return;
-    
+
     // Navigate to comment page
     Navigator.of(context).push(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) => 
-            FeedReplyPage(notedUIModel: widget.notedUIModel!),
+        pageBuilder:
+            (context, animation, secondaryAnimation) =>
+                FeedReplyPage(notedUIModel: widget.notedUIModel!),
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           const begin = Offset(0.0, 1.0);
           const end = Offset.zero;
           const curve = Curves.easeInOut;
 
-          var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+          var tween = Tween(
+            begin: begin,
+            end: end,
+          ).chain(CurveTween(curve: curve));
           var offsetAnimation = animation.drive(tween);
 
-          return SlideTransition(
-            position: offsetAnimation,
-            child: child,
-          );
+          return SlideTransition(position: offsetAnimation, child: child);
         },
         transitionDuration: const Duration(milliseconds: 300),
         reverseTransitionDuration: const Duration(milliseconds: 250),
@@ -174,7 +156,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
 
   void _handleZapTap() {
     if (widget.notedUIModel == null) return;
-    
+
     // Show zap dialog
     showDialog(
       context: context,
@@ -204,7 +186,10 @@ class _FeedInfoPageState extends State<FeedInfoPage>
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
-                CommonToast.instance.show(context, 'Zap functionality coming soon');
+                CommonToast.instance.show(
+                  context,
+                  'Zap functionality coming soon',
+                );
                 // You can implement zap functionality here
               },
               child: Text('Send Zap'),
@@ -217,13 +202,14 @@ class _FeedInfoPageState extends State<FeedInfoPage>
 
   void _updateNoteDB() async {
     if (widget.notedUIModel == null) return;
-    
+
     try {
-      NotedUIModel? noteNotifier = await ChuChuFeedCacheManager.getValueNotifierNoted(
-        widget.notedUIModel!.noteDB.noteId,
-        isUpdateCache: true,
-        notedUIModel: widget.notedUIModel,
-      );
+      NotedUIModel? noteNotifier =
+          await ChuChuFeedCacheManager.getValueNotifierNoted(
+            widget.notedUIModel!.noteDB.noteId,
+            isUpdateCache: true,
+            notedUIModel: widget.notedUIModel,
+          );
 
       if (noteNotifier != null && mounted) {
         // Update the widget's notedUIModel if possible
@@ -297,7 +283,6 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () {
@@ -340,9 +325,10 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                   ),
                 ).setPaddingOnly(right: 12.0),
                 ValueListenableBuilder<RelayGroupDBISAR>(
-                  valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(
-                    widget.notedUIModel!.noteDB.author,
-                  ),
+                  valueListenable: RelayGroup.sharedInstance
+                      .getRelayGroupNotifier(
+                        widget.notedUIModel!.noteDB.author,
+                      ),
                   builder: (context, value, child) {
                     return Text(
                       value.name ?? '--',
@@ -375,15 +361,15 @@ class _FeedInfoPageState extends State<FeedInfoPage>
               SingleChildScrollView(
                 controller: _scrollController,
                 child: Container(
-                  padding: EdgeInsets.only(
-                    bottom: 120.px,
-                  ),
+                  padding: EdgeInsets.only(bottom: 120.px),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       NotificationListener<SizeChangedLayoutNotification>(
                         onNotification: (notification) {
-                          final RenderBox renderBox = _containerKey.currentContext?.findRenderObject() as RenderBox;
+                          final RenderBox renderBox =
+                              _containerKey.currentContext?.findRenderObject()
+                                  as RenderBox;
                           final size = renderBox.size;
                           _scrollToPosition(size.height - 15);
                           return true;
@@ -405,9 +391,14 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         isShowBottomBorder: false,
                         feedWidgetLayout: EFeedWidgetLayout.fullScreen,
                         isShowOption: false,
-                      ).setPadding(EdgeInsets.only(left: 24.0,right: 24.0, top: 8.0)),
+                      ).setPadding(
+                        EdgeInsets.only(left: 24.0, right: 24.0, top: 8.0),
+                      ),
                       Container(
-                        padding: EdgeInsets.symmetric(horizontal: 16.px, vertical: 12.px),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 16.px,
+                          vertical: 12.px,
+                        ),
                         width: double.infinity,
                         decoration: BoxDecoration(
                           border: Border(
@@ -418,26 +409,23 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                           ),
                         ),
                       ),
-                      if(replyList.isNotEmpty)
-                      Container(
-                        padding: EdgeInsets.only(
-                          left: 16,
-                          top: 16,
-                        ),
-                        child: Text(
-                          '${replyList.length} comments',
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurfaceVariant,
-                            fontSize: 18,
+                      if (replyList.isNotEmpty)
+                        Container(
+                          padding: EdgeInsets.only(left: 16, top: 16),
+                          child: Text(
+                            '${replyList.length} comments',
+                            style: TextStyle(
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                              fontSize: 18,
+                            ),
                           ),
                         ),
-
-                      ),
                       _showReplyList(),
                       _noDataWidget(),
-                      SizedBox(
-                        height: 500.px,
-                      ),
+                      SizedBox(height: 500.px),
                     ],
                   ),
                 ),
@@ -453,44 +441,46 @@ class _FeedInfoPageState extends State<FeedInfoPage>
 
   Widget _showReplyList() {
     if (replyList.isEmpty) return const SizedBox();
-    
-    List<Widget> list = replyList.map((NotedUIModel? notedUIModelDraft) {
-      if (notedUIModelDraft == null) {
-        return const SizedBox();
-      }
-      int index = replyList.indexOf(notedUIModelDraft);
-      NoteDBISAR? draftModel = notedUIModelDraft.noteDB;
-      NoteDBISAR? widgetModel = widget.notedUIModel?.noteDB;
 
-      if (draftModel.noteId == widgetModel?.noteId && index != 0) {
-        return const SizedBox();
-      }
-      if (!draftModel.isFirstLevelReply(widgetModel?.noteId)) {
-        return const SizedBox();
-      }
-      return MomentReplyWrapWidget(
-        index: index,
-        notedUIModel: notedUIModelDraft,
-      );
-    }).toList();
+    List<Widget> list =
+        replyList.map((NotedUIModel? notedUIModelDraft) {
+          if (notedUIModelDraft == null) {
+            return const SizedBox();
+          }
+          int index = replyList.indexOf(notedUIModelDraft);
+          NoteDBISAR? draftModel = notedUIModelDraft.noteDB;
+          NoteDBISAR? widgetModel = widget.notedUIModel?.noteDB;
+
+          if (draftModel.noteId == widgetModel?.noteId && index != 0) {
+            return const SizedBox();
+          }
+          if (!draftModel.isFirstLevelReply(widgetModel?.noteId)) {
+            return const SizedBox();
+          }
+          return MomentReplyWrapWidget(
+            index: index,
+            notedUIModel: notedUIModelDraft,
+          );
+        }).toList();
 
     return Container(
       key: _replyListContainerKey,
       child: Column(
-        children: list.map((widget) {
-          return Container(
-            padding: EdgeInsets.only(top:12.0),
-            decoration: BoxDecoration(
-              border: Border(
-                bottom: BorderSide(
-                  width: 0.5,
-                  color: Theme.of(context).dividerColor.withOpacity(0.3),
+        children:
+            list.map((widget) {
+              return Container(
+                padding: EdgeInsets.only(top: 12.0),
+                decoration: BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      width: 0.5,
+                      color: Theme.of(context).dividerColor.withOpacity(0.3),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            child: widget,
-          );
-        }).toList(),
+                child: widget,
+              );
+            }).toList(),
       ),
     );
   }
@@ -511,7 +501,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
       child: Center(
         child: Column(
           children: [
-            CommonImage(iconName: 'no_reply.png',size: 100,),
+            CommonImage(iconName: 'no_reply.png', size: 100),
             Text(
               'No reply !',
               style: Theme.of(context).textTheme.titleLarge,
@@ -524,12 +514,12 @@ class _FeedInfoPageState extends State<FeedInfoPage>
 
   Widget _buildBottomActionBar() {
     if (widget.notedUIModel == null) return const SizedBox();
-    
+
     final noteDB = widget.notedUIModel!.noteDB;
     final likeCount = noteDB.reactionCount;
     final commentCount = noteDB.replyCount;
     final zapAmount = noteDB.zapAmount / 100000000.0; // Convert sats to BTC
-    
+
     return Positioned(
       bottom: 0,
       left: 0,
@@ -583,36 +573,36 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                 //   ),
                 // ),
                 Expanded(
-                    child:Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        _buildEngagementItem(
-                          iconName: widget.notedUIModel!.noteDB.reactionCountByMe > 0 
-                              ? 'liked_icon.png' 
-                              : 'like_icon.png',
-                          value: likeCount.toString(),
-                          onTap: _handleLikeTap,
-                        ),
-                        SizedBox(width: 16.px),
-                        _buildEngagementItem(
-                          iconName: 'reply_icon.png',
-                          value: commentCount.toString(),
-                          onTap: _handleCommentTap,
-                        ),
-                        SizedBox(width: 16.px),
-                        _buildEngagementItem(
-                          iconName: 'zap_icon.png',
-                          value: '0',
-                          isMonetary: true,
-                          onTap: () {
-                            CommonToast.instance.show(context, 'Zap coming soon');
-                          }
-                          // _handleZapTap,
-                        ),
-                      ],
-                    ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      _buildEngagementItem(
+                        iconName:
+                            widget.notedUIModel!.noteDB.reactionCountByMe > 0
+                                ? 'liked_icon.png'
+                                : 'like_icon.png',
+                        value: likeCount.toString(),
+                        onTap: _handleLikeTap,
+                      ),
+                      SizedBox(width: 16.px),
+                      _buildEngagementItem(
+                        iconName: 'reply_icon.png',
+                        value: commentCount.toString(),
+                        onTap: _handleCommentTap,
+                      ),
+                      SizedBox(width: 16.px),
+                      _buildEngagementItem(
+                        iconName: 'zap_icon.png',
+                        value: '0',
+                        isMonetary: true,
+                        onTap: () {
+                          CommonToast.instance.show(context, 'Zap coming soon');
+                        },
+                        // _handleZapTap,
+                      ),
+                    ],
+                  ),
                 ),
-
               ],
             ),
           ],
@@ -633,13 +623,16 @@ class _FeedInfoPageState extends State<FeedInfoPage>
         CommonImage(
           iconName: iconName,
           size: 24,
-          color: iconName == 'liked_icon.png' ? null :  Theme.of(context).colorScheme.onSurface,
+          color:
+              iconName == 'liked_icon.png'
+                  ? null
+                  : Theme.of(context).colorScheme.onSurface,
         ),
         SizedBox(width: 4.px),
         Text(
           value,
           style: TextStyle(
-            color:Theme.of(context).colorScheme.onSurface,
+            color: Theme.of(context).colorScheme.onSurface,
             fontSize: 20.px,
             fontWeight: FontWeight.w500,
           ),
@@ -896,7 +889,8 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
         Container(
           padding: EdgeInsets.only(left: 50.0),
           child: Column(
-            children: [_firstReplyWidget(),
+            children: [
+              _firstReplyWidget(),
               _secondReplyWidget(),
               _thirdReplyWidget(),
               _showRepliesWidget(),
@@ -939,7 +933,7 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
         setState(() {});
       },
       child: Container(
-        padding: EdgeInsets.only(left: 30.px, bottom: 24.px,top: 8.px),
+        padding: EdgeInsets.only(left: 30.px, bottom: 24.px, top: 8.px),
         child: Row(
           children: [
             Icon(
@@ -1056,12 +1050,14 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                   ],
                 ).setPaddingOnly(right: 8.0),
                 Expanded(
-                  child:  Container(
+                  child: Container(
                     decoration: BoxDecoration(
                       border: Border(
                         bottom: BorderSide(
                           width: 0.5,
-                          color: Theme.of(context).dividerColor.withOpacity(0.3),
+                          color: Theme.of(
+                            context,
+                          ).dividerColor.withOpacity(0.3),
                         ),
                       ),
                     ),
@@ -1084,11 +1080,11 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                                 isShowOption: false,
                                 isShowSimpleReplyBtn: true,
                                 clickMomentCallback: (
-                                    NotedUIModel? notedUIModel,
-                                    ) async {
+                                  NotedUIModel? notedUIModel,
+                                ) async {
                                   await ChuChuNavigator.pushPage(
                                     context,
-                                        (context) => FeedInfoPage(
+                                    (context) => FeedInfoPage(
                                       notedUIModel: widget.notedUIModel,
                                       isShowReply: false,
                                     ),
@@ -1098,15 +1094,15 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                             ],
                           ),
                         ),
-                    ReusableInteractionButtons(
-                           notedUIModel: widget.notedUIModel,
-                           iconSize: 24,
-                           fontSize: 18,
-                           textColor: Theme.of(context).colorScheme.outline,
-                           showComment: false,
-                           showZap: false,
-                           showBookmark: false,
-                         )
+                        ReusableInteractionButtons(
+                          notedUIModel: widget.notedUIModel,
+                          iconSize: 24,
+                          fontSize: 18,
+                          textColor: Theme.of(context).colorScheme.outline,
+                          showComment: false,
+                          showZap: false,
+                          showBookmark: false,
+                        ),
                       ],
                     ),
                   ),
@@ -1116,7 +1112,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           },
         ),
       ),
-    ).setPaddingOnly(left: 18.0,right:18.0,top: 12.0);
+    ).setPaddingOnly(left: 18.0, right: 18.0, top: 12.0);
   }
 
   Widget _momentUserInfoWidget(UserDBISAR userDB) {
