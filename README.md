@@ -1,11 +1,11 @@
 # ChuChu
 
-ChuChu is a decentralized content subscription platform based on the Nostr protocol, with a built-in hosted Lightning wallet, supporting subscription payments to creators through the Lightning Network.
+ChuChu is a decentralized content subscription platform based on the Nostr protocol, with a built-in custodial Lightning wallet, supporting subscription payments to creators through the Lightning Network.
 
 ## ChuChu Backend
 
 - **ChuChu Relay**: [chuchu-relay](https://github.com/nsnjx/chuchu-relay) - Based on [relay29](https://github.com/fiatjaf/relay29), enhanced with paid subscription group content functionality
-- **LNbits**: [lnbits](https://github.com/nsnjx/lnbits) - Hosted Lightning wallet service
+- **LNbits**: [lnbits](https://github.com/nsnjx/lnbits) - Custodial Lightning wallet service
 
 ## ChuChu Frontend
 
@@ -17,7 +17,7 @@ ChuChu is a decentralized content subscription platform based on the Nostr proto
 ### Implemented Features
 
 - **Nostr Account Login** - Support for Nostr key login and Amber login
-- **Built-in Lightning Wallet** - Integrated Lightning Network wallet with Lightning payment support
+- **Built-in Custodial Lightning Wallet** - Integrated Lightning Network wallet with Lightning payment support
 - **Follow List** - Manage creators you follow
 - **Comment Feature** - Comment and interact with posts
 - **Content Browsing** - Browse timeline
