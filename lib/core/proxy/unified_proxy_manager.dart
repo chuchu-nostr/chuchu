@@ -1,4 +1,5 @@
-import 'dart:io';
+// Conditional import for HttpOverrides
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'chuchu_http_overrides.dart';
 import '../config/config.dart' as config;
 import 'proxy_settings.dart';

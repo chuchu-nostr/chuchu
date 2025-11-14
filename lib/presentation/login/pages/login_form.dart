@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'dart:io' show Platform;
 import 'package:chuchu/core/utils/navigator/navigator.dart';
+// Conditional import for Platform class
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart' show Platform;
 import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/account/account+nip46.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
