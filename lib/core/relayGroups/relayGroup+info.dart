@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:chuchu/core/relayGroups/relayGroup.dart';
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 
 import '../account/account.dart';
 import '../account/model/userDB_isar.dart';
@@ -176,7 +176,7 @@ extension EInfo on RelayGroup {
 
   Future<List<RelayGroupDBISAR>> searchGroupsFromDB(List<String> relays) async {
     return await DBISAR.sharedInstance.isar.relayGroupDBISARs
-        .filter()
+        .where()
         .anyOf(relays, (q, relay) => q.relayEqualTo(relay))
         .findAll();
   }

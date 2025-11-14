@@ -5,9 +5,10 @@ part 'eventDB_isar.g.dart';
 
 @collection
 class EventDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String eventId;
 
   String rawData;

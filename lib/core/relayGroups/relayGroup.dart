@@ -406,7 +406,7 @@ class RelayGroup {
   }
 
   Future<void> deleteGroupFromDB(String groupId) async {
-    await DBISAR.sharedInstance.isar.writeTxn(() async {
+    await DBISAR.sharedInstance.isar.write((isar) async {
       await DBISAR.sharedInstance.isar.relayGroupDBISARs
           .where()
           .groupIdEqualTo(groupId)
@@ -487,11 +487,10 @@ class RelayGroup {
     List<String> previous = [];
     final isar = DBISAR.sharedInstance.isar;
     List<MessageDBISAR> messages = await isar.messageDBISARs
-        .filter()
+        .where()
         .groupIdEqualTo(groupId)
         .sortByCreateTimeDesc()
-        .limit(3)
-        .findAll();
+        .findAll(limit: 3);
     for (var message in messages) {
       previous.add(message.messageId.substring(0, 8));
     }

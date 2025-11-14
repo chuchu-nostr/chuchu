@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:isar/isar.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Conditional import for dart:io classes
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../account/model/relayDB_isar.dart';
@@ -30,9 +31,10 @@ class DBISAR {
 
   final Map<Type, List<dynamic>> _buffers = {};
 
+  static bool _isarInitialized = false;
   Timer? _timer;
 
-  List<CollectionSchema<dynamic>> schemas = [
+  List<IsarGeneratedSchema> schemas = [
     MessageDBISARSchema,
     UserDBISARSchema,
     RelayDBISARSchema,
@@ -56,21 +58,49 @@ class DBISAR {
       throw ArgumentError('pubkey cannot be empty');
     }
     
-    bool isOS = Platform.isIOS || Platform.isMacOS;
-    Directory directory = isOS ? await getLibraryDirectory() : await getApplicationDocumentsDirectory();
-    var dbPath = directory.path;
-    
-    if (!await directory.exists()) {
-      await directory.create(recursive: true);
-    }
-    
-    print(() => 'DBISAR open: $dbPath, pubkey: $pubkey');
-    isar = Isar.getInstance(pubkey) ??
-        await Isar.open(
-          schemas,
-          directory: dbPath,
+    if (kIsWeb) {
+      // On web platform, Isar uses IndexedDB and doesn't need a directory
+      print(() => 'DBISAR open: web platform, pubkey: $pubkey');
+      if (!_isarInitialized) {
+        await Isar.initialize();
+        _isarInitialized = true;
+      }
+      final webDirectory = 'isar_$pubkey';
+      try {
+        isar = await Isar.open(
+          schemas: schemas,
+          directory: webDirectory,
           name: pubkey,
+          engine: IsarEngine.sqlite,
         );
+      } on IsarError catch (e) {
+        // Fallback to in-memory instance (e.g. private browsing or missing OPFS)
+        print(() => 'Isar web open failed with $e. Falling back to in-memory database.');
+        isar = await Isar.open(
+          schemas: schemas,
+          directory: Isar.sqliteInMemory,
+          name: pubkey,
+          engine: IsarEngine.sqlite,
+        );
+      }
+    } else {
+      bool isOS = Platform.isIOS || Platform.isMacOS;
+      // Type cast needed because of conditional import
+      dynamic dir = isOS ? await getLibraryDirectory() : await getApplicationDocumentsDirectory();
+      Directory directory = dir as Directory;
+      var dbPath = directory.path;
+      
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+      
+      print(() => 'DBISAR open: $dbPath, pubkey: $pubkey');
+      isar = await Isar.open(
+        schemas: schemas,
+        directory: dbPath,
+        name: pubkey,
+      );
+    }
   }
 
   Map<Type, List<dynamic>> getBuffers() {
@@ -105,18 +135,48 @@ class DBISAR {
     final Map<Type, List<dynamic>> typeMap = Map.from(_buffers);
     _buffers.clear();
 
-    await isar.writeTxn(() async {
+    await isar.write((isar) async {
       await Future.forEach(typeMap.keys, (type) async {
-        await _saveTOISAR(typeMap[type]!, type);
+        await _saveTOISAR(typeMap[type]!, type, isar);
       });
     });
   }
 
-  Future<void> _saveTOISAR(List<dynamic> objects, Type type) async {
-    String typeName = type.toString().replaceAll('?', '');
-    IsarCollection? collection = isar.getCollectionByNameInternal(typeName);
-    if (collection != null) {
-      await collection.putAll(objects);
+  Future<void> _saveTOISAR(List<dynamic> objects, Type type, Isar isar) async {
+    // Use type-based collection access instead of getCollectionByNameInternal
+    // This is compatible with Isar 2.x
+    if (type == MessageDBISAR) {
+      isar.messageDBISARs.putAll(objects.cast<MessageDBISAR>());
+    } else if (type == UserDBISAR) {
+      isar.userDBISARs.putAll(objects.cast<UserDBISAR>());
+    } else if (type == RelayDBISAR) {
+      isar.relayDBISARs.putAll(objects.cast<RelayDBISAR>());
+    } else if (type == ZapRecordsDBISAR) {
+      isar.zapRecordsDBISARs.putAll(objects.cast<ZapRecordsDBISAR>());
+    } else if (type == ZapsDBISAR) {
+      isar.zapsDBISARs.putAll(objects.cast<ZapsDBISAR>());
+    } else if (type == GroupDBISAR) {
+      isar.groupDBISARs.putAll(objects.cast<GroupDBISAR>());
+    } else if (type == JoinRequestDBISAR) {
+      isar.joinRequestDBISARs.putAll(objects.cast<JoinRequestDBISAR>());
+    } else if (type == ModerationDBISAR) {
+      isar.moderationDBISARs.putAll(objects.cast<ModerationDBISAR>());
+    } else if (type == RelayGroupDBISAR) {
+      isar.relayGroupDBISARs.putAll(objects.cast<RelayGroupDBISAR>());
+    } else if (type == NoteDBISAR) {
+      isar.noteDBISARs.putAll(objects.cast<NoteDBISAR>());
+    } else if (type == NotificationDBISAR) {
+      isar.notificationDBISARs.putAll(objects.cast<NotificationDBISAR>());
+    } else if (type == ConfigDBISAR) {
+      isar.configDBISARs.putAll(objects.cast<ConfigDBISAR>());
+    } else if (type == EventDBISAR) {
+      isar.eventDBISARs.putAll(objects.cast<EventDBISAR>());
+    } else if (type == WalletInfo) {
+      isar.walletInfos.putAll(objects.cast<WalletInfo>());
+    } else if (type == WalletTransaction) {
+      isar.walletTransactions.putAll(objects.cast<WalletTransaction>());
+    } else if (type == WalletInvoice) {
+      isar.walletInvoices.putAll(objects.cast<WalletInvoice>());
     }
   }
 
@@ -127,4 +187,3 @@ class DBISAR {
     if (isar.isOpen) await isar.close();
   }
 }
-

@@ -16,9 +16,10 @@ extension RelayGroupDBISARExtensions on RelayGroupDBISAR {
 
 @collection
 class RelayGroupDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String groupId;
 
   String author; // group creator

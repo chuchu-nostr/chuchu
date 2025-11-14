@@ -19,18 +19,17 @@ enum TransactionType {
 /// Wallet transaction model for storing Lightning Network transactions
 @collection
 class WalletTransaction {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
   /// Transaction hash/ID
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String transactionId;
 
   /// Transaction type (incoming/outgoing)
-  @enumerated
   TransactionType type;
 
   /// Transaction status
-  @enumerated
   TransactionStatus status;
 
   /// Amount in satoshis

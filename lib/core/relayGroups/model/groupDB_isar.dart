@@ -13,9 +13,10 @@ extension GroupDBISARExtensions on GroupDBISAR {
 
 @collection
 class GroupDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String groupId; //group nostr pubkey
 
   String owner; // pubkey

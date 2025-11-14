@@ -476,7 +476,7 @@ extension Load on Feed {
       {int limit = 30, int? until}) async {
     List<NoteDBISAR> returnResult = [];
     List<NoteDBISAR> searchResult = await DBISAR.sharedInstance.isar.noteDBISARs
-        .filter()
+        .where()
         .anyOf(hashTags, (q, hashTag) => q.hashTagsElementEqualTo(hashTag))
         .findAll();
     for (var note in searchResult) {
@@ -636,7 +636,7 @@ extension Load on Feed {
         int? limit,
         String? keyword}) async {
     final isar = DBISAR.sharedInstance.isar;
-    var queryBuilder = isar.noteDBISARs.filter();
+    dynamic queryBuilder = isar.noteDBISARs.where();
     if (noteId != null) {
       queryBuilder = queryBuilder.noteIdEqualTo(noteId);
     }
@@ -667,8 +667,7 @@ extension Load on Feed {
       queryBuilder = queryBuilder.createAtLessThan(until);
     }
     if (isReacted != null) {
-      queryBuilder =
-      isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
+      queryBuilder = isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
     }
     if (private != null) {
       queryBuilder = queryBuilder.privateEqualTo(private);
@@ -678,16 +677,20 @@ extension Load on Feed {
     }
     List<NoteDBISAR> result = searchNotesFromCache(noteId, groupId, authors, root, reply, repostId,
         quoteRepostId, reactedId, isReacted, private, until, limit);
+    // Sort in memory after filtering
+    // Need to cast to dynamic to access findAll() method
+    var allNotes = await (queryBuilder as dynamic).findAll();
+    allNotes.sort((a, b) => b.createAt.compareTo(a.createAt));
+    
     if (limit != null) {
-      final searchResult =
-      await queryBuilder.idBetween(0, Isar.maxId).sortByCreateAtDesc().limit(limit).findAll();
+      final searchResult = allNotes.take(limit).toList();
       for (NoteDBISAR note in searchResult) {
         note = note.withGrowableLevels();
         result.add(note);
       }
       return result;
     }
-    final searchResult = await queryBuilder.idBetween(0, Isar.maxId).sortByCreateAtDesc().findAll();
+    final searchResult = allNotes;
     for (NoteDBISAR note in searchResult) {
       note = note.withGrowableLevels();
       result.add(note);
@@ -719,7 +722,7 @@ extension Load on Feed {
     }
 
     final isar = DBISAR.sharedInstance.isar;
-    var queryBuilder = isar.noteDBISARs.filter();
+    dynamic queryBuilder = isar.noteDBISARs.where();
     
     // Query notes from any of the user's groups using anyOf
     queryBuilder = queryBuilder.anyOf(myGroupIds, (q, groupId) => q.groupIdEqualTo(groupId));
@@ -747,8 +750,7 @@ extension Load on Feed {
       queryBuilder = queryBuilder.createAtLessThan(until);
     }
     if (isReacted != null) {
-      queryBuilder =
-      isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
+      queryBuilder = isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
     }
     if (private != null) {
       queryBuilder = queryBuilder.privateEqualTo(private);
@@ -758,10 +760,14 @@ extension Load on Feed {
     }
     
     // Execute query and process results
+    // Sort in memory after filtering
+    // Need to cast to dynamic to access findAll() method
+    var allNotes = await (queryBuilder as dynamic).findAll();
+    allNotes.sort((a, b) => b.createAt.compareTo(a.createAt));
+    
     List<NoteDBISAR> result = [];
     if (limit != null) {
-      final searchResult =
-      await queryBuilder.idBetween(0, Isar.maxId).sortByCreateAtDesc().limit(limit).findAll();
+      final searchResult = allNotes.take(limit).toList();
       for (NoteDBISAR note in searchResult) {
         note = note.withGrowableLevels();
         result.add(note);
@@ -770,7 +776,7 @@ extension Load on Feed {
         latestNoteTime = note.createAt > latestNoteTime ? note.createAt : latestNoteTime;
       }
     } else {
-      final searchResult = await queryBuilder.idBetween(0, Isar.maxId).sortByCreateAtDesc().findAll();
+      final searchResult = allNotes;
       for (NoteDBISAR note in searchResult) {
         note = note.withGrowableLevels();
         result.add(note);

@@ -5,9 +5,10 @@ part 'notificationDB_isar.g.dart';
 
 @collection
 class NotificationDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String notificationId; //event id
   int kind; // 1：reply 2:quoteRepost 6:repost 7:reaction 9735:zap
   String author;

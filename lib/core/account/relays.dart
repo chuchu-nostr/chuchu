@@ -258,7 +258,7 @@ class Relays {
 
   static Future<RelayDBISAR?> getRelayDetailsFromDB(String relayURL) async {
     final isar = DBISAR.sharedInstance.isar;
-    return await isar.relayDBISARs.filter().urlEqualTo(relayURL).findFirst();
+    return await isar.relayDBISARs.where().urlEqualTo(relayURL).findFirst();
   }
 
   static Future<RelayDBISAR?> getRelayDetails(String relayURL, {bool? refresh}) async {

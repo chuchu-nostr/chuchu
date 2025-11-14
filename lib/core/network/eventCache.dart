@@ -31,7 +31,7 @@ class EventCache {
     }
 
     if (expiredEvents.isEmpty) return;
-    DBISAR.sharedInstance.isar.writeTxn(() async {
+    DBISAR.sharedInstance.isar.write((isar) async {
       int result = await DBISAR.sharedInstance.isar.eventDBISARs.deleteAll(expiredEvents);
       LogUtils.v(() => 'Deleted event caches: $result');
     });

@@ -38,9 +38,10 @@ extension MessageDBISARExtensions on MessageDBISAR {
 
 @collection
 class MessageDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String messageId; //event id
 
   String sender; // pubkey
@@ -396,7 +397,7 @@ class MessageDBISAR {
   static Future<void> savePreviewData(String messageId, String previewData) async {
     final isar = DBISAR.sharedInstance.isar;
 
-    final message = await isar.messageDBISARs.filter().messageIdEqualTo(messageId).findFirst();
+    final message = await isar.messageDBISARs.where().messageIdEqualTo(messageId).findFirst();
 
     if (message != null) {
       message.previewData = previewData;

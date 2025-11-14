@@ -5,9 +5,10 @@ part 'wallet_info.g.dart';
 /// Wallet info model for storing Lightning Network wallet information
 @collection
 class WalletInfo {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
   /// Wallet identifier
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String walletId;
 
   /// Total balance in satoshis
