@@ -54,11 +54,12 @@ dependencies:
   extended_image: ^8.2.1
   screenshot: ^3.0.0
   flutter_easyloading: ^3.0.0
-  isar: ^3.1.0+1
-  isar_flutter_libs:
-    path: packages/isar_flutter_libs
-  build_runner: ^2.4.9
-  isar_generator: ^3.1.0+1
+  isar:
+    git:
+      url: https://github.com/nsnjx/isar.git
+      path: packages/isar
+      ref: 4.0.3-fix
+  build_runner: any
   connectivity_plus: ^6.1.2
   path_provider: ^2.1.3
   pull_to_refresh: ^2.0.0
@@ -79,6 +80,7 @@ dependencies:
   shimmer: ^2.0.0
   video_thumbnail: ^0.5.3
   chewie: ^1.4.0
+  web_socket_channel: ^2.4.0
 #  image_gallery_saver: ^2.0.3
   uuid: ^4.3.3
   http: ^1.2.0
