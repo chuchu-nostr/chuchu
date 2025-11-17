@@ -6,7 +6,7 @@ import 'package:chuchu/core/relayGroups/relayGroup+member.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+message.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 
 import '../account/account.dart';
 import '../account/model/relayDB_isar.dart';

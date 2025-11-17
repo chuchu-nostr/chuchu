@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:chuchu/core/contacts/contacts+blocklist.dart';
 import 'package:chuchu/core/feed/feed+notification.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 
 import '../account/account.dart';
 import '../account/model/zapRecordsDB_isar.dart';

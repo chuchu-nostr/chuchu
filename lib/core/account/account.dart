@@ -5,7 +5,7 @@ import 'package:chuchu/core/account/account+profile.dart';
 import 'package:chuchu/core/account/relays.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 import 'package:pointycastle/export.dart';
 import 'package:convert/convert.dart';
 import '../contacts/contacts.dart';

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../account/account.dart';
 import '../database/db_isar.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 import 'package:bolt11_decoder/bolt11_decoder.dart';
 import 'package:decimal/decimal.dart';
 

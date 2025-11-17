@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:chuchu/core/feed/model/noteDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+message.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 
 import '../account/account.dart';
 import '../account/model/zapRecordsDB_isar.dart';
