@@ -1,8 +1,10 @@
-import 'dart:io';
 import 'dart:typed_data';
+// Conditional import for File class
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:nostr_core_dart/nostr.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -52,6 +54,27 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   @override
   void initState() {
     super.initState();
+  }
+
+  Widget _buildPlatformImage(
+    File image, {
+    BoxFit fit = BoxFit.cover,
+  }) {
+    if (kIsWeb) {
+      return Image.network(
+        image.path,
+        fit: fit,
+        errorBuilder: (context, error, stackTrace) => Container(
+          color: Colors.black12,
+          alignment: Alignment.center,
+          child: const Icon(Icons.broken_image),
+        ),
+      );
+    }
+    return Image.file(
+      image as dynamic,
+      fit: fit,
+    );
   }
 
   Future<void> _pickImages() async {
@@ -604,7 +627,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           clipBehavior: Clip.hardEdge,
           child: Stack(
             children: [
-              Image.file(image),
+              _buildPlatformImage(
+                image,
+                fit: BoxFit.cover,
+              ),
               if (isUploading)
                 Positioned.fill(
                   child: Container(
@@ -688,7 +714,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                 child: Stack(
                   children: [
                     SizedBox.expand(
-                      child: Image.file(
+                      child: _buildPlatformImage(
                         image,
                         fit: BoxFit.cover,
                       ),

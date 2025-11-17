@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+info.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
@@ -8,10 +7,10 @@ import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 
-import '../../../core/account/relays.dart';
 import '../../../core/config/config.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/navigator/navigator.dart';
+import '../../../core/widgets/chuchu_cached_network_Image.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -314,9 +313,33 @@ class _SearchPageState extends State<SearchPage> {
               Positioned.fill(
                 child:
                 relayGroup.picture.isNotEmpty
-                    ? CachedNetworkImage(
+                    ? ChuChuCachedNetworkImage(
                   imageUrl: relayGroup.picture,
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.primaryContainer,
+                        ],
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.primaryContainer,
+                        ],
+                      ),
+                    ),
+                  ),
                 )
                     : Container(
                   decoration: BoxDecoration(
@@ -389,21 +412,23 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _followsUserPicWidget(RelayGroupDBISAR relayGroup) {
     Widget picWidget;
+    final defaultImage = CommonImage(
+      iconName: 'icon_user_default.png',
+      width: Adapt.px(80),
+      height: Adapt.px(80),
+    );
+    
     if (relayGroup.picture.isNotEmpty) {
-      picWidget = CachedNetworkImage(
+      picWidget = ChuChuCachedNetworkImage(
         imageUrl: relayGroup.picture,
         fit: BoxFit.contain,
-        // placeholder: (context, url) => _badgePlaceholderImage,
-        // errorWidget: (context, url, error) => _badgePlaceholderImage,
+        placeholder: (context, url) => defaultImage,
+        errorWidget: (context, url, error) => defaultImage,
         width: Adapt.px(80),
         height: Adapt.px(80),
       );
     } else {
-      picWidget = CommonImage(
-        iconName: 'icon_user_default.png',
-        width: Adapt.px(80),
-        height: Adapt.px(80),
-      );
+      picWidget = defaultImage;
     }
 
     return GestureDetector(

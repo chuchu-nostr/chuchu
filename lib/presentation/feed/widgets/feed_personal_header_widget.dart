@@ -32,6 +32,11 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
   @override
   void initState() {
     super.initState();
+    updateUserInfo();
+  }
+
+  void updateUserInfo()async {
+    UserDBISAR? user = await Account.sharedInstance.getUserInfo(widget.relayGroupDB.groupId);
   }
 
   @override
@@ -171,14 +176,19 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     );
   }
 
-  Widget _buildProfileImage(RelayGroupDBISAR user) {
-    placeholder(_, __) => FeedWidgetsUtils.badgePlaceholderImage();
-    errorWidget(_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage();
+  Widget _buildProfileImage(RelayGroupDBISAR relayGroup) {
+    // Define placeholder and error widget functions
+    final placeholderWidget = (_, __) => FeedWidgetsUtils.badgePlaceholderImage(size: 100);
+    final errorWidgetBuilder = (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(size: 100);
+    
+
     return ValueListenableBuilder<UserDBISAR>(
       valueListenable: Account.sharedInstance.getUserNotifier(
-        user.author,
+        relayGroup.groupId,
       ),
-      builder: (context, user, child) {
+      builder: (context, userInfo, child) {
+        final imageUrl = userInfo.picture ?? '';
+
         return Positioned(
           top: -35,
           left: 18,
@@ -202,14 +212,16 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
                 child: FeedWidgetsUtils.clipImage(
                   borderRadius: 100,
                   imageSize: 100,
-                  child: ChuChuCachedNetworkImage(
-                    imageUrl: user.picture ?? '',
-                    fit: BoxFit.cover,
-                    placeholder: placeholder,
-                    errorWidget: errorWidget,
-                    width: 100,
-                    height: 100,
-                  ),
+                  child: imageUrl.isNotEmpty
+                      ? ChuChuCachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: placeholderWidget,
+                          errorWidget: errorWidgetBuilder,
+                          width: 100,
+                          height: 100,
+                        )
+                      : FeedWidgetsUtils.badgePlaceholderImage(size: 100),
                 ),
               ),
             ),
@@ -217,8 +229,6 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
         );
       },
     );
-
-
   }
 
   /// Build actions row

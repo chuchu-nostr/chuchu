@@ -1,6 +1,7 @@
 import 'dart:async';
-import 'dart:io';
-import 'package:chuchu/core/services/uploader.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Conditional import for dart:io classes
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:chuchu/core/utils/string_util.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter/material.dart';
@@ -25,23 +26,36 @@ class UploadUtils {
     bool autoStoreImage = true,
     Function(double progress)? onProgress,
   }) async {
+    // On web platform, file encryption is not supported
+    if (kIsWeb && encryptedKey != null && encryptedKey.isNotEmpty) {
+      return UploadResult.error('File encryption is not supported on web platform');
+    }
+    
     File uploadFile = file;
     File? encryptedFile;
-    if (encryptedKey != null && encryptedKey.isNotEmpty) {
+    if (!kIsWeb && encryptedKey != null && encryptedKey.isNotEmpty) {
       String directoryPath = '';
       if (Platform.isAndroid) {
-        Directory? externalStorageDirectory = await getExternalStorageDirectory();
+        dynamic extDir = await getExternalStorageDirectory();
+        Directory? externalStorageDirectory = extDir as Directory?;
         if (externalStorageDirectory == null) {
           return UploadResult.error('Storage function abnormal');
         }
         directoryPath = externalStorageDirectory.path;
       } else if (Platform.isIOS || Platform.isMacOS) {
-        Directory temporaryDirectory = await getTemporaryDirectory();
+        dynamic tempDir = await getTemporaryDirectory();
+        Directory temporaryDirectory = tempDir as Directory;
         directoryPath = temporaryDirectory.path;
       }
       encryptedFile = createFolderAndFile(directoryPath + "/encrytedfile", filename);
-      await AesEncryptUtils.encryptFileInIsolate(file, encryptedFile, encryptedKey,
-          nonce: encryptedNonce, mode: AESMode.gcm);
+      // Type cast for non-web platforms where types match
+      await AesEncryptUtils.encryptFileInIsolate(
+        file as dynamic, 
+        encryptedFile as dynamic, 
+        encryptedKey,
+        nonce: encryptedNonce, 
+        mode: AESMode.gcm
+      );
       uploadFile = encryptedFile;
     }
     String? url = '';

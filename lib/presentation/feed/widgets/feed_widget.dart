@@ -335,7 +335,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     final nddrlList = model.getNddrlList;
     final contentList = FeedUtils.momentContentSplit(model.noteDB.content);
-
+    if(contentList.isEmpty) return const SizedBox();
     return Column(
       children:
           contentList

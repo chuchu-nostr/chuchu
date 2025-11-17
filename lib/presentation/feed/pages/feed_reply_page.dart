@@ -1,5 +1,6 @@
 import 'dart:async';
-import 'dart:io';
+// Conditional import for File class
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
@@ -773,7 +774,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           UploadResult result = await UploadUtils.uploadFile(
             context: context,
             fileType: FileType.video,
-            file: file,
+            file: file as dynamic, // Type cast for conditional import compatibility
             filename: fileName,
           );
 
@@ -835,7 +836,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.file(image, fit: BoxFit.cover),
+              child: Image.file(image as dynamic, fit: BoxFit.cover), // Type cast for conditional import compatibility
             ),
           ),
           if ((_uploadingStatus[0] ?? false))
@@ -916,7 +917,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: Image.file(image, fit: BoxFit.cover),
+                      child: Image.file(image as dynamic, fit: BoxFit.cover), // Type cast for conditional import compatibility
                     ),
                     if (_uploadingStatus[index] ?? false)
                       Positioned.fill(
@@ -1213,7 +1214,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
 
   Future<double> _computeAspectRatio(File file) async {
     try {
-      final bytes = await file.readAsBytes();
+      final bytes = await (file as dynamic).readAsBytes() as Uint8List; // Type cast for conditional import compatibility
       final completer = Completer<ui.Image>();
       ui.decodeImageFromList(bytes, (ui.Image img) => completer.complete(img));
       final img = await completer.future;
@@ -1264,7 +1265,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
         '${Path.basenameWithoutExtension(file.path)}_noexif.jpg',
       );
       final result = await FlutterImageCompress.compressAndGetFile(
-        file.absolute.path,
+        (file as dynamic).absolute.path, // Type cast for conditional import compatibility
         targetPath,
         quality: 95,
       );
