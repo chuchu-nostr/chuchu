@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:core';
-import 'dart:io';
 
+import 'app_web_socket.dart';
 import '../account/account.dart';
 import '../config/config.dart';
 import '../manager/thread_pool_manager.dart';
@@ -60,7 +60,7 @@ class AuthData {
 }
 
 class ISocket {
-  WebSocket? socket;
+  AppWebSocket? socket;
 
   /// connecting = 0;
   /// open = 1;
@@ -226,7 +226,7 @@ class Connect {
     LogUtils.v(() => "connecting... $relay");
     webSockets[relay] = ISocket(null, 0, relayKinds);
     try {
-      WebSocket? socket;
+      AppWebSocket? socket;
       socket = await _connectWs(relay);
       if (socket != null) {
         socket.done.then((dynamic _) => _onDisconnected(relay, relayKind));
@@ -675,8 +675,8 @@ class Connect {
     }
   }
 
-  void _listenEvent(WebSocket socket, String relay, RelayKind relayKind) {
-    socket.listen((message) async {
+  void _listenEvent(AppWebSocket socket, String relay, RelayKind relayKind) {
+    socket.stream.listen((message) async {
       await _handleMessage(message, relay);
     }, onDone: () async {
       LogUtils.v(() => "connect aborted");
@@ -687,7 +687,7 @@ class Connect {
     });
   }
 
-  Future _connectWs(String relay) async {
+  Future<AppWebSocket?> _connectWs(String relay) async {
     try {
       _setConnectStatus(relay, 0); // connecting
       return await _connectWsSetting(relay);
@@ -704,9 +704,10 @@ class Connect {
         }
       }
     }
+    return null;
   }
 
-  Future _connectWsSetting(String relay) async {
+  Future<AppWebSocket?> _connectWsSetting(String relay) async {
     String? host = Config.sharedInstance.hostConfig[relay];
     if (host != null && host.isNotEmpty) {
       relay = host;
@@ -725,7 +726,7 @@ class Connect {
           if (!onionURI) return null;
       }
     }
-    return await WebSocket.connect(relay);
+    return await connectAppWebSocket(relay);
   }
 
   Future<void> _onDisconnected(String relay, RelayKind relayKind) async {

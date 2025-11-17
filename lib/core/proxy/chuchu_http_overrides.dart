@@ -1,4 +1,5 @@
-import 'dart:io';
+// Conditional import for HttpOverrides
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:flutter_socks_proxy/socks_proxy.dart';
 import 'unified_proxy_manager.dart';
 import 'proxy_settings.dart';
@@ -10,13 +11,14 @@ class ChuCHuHttpOverrides extends HttpOverrides {
 
   @override
   HttpClient createHttpClient(SecurityContext? context) {
-    final client = createProxyHttpClient(context: context);
+    // Type cast needed for conditional import compatibility
+    final client = createProxyHttpClient(context: context as dynamic);
     
-    client.badCertificateCallback = (X509Certificate cert, String host, int port) {
+    client.badCertificateCallback = (dynamic cert, String host, int port) {
       return true; // Accept all certificates for development
     };
 
-    return client;
+    return client as HttpClient;
   }
 
   @override
