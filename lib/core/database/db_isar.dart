@@ -108,12 +108,14 @@ class DBISAR {
   }
 
   Future<void> saveObjectsToDB<T>(List<T> objects) async {
+    if (kIsWeb) return;
     for (var object in objects) {
       await saveToDB(object);
     }
   }
 
   Future<void> saveToDB<T>(T object) async {
+    if (kIsWeb) return;
     final type = T;
     if (!_buffers.containsKey(type)) {
       _buffers[type] = <T>[];
@@ -131,6 +133,10 @@ class DBISAR {
     _timer = null;
 
     if (_buffers.isEmpty) return;
+    if (kIsWeb) {
+      _buffers.clear();
+      return;
+    }
 
     final Map<Type, List<dynamic>> typeMap = Map.from(_buffers);
     _buffers.clear();

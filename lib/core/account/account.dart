@@ -56,6 +56,8 @@ class Account {
   List<String> pQueue = [];
   List<Event> unsentNIP46EventQueue = [];
 
+  static final Map<String, _PrecomputedKeyData> _precomputedKeyData = {};
+
   AccountUpdateCallback? relayListUpdateCallback;
   AccountUpdateCallback? dmRelayListUpdateCallback;
   AccountUpdateCallback? contactListUpdateCallback;
@@ -238,10 +240,16 @@ class Account {
     /// insert a new account
     db ??= UserDBISAR();
     db.pubKey = pubkey;
-    String defaultPassword = generateStrongPassword(16);
-    Uint8List enPrivkey = encryptPrivateKey(hexToBytes(privkey), defaultPassword);
-    db.encryptedPrivKey = bytesToHex(enPrivkey);
-    db.defaultPassword = defaultPassword;
+    final cached = _precomputedKeyData.remove(pubkey);
+    if (cached != null) {
+      db.encryptedPrivKey = cached.encryptedPrivKey;
+      db.defaultPassword = cached.defaultPassword;
+    } else {
+      String defaultPassword = generateStrongPassword(16);
+      Uint8List enPrivkey = encryptPrivateKey(hexToBytes(privkey), defaultPassword);
+      db.encryptedPrivKey = bytesToHex(enPrivkey);
+      db.defaultPassword = defaultPassword;
+    }
     await saveUserToDB(db);
     me = db;
     currentPrivkey = privkey;
@@ -300,15 +308,17 @@ class Account {
   }
 
   static Future<UserDBISAR> newAccount({Keychain? user}) async {
-    user ?? Keychain.generate();
+    final keychain = user ?? Keychain.generate();
     String defaultPassword = generateStrongPassword(16);
     Uint8List enPrivkey = await compute(
-        encryptPrivateKeyWithMap, {'privkey': user!.private, 'password': defaultPassword});
+        encryptPrivateKeyWithMap, {'privkey': keychain.private, 'password': defaultPassword});
     UserDBISAR db = UserDBISAR();
-    db.pubKey = user.public;
+    db.pubKey = keychain.public;
     db.encryptedPrivKey = bytesToHex(enPrivkey);
     db.defaultPassword = defaultPassword;
     await Account.saveUserToDB(db);
+    _precomputedKeyData[db.pubKey] =
+        _PrecomputedKeyData(db.encryptedPrivKey ?? '', db.defaultPassword ?? defaultPassword);
     return db;
   }
 
@@ -457,4 +467,11 @@ class Account {
     final hexMessage = hex.encode(SHA256Digest().process(Uint8List.fromList(utf8.encode(secret))));
     return Keychain(privkey).sign(hexMessage);
   }
+}
+
+class _PrecomputedKeyData {
+  final String encryptedPrivKey;
+  final String defaultPassword;
+
+  _PrecomputedKeyData(this.encryptedPrivKey, this.defaultPassword);
 }
