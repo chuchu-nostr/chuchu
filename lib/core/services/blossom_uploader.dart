@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:developer';
-import 'dart:io';
 import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:mime/mime.dart';
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
+import 'package:chuchu/core/account/web_file_registry_stub.dart'
+    if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
+    as web_file_registry;
 
 import '../account/account.dart';
 import 'package:nostr_core_dart/src/event.dart';
@@ -36,24 +39,34 @@ class BolssomUploader {
     if (BASE64.check(filePath)) {
       bytes = BASE64.toData(filePath);
     } else {
-      var file = File(filePath);
-      bytes = file.readAsBytesSync();
-
-      if (StringUtil.isBlank(fileName)) {
-        fileName = filePath.split("/").last;
+      if (filePath.startsWith('webfile://')) {
+        bytes = web_file_registry.getWebFileData(filePath);
+        if (bytes == null) {
+          throw Exception('Web file data not found for $filePath');
+        }
+        if (StringUtil.isBlank(fileName)) {
+          fileName = filePath.split('/').last;
+        }
+      } else {
+        var file = File(filePath);
+        bytes = await file.readAsBytes();
+        if (StringUtil.isBlank(fileName)) {
+          fileName = filePath.split("/").last;
+        }
       }
     }
 
-    if (bytes.isEmpty) {
+    final Uint8List? data = bytes;
+    if (data == null || data.isEmpty) {
       return null;
     }
 
-    var fileSize = bytes.length;
-    log("file size is ${bytes.length}");
-    payload = HashUtil.sha256Bytes(bytes);
+    var fileSize = data.length;
+    log("file size is ${data.length}");
+    payload = HashUtil.sha256Bytes(data);
     
     multipartFile = MultipartFile.fromBytes(
-      bytes,
+      data,
       filename: fileName,
     );
 

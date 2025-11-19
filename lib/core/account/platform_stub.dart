@@ -1,6 +1,10 @@
 // Stub file for web platform
 // This file is used when dart:io is not available (web platform)
 
+import 'dart:typed_data';
+
+import 'web_file_registry.dart' as web_file_registry;
+
 class Platform {
   static String get operatingSystem => 'web';
   static bool get isAndroid => false;
@@ -20,8 +24,8 @@ class File {
   
   File get absolute => this;
   
-  bool existsSync() => false;
-  Future<bool> exists() async => false;
+  bool existsSync() => web_file_registry.getWebFileData(path) != null;
+  Future<bool> exists() async => existsSync();
   Future<File> create({bool recursive = false}) async => this;
   File createSync({bool recursive = false}) => this;
   Future<void> delete({bool recursive = false}) async {}
@@ -29,8 +33,16 @@ class File {
   Future<String> readAsString({Encoding encoding = Encoding.utf8}) async => '';
   // Note: Uint8List is from dart:typed_data, available on all platforms
   // Using dynamic to avoid import issues
-  Future<dynamic> readAsBytes() async => throw UnimplementedError('File operations not supported on web');
-  dynamic readAsBytesSync() => throw UnimplementedError('File operations not supported on web');
+  Future<dynamic> readAsBytes() async => _readBytes();
+  dynamic readAsBytesSync() => _readBytes();
+
+  Uint8List _readBytes() {
+    final data = web_file_registry.getWebFileData(path);
+    if (data == null) {
+      throw UnsupportedError('File operations not supported on web');
+    }
+    return data;
+  }
 }
 
 class Directory {
