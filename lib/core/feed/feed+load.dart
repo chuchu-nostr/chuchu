@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:chuchu/core/contacts/contacts+blocklist.dart';
 import 'package:chuchu/core/feed/feed+notification.dart';
+import 'package:flutter/foundation.dart' show kDebugMode, kIsWeb;
 import 'package:isar/isar.dart' hide Filter;
 
 import '../account/account.dart';
@@ -28,6 +29,12 @@ enum ConflictAlgorithm {
   replace,
 }
 
+void _logIsarResults(String label, List<NoteDBISAR> notes) {
+  if (!kDebugMode) return;
+  // ignore: avoid_print
+  print('[Feed][$label] fetched ${notes.length} notes: '
+      '${notes.take(5).map((n) => n.noteId).toList()}');
+}
 
 extension Load on Feed {
   // Future<List<NoteDB>?> loadAllNotesFromDB({int limit = 50, int? until}) async {
@@ -154,6 +161,10 @@ extension Load on Feed {
   Future<void> saveNoteToDB(NoteDBISAR noteDB, ConflictAlgorithm? conflictAlgorithm) async {
     if (!notesCache.containsKey(noteDB.noteId) || conflictAlgorithm != ConflictAlgorithm.ignore) {
       notesCache[noteDB.noteId] = noteDB;
+    }
+    if (kDebugMode) {
+      // ignore: avoid_print
+      print('[Feed] saveNoteToDB noteId=${noteDB.noteId} groupId=${noteDB.groupId} conflict=$conflictAlgorithm');
     }
     await DBISAR.sharedInstance.saveToDB(noteDB);
     notesCache[noteDB.noteId] = noteDB;
@@ -621,6 +632,98 @@ extension Load on Feed {
     return result;
   }
 
+  List<NoteDBISAR> _filterNotesFromMemoryCache({
+    String? noteId,
+    String? groupId,
+    List<String>? groupIds,
+    List<String>? authors,
+    String? root,
+    String? reply,
+    String? repostId,
+    String? quoteRepostId,
+    String? reactedId,
+    bool? isReacted,
+    bool? private,
+    int? until,
+    String? keyword,
+  }) {
+    final List<NoteDBISAR> matches = [];
+    if (notesCache.isEmpty) return matches;
+    for (final note in notesCache.values) {
+      bool include = true;
+      if (noteId != null && note.noteId != noteId) include = false;
+      if (include && groupId != null) {
+        if (groupId.isNotEmpty) {
+          include = note.groupId == groupId;
+        } else {
+          include = note.groupId.isEmpty;
+        }
+      }
+      if (include && groupIds != null && groupIds.isNotEmpty) {
+        include = groupIds.contains(note.groupId);
+      }
+      if (include && authors != null) {
+        include = authors.contains(note.author);
+      }
+      if (include && root != null) {
+        include = note.root == root;
+      }
+      if (include && reply != null) {
+        include = note.reply == reply;
+      }
+      if (include && repostId != null) {
+        include = note.repostId == repostId;
+      }
+      if (include && quoteRepostId != null) {
+        include = note.quoteRepostId == quoteRepostId;
+      }
+      if (include && reactedId != null) {
+        include = note.reactedId == reactedId;
+      }
+      if (include && until != null) {
+        include = note.createAt < until;
+      }
+      if (include && isReacted != null) {
+        include = isReacted
+            ? note.reactedId?.isNotEmpty == true
+            : (note.reactedId == null || note.reactedId!.isEmpty);
+      }
+      if (include && private != null) {
+        include = note.private == private;
+      }
+      if (include) {
+        final String keywordValue = keyword ?? '';
+        if (keywordValue.isNotEmpty) {
+          final content = note.content;
+          include = content.contains(keywordValue);
+        }
+      }
+      if (include) {
+        matches.add(note);
+      }
+    }
+    return matches;
+  }
+
+  void _addUniqueNotes(List<NoteDBISAR> source, List<NoteDBISAR> target, Set<String> seenNoteIds) {
+    if (source.isEmpty) return;
+    for (final note in source) {
+      final id = note.noteId;
+      if (id.isEmpty) continue;
+      if (seenNoteIds.add(id)) {
+        target.add(note);
+      }
+    }
+  }
+
+  List<NoteDBISAR> _finalizeNoteResults(List<NoteDBISAR> notes, int? limit) {
+    if (notes.isEmpty) return [];
+    notes.sort((a, b) => b.createAt.compareTo(a.createAt));
+    final List<NoteDBISAR> sorted =
+        limit != null && notes.length > limit ? notes.take(limit).toList() : List.of(notes);
+    return sorted.map((note) => note.withGrowableLevels()).toList();
+  }
+
   Future<List<NoteDBISAR>> searchNotesFromDB(
       {String? noteId,
         String? groupId,
@@ -635,67 +738,146 @@ extension Load on Feed {
         int? until,
         int? limit,
         String? keyword}) async {
+    final bool isWeb = kIsWeb;
+    final List<NoteDBISAR> aggregated = [];
+    final Set<String> seenNoteIds = {};
+
+    void addNotes(List<NoteDBISAR> notes) => _addUniqueNotes(notes, aggregated, seenNoteIds);
+
+    addNotes(_filterNotesFromMemoryCache(
+      noteId: noteId,
+      groupId: groupId,
+      authors: authors,
+      root: root,
+      reply: reply,
+      repostId: repostId,
+      quoteRepostId: quoteRepostId,
+      reactedId: reactedId,
+      isReacted: isReacted,
+      private: private,
+      until: until,
+      keyword: keyword,
+    ));
+
+    addNotes(searchNotesFromCache(noteId, groupId, authors, root, reply, repostId,
+        quoteRepostId, reactedId, isReacted, private, until, limit));
+
     final isar = DBISAR.sharedInstance.isar;
-    dynamic queryBuilder = isar.noteDBISARs.where();
-    if (noteId != null) {
-      queryBuilder = queryBuilder.noteIdEqualTo(noteId);
+    if (!isar.isOpen) {
+      return _finalizeNoteResults(aggregated, limit);
     }
-    if (groupId != null && groupId.isNotEmpty) {
-      queryBuilder = queryBuilder.groupIdEqualTo(groupId);
-    } else {
-      queryBuilder = queryBuilder.groupIdIsEmpty();
-    }
-    if (authors != null) {
-      queryBuilder = queryBuilder.anyOf(authors, (q, author) => q.authorEqualTo(author));
-    }
-    if (root != null) {
-      queryBuilder = queryBuilder.rootEqualTo(root);
-    }
-    if (reply != null) {
-      queryBuilder = queryBuilder.replyEqualTo(reply);
-    }
-    if (repostId != null) {
-      queryBuilder = queryBuilder.repostIdEqualTo(repostId);
-    }
-    if (quoteRepostId != null) {
-      queryBuilder = queryBuilder.quoteRepostIdEqualTo(quoteRepostId);
-    }
-    if (reactedId != null) {
-      queryBuilder = queryBuilder.reactedIdEqualTo(reactedId);
-    }
-    if (until != null) {
-      queryBuilder = queryBuilder.createAtLessThan(until);
-    }
-    if (isReacted != null) {
-      queryBuilder = isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
-    }
-    if (private != null) {
-      queryBuilder = queryBuilder.privateEqualTo(private);
-    }
-    if (keyword != null) {
-      queryBuilder = queryBuilder.contentContains(keyword);
-    }
-    List<NoteDBISAR> result = searchNotesFromCache(noteId, groupId, authors, root, reply, repostId,
-        quoteRepostId, reactedId, isReacted, private, until, limit);
-    // Sort in memory after filtering
-    // Need to cast to dynamic to access findAll() method
-    var allNotes = await (queryBuilder as dynamic).findAll();
-    allNotes.sort((a, b) => b.createAt.compareTo(a.createAt));
     
-    if (limit != null) {
-      final searchResult = allNotes.take(limit).toList();
-      for (NoteDBISAR note in searchResult) {
-        note = note.withGrowableLevels();
-        result.add(note);
+    try {
+      dynamic queryBuilder = isar.noteDBISARs.where();
+      if (queryBuilder == null) {
+        return _finalizeNoteResults(aggregated, limit);
       }
-      return result;
+      
+      if (noteId != null) {
+        queryBuilder = queryBuilder.noteIdEqualTo(noteId);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (groupId != null && groupId.isNotEmpty) {
+        queryBuilder = queryBuilder.groupIdEqualTo(groupId);
+      } else if (groupId == null || groupId.isEmpty) {
+        if (noteId == null) {
+          queryBuilder = queryBuilder.groupIdIsEmpty();
+        }
+      }
+      if (isWeb && queryBuilder == null) {
+        return _finalizeNoteResults(aggregated, limit);
+      }
+      
+      if (authors != null) {
+        queryBuilder = queryBuilder.anyOf(authors, (q, author) => q.authorEqualTo(author));
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (root != null) {
+        queryBuilder = queryBuilder.rootEqualTo(root);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (reply != null) {
+        queryBuilder = queryBuilder.replyEqualTo(reply);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (repostId != null) {
+        queryBuilder = queryBuilder.repostIdEqualTo(repostId);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (quoteRepostId != null) {
+        queryBuilder = queryBuilder.quoteRepostIdEqualTo(quoteRepostId);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (reactedId != null) {
+        queryBuilder = queryBuilder.reactedIdEqualTo(reactedId);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (until != null) {
+        queryBuilder = queryBuilder.createAtLessThan(until);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (isReacted != null) {
+        queryBuilder = isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (private != null) {
+        queryBuilder = queryBuilder.privateEqualTo(private);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (keyword != null) {
+        queryBuilder = queryBuilder.contentContains(keyword);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (queryBuilder == null) {
+        return _finalizeNoteResults(aggregated, limit);
+      }
+      
+      var allNotes = await (queryBuilder as dynamic).findAll();
+      final isarNotes = List<NoteDBISAR>.from(allNotes);
+      if (isWeb) {
+        _logIsarResults('searchNotesFromDB', isarNotes);
+      }
+      addNotes(isarNotes);
+      return _finalizeNoteResults(aggregated, limit);
+    } catch (e) {
+      if (!isWeb) {
+        print('Error in searchNotesFromDB: $e');
+      }
+      return _finalizeNoteResults(aggregated, limit);
     }
-    final searchResult = allNotes;
-    for (NoteDBISAR note in searchResult) {
-      note = note.withGrowableLevels();
-      result.add(note);
-    }
-    return result;
   }
 
   /// Load notes from all groups that the current user has joined
@@ -721,76 +903,128 @@ extension Load on Feed {
       return [];
     }
 
+    final bool isWeb = kIsWeb;
+    final List<NoteDBISAR> aggregated = [];
+    final Set<String> seenNoteIds = {};
+
+    void addNotes(List<NoteDBISAR> notes) => _addUniqueNotes(notes, aggregated, seenNoteIds);
+
+    addNotes(_filterNotesFromMemoryCache(
+      groupIds: myGroupIds,
+      authors: authors,
+      root: root,
+      reply: reply,
+      repostId: repostId,
+      quoteRepostId: quoteRepostId,
+      reactedId: reactedId,
+      isReacted: isReacted,
+      private: private,
+      until: until,
+      keyword: keyword,
+    ));
+
     final isar = DBISAR.sharedInstance.isar;
-    dynamic queryBuilder = isar.noteDBISARs.where();
-    
-    // Query notes from any of the user's groups using anyOf
-    queryBuilder = queryBuilder.anyOf(myGroupIds, (q, groupId) => q.groupIdEqualTo(groupId));
-    
-    // Apply other filters similar to searchNotesFromDB
-    if (authors != null) {
-      queryBuilder = queryBuilder.anyOf(authors, (q, author) => q.authorEqualTo(author));
-    }
-    if (root != null) {
-      queryBuilder = queryBuilder.rootEqualTo(root);
-    }
-    if (reply != null) {
-      queryBuilder = queryBuilder.replyEqualTo(reply);
-    }
-    if (repostId != null) {
-      queryBuilder = queryBuilder.repostIdEqualTo(repostId);
-    }
-    if (quoteRepostId != null) {
-      queryBuilder = queryBuilder.quoteRepostIdEqualTo(quoteRepostId);
-    }
-    if (reactedId != null) {
-      queryBuilder = queryBuilder.reactedIdEqualTo(reactedId);
-    }
-    if (until != null) {
-      queryBuilder = queryBuilder.createAtLessThan(until);
-    }
-    if (isReacted != null) {
-      queryBuilder = isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
-    }
-    if (private != null) {
-      queryBuilder = queryBuilder.privateEqualTo(private);
-    }
-    if (keyword != null) {
-      queryBuilder = queryBuilder.contentContains(keyword);
+    if (!isar.isOpen) {
+      return _finalizeNoteResults(aggregated, limit);
     }
     
-    // Execute query and process results
-    // Sort in memory after filtering
-    // Need to cast to dynamic to access findAll() method
-    var allNotes = await (queryBuilder as dynamic).findAll();
-    allNotes.sort((a, b) => b.createAt.compareTo(a.createAt));
-    
-    List<NoteDBISAR> result = [];
-    if (limit != null) {
-      final searchResult = allNotes.take(limit).toList();
-      for (NoteDBISAR note in searchResult) {
-        note = note.withGrowableLevels();
-        result.add(note);
-        // Update cache and latest note time
-        notesCache[note.noteId] = note;
-        latestNoteTime = note.createAt > latestNoteTime ? note.createAt : latestNoteTime;
+    try {
+      dynamic queryBuilder = isar.noteDBISARs.where();
+      if (queryBuilder == null) {
+        return _finalizeNoteResults(aggregated, limit);
       }
-    } else {
-      final searchResult = allNotes;
-      for (NoteDBISAR note in searchResult) {
-        note = note.withGrowableLevels();
-        result.add(note);
-        // Update cache and latest note time
-        notesCache[note.noteId] = note;
-        latestNoteTime = note.createAt > latestNoteTime ? note.createAt : latestNoteTime;
+      
+      queryBuilder = queryBuilder.anyOf(myGroupIds, (q, groupId) => q.groupIdEqualTo(groupId));
+      if (isWeb && queryBuilder == null) {
+        return _finalizeNoteResults(aggregated, limit);
       }
+      
+      if (authors != null) {
+        queryBuilder = queryBuilder.anyOf(authors, (q, author) => q.authorEqualTo(author));
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (root != null) {
+        queryBuilder = queryBuilder.rootEqualTo(root);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (reply != null) {
+        queryBuilder = queryBuilder.replyEqualTo(reply);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (repostId != null) {
+        queryBuilder = queryBuilder.repostIdEqualTo(repostId);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (quoteRepostId != null) {
+        queryBuilder = queryBuilder.quoteRepostIdEqualTo(quoteRepostId);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (reactedId != null) {
+        queryBuilder = queryBuilder.reactedIdEqualTo(reactedId);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (until != null) {
+        queryBuilder = queryBuilder.createAtLessThan(until);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (isReacted != null) {
+        queryBuilder = isReacted ? queryBuilder.reactedIdIsNotEmpty() : queryBuilder.reactedIdIsEmpty();
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (private != null) {
+        queryBuilder = queryBuilder.privateEqualTo(private);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      if (keyword != null) {
+        queryBuilder = queryBuilder.contentContains(keyword);
+        if (isWeb && queryBuilder == null) {
+          return _finalizeNoteResults(aggregated, limit);
+        }
+      }
+      
+      if (queryBuilder == null) {
+        return _finalizeNoteResults(aggregated, limit);
+      }
+      
+      var allNotes = await (queryBuilder as dynamic).findAll();
+      final isarNotes = List<NoteDBISAR>.from(allNotes);
+      if (isWeb) {
+        _logIsarResults('loadAllMyGroupsNotesFromDB', isarNotes);
+      }
+      addNotes(isarNotes);
+      return _finalizeNoteResults(aggregated, limit);
+    } catch (e) {
+      if (!isWeb) {
+        print('Error in loadAllMyGroupsNotesFromDB: $e');
+      }
+      return _finalizeNoteResults(aggregated, limit);
     }
-    
-    return result;
   }
 
   Future<void> handleNewNotes(NoteDBISAR noteDB) async {
     await saveNoteToDB(noteDB, ConflictAlgorithm.ignore);
+    if (kDebugMode) {
+      // ignore: avoid_print
+      print('[Feed] handleNewNotes cached noteId=${noteDB.noteId} groupId=${noteDB.groupId}');
+    }
     if (noteDB.createAt > latestNoteTime) {
       newNotes.add(noteDB);
       newNotesCallBack?.call(newNotes);

@@ -46,7 +46,6 @@ class EventCache {
   }
 
   Future<void> saveEventToDB(EventDBISAR eventDB) async {
-    if (kIsWeb) return;
     await DBISAR.sharedInstance.saveToDB(eventDB);
   }
 

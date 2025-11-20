@@ -4,6 +4,7 @@ import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:chuchu/presentation/feed/widgets/locked_content_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/config/config.dart';
@@ -296,11 +297,14 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
   Future<void> updateNotesList(bool isInit) async {
     try {
+      final until = isInit ? null : _allNotesFromDBLastTimestamp;
       List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
           widget.relayGroupDB.groupId,
-          until: isInit ? null : _allNotesFromDBLastTimestamp,
+          until: until,
           limit: _limit) ??
           [];
+      debugPrint(
+          'FeedPersonalPage: fetched ${list.length} notes from ISAR (group=${widget.relayGroupDB.groupId}, until=$until, init=$isInit)');
       if (list.isEmpty) {
         isInit
             ? _refreshController.refreshCompleted()
