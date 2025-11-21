@@ -4,7 +4,6 @@ import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_st
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
-import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -121,29 +120,29 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 12,
+                          vertical: 8,
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CircleAvatar(
-                              radius: 24,
+                              radius: 20,
                               backgroundColor: theme.colorScheme.primary
                                   .withOpacity(0.1),
                               child: Icon(
                                 Icons.person,
                                 color: theme.colorScheme.primary,
-                                size: 24,
+                                size: 18,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: TextField(
                                 controller: _textController,
                                 maxLines: null,
-                                minLines: 3,
+                                minLines: 2,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -152,7 +151,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                                   hintStyle: TextStyle(
                                     color: theme.colorScheme.onSurface
                                         .withOpacity(0.6),
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w400,
                                   ),
                                   border: InputBorder.none,
@@ -228,8 +227,8 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                       ),
                       builder: (context, value, child) {
                         return FeedWidgetsUtils.clipImage(
-                          borderRadius: 40.px,
-                          imageSize: 40.px,
+                          borderRadius: 32,
+                          imageSize: 32,
                           child: GestureDetector(
                             onTap: () {},
                             child: ChuChuCachedNetworkImage(
@@ -241,8 +240,8 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                               errorWidget:
                                   (context, url, error) =>
                                       FeedWidgetsUtils.badgePlaceholderImage(),
-                              width: 40.px,
-                              height: 40.px,
+                              width: 32,
+                              height: 32,
                             ),
                           ),
                         );
@@ -251,7 +250,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
 
                     Expanded(
                       child: Container(
-                        margin: EdgeInsets.symmetric(vertical: 4.px),
+                        margin: EdgeInsets.symmetric(vertical: 4),
                         width: 1.0,
                         color: Theme.of(context).dividerColor.withOpacity(0.3),
                       ),
@@ -290,7 +289,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                             'Reply ',
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14.px,
+                              fontSize: 16,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -320,7 +319,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
             '@${value.name}',
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
-              fontSize: 14.px,
+              fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
           );
@@ -336,7 +335,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
             '@${value.name}',
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
-              fontSize: 14.px,
+              fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
           );
@@ -363,7 +362,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                     value.name,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 14.px,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -373,7 +372,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 widget.notedUIModel.createAtStr,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 12.px,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -397,7 +396,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                     value.name ?? '--',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 14.px,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -407,7 +406,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 widget.notedUIModel.createAtStr,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 12.px,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
               ),
