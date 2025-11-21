@@ -65,7 +65,7 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
                         '',
                   ),
                   builder: (context, user, child) {
-                    final avatarSize = 40;
+                    final avatarSize = 40.0;
                     return GestureDetector(
                         behavior: HitTestBehavior.translucent,
                         onTap: () {
@@ -76,8 +76,8 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
                           );
                         },
                       child: FeedWidgetsUtils.clipImage(
-                        borderRadius: avatarSize.px,
-                        imageSize: avatarSize.px,
+                        borderRadius: avatarSize,
+                        imageSize: avatarSize,
                         child: ChuChuCachedNetworkImage(
                           imageUrl: user.picture ?? '',
                           fit: BoxFit.cover,
@@ -86,8 +86,8 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
                           errorWidget:
                               (_, __, ___) =>
                               FeedWidgetsUtils.badgePlaceholderImage(),
-                          width: avatarSize.px,
-                          height: avatarSize.px,
+                          width: avatarSize,
+                          height: avatarSize,
                         ),
                       ),
                     );

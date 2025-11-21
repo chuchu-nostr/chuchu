@@ -11,7 +11,6 @@ import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
-import '../../../core/utils/adapt.dart';
 import '../../../core/services/blossom_uploader.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../core/config/storage_key_tool.dart';
@@ -100,8 +99,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
           GestureDetector(
             onTap: _changeProfilePicture,
             child: Container(
-              width: 100.px,
-              height: 100.px,
+              width: 100,
+              height: 100,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
                 border: Border.all(
@@ -124,8 +123,8 @@ class _MyProfilePageState extends State<MyProfilePage> {
                       child: Image.file(
                         File(_selectedAvatarPath!),
                         fit: BoxFit.cover,
-                        width: 100.px,
-                        height: 100.px,
+                        width: 100,
+                        height: 100,
                       ),
                     )
                   else
@@ -136,15 +135,15 @@ class _MyProfilePageState extends State<MyProfilePage> {
                       builder: (context, user, child) {
                         if (user.picture != null && user.picture!.isNotEmpty) {
                           return FeedWidgetsUtils.clipImage(
-                            borderRadius: 100.px,
-                            imageSize: 100.px,
+                            borderRadius: 100,
+                            imageSize: 100,
                             child: ChuChuCachedNetworkImage(
                               imageUrl: user.picture!,
                               fit: BoxFit.cover,
                               placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
                               errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-                              width: 100.px,
-                              height: 100.px,
+                              width: 100,
+                              height: 100,
                             ),
                           );
                         } else {
