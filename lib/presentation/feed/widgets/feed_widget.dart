@@ -1,5 +1,4 @@
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
-import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/core/widgets/common_toast.dart';
@@ -158,7 +157,7 @@ class _FeedWidgetState extends State<FeedWidget> {
             child: FeedOptionWidget(
               key: ValueKey(notedUIModel?.noteDB.noteId ?? 'option_${notedUIModel.hashCode}'),
               notedUIModel: notedUIModel,
-            ).setPaddingOnly(bottom: _verticalPadding.px),
+            ).setPaddingOnly(bottom: _verticalPadding),
           ).setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
         if (widget.isShowSimpleReplyBtn) showSimpleReplyBtnWidget().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
       ],
@@ -177,7 +176,7 @@ class _FeedWidgetState extends State<FeedWidget> {
             FeedUtils.getUserMomentInfo(user, notedUIModel!.createAtStr)[2],
             style: TextStyle(
               color: Theme.of(context).colorScheme.outline,
-              fontSize: 16.px,
+              fontSize: 17,
               fontWeight: FontWeight.w400,
             ),
             maxLines: 1,
@@ -211,7 +210,7 @@ class _FeedWidgetState extends State<FeedWidget> {
               'Reply',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 16,
+                fontSize: 18,
               ),
             ),
           ),
@@ -241,16 +240,16 @@ class _FeedWidgetState extends State<FeedWidget> {
           }
         },
         child: FeedWidgetsUtils.clipImage(
-          borderRadius: _avatarSize.px,
-          imageSize: _avatarSize.px,
+          borderRadius: _avatarSize,
+          imageSize: _avatarSize,
           child: ChuChuCachedNetworkImage(
             imageUrl: imageUrl ?? '',
             fit: BoxFit.cover,
             placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
             errorWidget:
                 (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-            width: _avatarSize.px,
-            height: _avatarSize.px,
+            width: _avatarSize,
+            height: _avatarSize,
           ),
         ),
       ),
@@ -325,7 +324,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                   );
                 },
                 text: content,
-              ).setPadding(EdgeInsets.only(bottom: _bottomSpacing.px)),
+              ).setPadding(EdgeInsets.only(bottom: _bottomSpacing)),
     );
   }
 
@@ -410,7 +409,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                     user.name,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 18.px,
+                      fontSize: 18,
                       fontWeight: FontWeight.w500,
                     ),
                     overflow: TextOverflow.ellipsis,
@@ -421,7 +420,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                         model.createAtStr,
                         style: TextStyle(
                           color: Theme.of(context).colorScheme.outline,
-                          fontSize: 16.px,
+                          fontSize: 17,
                           fontWeight: FontWeight.w400,
                         ),
                         maxLines: 1,
@@ -442,7 +441,7 @@ class _FeedWidgetState extends State<FeedWidget> {
               getUserNupbStr(),
               style: TextStyle(
                 color: Theme.of(context).colorScheme.outline,
-                fontSize: 16.px,
+                fontSize: 17,
                 fontWeight: FontWeight.w400,
               ),
               maxLines: 1,
@@ -493,7 +492,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     return Container(
       child: Container(
-        padding: EdgeInsets.only(bottom: _bottomSpacing.px),
+        padding: EdgeInsets.only(bottom: _bottomSpacing),
         child: _buildUserInfoRow(),
       ),
     );

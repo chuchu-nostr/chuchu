@@ -1,4 +1,3 @@
-import 'package:chuchu/core/utils/adapt.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/cupertino.dart';
@@ -93,7 +92,7 @@ class _FeedRichTextWidgetState extends State<FeedRichTextWidget>
             TextSpan(
               style: TextStyle(
                 color: widget.defaultTextColor ?? Theme.of(context).colorScheme.onSurface,
-                fontSize: widget.textSize ?? 18.px,
+                fontSize: widget.textSize ?? 17,
               ),
               children: textSpans,
             ),
