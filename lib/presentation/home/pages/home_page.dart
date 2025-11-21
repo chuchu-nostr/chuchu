@@ -171,14 +171,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           foregroundColor: theme.colorScheme.primary,
           elevation: _isScrolled ? 4 : 0,
           surfaceTintColor: Colors.transparent,
-          leadingWidth: 164.px,
-          leading: GestureDetector(
-            onTap: toggle,
-            child: CommonImage(
-              iconName: 'logo_text_primary.png',
-              width: 140,
-            ),
-          ).setPaddingOnly(left: 18.px),
+          titleSpacing: 0,
+          centerTitle: false,
+          title: Align(
+            alignment: Alignment.centerLeft,
+            child: GestureDetector(
+              onTap: toggle,
+              child: CommonImage(
+                iconName: 'logo_text_primary.png',
+                width: 140,
+              ),
+            ).setPaddingOnly(left: 12.0),
+          ),
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(12.px),
             child: const SizedBox(),
