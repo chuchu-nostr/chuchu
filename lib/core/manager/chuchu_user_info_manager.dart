@@ -7,6 +7,7 @@ import '../feed/model/noteDB_isar.dart';
 import '../feed/model/notificationDB_isar.dart';
 import 'package:nostr_core_dart/src/nips/nip_005.dart';
 import '../account/account.dart';
+import '../account/secure_account_storage.dart';
 import '../account/model/userDB_isar.dart';
 import '../account/relays.dart';
 import '../account/zaps.dart';
@@ -85,16 +86,38 @@ class ChuChuUserInfoManager {
       _observers.remove(observer);
 
   Future initLocalData() async {
-    ///account auto-login
-    final String? localPubKey = await ChuChuCacheManager.defaultOXCacheManager.getForeverData(StorageKeyTool.CHUCHU_USER_PUBKEY);
-    if (localPubKey != null && localPubKey.isNotEmpty) {
-        await initDB(localPubKey);
-        final UserDBISAR? tempUserDB = await Account.sharedInstance.loginWithPubKeyAndPassword(localPubKey);
+    /// Try secure storage (supports web refresh)
+    final storedPrivkey = await SecureAccountStorage.readPrivateKey();
+    if (storedPrivkey != null && storedPrivkey.isNotEmpty) {
+      try {
+        final storedPubkey = Account.getPublicKey(storedPrivkey);
+        await initDB(storedPubkey);
+        final UserDBISAR? tempUserDB =
+            await Account.sharedInstance.loginWithPriKey(storedPrivkey);
         if (tempUserDB != null) {
           currentUserInfo = tempUserDB;
+          await SecureAccountStorage.savePrivateKey(storedPrivkey);
           _initDatas();
           return;
         }
+      } catch (_) {
+        // Fall back to legacy path
+      }
+    }
+
+    /// Legacy auto-login based on cached pubkey
+    final String? localPubKey = await ChuChuCacheManager
+        .defaultOXCacheManager
+        .getForeverData(StorageKeyTool.CHUCHU_USER_PUBKEY);
+    if (localPubKey != null && localPubKey.isNotEmpty) {
+      await initDB(localPubKey);
+      final UserDBISAR? tempUserDB =
+          await Account.sharedInstance.loginWithPubKeyAndPassword(localPubKey);
+      if (tempUserDB != null) {
+        currentUserInfo = tempUserDB;
+        _initDatas();
+        return;
+      }
     }
   }
 
@@ -156,6 +179,7 @@ class ChuChuUserInfoManager {
       return;
     }
     await Account.sharedInstance.logout();
+    await SecureAccountStorage.clearPrivateKey();
     resetData(needObserver: needObserver);
   }
 
@@ -193,7 +217,7 @@ class ChuChuUserInfoManager {
     DNS dns = DNS(name, domain, pubKey, relayAddressList);
     try {
       return await Account.checkDNS(dns);
-    } catch (error, stack) {
+    } catch (error) {
       return false;
     }
   }
