@@ -1,6 +1,8 @@
-import 'dart:io';
+import 'dart:typed_data';
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+admin.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 
 import 'package:nostr_core_dart/src/ok.dart';
@@ -9,6 +11,9 @@ import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/services/blossom_uploader.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/common_toast.dart';
+import '../../../core/account/web_file_registry_stub.dart'
+    if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
+    as web_file_registry;
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class ProfileEditPage extends StatefulWidget {
@@ -28,7 +33,8 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
 
-  String? _selectedCoverPhotoPath; // Local file path for display
+  String? _selectedCoverPhotoPath; // Local/virtual file path for display & upload
+  Uint8List? _selectedCoverPhotoBytes; // In-memory image for preview (web compatible)
   String? _uploadedCoverPhotoUrl; // Network URL after upload (used when saving)
   bool _isLoading = false;
   bool _isUploadingCoverPhoto = false;
@@ -94,6 +100,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
 
   @override
   void dispose() {
+    if (_selectedCoverPhotoPath != null && _selectedCoverPhotoPath!.startsWith('webfile://')) {
+      web_file_registry.unregisterWebFileData(_selectedCoverPhotoPath!);
+    }
     _hasChangesNotifier.dispose();
     _usernameController.dispose();
     _aboutController.dispose();
@@ -261,106 +270,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
             borderRadius: BorderRadius.circular(16),
             child: Stack(
               children: [
-                // Show local image, existing picture, or placeholder
-                _selectedCoverPhotoPath != null
-                    ? Image.file(
-                        File(_selectedCoverPhotoPath!),
-                        fit: BoxFit.cover,
-                        width: double.infinity,
-                        height: 200,
-                      )
-                    : widget.relayGroup.picture.isNotEmpty
-                        ? Image.network(
-                            widget.relayGroup.picture,
-                            fit: BoxFit.cover,
-                            width: double.infinity,
-                            height: 200,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Container(
-                                width: double.infinity,
-                                height: 200,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                      Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                                    ],
-                                  ),
-                                ),
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.add_photo_alternate_rounded,
-                                      size: 48,
-                                      color: Theme.of(context).colorScheme.onSurface.withOpacity(0.4),
-                                    ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      'No Cover Photo',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      'Click "Edit" to add',
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          )
-                        : Container(
-                            width: double.infinity,
-                            height: 200,
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                                colors: [
-                                  Theme.of(context).colorScheme.primary.withOpacity(0.1),
-                                  Theme.of(context).colorScheme.primary.withOpacity(0.05),
-                                ],
-                              ),
-                            ),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(
-                                  Icons.add_photo_alternate_rounded,
-                                  size: 48,
-                                  color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  'No Cover Photo',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-                                  ),
-                                ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  'Click "Edit" to add',
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                // Show loading overlay when uploading
+                _buildCoverPhotoContent(context),
                 if (_isUploadingCoverPhoto)
                   Container(
                     decoration: BoxDecoration(
@@ -379,6 +289,71 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _buildCoverPhotoContent(BuildContext context) {
+    if (_selectedCoverPhotoBytes != null) {
+      return Image.memory(
+        _selectedCoverPhotoBytes!,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: 200,
+      );
+    }
+    if (widget.relayGroup.picture.isNotEmpty) {
+      return Image.network(
+        widget.relayGroup.picture,
+        fit: BoxFit.cover,
+        width: double.infinity,
+        height: 200,
+        errorBuilder: (context, error, stackTrace) => _buildCoverPlaceholder(context),
+      );
+    }
+    return _buildCoverPlaceholder(context);
+  }
+
+  Widget _buildCoverPlaceholder(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 200,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).colorScheme.primary.withOpacity(0.1),
+            Theme.of(context).colorScheme.primary.withOpacity(0.05),
+          ],
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.add_photo_alternate_rounded,
+            size: 48,
+            color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
+          ),
+          const SizedBox(height: 12),
+          Text(
+            'No Cover Photo',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w500,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            'Click "Edit" to add',
+            style: TextStyle(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -536,10 +511,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
         imageQuality: 80,
       );
       if (picked != null) {
-        setState(() {
-          _selectedCoverPhotoPath = picked.path;
-          _uploadedCoverPhotoUrl = null; // Clear previous uploaded URL when selecting new image
-        });
+        final bytes = await picked.readAsBytes();
+        if (kIsWeb) {
+          final virtualPath = web_file_registry.createVirtualFilePath(picked.name);
+          web_file_registry.registerWebFileData(virtualPath, bytes);
+          if (_selectedCoverPhotoPath != null && _selectedCoverPhotoPath!.startsWith('webfile://')) {
+            web_file_registry.unregisterWebFileData(_selectedCoverPhotoPath!);
+          }
+          setState(() {
+            _selectedCoverPhotoPath = virtualPath;
+            _selectedCoverPhotoBytes = bytes;
+            _uploadedCoverPhotoUrl = null; // Clear previous uploaded URL when selecting new image
+          });
+        } else {
+          setState(() {
+            _selectedCoverPhotoPath = picked.path;
+            _selectedCoverPhotoBytes = bytes;
+            _uploadedCoverPhotoUrl = null; // Clear previous uploaded URL when selecting new image
+          });
+        }
         _hasChangesNotifier.value = _hasChanges();
         // Auto-upload cover photo after showing local image
         await _uploadCoverPhoto();
