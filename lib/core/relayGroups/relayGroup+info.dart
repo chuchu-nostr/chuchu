@@ -44,6 +44,8 @@ extension EInfo on RelayGroup {
           groupDB.about = group.about;
           groupDB.private = group.private;
           groupDB.closed = group.closed;
+          groupDB.subscriptionAmount = group.subscriptionAmount;
+          groupDB.groupWalletId = group.groupWalletId ?? '';
           groupDB.lastUpdatedTime = event.createdAt;
           break;
         case 39001:
