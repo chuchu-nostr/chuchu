@@ -3,7 +3,6 @@ import 'package:chuchu/core/feed/feed+notification.dart';
 import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:flutter/material.dart';
-import 'package:chuchu/core/utils/adapt.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
@@ -182,7 +181,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
                 Theme.of(context).colorScheme.primary,
               ),
             ),
-            SizedBox(height: 16.px),
+            const SizedBox(height: 16),
             Text(
               'Loading notifications...',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -200,7 +199,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
 
     return ListView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.symmetric(vertical: 8.px),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       itemCount: _aggregatedNotifications.length,
       itemBuilder: (context, index) {
         return _buildNotificationItem(_aggregatedNotifications[index]);
@@ -215,18 +214,18 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.all(24.px),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: theme.colorScheme.primary.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.notifications_none,
-              size: 64.px,
+              size: 64,
               color: theme.colorScheme.primary,
             ),
           ),
-          SizedBox(height: 24.px),
+          const SizedBox(height: 24),
           Text(
             'No Notifications',
             style: theme.textTheme.titleLarge?.copyWith(
@@ -234,7 +233,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
               color: theme.colorScheme.onSurface,
             ),
           ),
-          SizedBox(height: 12.px),
+          const SizedBox(height: 12),
           Text(
             'You\'ll see notifications here when someone\ninteracts with your posts',
             textAlign: TextAlign.center,
@@ -257,16 +256,16 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
         _handleNotificationTap(notification);
       },
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 16.px, vertical: 6.px),
-        padding: EdgeInsets.all(16.px),
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(16.px),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
               color: theme.shadowColor.withValues(alpha: 0.05),
-              blurRadius: 8.px,
-              offset: Offset(0, 2.px),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
             ),
           ],
         ),
@@ -275,13 +274,13 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
 
           children: [
             _buildNotificationAvatar(notification),
-            SizedBox(width: 8.px),
+            const SizedBox(width: 8),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _buildNotificationTitle(notification),
-                  SizedBox(height: 12.px),
+                  const SizedBox(height: 12),
                   _buildNotificationContent(notification),
                 ],
               ),
@@ -315,20 +314,20 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
               shape: BoxShape.circle,
               border: Border.all(
                 color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
-                width: 2.px,
+                width: 2,
               ),
             ),
             child: FeedWidgetsUtils.clipImage(
-              borderRadius: 48.px,
-              imageSize: 48.px,
+              borderRadius: 48,
+              imageSize: 48,
               child: ChuChuCachedNetworkImage(
                 imageUrl: user?.picture ?? '',
                 fit: BoxFit.cover,
                 placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
                 errorWidget:
                     (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-                width: 48.px,
-                height: 48.px,
+                width: 48,
+                height: 48,
               ),
             ),
           ),
@@ -358,7 +357,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
                     TextSpan(
                       text: userName,
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 16.px,
+                        fontSize: 16,
                         fontWeight: FontWeight.w600,
                         color: theme.colorScheme.onSurface,
                       ),
@@ -366,7 +365,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
                     TextSpan(
                       text: ' $actionText',
                       style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 14.px,
+                        fontSize: 14,
                         color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
                       ),
                     ),
@@ -378,7 +377,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             },
           ),
         ),
-        SizedBox(width: 12.px),
+        const SizedBox(width: 12),
         _buildNotificationTypeIcon(notification),
       ],
     );
@@ -394,7 +393,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           child: Text(
             content,
             style: theme.textTheme.bodySmall?.copyWith(
-              fontSize: 14.px,
+              fontSize: 14,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               height: 1.3,
             ),
@@ -402,11 +401,11 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             overflow: TextOverflow.ellipsis,
           ),
         ),
-        SizedBox(width: 12.px),
+        const SizedBox(width: 12),
         Text(
           FeedUtils.formatTimeAgo(notification.createAt),
           style: theme.textTheme.bodySmall?.copyWith(
-            fontSize: 12.px,
+            fontSize: 12,
             color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
             fontWeight: FontWeight.w500,
           ),
@@ -493,17 +492,17 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     }
 
     return Container(
-      width: 26.px,
-      height: 26.px,
+      width: 26,
+      height: 26,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
         border: Border.all(
           color: color.withValues(alpha: 0.2),
-          width: 1.px,
+          width: 1,
         ),
       ),
-      child: Icon(icon, size: 12.px, color: color),
+      child: Icon(icon, size: 12, color: color),
     );
   }
 
