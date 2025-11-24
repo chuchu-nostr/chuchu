@@ -1,9 +1,15 @@
-import 'dart:io';
+import 'dart:typed_data';
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as Path;
+
+import '../../../core/account/web_file_registry_stub.dart'
+    if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
+    as web_file_registry;
 
 import '../../../core/account/account.dart';
 import '../../../core/account/account+profile.dart';
@@ -31,6 +37,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
   final TextEditingController _aboutController = TextEditingController();
 
   String? _selectedAvatarPath; // Local file path for display
+  Uint8List? _selectedAvatarBytes; // In-memory image data for web preview
   String? _uploadedAvatarUrl; // Network URL after upload (used when confirming)
   bool _isUploadingAvatar = false;
 
@@ -51,6 +58,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
 
   @override
   void dispose() {
+    if (_selectedAvatarPath != null && _selectedAvatarPath!.startsWith('webfile://')) {
+      web_file_registry.unregisterWebFileData(_selectedAvatarPath!);
+    }
     _nameController.dispose();
     _aboutController.dispose();
     super.dispose();
@@ -118,10 +128,10 @@ class _MyProfilePageState extends State<MyProfilePage> {
               child: Stack(
                 children: [
                   // Show selected local image, existing picture, or placeholder
-                  if (_selectedAvatarPath != null)
+                  if (_selectedAvatarBytes != null)
                     ClipOval(
-                      child: Image.file(
-                        File(_selectedAvatarPath!),
+                      child: Image.memory(
+                        _selectedAvatarBytes!,
                         fit: BoxFit.cover,
                         width: 100,
                         height: 100,
@@ -599,10 +609,26 @@ class _MyProfilePageState extends State<MyProfilePage> {
       );
       
       if (picked != null) {
-        setState(() {
-          _selectedAvatarPath = picked.path;
-          _uploadedAvatarUrl = null; // Clear previous uploaded URL when selecting new image
-        });
+        final bytes = await picked.readAsBytes();
+        if (kIsWeb) {
+          final virtualPath = web_file_registry.createVirtualFilePath(picked.name);
+          web_file_registry.registerWebFileData(virtualPath, bytes);
+          // Clean up previous virtual file if exists
+          if (_selectedAvatarPath != null && _selectedAvatarPath!.startsWith('webfile://')) {
+            web_file_registry.unregisterWebFileData(_selectedAvatarPath!);
+          }
+          setState(() {
+            _selectedAvatarPath = virtualPath;
+            _selectedAvatarBytes = bytes;
+            _uploadedAvatarUrl = null; // Clear previous uploaded URL when selecting new image
+          });
+        } else {
+          setState(() {
+            _selectedAvatarPath = picked.path;
+            _selectedAvatarBytes = bytes;
+            _uploadedAvatarUrl = null; // Clear previous uploaded URL when selecting new image
+          });
+        }
         
         // Auto-upload avatar after showing local image
         await _uploadAvatar();
@@ -705,8 +731,12 @@ class _MyProfilePageState extends State<MyProfilePage> {
 
   // Cancel avatar update - clear uploaded URL and selected image
   void _cancelAvatarUpdate() {
+    if (_selectedAvatarPath != null && _selectedAvatarPath!.startsWith('webfile://')) {
+      web_file_registry.unregisterWebFileData(_selectedAvatarPath!);
+    }
     setState(() {
       _selectedAvatarPath = null;
+      _selectedAvatarBytes = null;
       _uploadedAvatarUrl = null;
     });
   }
