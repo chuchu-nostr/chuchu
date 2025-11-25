@@ -176,7 +176,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     errorWidget(_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage();
     return ValueListenableBuilder<UserDBISAR>(
       valueListenable: Account.sharedInstance.getUserNotifier(
-        user.author,
+        user.groupId,
       ),
       builder: (context, user, child) {
         return Positioned(
