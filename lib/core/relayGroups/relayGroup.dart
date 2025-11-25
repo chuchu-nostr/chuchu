@@ -130,6 +130,7 @@ class RelayGroup {
       if (groupDB.groupId.isNotEmpty) {
         if (groupDB.name.isEmpty) groupDB.name = groupDB.groupId;
         groups[groupDB.groupId] = ValueNotifier(groupDB);
+        Account.sharedInstance.syncUserFromGroupMetadata(groupDB);
       }
     }
     myGroups = _myGroups();
@@ -423,6 +424,7 @@ class RelayGroup {
     if (myGroups.containsKey(groupDB.groupId)) {
       myGroups[groupDB.groupId]?.value = groupDB;
     }
+    Account.sharedInstance.syncUserFromGroupMetadata(groupDB);
   }
 
   Future<void> syncGroupToDB(RelayGroupDBISAR groupDB) async {

@@ -16,6 +16,7 @@ import 'package:nostr_core_dart/nostr.dart';
 import 'package:nostr_core_dart/src/signer/external_signer_tool.dart';
 import '../utils/log_utils.dart';
 import '../wallet/wallet.dart';
+import '../relayGroups/model/relayGroupDB_isar.dart';
 import 'model/userDB_isar.dart';
 
 
@@ -137,6 +138,46 @@ class Account {
     if (userCache.containsKey(pubkey)) return userCache[pubkey]!;
     userCache[pubkey] = ValueNotifier(UserDBISAR(pubKey: pubkey));
     return userCache[pubkey]!;
+  }
+
+  void syncUserFromGroupMetadata(RelayGroupDBISAR group) {
+    final pubkey = group.groupId;
+    if (pubkey.isEmpty || !isValidPubKey(pubkey)) return;
+
+    final notifier = getUserNotifier(pubkey);
+    final user = notifier.value;
+    bool changed = false;
+
+    if (user.pubKey.isEmpty) {
+      user.pubKey = pubkey;
+      changed = true;
+    }
+
+    if (group.name.isNotEmpty && user.name != group.name) {
+      user.name = group.name;
+      changed = true;
+    }
+
+    if (group.about.isNotEmpty && user.about != group.about) {
+      user.about = group.about;
+      changed = true;
+    }
+
+    if (group.picture.isNotEmpty && user.picture != group.picture) {
+      user.picture = group.picture;
+      changed = true;
+    }
+
+    if (group.relay.isNotEmpty && user.mainRelay != group.relay) {
+      user.mainRelay = group.relay;
+      changed = true;
+    }
+
+    if (!changed) return;
+
+    user.lastUpdatedTime = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    notifier.value = user;
+    unawaited(saveUserToDB(user));
   }
 
   void _addToPQueue(UserDBISAR user) {
@@ -363,7 +404,7 @@ class Account {
     Completer<Event?> completer = Completer<Event?>();
     Filter f = Filter(d: [d], authors: [pubkey]);
     Connect.sharedInstance.addSubscription([f], eventCallBack: (event, relay) async {
-      if (!completer.isCompleted) completer.complete(event as Event);
+      if (!completer.isCompleted) completer.complete(event);
 
     }, eoseCallBack: (requestId, status, relay, unRelays) {
       if (unRelays.isEmpty) {
@@ -389,7 +430,7 @@ class Account {
     Filter f = Filter(ids: [eventId]);
     Connect.sharedInstance.addSubscription([f], relays: relays,
         eventCallBack: (event, relay) async {
-      if (!completer.isCompleted) completer.complete(event as Event);
+      if (!completer.isCompleted) completer.complete(event);
     }, eoseCallBack: (requestId, status, relay, unRelays) {
       if (unRelays.isEmpty) {
         if (!completer.isCompleted) completer.complete(null);
