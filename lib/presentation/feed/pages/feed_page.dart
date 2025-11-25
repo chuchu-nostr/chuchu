@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chuchu/core/feed/feed+load.dart';
@@ -157,6 +158,9 @@ class _FeedPageState extends State<FeedPage>
 
   void _onScroll() {
     if (!mounted || _isScrollProcessing) return;
+    
+    // On Web platform, keep stories section always visible
+    if (kIsWeb) return;
 
     _isScrollProcessing = true;
 
@@ -304,6 +308,40 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Widget _buildTopStoriesSection() {
+    // On Web platform, always show stories section (no animation)
+    if (kIsWeb) {
+      return Container(
+        height: kStoriesSectionHeight,
+        child: ClipRect(
+          child: Container(
+            padding: EdgeInsets.only(bottom: 16),
+            margin: EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor.withAlpha(80),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: RepaintBoundary(
+              child: SizedBox(
+                height: kStoriesSectionHeight,
+                child: ListView.builder(
+                  controller: storiesScrollController,
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: myGroupsList.length + 1,
+                  itemBuilder: _buildStoryItemBuilder,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    // On other platforms, use animated version with scroll hide functionality
     return AnimatedSize(
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,

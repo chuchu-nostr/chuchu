@@ -36,6 +36,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
   bool _isInitialLoading = true;
   ESubscriptionStatus subscriptionStatus = ESubscriptionStatus.unsubscribed;
+  bool _isFetchingRemoteNotes = false;
 
   bool _isShowAppBar = false;
 
@@ -58,30 +59,56 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     updateNotesList(true);
   }
 
-  void getSubscriptionStatus() async {
-    String myPubkey = Account.sharedInstance.currentPubkey;
+  Future<void> getSubscriptionStatus() async {
+    final myPubkey = Account.sharedInstance.currentPubkey;
     if (widget.relayGroupDB.author == myPubkey) {
       subscriptionStatus = ESubscriptionStatus.author;
-    } else {
-      RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance
-          .getGroupMetadataFromRelay(
-            widget.relayGroupDB.groupId,
-            relay: Config.sharedInstance.recommendGroupRelays.first,
-            author: widget.relayGroupDB.author,
-          );
-      subscriptionStatus = ESubscriptionStatus.free;
-      if (relayGroup != null &&
-          relayGroup.subscriptionAmount > 0 &&
-          relayGroup.members != null) {
-        if (relayGroup.members!.contains(
-          Account.sharedInstance.currentPubkey,
-        )) {
-          subscriptionStatus = ESubscriptionStatus.subscribed;
-        } else {
-          subscriptionStatus = ESubscriptionStatus.unsubscribed;
-        }
-      }
+      setState(() {});
+      return;
     }
+
+    RelayGroupDBISAR group = widget.relayGroupDB;
+    try {
+      final remoteGroup = await RelayGroup.sharedInstance.getGroupMetadataFromRelay(
+        widget.relayGroupDB.groupId,
+        relay: Config.sharedInstance.recommendGroupRelays.first,
+        author: widget.relayGroupDB.author,
+      );
+      if (remoteGroup != null) {
+        group = remoteGroup;
+        debugPrint(
+            'FeedPersonalPage: fetched remote group metadata (subscriptionAmount=${group.subscriptionAmount}, members=${group.members?.length ?? 0})');
+      }
+
+      // Ensure we have member info. If missing, pull from relays.
+      if (group.members == null || group.members!.isEmpty) {
+        final refreshedGroup =
+            await RelayGroup.sharedInstance.searchGroupMembersFromRelays(group);
+        group = refreshedGroup;
+        debugPrint(
+            'FeedPersonalPage: refreshed members from relays (members=${group.members?.length ?? 0})');
+      }
+    } catch (e) {
+      debugPrint('FeedPersonalPage getSubscriptionStatus failed: $e');
+    }
+
+    final List<String> members = (group.members ??
+            widget.relayGroupDB.members ??
+            const <String>[])
+        .toList();
+    debugPrint(
+        'FeedPersonalPage: evaluating subscription status. subscriptionAmount=${group.subscriptionAmount}, membersCount=${members.length}, containsMe=${members.contains(myPubkey)}');
+    final bool isSubscribed = members.contains(myPubkey);
+    final bool isPaidGroup = group.subscriptionAmount > 0;
+
+    if (isPaidGroup) {
+      subscriptionStatus =
+          isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.unsubscribed;
+    } else {
+      subscriptionStatus =
+          isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.free;
+    }
+
     setState(() {});
   }
 
@@ -299,10 +326,20 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     try {
       final until = isInit ? null : _allNotesFromDBLastTimestamp;
       List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
-          widget.relayGroupDB.groupId,
-          until: until,
-          limit: _limit) ??
+              widget.relayGroupDB.groupId,
+              until: until,
+              limit: _limit) ??
           [];
+
+      if (list.isEmpty) {
+        await _fetchNotesFromRelay(isInitial: isInit);
+        list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
+                widget.relayGroupDB.groupId,
+                until: until,
+                limit: _limit) ??
+            [];
+      }
+
       debugPrint(
           'FeedPersonalPage: fetched ${list.length} notes from ISAR (group=${widget.relayGroupDB.groupId}, until=$until, init=$isInit)');
       if (list.isEmpty) {
@@ -321,6 +358,25 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     } catch (e) {
       print('Error loading notes: $e');
       _refreshController.loadFailed();
+    }
+  }
+
+  Future<void> _fetchNotesFromRelay({required bool isInitial}) async {
+    if (_isFetchingRemoteNotes) return;
+    _isFetchingRemoteNotes = true;
+    try {
+      final RelayGroupDBISAR group =
+          RelayGroup.sharedInstance.groups[widget.relayGroupDB.groupId]?.value ??
+              widget.relayGroupDB;
+      await RelayGroup.sharedInstance.fetchGroupNotesFromRelays(
+        group,
+        limit: _limit,
+        until: isInitial ? null : _allNotesFromDBLastTimestamp,
+      );
+    } catch (e) {
+      debugPrint('FeedPersonalPage: remote fetch failed $e');
+    } finally {
+      _isFetchingRemoteNotes = false;
     }
   }
 

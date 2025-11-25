@@ -2,11 +2,14 @@ import 'dart:async';
 
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/relayGroups/relayGroup.dart';
+import 'package:flutter/foundation.dart';
 
+import '../config/config.dart';
 import '../feed/feed.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../network/connect.dart';
 import 'package:nostr_core_dart/src/event.dart';
+import 'package:nostr_core_dart/src/filter.dart';
 import 'package:nostr_core_dart/src/nips/nip_018.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
 import 'package:nostr_core_dart/src/nips/nip_021.dart';
@@ -241,6 +244,49 @@ extension ENote on RelayGroup {
       Feed.sharedInstance.notesCache[note.noteId] = note;
     }
     return notes;
+  }
+
+  Future<void> fetchGroupNotesFromRelays(RelayGroupDBISAR group,
+      {int limit = 50, int? until}) async {
+    final relayUrl = group.relay.isNotEmpty ? group.relay : Config.sharedInstance.recommendGroupRelays.first;
+    final filter = Filter(
+      h: [group.groupId],
+      kinds: const [
+        11,
+        12,
+      ],
+      limit: limit,
+      until: until,
+    );
+
+    final completer = Completer<void>();
+    try {
+      Connect.sharedInstance.addSubscription([filter], relays: [relayUrl],
+          eventCallBack: (event, relay) async {
+        await handleGroupNotes(event, relay);
+      }, eoseCallBack: (requestId, ok, relay, unCompletedRelays) async {
+        if (unCompletedRelays.isEmpty && !completer.isCompleted) {
+          completer.complete();
+        }
+      });
+
+      await completer.future.timeout(const Duration(seconds: 8), onTimeout: () {
+        if (!completer.isCompleted) {
+          if (kDebugMode) {
+            print('fetchGroupNotesFromRelays timeout for group ${group.groupId}');
+          }
+          completer.complete();
+        }
+        return;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('fetchGroupNotesFromRelays error: $e');
+      }
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+    }
   }
 
   Future<List<NoteDBISAR>?> loadAllMyGroupsNotesFromDB({int limit = 50, int? until}) async {

@@ -1025,7 +1025,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       }
       
       String content = '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)}$mediaContent';
-      
       if (content.trim().isEmpty) {
         CommonToast.instance.show(context, 'Content empty tips');
         return;
