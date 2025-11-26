@@ -16,11 +16,9 @@ class InitializationManager {
   static InitializationManager get instance => _instance;
 
   bool _isInitialized = false;
-  final List<String> _errors = [];
   final Map<String, bool> _initializationStatus = {};
 
   bool get isInitialized => _isInitialized;
-  List<String> get errors => List.unmodifiable(_errors);
   Map<String, bool> get initializationStatus => Map.unmodifiable(_initializationStatus);
 
   Future<void> initialize() async {
@@ -38,7 +36,6 @@ class InitializationManager {
       _isInitialized = true;
     } catch (error, stackTrace) {
       final errorMessage = 'init fail: $error';
-      _errors.add(errorMessage);
       debugPrint(errorMessage);
       debugPrint('stackTrace: $stackTrace');
       
@@ -111,9 +108,7 @@ class InitializationManager {
       _initializationStatus[taskName] = true;
     } catch (error, stackTrace) {
       _initializationStatus[taskName] = false;
-      final errorMessage = '$taskName fail: $error';
-      _errors.add(errorMessage);
-      debugPrint(errorMessage);
+      debugPrint('$taskName fail: $error');
       debugPrint(': $stackTrace');
       rethrow;
     }
@@ -122,19 +117,7 @@ class InitializationManager {
   @visibleForTesting
   void reset() {
     _isInitialized = false;
-    _errors.clear();
     _initializationStatus.clear();
-  }
-
-  Map<String, dynamic> getInitializationSummary() {
-    return {
-      'isInitialized': _isInitialized,
-      'totalErrors': _errors.length,
-      'errors': _errors,
-      'componentStatus': _initializationStatus,
-      'successfulComponents': _initializationStatus.values.where((status) => status).length,
-      'failedComponents': _initializationStatus.values.where((status) => !status).length,
-    };
   }
 
   Future<bool> waitForComponent(String componentName, {Duration timeout = const Duration(seconds: 10)}) async {
@@ -149,12 +132,6 @@ class InitializationManager {
     }
     
     return false;
-  }
-
-  bool areKeyComponentsReady() {
-    final keyComponents = ['core_systems', 'basic_services'];
-    return keyComponents.every((component) => 
-        _initializationStatus[component] == true);
   }
 
   void _setEnvironmentVariable(String key, String value) {
