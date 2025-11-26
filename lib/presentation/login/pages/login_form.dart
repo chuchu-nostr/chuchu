@@ -573,7 +573,10 @@ class _LoginFormState extends State<LoginForm> {
 
       var userDB = await Account.sharedInstance.loginWithPriKey(privKey);
       if (userDB != null) {
-        await SecureAccountStorage.savePrivateKey(privKey);
+        await SecureAccountStorage.savePrivateKey(
+          privKey,
+          pubkey: pubKey,
+        );
       }
       userDB = await instance.handleSwitchFailures(
         userDB,

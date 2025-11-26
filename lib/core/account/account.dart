@@ -18,6 +18,7 @@ import '../utils/log_utils.dart';
 import '../wallet/wallet.dart';
 import '../relayGroups/model/relayGroupDB_isar.dart';
 import 'model/userDB_isar.dart';
+import 'secure_account_storage.dart';
 
 
 enum NIP46ConnectionStatus {
@@ -253,37 +254,22 @@ class Account {
       return await loginWithPubKey(pubkey, SignerApplication.androidSigner, androidSignerKey: db.androidSignerKey);
     }
     
-    // Check login type: nsec (encrypted private key)
-    if (db.encryptedPrivKey != null &&
-        db.encryptedPrivKey!.isNotEmpty &&
-        db.defaultPassword != null &&
-        db.defaultPassword!.isNotEmpty) {
-      String encryptedPrivKey = db.encryptedPrivKey!;
-      Uint8List privkey = decryptPrivateKey(hexToBytes(encryptedPrivKey), db.defaultPassword!);
-      if (Keychain.getPublicKey(bytesToHex(privkey)) == pubkey) {
-        me = db;
-        currentPrivkey = bytesToHex(privkey);
-        currentPubkey = db.pubKey;
-        userCache[currentPubkey] = ValueNotifier<UserDBISAR>(db);
-        loginSuccess();
-        return db;
-      }
+    final storedPrivkey = await SecureAccountStorage.readPrivateKeyForPubkey(pubkey);
+    if (storedPrivkey != null && storedPrivkey.isNotEmpty) {
+      await SecureAccountStorage.savePrivateKey(
+        storedPrivkey,
+        pubkey: pubkey,
+      );
+      return await loginWithPriKey(storedPrivkey);
     }
     return null;
   }
 
   Future<UserDBISAR?> loginWithPriKey(String privkey) async {
     String pubkey = Keychain.getPublicKey(privkey);
-    UserDBISAR? db = await _searchUserFromDB(pubkey);
+    UserDBISAR? db = await getUserFromDB(pubkey: pubkey);
+    if (db == null) return null;
 
-    /// insert a new account
-    db ??= UserDBISAR();
-    db.pubKey = pubkey;
-    String defaultPassword = generateStrongPassword(16);
-    Uint8List enPrivkey = encryptPrivateKey(hexToBytes(privkey), defaultPassword);
-    db.encryptedPrivKey = bytesToHex(enPrivkey);
-    db.defaultPassword = defaultPassword;
-    await saveUserToDB(db);
     me = db;
     currentPrivkey = privkey;
     currentPubkey = db.pubKey;
@@ -318,10 +304,6 @@ class Account {
   //   return Nip101.getSig(data, privateKey);
   // }
 
-  static Uint8List encryptPrivateKeyWithMap(Map map) {
-    return encryptPrivateKey(hexToBytes(map['privkey']), map['password']);
-  }
-
   static Keychain generateNewKeychain() {
     return Keychain.generate();
   }
@@ -341,30 +323,10 @@ class Account {
   }
 
   static Future<UserDBISAR> newAccount({Keychain? user}) async {
-    user ?? Keychain.generate();
-    String defaultPassword = generateStrongPassword(16);
-    Uint8List enPrivkey = await compute(
-        encryptPrivateKeyWithMap, {'privkey': user!.private, 'password': defaultPassword});
+    user ??= Keychain.generate();
     UserDBISAR db = UserDBISAR();
     db.pubKey = user.public;
-    db.encryptedPrivKey = bytesToHex(enPrivkey);
-    db.defaultPassword = defaultPassword;
     await Account.saveUserToDB(db);
-    return db;
-  }
-
-  Uint8List decryptPrivateKeyWithMap(Map map) {
-    return decryptPrivateKey(hexToBytes(map['privkey']), map['password']);
-  }
-
-  Future<UserDBISAR> newAccountWithPassword(String password) async {
-    var user = Keychain.generate();
-    Uint8List enPrivkey =
-        await compute(decryptPrivateKeyWithMap, {'privkey': user.private, 'password': password});
-    UserDBISAR db = UserDBISAR();
-    db.pubKey = user.public;
-    db.encryptedPrivKey = bytesToHex(enPrivkey);
-    await saveUserToDB(db);
     return db;
   }
 
@@ -374,18 +336,6 @@ class Account {
       result.add(Profile(p, '', ''));
     }
     return result;
-  }
-
-  Future<UserDBISAR?> updatePassword(String password) async {
-    UserDBISAR? db = await getUserFromDB(privkey: currentPrivkey);
-    if (db != null) {
-      Uint8List enPrivkey = encryptPrivateKey(hexToBytes(currentPrivkey), password);
-      db.encryptedPrivKey = bytesToHex(enPrivkey);
-      db.defaultPassword = password;
-      await saveUserToDB(db);
-      return db;
-    }
-    return null;
   }
 
   Future<void> logout() async {

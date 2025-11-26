@@ -131,7 +131,10 @@ class _RegisterFormState extends State<RegisterForm> {
     UserDBISAR userDB = await Account.newAccount(user: _keychain);
 
     userDB = await Account.sharedInstance.loginWithPriKey(_keychain.private) ?? userDB;
-    await SecureAccountStorage.savePrivateKey(_keychain.private);
+    await SecureAccountStorage.savePrivateKey(
+      _keychain.private,
+      pubkey: _keychain.public,
+    );
 
     Account.sharedInstance.updateProfile(userDB);
     await ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
