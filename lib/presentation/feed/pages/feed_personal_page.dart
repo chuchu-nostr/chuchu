@@ -33,13 +33,14 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController();
 
-  bool _isInitialLoading = true;
   ESubscriptionStatus subscriptionStatus = ESubscriptionStatus.unsubscribed;
 
   bool _isShowAppBar = false;
 
   List<NotedUIModel?> notesList = [];
   int? _allNotesFromDBLastTimestamp;
+  int? _latestNotesTimestamp;
+  bool _isSyncingRemoteNotes = false;
 
   static const int _limit = 1000;
   static const double _triggerOffset = 100;
@@ -296,6 +297,8 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
   Future<void> updateNotesList(bool isInit) async {
     try {
+      await _syncNotesFromRelay(isInit);
+
       List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
           widget.relayGroupDB.groupId,
           until: isInit ? null : _allNotesFromDBLastTimestamp,
@@ -324,6 +327,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     List<NotedUIModel> list = showList
         .map((note) => NotedUIModel(noteDB: note))
         .toList();
+    _updateLatestTimestamp(list);
     if (isInit) {
       notesList = list;
     } else {
@@ -351,60 +355,45 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
         .toList();
   }
 
-  void _updateUIWithNotes(
-    List<NoteDBISAR> filteredNotes,
-    bool isInit,
-    int fetchedCount,
-  ) {
-    if (filteredNotes.isEmpty) {
-      _handleEmptyFilteredNotes(isInit);
-      return;
+  Future<void> _syncNotesFromRelay(bool isInit) async {
+    if (_isSyncingRemoteNotes) return;
+    _isSyncingRemoteNotes = true;
+    try {
+      int? since;
+      int? until;
+      if (isInit) {
+        if (_latestNotesTimestamp != null) {
+          since = _latestNotesTimestamp! + 1;
+        }
+      } else {
+        if (_allNotesFromDBLastTimestamp != null) {
+          until = _allNotesFromDBLastTimestamp! - 1;
+          if (until <= 0) {
+            until = null;
+          }
+        }
+      }
+      await RelayGroup.sharedInstance
+          .syncGroupNotesFromRelay(
+            widget.relayGroupDB.groupId,
+            limit: _limit,
+            since: since,
+            until: until,
+          )
+          .timeout(const Duration(seconds: 10), onTimeout: () {});
+    } catch (e) {
+      debugPrint('syncGroupNotesFromRelay failed: $e');
+    } finally {
+      _isSyncingRemoteNotes = false;
     }
-
-    final uiModels =
-        filteredNotes.map((item) => NotedUIModel(noteDB: item)).toList();
-
-    if (isInit) {
-      notesList = uiModels;
-    } else {
-      notesList.addAll(uiModels);
-    }
-    if (filteredNotes.isNotEmpty) {
-      _allNotesFromDBLastTimestamp = filteredNotes.last.createAt;
-    }
-
-    if (isInit) {
-      _refreshController.refreshCompleted();
-    } else {
-      fetchedCount < _limit
-          ? _refreshController.loadNoData()
-          : _refreshController.loadComplete();
-    }
-
-    if (_isInitialLoading) {
-      _isInitialLoading = false;
-    }
-
-    setState(() {});
   }
 
-  void _handleEmptyFilteredNotes(bool isInit) {
-    if (isInit) {
-      notesList = [];
+  void _updateLatestTimestamp(List<NotedUIModel> models) {
+    for (final model in models) {
+      final ts = model.noteDB.createAt;
+      if (_latestNotesTimestamp == null || ts > _latestNotesTimestamp!) {
+        _latestNotesTimestamp = ts;
+      }
     }
-
-    _refreshController.refreshCompleted();
-
-    if (_isInitialLoading) {
-      _isInitialLoading = false;
-    }
-
-    setState(() {});
-  }
-
-  void _handleLoadingError(dynamic error) {
-    debugPrint('Error loading notes: $error');
-    _refreshController.loadFailed();
-    setState(() => _isInitialLoading = false);
   }
 }

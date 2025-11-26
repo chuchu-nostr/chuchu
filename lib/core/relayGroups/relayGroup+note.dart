@@ -2,11 +2,13 @@ import 'dart:async';
 
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/relayGroups/relayGroup.dart';
+import 'package:chuchu/core/relayGroups/relayGroup+info.dart';
 
 import '../feed/feed.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../network/connect.dart';
 import 'package:nostr_core_dart/src/event.dart';
+import 'package:nostr_core_dart/src/filter.dart';
 import 'package:nostr_core_dart/src/nips/nip_018.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
 import 'package:nostr_core_dart/src/nips/nip_021.dart';
@@ -251,5 +253,39 @@ extension ENote on RelayGroup {
       Feed.sharedInstance.notesCache[note.noteId] = note;
     }
     return notes;
+  }
+
+  Future<void> syncGroupNotesFromRelay(
+    String groupId, {
+    int? limit,
+    int? since,
+    int? until,
+  }) async {
+    if (groupId.isEmpty) return;
+    RelayGroupDBISAR? groupDB = groups[groupId]?.value;
+    groupDB ??= await getGroupMetadataFromRelay(groupId);
+    if (groupDB == null || groupDB.relay.isEmpty) return;
+
+    await Connect.sharedInstance.connectRelays([groupDB.relay], relayKind: RelayKind.temp);
+
+    Completer<void> completer = Completer<void>();
+    Filter filter = Filter(
+      h: [groupDB.groupId],
+      kinds: [11, 12],
+      limit: limit,
+      since: since,
+      until: until,
+    );
+
+    Connect.sharedInstance.addSubscription([filter], relays: [groupDB.relay],
+        eventCallBack: (event, relay) async {
+      handleGroupEvents(event, relay);
+    }, eoseCallBack: (requestId, ok, relay, unCompletedRelays) async {
+      if (unCompletedRelays.isEmpty && !completer.isCompleted) {
+        completer.complete();
+      }
+    });
+
+    await completer.future;
   }
 }
