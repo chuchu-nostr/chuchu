@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:dart_ping_ios/dart_ping_ios.dart';
 
 import '../manager/chuchu_user_info_manager.dart';
 import '../manager/thread_pool_manager.dart';
@@ -35,7 +34,6 @@ class InitializationManager {
       await _initializeCore();
       await _initializeBasicServices();
 
-      _initializePlatformSpecificAsync();
       _initializeUserServicesAsync();
       _initializeBackgroundServicesAsync();
       
@@ -100,17 +98,6 @@ class InitializationManager {
       ]);
 
       await ThreadPoolManager.sharedInstance.initialize();
-    });
-  }
-
-  void _initializePlatformSpecificAsync() {
-    _executeAsyncWithStatus('platform_specific', () async {
-      if (Platform.isIOS) {
-        DartPingIOS.register();
-        debugPrint('iOS init successfully');
-      } else if (Platform.isAndroid) {
-        debugPrint('Android init successfully');
-      }
     });
   }
 
