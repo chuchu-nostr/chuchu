@@ -33,9 +33,7 @@ class InitializationManager {
       
       await _initializeCore();
       await _initializeBasicServices();
-
-      _initializeUserServicesAsync();
-      _initializeBackgroundServicesAsync();
+      await _initializeUserServices();
       
       _isInitialized = true;
     } catch (error, stackTrace) {
@@ -101,14 +99,9 @@ class InitializationManager {
     });
   }
 
-  void _initializeUserServicesAsync() {
-    _executeAsyncWithStatus('user_services', () async {
+  Future<void> _initializeUserServices() async {
+    await _executeWithStatus('user_services', () async {
       await ChuChuUserInfoManager.sharedInstance.initLocalData();
-    });
-  }
-
-  void _initializeBackgroundServicesAsync() {
-    _executeAsyncWithStatus('background_services', () async {
     });
   }
 
@@ -124,21 +117,6 @@ class InitializationManager {
       debugPrint(': $stackTrace');
       rethrow;
     }
-  }
-
-  void _executeAsyncWithStatus(String taskName, Future<void> Function() task) {
-    Future.microtask(() async {
-      try {
-        await task();
-        _initializationStatus[taskName] = true;
-      } catch (error, stackTrace) {
-        _initializationStatus[taskName] = false;
-        final errorMessage = '$taskName init fail: $error';
-        _errors.add(errorMessage);
-        debugPrint(errorMessage);
-        debugPrint(': $stackTrace');
-      }
-    });
   }
 
   @visibleForTesting
