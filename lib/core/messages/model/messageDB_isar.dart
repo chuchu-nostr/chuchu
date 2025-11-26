@@ -1,15 +1,11 @@
 import 'dart:convert';
-import 'package:chuchu/core/contacts/contacts+isolateEvent.dart';
 import 'package:isar/isar.dart';
 import 'package:http/http.dart' as http;
 
 import '../../account/model/userDB_isar.dart';
 import '../../account/zaps.dart';
-import '../../contacts/contacts.dart';
 import '../../database/db_isar.dart';
 import '../../manager/thread_pool_manager.dart';
-import 'package:nostr_core_dart/src/event.dart';
-import 'package:nostr_core_dart/src/nips/nip_004.dart';
 import '../../utils/log_utils.dart';
 
 part 'messageDB_isar.g.dart';

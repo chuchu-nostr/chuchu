@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:chuchu/core/services/uploader.dart';
 import 'package:chuchu/core/utils/string_util.dart';
 import 'package:encrypt/encrypt.dart';
 import 'package:flutter/material.dart';

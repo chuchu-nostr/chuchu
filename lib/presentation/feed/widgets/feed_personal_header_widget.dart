@@ -9,7 +9,6 @@ import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
-import '../../../core/widgets/common_image.dart';
 
 class FeedPersonalHeaderWidget extends StatefulWidget {
   final RelayGroupDBISAR relayGroupDB;
@@ -50,7 +49,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
           children: [
             personalPageHeader(user),
             personalOption(user),
-            personalInfo(user),
+            _buildPersonalInfo(user),
             const SizedBox(height: 20),
           ],
         );
@@ -59,7 +58,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
   }
 
   Widget personalPageHeader(RelayGroupDBISAR user) {
-    final badgeUrl = user.picture ?? '';
+    final badgeUrl = user.picture;
     DecorationImage? image;
     if (badgeUrl.isNotEmpty) {
       image = DecorationImage(
@@ -115,48 +114,6 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     );
   }
 
-  Widget _buildDataRow() {
-    Widget buildDot = Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      width: 4,
-      height: 4,
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        shape: BoxShape.circle,
-      ),
-    );
-    return Container(
-      margin: const EdgeInsets.only(left: 50),
-      child: Row(
-        children: [
-          _buildStatItem(icon: Icons.landscape, value: '1.4K'),
-          buildDot,
-          _buildStatItem(icon: Icons.videocam, value: '334'),
-          buildDot,
-          _buildStatItem(icon: Icons.favorite, value: '621K'),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem({required IconData icon, required String value}) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, color: Colors.white, size: 20),
-        const SizedBox(width: 4),
-        Text(
-          value,
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget personalOption(RelayGroupDBISAR user) {
     return SizedBox(
       width: double.infinity,
@@ -165,7 +122,6 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
         clipBehavior: Clip.none,
         children: [
           _buildProfileImage(user),
-          // _buildActionsRow(),
         ],
       ),
     );
@@ -217,57 +173,16 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
         );
       },
     );
-
-
   }
 
-  /// Build actions row
-  Widget _buildActionsRow() {
-    return Container(
-      margin: const EdgeInsets.only(right: 8, top: 8),
-      child: Row(
-        children: [const Expanded(child: SizedBox()), personalPageActions()],
-      ),
-    );
-  }
-
-  Widget personalPageActions() {
-    return Row(
-      children: [
-        _buildIconButton(iconName: 'zaps_blue_icon.png', onTap: () {}),
-        _buildIconButton(iconName: 'favorite_blue_icon.png', onTap: () {}),
-        _buildIconButton(iconName: 'share_blue_icon.png', onTap: () {}),
-      ],
-    );
-  }
-
-  Widget _buildIconButton({
-    required String iconName,
-    required VoidCallback onTap,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(right: 8),
-        width: 52,
-        height: 52,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: KBorderColor, width: 1),
-        ),
-        child: Center(child: CommonImage(iconName: iconName, size: 24)),
-      ),
-    );
-  }
-
-  Widget personalInfo(RelayGroupDBISAR user) {
+  Widget _buildPersonalInfo(RelayGroupDBISAR user) {
     return Column(
       children: [
         Container(
           width: double.infinity,
           margin: const EdgeInsets.only(left: 18, top: 8),
           child: Text(
-            user.name ?? '',
+            user.name,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurface,
               fontSize: 20,

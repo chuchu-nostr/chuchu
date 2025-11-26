@@ -10,7 +10,6 @@ import '../../../core/account/account.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
-import '../../drawerMenu/subscription/pages/subscription_settings_page.dart';
 import '../../feed/pages/create_feed_page.dart';
 import '../../feed/pages/feed_notifications_page.dart';
 import '../../creator/pages/create_creator_page.dart';
@@ -66,8 +65,6 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   late final ScrollController _scrollController;
   bool _isScrolled = false;
   bool _hasNotifications = false;
-  int _currentIndex = 0;
-
   BottomNavItem _currentTab = BottomNavItem.home;
 
   bool get isOpen => _controller.value == 1.0;

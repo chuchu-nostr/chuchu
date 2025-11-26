@@ -158,52 +158,6 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     }
   }
 
-  void _handleZapTap() {
-    if (widget.notedUIModel == null) return;
-
-    // Show zap dialog
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Send Zap'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Text('Send a zap to support this post?'),
-              SizedBox(height: 16),
-              Text(
-                'Current zap amount: \$${(widget.notedUIModel!.noteDB.zapAmount / 100000000.0).toStringAsFixed(2)}',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.green,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: Text('Cancel'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                CommonToast.instance.show(
-                  context,
-                  'Zap functionality coming soon',
-                );
-                // You can implement zap functionality here
-              },
-              child: Text('Send Zap'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   void _updateNoteDB() async {
     if (widget.notedUIModel == null) return;
 
@@ -522,8 +476,6 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     final noteDB = widget.notedUIModel!.noteDB;
     final likeCount = noteDB.reactionCount;
     final commentCount = noteDB.replyCount;
-    final zapAmount = noteDB.zapAmount / 100000000.0; // Convert sats to BTC
-
     return Positioned(
       bottom: 0,
       left: 0,
@@ -602,7 +554,6 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         onTap: () {
                           CommonToast.instance.show(context, 'Zap coming soon');
                         },
-                        // _handleZapTap,
                       ),
                     ],
                   ),

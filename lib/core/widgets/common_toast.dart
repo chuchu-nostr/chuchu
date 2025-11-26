@@ -19,8 +19,6 @@ class CommonToast {
 
   CommonToast._internal();
 
-  static OverlayEntry? _entry;
-
   /// Show Toast Message
   /// message: show word
   /// duration: existence time(milliseconds)

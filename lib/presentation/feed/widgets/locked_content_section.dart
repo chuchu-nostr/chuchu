@@ -98,21 +98,5 @@ class _LockedContentSectionState extends State<LockedContentSection> {
     );
   }
 
-  Widget _buildLockedStatItem({required IconData icon, required String value}) {
-    return Column(
-      children: [
-        Icon(icon, size: 24, color: Colors.grey[600]),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w500,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
-    );
-  }
 }
 

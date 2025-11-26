@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/wallet/wallet.dart';
 import '../../../core/widgets/common_toast.dart';
-import '../../../core/account/relays.dart';
 import '../../../core/account/account.dart';
 import '../../../core/config/config.dart';
 import '../../../core/relayGroups/relayGroup.dart';

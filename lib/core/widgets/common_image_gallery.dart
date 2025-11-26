@@ -1,22 +1,16 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math' as math;
 import 'dart:math';
 
 import 'package:chuchu/core/utils/adapt.dart';
-import 'package:chuchu/core/utils/string_util.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:screenshot/screenshot.dart';
 
-import '../manager/common_file_cache_manager.dart';
 import '../utils/navigator/navigator.dart';
-import 'chuchu_Loading.dart';
 import 'chuchu_cached_network_Image.dart';
-import 'common_image.dart';
-import 'common_toast.dart';
 
 typedef DoubleClickAnimationListener = void Function();
 
@@ -128,7 +122,6 @@ class _CommonImageGalleryState extends State<CommonImageGallery>
   late Animation<double> _slideEndAnimation;
   GlobalKey<ExtendedImageSlidePageState> slidePagekey =
   GlobalKey<ExtendedImageSlidePageState>();
-  bool _isPopped = false;
   double _imageDetailY = 0;
   bool _showSwiper = true;
   List<double> doubleTapScales = <double>[1.0, 2.0];
@@ -510,19 +503,6 @@ class _CommonImageGalleryState extends State<CommonImageGallery>
   }
 
   Future<void> _identifyQRCode() async {
-  }
-
-  void _deleteImage(String imagePath) {
-    final file = File(imagePath);
-    if (file.existsSync()) {
-      file.delete().then((_) {
-        print('File Deleted');
-      }).catchError((error) {
-        print('Error: $error');
-      });
-    } else {
-      print('File not found');
-    }
   }
 
   void _nextPage() {

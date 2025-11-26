@@ -14,7 +14,6 @@ class DioProxyConfig {
     if (!isProxyEnabled) return;
 
     try {
-      final proxyUrl = 'http://${getProxyHost}:${getProxyPort}';
       // Dio automatically uses HttpOverrides.global for proxy
     } catch (e) {
       // Ignore configuration errors

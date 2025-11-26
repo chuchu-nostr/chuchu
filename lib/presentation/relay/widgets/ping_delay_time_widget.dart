@@ -93,7 +93,6 @@ class _PingDelayTimeWidgetState extends State<PingDelayTimeWidget> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
     String text = _delayTime > 0 ? '${_delayTime.toString()}ms' : '--';
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.px, vertical: 4.px),

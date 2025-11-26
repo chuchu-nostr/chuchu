@@ -6,7 +6,6 @@ import 'package:isar/isar.dart';
 
 import '../account/account.dart';
 import '../account/model/userDB_isar.dart';
-import '../account/relays.dart';
 import '../config/config.dart';
 import '../database/db_isar.dart';
 import '../network/connect.dart';

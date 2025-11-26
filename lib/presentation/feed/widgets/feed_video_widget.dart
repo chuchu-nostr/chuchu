@@ -57,30 +57,6 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
     super.dispose();
   }
 
-  // Static method to clean up old thumbnail cache files
-  static Future<void> cleanupThumbnailCache() async {
-    try {
-      final cacheDir = await getTemporaryDirectory();
-      final files = cacheDir.listSync();
-      final now = DateTime.now();
-      
-      for (final file in files) {
-        if (file is File && file.path.contains('video_thumb_')) {
-          final stat = await file.stat();
-          final age = now.difference(stat.modified);
-          
-          // Remove thumbnails older than 7 days
-          if (age.inDays > 7) {
-            await file.delete();
-            print('Cleaned up old thumbnail: ${file.path}');
-          }
-        }
-      }
-    } catch (e) {
-      print('Error cleaning up thumbnail cache: $e');
-    }
-  }
-
   Future<void> _generateThumbnail() async {
     if (widget.videoUrl.isEmpty || _isLoadingThumbnail) return;
 

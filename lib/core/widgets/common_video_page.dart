@@ -6,7 +6,6 @@ import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:video_player/video_player.dart';
 // import 'package:image_gallery_saver/image_gallery_saver.dart';
 import 'package:image_gallery_saver_plus/image_gallery_saver_plus.dart';

@@ -70,7 +70,7 @@ extension AccountNIP46 on Account {
         clientPubKey: newKeychain.public,
         secret: secret,
         relays: relays,
-        perms: null,
+        perms: perms,
         name: name,
         url: url,
         image: image);

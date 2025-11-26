@@ -74,7 +74,7 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
         } else {
           debugPrint('The user service is not ready. Skip the heartbeat reset');
         }
-      } catch (error, stackTrace) {
+      } catch (error) {
         debugPrint('Heart rate reset error: $error');
       }
     });

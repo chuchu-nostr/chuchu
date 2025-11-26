@@ -1,13 +1,10 @@
 import 'dart:async';
-import 'dart:convert';
-
 import 'package:chuchu/core/feed/model/noteDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+message.dart';
 import 'package:isar/isar.dart';
 
 import '../account/account.dart';
 import '../account/model/zapRecordsDB_isar.dart';
-import '../account/relays.dart';
 import '../account/zaps.dart';
 import '../database/db_isar.dart';
 import '../feed/feed+load.dart';
@@ -100,41 +97,6 @@ class Messages {
         await DBISAR.sharedInstance.saveToDB(zap);
       }
     }
-  }
-
-  void _initSubscription() {
-    if (messageRequestsId.isNotEmpty) {
-      Connect.sharedInstance.closeRequests(messageRequestsId);
-    }
-
-    Map<String, List<Filter>> subscriptions = {};
-    for (String relayURL in Connect.sharedInstance.relays()) {
-      int commonMessagesUntil = Relays.sharedInstance.getCommonMessageUntil(relayURL);
-      Filter f = Filter(kinds: [43, 44], since: commonMessagesUntil + 1);
-      subscriptions[relayURL] = [f];
-    }
-
-    messageRequestsId =
-        Connect.sharedInstance.addSubscriptions(subscriptions, eventCallBack: (event, relay) {
-      Relays.sharedInstance.setCommonMessageUntil(event.createdAt, relay);
-      Relays.sharedInstance.setCommonMessageSince(event.createdAt, relay);
-      switch (event.kind) {
-        case 5:
-          _handleDeleteEvent(event);
-          break;
-        case 43:
-          _handleHideMessageEvent(event);
-          break;
-        case 44:
-          _handleMuteUserEvent(event);
-          break;
-        default:
-          LogUtils.v(() => 'messages unhandled message ${event.toJson()}');
-          break;
-      }
-    }, eoseCallBack: (String requestId, OKEvent ok, String relay, List<String> unCompletedRelays) {
-      Relays.sharedInstance.syncRelaysToDB();
-    });
   }
 
   Future<void> closeMessagesActionsRequests() async {
@@ -269,115 +231,6 @@ class Messages {
       return completer.future;
     } else {
       return OKEvent(messageId, false, 'reacted message DB == null');
-    }
-  }
-
-  Future<void> _handleDeleteEvent(Event event) async {
-    DeleteEvent? deleteEvent = Nip9.decode(event);
-    if (deleteEvent != null) {
-      MessageDBISAR messageDB = MessageDBISAR(
-          messageId: event.id,
-          sender: event.pubkey,
-          kind: event.kind,
-          tags: jsonEncode(event.tags),
-          content: event.content,
-          createTime: event.createdAt);
-      await saveMessageToDB(messageDB);
-      await _handleDeleteMessages(deleteEvent.deleteEvents, deleteEvent.pubkey);
-    }
-  }
-
-  Future<void> _handleDeleteMessages(List<String> eventIds, String pubkey) async {
-    MessageDBISAR? message = await loadMessageDBFromDB(eventIds.first);
-    if (message != null && message.sender == pubkey) {
-      await deleteMessagesFromDB(messageIds: [message.messageId]);
-    }
-  }
-
-  Future<List<DeleteEvent>> _loadDeleteMessagesFromDB() async {
-    final isar = DBISAR.sharedInstance.isar;
-    var queryBuilder = isar.messageDBISARs.where().filter().kindEqualTo(5);
-    final messages = await queryBuilder.sortByCreateTimeDesc().findAll();
-    List<DeleteEvent> deleteEvents = [];
-    if (messages.isNotEmpty) {
-      var message = messages.first;
-      List<dynamic> tags = jsonDecode(message.tags);
-      List<String> deleteEventIds = Nip9.tagsToList(tags.map((item) {
-        return List<String>.from(item.cast<String>());
-      }).toList());
-      if (deleteEventIds.isNotEmpty) {
-        DeleteEvent deleteEvent =
-            DeleteEvent(message.sender, deleteEventIds, message.content, message.createTime);
-        deleteEvents.add(deleteEvent);
-      }
-    }
-    return deleteEvents;
-  }
-
-  Future<void> _handleHideMessageEvent(Event event) async {
-    ChannelMessageHidden messageHidden = Nip28.getMessageHidden(event);
-    MessageDBISAR messageDB = MessageDBISAR(
-        messageId: event.id,
-        sender: event.pubkey,
-        kind: event.kind,
-        tags: jsonEncode(event.tags),
-        content: event.content,
-        createTime: event.createdAt);
-    await saveMessageToDB(messageDB);
-    await _handleHideMessage(messageHidden.messageId, messageHidden.operator);
-  }
-
-  Future<void> _handleHideMessage(String messageId, String operator) async {
-    MessageDBISAR? message = await loadMessageDBFromDB(messageId);
-    if (message != null) {
-      if (operator == pubkey) {
-        // hide by me, delete
-        await deleteMessagesFromDB(messageIds: [message.messageId]);
-      } else {
-        // hide by others, add to report list
-        List<String>? reportList = message.reportList;
-        if (reportList != null && reportList.isNotEmpty) {
-          if (reportList.length >= maxReportCount) {
-            await deleteMessagesFromDB(messageIds: [messageId]);
-          } else {
-            reportList.add(messageId);
-            message.reportList = reportList;
-          }
-        }
-      }
-    }
-  }
-
-  Future<List<ChannelMessageHidden>> _loadHideMessagesFromDB() async {
-    final isar = DBISAR.sharedInstance.isar;
-    var queryBuilder = isar.messageDBISARs.where().filter().kindEqualTo(43);
-    final messages = await queryBuilder.sortByCreateTimeDesc().findAll();
-    List<ChannelMessageHidden> hiddenMessages = [];
-    if (messages.isNotEmpty) {
-      var message = messages.first;
-      List<dynamic> tags = jsonDecode(message.tags);
-      String? hiddenMessageId = Nip28.tagsToMessageId(tags.map((item) {
-        return List<String>.from(item.cast<String>());
-      }).toList());
-      ChannelMessageHidden hidden = ChannelMessageHidden(
-          message.sender, hiddenMessageId!, message.content, message.createTime);
-      hiddenMessages.add(hidden);
-    }
-    return hiddenMessages;
-  }
-
-  Future<void> _handleMuteUserEvent(Event event) async {
-    ChannelUserMuted userMuted = Nip28.getUserMuted(event);
-    if (userMuted.operator == pubkey) {
-      MessageDBISAR messageDB = MessageDBISAR(
-          messageId: event.id,
-          sender: event.pubkey,
-          kind: event.kind,
-          tags: jsonEncode(event.tags),
-          content: event.content,
-          createTime: event.createdAt);
-      await saveMessageToDB(messageDB);
-      // await Channels.sharedInstance.handleMuteUser(userMuted.userPubkey);
     }
   }
 

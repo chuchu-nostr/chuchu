@@ -387,17 +387,6 @@ class _MyProfilePageState extends State<MyProfilePage> {
     );
   }
 
-  void _refreshProfile() {
-    _loadUserProfile();
-    setState(() {});
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Profile refreshed'),
-        duration: Duration(seconds: 1),
-      ),
-    );
-  }
-
   void _editField(String fieldName, TextEditingController controller) {
     showDialog(
       context: context,

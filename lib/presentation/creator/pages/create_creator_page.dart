@@ -2,7 +2,6 @@ import 'package:chuchu/core/relayGroups/relayGroup+member.dart';
 import 'package:flutter/material.dart';
 import '../../../../core/widgets/common_toast.dart';
 import '../../../core/account/account.dart';
-import '../../../core/account/relays.dart';
 import '../../../core/config/config.dart';
 import '../../../core/config/subscription_config.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';

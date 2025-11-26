@@ -216,7 +216,6 @@ class FeedWidgetsUtils {
       textDirection: TextDirection.ltr,
     );
     textPainter.layout(maxWidth: width);
-    bool isOver = textPainter.didExceedMaxLines;
     int lineCount = textPainter.computeLineMetrics().length;
 
     return lineCount;

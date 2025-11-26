@@ -1,14 +1,10 @@
-import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import '../../../../core/account/account.dart';
 import '../../../../core/account/model/userDB_isar.dart';
 
 import '../../../../core/utils/adapt.dart';
-import '../../../../core/utils/navigator/navigator.dart';
 import '../../../../core/widgets/common_image.dart';
-
-import 'package:flutter/cupertino.dart';
 
 enum FollowsFriendStatus { hasFollows, selectFollows, unSelectFollows }
 
