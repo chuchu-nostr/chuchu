@@ -135,67 +135,18 @@ class DBISAR {
     final Map<Type, List<dynamic>> typeMap = Map.from(_buffers);
     _buffers.clear();
 
-    if (kIsWeb) {
-      // On web platform, write transaction callback must be synchronous
-      // All putAll operations must execute synchronously within the transaction
-      isar.write((isar) {
-        for (var type in typeMap.keys) {
-          _saveTOISARSync(typeMap[type]!, type, isar);
-        }
-      });
-    } else {
-      // On other platforms, async operations are supported
-      await isar.write((isar) async {
-        await Future.forEach(typeMap.keys, (type) async {
-          await _saveTOISARAsync(typeMap[type]!, type, isar);
-        });
-      });
-    }
+    // Regardless of platform, ensure writes happen synchronously within
+    // the transaction callback to keep Isar's write txn active.
+    await isar.write((isar) {
+      for (var type in typeMap.keys) {
+        _saveTOISARSync(typeMap[type]!, type, isar);
+      }
+    });
   }
 
   // Synchronous version for web platform
   void _saveTOISARSync(List<dynamic> objects, Type type, Isar isar) {
     // All operations must be synchronous within the write transaction on web
-    if (type == MessageDBISAR) {
-      isar.messageDBISARs.putAll(objects.cast<MessageDBISAR>());
-    } else if (type == UserDBISAR) {
-      isar.userDBISARs.putAll(objects.cast<UserDBISAR>());
-    } else if (type == RelayDBISAR) {
-      isar.relayDBISARs.putAll(objects.cast<RelayDBISAR>());
-    } else if (type == ZapRecordsDBISAR) {
-      isar.zapRecordsDBISARs.putAll(objects.cast<ZapRecordsDBISAR>());
-    } else if (type == ZapsDBISAR) {
-      isar.zapsDBISARs.putAll(objects.cast<ZapsDBISAR>());
-    } else if (type == GroupDBISAR) {
-      isar.groupDBISARs.putAll(objects.cast<GroupDBISAR>());
-    } else if (type == JoinRequestDBISAR) {
-      isar.joinRequestDBISARs.putAll(objects.cast<JoinRequestDBISAR>());
-    } else if (type == ModerationDBISAR) {
-      isar.moderationDBISARs.putAll(objects.cast<ModerationDBISAR>());
-    } else if (type == RelayGroupDBISAR) {
-      isar.relayGroupDBISARs.putAll(objects.cast<RelayGroupDBISAR>());
-    } else if (type == NoteDBISAR) {
-      isar.noteDBISARs.putAll(objects.cast<NoteDBISAR>());
-    } else if (type == NotificationDBISAR) {
-      isar.notificationDBISARs.putAll(objects.cast<NotificationDBISAR>());
-    } else if (type == ConfigDBISAR) {
-      isar.configDBISARs.putAll(objects.cast<ConfigDBISAR>());
-    } else if (type == EventDBISAR) {
-      isar.eventDBISARs.putAll(objects.cast<EventDBISAR>());
-    } else if (type == WalletInfo) {
-      isar.walletInfos.putAll(objects.cast<WalletInfo>());
-    } else if (type == WalletTransaction) {
-      isar.walletTransactions.putAll(objects.cast<WalletTransaction>());
-    } else if (type == WalletInvoice) {
-      isar.walletInvoices.putAll(objects.cast<WalletInvoice>());
-    }
-  }
-
-  // Async version for other platforms
-  Future<void> _saveTOISARAsync(List<dynamic> objects, Type type, Isar isar) async {
-    // Use type-based collection access instead of getCollectionByNameInternal
-    // This is compatible with Isar 2.x
-    // Note: putAll returns void, not Future, so no await needed
     if (type == MessageDBISAR) {
       isar.messageDBISARs.putAll(objects.cast<MessageDBISAR>());
     } else if (type == UserDBISAR) {

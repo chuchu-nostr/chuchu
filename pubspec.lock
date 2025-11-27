@@ -874,6 +874,15 @@ packages:
       url: "https://github.com/nsnjx/isar.git"
     source: git
     version: "0.0.0-placeholder"
+  isar_flutter_libs:
+    dependency: "direct main"
+    description:
+      path: "packages/isar_flutter_libs"
+      ref: "4.0.3-fix"
+      resolved-ref: bc056b15f953681431c5850dec37cb98386da2a2
+      url: "https://github.com/nsnjx/isar.git"
+    source: git
+    version: "0.0.0-placeholder"
   js:
     dependency: transitive
     description:
