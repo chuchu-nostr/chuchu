@@ -20,15 +20,15 @@ ChuChu is a decentralized content subscription platform based on the Nostr proto
   <tr>
     <td align="center">
       <strong>Subscription creation</strong><br />
-      <video src="chuchu-demo/create-creator.mov" controls width="320"></video>
+      <video src="chuchu-demo/create-creator.mp4" controls width="320"></video>
     </td>
     <td align="center">
       <strong>Subscription flow</strong><br />
-      <video src="chuchu-demo/subscritions.mov" controls width="320"></video>
+      <video src="chuchu-demo/subscritions.mp4" controls width="320"></video>
     </td>
     <td align="center">
       <strong>Wallet experience</strong><br />
-      <video src="chuchu-demo/wallet.mov" controls width="320"></video>
+      <video src="chuchu-demo/wallet.mp4" controls width="320"></video>
     </td>
   </tr>
 </table>
