@@ -1,6 +1,7 @@
 
 import 'package:chuchu/presentation/splash/splash_page.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 import 'core/manager/chuchu_user_info_manager.dart';
 import 'core/manager/thread_pool_manager.dart';
@@ -95,10 +96,33 @@ class MainState extends State<MainApp> with WidgetsBindingObserver {
     });
   }
 
+  // Global builder for web layout constraints
+  Widget _buildWithWebLayout(BuildContext context, Widget? child) {
+    Widget widget = child ?? const SizedBox.shrink();
+    
+    // Apply EasyLoading initialization
+    final easyLoadingBuilder = ChuChuLoading.init();
+    widget = easyLoadingBuilder(context, widget);
+    
+    // Apply web layout constraints
+    if (kIsWeb) {
+      // Wrap in Center and ConstrainedBox for simple width limiting
+      // This approach is safer and avoids constraint conflicts
+      widget = Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: widget,
+        ),
+      );
+    }
+    
+    return widget;
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      builder: ChuChuLoading.init(),
+      builder: _buildWithWebLayout,
       navigatorKey: ChuChuNavigator.navigatorKey,
       title: 'ChuChu',
       theme: lightTheme,
