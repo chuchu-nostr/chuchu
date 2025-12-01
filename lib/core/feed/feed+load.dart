@@ -792,7 +792,8 @@ extension Load on Feed {
       }
       
       if (authors != null) {
-        queryBuilder = queryBuilder.anyOf(authors, (q, author) => q.authorEqualTo(author));
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .anyOf(authors, (q, author) => q.authorEqualTo(author));
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
@@ -865,7 +866,7 @@ extension Load on Feed {
         return _finalizeNoteResults(aggregated, limit);
       }
       
-      var allNotes = await (queryBuilder as dynamic).findAll();
+      var allNotes = await (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QOperations>).findAll();
       final isarNotes = List<NoteDBISAR>.from(allNotes);
       if (isWeb) {
         _logIsarResults('searchNotesFromDB', isarNotes);
@@ -934,13 +935,15 @@ extension Load on Feed {
         return _finalizeNoteResults(aggregated, limit);
       }
       
-      queryBuilder = queryBuilder.anyOf(myGroupIds, (q, groupId) => q.groupIdEqualTo(groupId));
+      queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+          .anyOf(myGroupIds, (q, groupId) => q.groupIdEqualTo(groupId));
       if (isWeb && queryBuilder == null) {
         return _finalizeNoteResults(aggregated, limit);
       }
       
       if (authors != null) {
-        queryBuilder = queryBuilder.anyOf(authors, (q, author) => q.authorEqualTo(author));
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .anyOf(authors, (q, author) => q.authorEqualTo(author));
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
@@ -1004,7 +1007,7 @@ extension Load on Feed {
         return _finalizeNoteResults(aggregated, limit);
       }
       
-      var allNotes = await (queryBuilder as dynamic).findAll();
+      var allNotes = await (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QOperations>).findAll();
       final isarNotes = List<NoteDBISAR>.from(allNotes);
       if (isWeb) {
         _logIsarResults('loadAllMyGroupsNotesFromDB', isarNotes);
