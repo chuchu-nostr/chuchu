@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/relayGroups/relayGroup.dart';
-import 'package:chuchu/core/relayGroups/relayGroup+info.dart';
+import 'package:flutter/foundation.dart';
 
+import '../config/config.dart';
 import '../feed/feed.dart';
 import '../feed/model/noteDB_isar.dart';
 import '../network/connect.dart';
@@ -245,6 +246,49 @@ extension ENote on RelayGroup {
     return notes;
   }
 
+  Future<void> fetchGroupNotesFromRelays(RelayGroupDBISAR group,
+      {int limit = 50, int? until}) async {
+    final relayUrl = group.relay.isNotEmpty ? group.relay : Config.sharedInstance.recommendGroupRelays.first;
+    final filter = Filter(
+      h: [group.groupId],
+      kinds: const [
+        11,
+        12,
+      ],
+      limit: limit,
+      until: until,
+    );
+
+    final completer = Completer<void>();
+    try {
+      Connect.sharedInstance.addSubscription([filter], relays: [relayUrl],
+          eventCallBack: (event, relay) async {
+        await handleGroupNotes(event, relay);
+      }, eoseCallBack: (requestId, ok, relay, unCompletedRelays) async {
+        if (unCompletedRelays.isEmpty && !completer.isCompleted) {
+          completer.complete();
+        }
+      });
+
+      await completer.future.timeout(const Duration(seconds: 8), onTimeout: () {
+        if (!completer.isCompleted) {
+          if (kDebugMode) {
+            print('fetchGroupNotesFromRelays timeout for group ${group.groupId}');
+          }
+          completer.complete();
+        }
+        return;
+      });
+    } catch (e) {
+      if (kDebugMode) {
+        print('fetchGroupNotesFromRelays error: $e');
+      }
+      if (!completer.isCompleted) {
+        completer.complete();
+      }
+    }
+  }
+
   Future<List<NoteDBISAR>?> loadAllMyGroupsNotesFromDB({int limit = 50, int? until}) async {
     until ??= currentUnixTimestampSeconds() + 1;
     List<NoteDBISAR>? notes =
@@ -253,39 +297,5 @@ extension ENote on RelayGroup {
       Feed.sharedInstance.notesCache[note.noteId] = note;
     }
     return notes;
-  }
-
-  Future<void> syncGroupNotesFromRelay(
-    String groupId, {
-    int? limit,
-    int? since,
-    int? until,
-  }) async {
-    if (groupId.isEmpty) return;
-    RelayGroupDBISAR? groupDB = groups[groupId]?.value;
-    groupDB ??= await getGroupMetadataFromRelay(groupId);
-    if (groupDB == null || groupDB.relay.isEmpty) return;
-
-    await Connect.sharedInstance.connectRelays([groupDB.relay], relayKind: RelayKind.temp);
-
-    Completer<void> completer = Completer<void>();
-    Filter filter = Filter(
-      h: [groupDB.groupId],
-      kinds: [11, 12],
-      limit: limit,
-      since: since,
-      until: until,
-    );
-
-    Connect.sharedInstance.addSubscription([filter], relays: [groupDB.relay],
-        eventCallBack: (event, relay) async {
-      handleGroupEvents(event, relay);
-    }, eoseCallBack: (requestId, ok, relay, unCompletedRelays) async {
-      if (unCompletedRelays.isEmpty && !completer.isCompleted) {
-        completer.complete();
-      }
-    });
-
-    await completer.future;
   }
 }

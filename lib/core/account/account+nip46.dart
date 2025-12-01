@@ -1,13 +1,25 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../network/connect.dart';
 import 'package:nostr_core_dart/nostr.dart';
 import '../utils/log_utils.dart';
 import 'account.dart';
 import 'model/userDB_isar.dart';
 
+// Conditional import for Platform class
+import 'dart:io' if (dart.library.html) 'platform_stub.dart' as io;
+
 extension AccountNIP46 on Account {
+  // Get operating system name, safe for web platform
+  static String _getOperatingSystem() {
+    if (kIsWeb) {
+      return 'web';
+    }
+    // For non-web platforms, use Platform.operatingSystem
+    return io.Platform.operatingSystem;
+  }
+
   Future<bool> _checkNIP46Pubkey(String pubkey) async {
     if (me == null || me?.remoteSignerURI == null) return false;
     await connectToRemoteSigner(me!.remoteSignerURI!, true, pubkey);
@@ -63,7 +75,7 @@ extension AccountNIP46 on Account {
     Account.sharedInstance.tempRemoteConnection!.clientPubkey = newKeychain.public;
     Account.sharedInstance.tempRemoteConnection!.relays = relays;
     String perms = SignerPermissionModel.defaultPermissionsForNIP46();
-    String name = '0xchat-${Platform.operatingSystem}';
+    String name = '0xchat-${_getOperatingSystem()}';
     String url = 'www.0xchat.com';
     String image = 'https://www.0xchat.com/favicon1.png';
     return Nip46.createNostrConnectUrl(

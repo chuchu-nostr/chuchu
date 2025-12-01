@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:io';
+// Conditional import for File class
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
-import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -120,29 +120,29 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                       Padding(
                         padding: const EdgeInsets.symmetric(
                           horizontal: 16,
-                          vertical: 12,
+                          vertical: 8,
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             CircleAvatar(
-                              radius: 24,
+                              radius: 20,
                               backgroundColor: theme.colorScheme.primary
                                   .withOpacity(0.1),
                               child: Icon(
                                 Icons.person,
                                 color: theme.colorScheme.primary,
-                                size: 24,
+                                size: 18,
                               ),
                             ),
-                            const SizedBox(width: 16),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: TextField(
                                 controller: _textController,
                                 maxLines: null,
-                                minLines: 3,
+                                minLines: 2,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   color: theme.colorScheme.onSurface,
                                   fontWeight: FontWeight.w400,
                                 ),
@@ -151,7 +151,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                                   hintStyle: TextStyle(
                                     color: theme.colorScheme.onSurface
                                         .withOpacity(0.6),
-                                    fontSize: 18,
+                                    fontSize: 16,
                                     fontWeight: FontWeight.w400,
                                   ),
                                   border: InputBorder.none,
@@ -227,8 +227,8 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                       ),
                       builder: (context, value, child) {
                         return FeedWidgetsUtils.clipImage(
-                          borderRadius: 40.px,
-                          imageSize: 40.px,
+                          borderRadius: 32,
+                          imageSize: 32,
                           child: GestureDetector(
                             onTap: () {},
                             child: ChuChuCachedNetworkImage(
@@ -240,8 +240,8 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                               errorWidget:
                                   (context, url, error) =>
                                       FeedWidgetsUtils.badgePlaceholderImage(),
-                              width: 40.px,
-                              height: 40.px,
+                              width: 32,
+                              height: 32,
                             ),
                           ),
                         );
@@ -250,7 +250,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
 
                     Expanded(
                       child: Container(
-                        margin: EdgeInsets.symmetric(vertical: 4.px),
+                        margin: EdgeInsets.symmetric(vertical: 4),
                         width: 1.0,
                         color: Theme.of(context).dividerColor.withOpacity(0.3),
                       ),
@@ -289,7 +289,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                             'Reply ',
                             style: TextStyle(
                               color: Colors.black,
-                              fontSize: 14.px,
+                              fontSize: 16,
                               fontWeight: FontWeight.w400,
                             ),
                           ),
@@ -319,7 +319,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
             '@${value.name}',
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
-              fontSize: 14.px,
+              fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
           );
@@ -335,7 +335,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
             '@${value.name}',
             style: TextStyle(
               color: Theme.of(context).colorScheme.primary,
-              fontSize: 14.px,
+              fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
           );
@@ -362,7 +362,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                     value.name,
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 14.px,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -372,7 +372,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 widget.notedUIModel.createAtStr,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 12.px,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -396,7 +396,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                     value.name ?? '--',
                     style: TextStyle(
                       color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 14.px,
+                      fontSize: 16,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -406,7 +406,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 widget.notedUIModel.createAtStr,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onSurface,
-                  fontSize: 12.px,
+                  fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
               ),
@@ -773,7 +773,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           UploadResult result = await UploadUtils.uploadFile(
             context: context,
             fileType: FileType.video,
-            file: file,
+            file: file as dynamic, // Type cast for conditional import compatibility
             filename: fileName,
           );
 
@@ -835,7 +835,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.file(image, fit: BoxFit.cover),
+              child: Image.file(image as dynamic, fit: BoxFit.cover), // Type cast for conditional import compatibility
             ),
           ),
           if ((_uploadingStatus[0] ?? false))
@@ -916,7 +916,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: Image.file(image, fit: BoxFit.cover),
+                      child: Image.file(image as dynamic, fit: BoxFit.cover), // Type cast for conditional import compatibility
                     ),
                     if (_uploadingStatus[index] ?? false)
                       Positioned.fill(
@@ -1213,7 +1213,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
 
   Future<double> _computeAspectRatio(File file) async {
     try {
-      final bytes = await file.readAsBytes();
+      final bytes = await (file as dynamic).readAsBytes() as Uint8List; // Type cast for conditional import compatibility
       final completer = Completer<ui.Image>();
       ui.decodeImageFromList(bytes, (ui.Image img) => completer.complete(img));
       final img = await completer.future;
@@ -1264,7 +1264,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
         '${Path.basenameWithoutExtension(file.path)}_noexif.jpg',
       );
       final result = await FlutterImageCompress.compressAndGetFile(
-        file.absolute.path,
+        (file as dynamic).absolute.path, // Type cast for conditional import compatibility
         targetPath,
         quality: 95,
       );

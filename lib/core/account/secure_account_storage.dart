@@ -13,7 +13,7 @@ class SecureAccountStorage {
   static const FlutterSecureStorage _storage = FlutterSecureStorage();
 
   static const AndroidOptions _androidOptions =
-      AndroidOptions(encryptedSharedPreferences: true);
+  AndroidOptions(encryptedSharedPreferences: true);
   static const IOSOptions _iosOptions = IOSOptions(
     accessibility: KeychainAccessibility.first_unlock,
   );

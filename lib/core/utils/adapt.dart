@@ -1,7 +1,8 @@
 
 import 'dart:ui';
-import 'dart:io' show Platform;
 import 'package:flutter/cupertino.dart';
+// Conditional import for Platform class
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart' show Platform;
 
 import 'navigator/navigator.dart';
 

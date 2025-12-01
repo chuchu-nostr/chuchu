@@ -1,4 +1,5 @@
 import 'package:chuchu/core/network/eventDB_isar.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:isar/isar.dart';
 
 import '../database/db_isar.dart';
@@ -30,8 +31,8 @@ class EventCache {
       cacheIds.add(eventDB.eventId);
     }
 
-    if (expiredEvents.isEmpty) return;
-    DBISAR.sharedInstance.isar.writeTxn(() async {
+    if (expiredEvents.isEmpty || kIsWeb) return;
+    DBISAR.sharedInstance.isar.write((isar) async {
       int result = await DBISAR.sharedInstance.isar.eventDBISARs.deleteAll(expiredEvents);
       LogUtils.v(() => 'Deleted event caches: $result');
     });

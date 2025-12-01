@@ -4,6 +4,7 @@ import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/presentation/drawerMenu/follows/pages/follows_pages.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../../../core/account/account.dart';
@@ -110,6 +111,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         return Container();
       },
       transitionBuilder: (context, animation1, animation2, child) {
+        // Use fixed width for web, relative width for mobile
+        final screenWidth = MediaQuery.of(context).size.width;
+        final drawerWidth = kIsWeb ? 300.0 : screenWidth * 0.6;
+        
         return SlideTransition(
           position: Tween<Offset>(
             begin: Offset(1.0, 0.0),
@@ -121,7 +126,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           child: Align(
             alignment: Alignment.centerRight,
             child: Container(
-              width: MediaQuery.of(context).size.width * 0.6,
+              width: drawerWidth,
               height: MediaQuery.of(context).size.height,
               child: DrawerMenu(),
             ),
@@ -168,14 +173,18 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           foregroundColor: theme.colorScheme.primary,
           elevation: _isScrolled ? 4 : 0,
           surfaceTintColor: Colors.transparent,
-          leadingWidth: 164.px,
-          leading: GestureDetector(
-            onTap: toggle,
-            child: CommonImage(
-              iconName: 'logo_text_primary.png',
-              width: 140,
-            ),
-          ).setPaddingOnly(left: 18.px),
+          titleSpacing: 0,
+          centerTitle: false,
+          title: Align(
+            alignment: Alignment.centerLeft,
+            child: GestureDetector(
+              onTap: toggle,
+              child: CommonImage(
+                iconName: 'logo_text_primary.png',
+                width: 140,
+              ),
+            ).setPaddingOnly(left: 12.0),
+          ),
           bottom: PreferredSize(
             preferredSize: Size.fromHeight(12.px),
             child: const SizedBox(),

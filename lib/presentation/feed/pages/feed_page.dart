@@ -1,7 +1,9 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
@@ -69,6 +71,9 @@ class _FeedPageState extends State<FeedPage>
   bool _isStoriesVisible = true;
   double _storiesHeight = kStoriesSectionHeight;
 
+  Timer? _initDataTimer;
+  Timer? _scrollProcessingTimer;
+
   @override
   void initState() {
     super.initState();
@@ -88,8 +93,11 @@ class _FeedPageState extends State<FeedPage>
     _resetStoriesSection();
     _loadSubscriptionList();
 
-    Future.delayed(Duration(milliseconds: 5000), () {
-      updateNotesList(true);
+    _initDataTimer?.cancel();
+    _initDataTimer = Timer(Duration(milliseconds: 5000), () {
+      if (mounted) {
+        updateNotesList(true);
+      }
     });
   }
 
@@ -155,6 +163,9 @@ class _FeedPageState extends State<FeedPage>
 
   void _onScroll() {
     if (!mounted || _isScrollProcessing) return;
+    
+    // On Web platform, keep stories section always visible
+    if (kIsWeb) return;
 
     _isScrollProcessing = true;
 
@@ -174,7 +185,8 @@ class _FeedPageState extends State<FeedPage>
       });
     }
 
-    Future.delayed(Duration(milliseconds: 100), () {
+    _scrollProcessingTimer?.cancel();
+    _scrollProcessingTimer = Timer(Duration(milliseconds: 100), () {
       _isScrollProcessing = false;
     });
   }
@@ -302,6 +314,40 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Widget _buildTopStoriesSection() {
+    // On Web platform, always show stories section (no animation)
+    if (kIsWeb) {
+      return Container(
+        height: kStoriesSectionHeight,
+        child: ClipRect(
+          child: Container(
+            padding: EdgeInsets.only(bottom: 16),
+            margin: EdgeInsets.only(bottom: 10),
+            decoration: BoxDecoration(
+              border: Border(
+                bottom: BorderSide(
+                  color: Theme.of(context).dividerColor.withAlpha(80),
+                  width: 0.5,
+                ),
+              ),
+            ),
+            child: RepaintBoundary(
+              child: SizedBox(
+                height: kStoriesSectionHeight,
+                child: ListView.builder(
+                  controller: storiesScrollController,
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  itemCount: myGroupsList.length + 1,
+                  itemBuilder: _buildStoryItemBuilder,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+    
+    // On other platforms, use animated version with scroll hide functionality
     return AnimatedSize(
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -458,6 +504,10 @@ class _FeedPageState extends State<FeedPage>
 
   @override
   void dispose() {
+    // Cancel timers to prevent setState after dispose
+    _initDataTimer?.cancel();
+    _scrollProcessingTimer?.cancel();
+    
     ChuChuUserInfoManager.sharedInstance.removeObserver(this);
     ChuChuFeedManager.sharedInstance.removeObserver(this);
 
@@ -471,8 +521,12 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Future<void> updateNotesList(bool isInit) async {
+    if (!mounted) return;
+    
     if (isInit && notesList.isEmpty) {
-      setState(() => _isInitialLoading = true);
+      if (mounted) {
+        setState(() => _isInitialLoading = true);
+      }
     }
 
     if (isInit) {
@@ -485,6 +539,9 @@ class _FeedPageState extends State<FeedPage>
           until: isInit ? null : _allNotesFromDBLastTimestamp,
           limit: _limit) ??
           [];
+      
+      if (!mounted) return;
+      
       if (list.isEmpty) {
         isInit
             ? refreshController.refreshCompleted()
@@ -505,8 +562,10 @@ class _FeedPageState extends State<FeedPage>
       }
     } catch (e) {
       debugPrint('Error loading notes: $e');
-      refreshController.loadFailed();
-      _setInitialLoadingFalse();
+      if (mounted) {
+        refreshController.loadFailed();
+        _setInitialLoadingFalse();
+      }
     }
   }
 

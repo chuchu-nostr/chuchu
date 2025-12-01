@@ -3,10 +3,10 @@ import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/account/account+profile.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
-import 'package:chuchu/core/account/secure_account_storage.dart';
 import 'package:chuchu/core/manager/chuchu_user_info_manager.dart';
 import 'package:nostr_core_dart/src/keychain.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
+import '../../../core/account/secure_account_storage.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../home/pages/home_page.dart';
 

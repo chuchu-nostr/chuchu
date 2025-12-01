@@ -14,9 +14,10 @@ extension ModerationDBISARExtensions on ModerationDBISAR {
 
 @collection
 class ModerationDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String moderationId;
 
   String groupId;

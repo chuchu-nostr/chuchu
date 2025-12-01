@@ -1,29 +1,37 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 
 class ThreadPoolManager {
-  late Isolate _databaseIsolate;
-  late Isolate _algorithmIsolate;
-  late Isolate _otherIsolate;
-  late SendPort _databaseSendPort;
-  late SendPort _algorithmSendPort;
-  late SendPort _otherSendPort;
-  final RootIsolateToken _rootIsolateToken;
+  Isolate? _databaseIsolate;
+  Isolate? _algorithmIsolate;
+  Isolate? _otherIsolate;
+  SendPort? _databaseSendPort;
+  SendPort? _algorithmSendPort;
+  SendPort? _otherSendPort;
+  final RootIsolateToken? _rootIsolateToken;
   
   bool _isInitialized = false;
   final Completer<void> _initializationCompleter = Completer<void>();
 
   /// singleton
-  ThreadPoolManager._internal(this._rootIsolateToken);
+  ThreadPoolManager._internal() : _rootIsolateToken = kIsWeb ? null : RootIsolateToken.instance;
   factory ThreadPoolManager() => sharedInstance;
-  static final ThreadPoolManager sharedInstance =
-  ThreadPoolManager._internal(RootIsolateToken.instance!);
+  static final ThreadPoolManager sharedInstance = ThreadPoolManager._internal();
 
   bool get isInitialized => _isInitialized;
 
   Future<void> initialize() async {
     if (_isInitialized) {
+      return;
+    }
+
+    if (kIsWeb) {
+      _isInitialized = true;
+      if (!_initializationCompleter.isCompleted) {
+        _initializationCompleter.complete();
+      }
       return;
     }
     
@@ -44,11 +52,13 @@ class ThreadPoolManager {
       _isInitialized = true;
       _initializationCompleter.complete();
     } catch (error) {
-      _initializationCompleter.completeError(error);
+      if (!_initializationCompleter.isCompleted) {
+        _initializationCompleter.completeError(error);
+      }
       rethrow;
     }
   }
-
+  
   Future<SendPort> _createIsolate(Function(IsolateConfig) isolateConfig) async {
     final receivePort = ReceivePort();
     final isolate = await Isolate.spawn(_isolateEntry, receivePort.sendPort);
@@ -56,9 +66,13 @@ class ThreadPoolManager {
     isolateConfig(IsolateConfig(isolate, sendPort));
     return sendPort;
   }
-
+  
   Future<dynamic> _runTask(
-      Future<dynamic> Function() task, SendPort sendPort) async {
+      Future<dynamic> Function() task, SendPort? sendPort) async {
+    if (kIsWeb || sendPort == null) {
+      return task();
+    }
+
     final completer = Completer<dynamic>();
     final port = ReceivePort();
     sendPort.send([task, port.sendPort, _rootIsolateToken]);
@@ -92,9 +106,9 @@ class ThreadPoolManager {
   }
 
   void dispose() {
-    _databaseIsolate.kill(priority: Isolate.immediate);
-    _algorithmIsolate.kill(priority: Isolate.immediate);
-    _otherIsolate.kill(priority: Isolate.immediate);
+    _databaseIsolate?.kill(priority: Isolate.immediate);
+    _algorithmIsolate?.kill(priority: Isolate.immediate);
+    _otherIsolate?.kill(priority: Isolate.immediate);
   }
 }
 
@@ -111,10 +125,12 @@ void _isolateEntry(SendPort sendPort) {
     if (message is List && message.length == 3) {
       final task = message[0] as Future Function();
       final replyPort = message[1] as SendPort;
-      final rootIsolateToken = message[2] as RootIsolateToken;
+      final rootIsolateToken = message[2] as RootIsolateToken?;
       try {
         // Attach root isolate token to the current isolate
-        BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+        if (rootIsolateToken != null) {
+          BackgroundIsolateBinaryMessenger.ensureInitialized(rootIsolateToken);
+        }
         final result = await task();
         replyPort.send(result);
       } catch (e, stackTrace) {

@@ -113,14 +113,13 @@ class ChuChuUserInfoManager {
         .defaultOXCacheManager
         .getForeverData(StorageKeyTool.CHUCHU_USER_PUBKEY);
     if (localPubKey != null && localPubKey.isNotEmpty) {
-      await initDB(localPubKey);
-      final UserDBISAR? tempUserDB =
-          await Account.sharedInstance.loginWithPubKeyAndPassword(localPubKey);
-      if (tempUserDB != null) {
-        currentUserInfo = tempUserDB;
-        _initDatas();
-        return;
-      }
+        await initDB(localPubKey);
+        final UserDBISAR? tempUserDB = await Account.sharedInstance.loginWithPubKeyAndPassword(localPubKey);
+        if (tempUserDB != null) {
+          currentUserInfo = tempUserDB;
+          _initDatas();
+          return;
+        }
     }
   }
 
@@ -223,7 +222,7 @@ class ChuChuUserInfoManager {
     DNS dns = DNS(name, domain, pubKey, relayAddressList);
     try {
       return await Account.checkDNS(dns);
-    } catch (error) {
+    } catch (error, stack) {
       return false;
     }
   }

@@ -59,17 +59,17 @@ class _CarouselWidgetState extends State<CarouselWidget> {
               Icon(
                 Icons.broken_image,
                 color: Colors.white.withOpacity(0.7),
-                size: 48.px,
+                size: 48,
               ),
-              SizedBox(height: 16.px),
+              SizedBox(height: 16),
               Text(
                 'Image Load Failed',
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.9),
-                  fontSize: 16.px,
+                  fontSize: 16,
                 ),
               ),
-              SizedBox(height: 8.px),
+              SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () => _retryImageLoad(index),
                 style: ElevatedButton.styleFrom(
@@ -147,7 +147,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                       },
                       child: Container(
                         decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(6.px),
+                          borderRadius: BorderRadius.circular(6),
                           boxShadow: [
                             BoxShadow(
                               color: Colors.black.withOpacity(0.1),
@@ -157,7 +157,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                           ],
                         ),
                         child: ClipRRect(
-                          borderRadius: BorderRadius.circular(6.px),
+                          borderRadius: BorderRadius.circular(6),
                           child: Stack(
                             children: [
                               // Background image
@@ -185,18 +185,18 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                               
                               // Image counter
                               Positioned(
-                                bottom: 16.px,
+                                bottom: 16,
                                 left: 0,
                                 right: 0,
                                 child: Center(
                                   child: Container(
                                     padding: EdgeInsets.symmetric(
-                                      horizontal: 16.px,
-                                      vertical: 8.px,
+                                      horizontal: 16,
+                                      vertical: 8,
                                     ),
                                     decoration: BoxDecoration(
                                       color: Colors.black.withOpacity(0.6),
-                                      borderRadius: BorderRadius.circular(20.px),
+                                      borderRadius: BorderRadius.circular(20),
                                     ),
                                     child: Row(
                                       mainAxisSize: MainAxisSize.min,
@@ -204,14 +204,14 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                                         Icon(
                                           Icons.photo_library,
                                           color: Colors.white,
-                                          size: 18.px,
+                                          size: 18,
                                         ),
-                                        SizedBox(width: 8.px),
+                                        SizedBox(width: 8),
                                         Text(
                                           '${_currentIndex + 1}/${widget.items.length}',
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontSize: 14.px,
+                                            fontSize: 14,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
@@ -237,7 +237,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
               if (widget.items.length > 1) ...[
                 // Left button
                 Positioned(
-                  left: 8.px,
+                  left: 8,
                   top: 0,
                   bottom: 0,
                   child: Center(
@@ -257,8 +257,8 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                         }
                       },
                       child: Container(
-                        width: 40.px,
-                        height: 40.px,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
                           shape: BoxShape.circle,
@@ -273,7 +273,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                         child: Icon(
                           Icons.chevron_left,
                           color: Colors.black87,
-                          size: 24.px,
+                          size: 24,
                         ),
                       ),
                     ),
@@ -282,7 +282,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                 
                 // Right button
                 Positioned(
-                  right: 8.px,
+                  right: 8,
                   top: 0,
                   bottom: 0,
                   child: Center(
@@ -302,8 +302,8 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                         }
                       },
                       child: Container(
-                        width: 40.px,
-                        height: 40.px,
+                        width: 40,
+                        height: 40,
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.9),
                           shape: BoxShape.circle,
@@ -318,7 +318,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                         child: Icon(
                           Icons.chevron_right,
                           color: Colors.black87,
-                          size: 24.px,
+                          size: 24,
                         ),
                       ),
                     ),

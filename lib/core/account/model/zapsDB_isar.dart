@@ -4,12 +4,13 @@ part 'zapsDB_isar.g.dart';
 
 @collection
 class ZapsDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String lnAddr;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String lnURL;
 
   bool allowsNostr;

@@ -1,8 +1,10 @@
-import 'dart:io';
 import 'dart:typed_data';
+// Conditional import for File class
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:nostr_core_dart/nostr.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:image_picker/image_picker.dart';
@@ -20,7 +22,9 @@ import '../../../core/utils/feed_utils.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/models/noted_ui_model.dart';
-
+import 'package:chuchu/core/account/web_file_registry_stub.dart'
+    if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
+    as web_file_registry;
 
 import 'package:path/path.dart' as Path;
 
@@ -54,12 +58,52 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     super.initState();
   }
 
+  Widget _buildPlatformImage(
+    File image, {
+    BoxFit fit = BoxFit.cover,
+  }) {
+    if (kIsWeb) {
+      final data = web_file_registry.getWebFileData(image.path);
+      if (data != null) {
+        return Image.memory(
+          data,
+          fit: fit,
+          errorBuilder: (context, error, stackTrace) => Container(
+            color: Colors.black12,
+            alignment: Alignment.center,
+            child: const Icon(Icons.broken_image),
+          ),
+        );
+      }
+      return Container(
+        color: Colors.black12,
+        alignment: Alignment.center,
+        child: const Icon(Icons.image_not_supported),
+      );
+    }
+    return Image.file(
+      image as dynamic,
+      fit: fit,
+    );
+  }
+
   Future<void> _pickImages() async {
     final picker = ImagePicker();
     final picked = await picker.pickMultiImage();
     if (picked.isNotEmpty) {
+      final filesToAdd = <File>[];
+      for (final image in picked) {
+        if (kIsWeb) {
+          final bytes = await image.readAsBytes();
+          final virtualPath = web_file_registry.createVirtualFilePath(image.name);
+          web_file_registry.registerWebFileData(virtualPath, bytes);
+          filesToAdd.add(File(virtualPath));
+        } else {
+          filesToAdd.add(File(image.path));
+        }
+      }
       setState(() {
-        _selectedImages.addAll(picked.map((x) => File(x.path)));
+        _selectedImages.addAll(filesToAdd);
         // Initialize upload status for new images only (don't override existing upload status)
         for (int i = _uploadedImageUrls.length; i < _selectedImages.length; i++) {
           if (!_uploadingStatus.containsKey(i)) {
@@ -83,7 +127,15 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     // In a production app, you might want to implement a custom multi-video picker
     final picked = await picker.pickVideo(source: ImageSource.gallery);
     if (picked != null) {
-      final videoFile = File(picked.path);
+      File videoFile;
+      if (kIsWeb) {
+        final bytes = await picked.readAsBytes();
+        final virtualPath = web_file_registry.createVirtualFilePath(picked.name);
+        web_file_registry.registerWebFileData(virtualPath, bytes);
+        videoFile = File(virtualPath);
+      } else {
+        videoFile = File(picked.path);
+      }
       setState(() {
         _selectedVideos.add(videoFile);
         // Initialize upload status for new video
@@ -103,11 +155,14 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   void _removeImage(int index) {
     setState(() {
-      _selectedImages.removeAt(index);
+      final removedImage = _selectedImages.removeAt(index);
       // Remove corresponding upload status and URL
       _uploadingStatus.remove(index);
       if (index < _uploadedImageUrls.length) {
         _uploadedImageUrls.removeAt(index);
+      }
+      if (kIsWeb) {
+        web_file_registry.unregisterWebFileData(removedImage.path);
       }
       // Re-adjust status indices for remaining images
       final newStatus = <int, bool>{};
@@ -125,12 +180,15 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   void _removeVideo(int index) {
     setState(() {
-      _selectedVideos.removeAt(index);
+      final removedVideo = _selectedVideos.removeAt(index);
       // Remove corresponding upload status, URL and thumbnail
       _videoUploadingStatus.remove(index);
       _videoThumbnails.remove(index);
       if (index < _uploadedVideoUrls.length) {
         _uploadedVideoUrls.removeAt(index);
+      }
+      if (kIsWeb) {
+        web_file_registry.unregisterWebFileData(removedVideo.path);
       }
       // Re-adjust status indices for remaining videos
       final newStatus = <int, bool>{};
@@ -604,7 +662,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           clipBehavior: Clip.hardEdge,
           child: Stack(
             children: [
-              Image.file(image),
+              _buildPlatformImage(
+                image,
+                fit: BoxFit.cover,
+              ),
               if (isUploading)
                 Positioned.fill(
                   child: Container(
@@ -688,7 +749,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                 child: Stack(
                   children: [
                     SizedBox.expand(
-                      child: Image.file(
+                      child: _buildPlatformImage(
                         image,
                         fit: BoxFit.cover,
                       ),
@@ -964,7 +1025,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       }
       
       String content = '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)}$mediaContent';
-      
       if (content.trim().isEmpty) {
         CommonToast.instance.show(context, 'Content empty tips');
         return;
@@ -988,6 +1048,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
 
   Future<File?> removeExifWithCompress(File file) async {
+    if (kIsWeb) {
+      return file;
+    }
+
     final targetPath = Path.join(
       Path.dirname(file.path),
       '${Path.basenameWithoutExtension(file.path)}_noexif.jpg',

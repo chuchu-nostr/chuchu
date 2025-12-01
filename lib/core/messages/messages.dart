@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
+
 import 'package:chuchu/core/feed/model/noteDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+message.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 
 import '../account/account.dart';
 import '../account/model/zapRecordsDB_isar.dart';
+import '../account/relays.dart';
 import '../account/zaps.dart';
 import '../database/db_isar.dart';
 import '../feed/feed+load.dart';
@@ -62,11 +65,11 @@ class Messages {
   Future<void> refindActionsFromDB() async {
     final isar = DBISAR.sharedInstance.isar;
     List<NoteDBISAR> reactions =
-        await isar.noteDBISARs.filter().reactedIdIsNotEmpty().findEventEqualTo(false).findAll();
+    await isar.noteDBISARs.where().reactedIdIsNotEmpty().findEventEqualTo(false).findAll();
     for (var reaction in reactions) {
       String eventId = reaction.reactedId!;
       MessageDBISAR? message =
-          await isar.messageDBISARs.filter().messageIdEqualTo(eventId).findFirst();
+      await isar.messageDBISARs.where().messageIdEqualTo(eventId).findFirst();
       if (message != null) {
         message = message.withGrowableLevels();
         message.reactionEventIds ??= [];
@@ -80,11 +83,11 @@ class Messages {
       }
     }
     List<ZapRecordsDBISAR> zaps =
-        await isar.zapRecordsDBISARs.filter().findEventEqualTo(false).findAll();
+    await isar.zapRecordsDBISARs.where().findEventEqualTo(false).findAll();
     for (var zap in zaps) {
       String eventId = zap.eventId;
       MessageDBISAR? message =
-          await isar.messageDBISARs.filter().messageIdEqualTo(eventId).findFirst();
+      await isar.messageDBISARs.where().messageIdEqualTo(eventId).findFirst();
       if (message != null) {
         message = message.withGrowableLevels();
         message.reactionEventIds ??= [];
@@ -97,6 +100,41 @@ class Messages {
         await DBISAR.sharedInstance.saveToDB(zap);
       }
     }
+  }
+
+  void _initSubscription() {
+    if (messageRequestsId.isNotEmpty) {
+      Connect.sharedInstance.closeRequests(messageRequestsId);
+    }
+
+    Map<String, List<Filter>> subscriptions = {};
+    for (String relayURL in Connect.sharedInstance.relays()) {
+      int commonMessagesUntil = Relays.sharedInstance.getCommonMessageUntil(relayURL);
+      Filter f = Filter(kinds: [43, 44], since: commonMessagesUntil + 1);
+      subscriptions[relayURL] = [f];
+    }
+
+    messageRequestsId =
+        Connect.sharedInstance.addSubscriptions(subscriptions, eventCallBack: (event, relay) {
+          Relays.sharedInstance.setCommonMessageUntil(event.createdAt, relay);
+          Relays.sharedInstance.setCommonMessageSince(event.createdAt, relay);
+          switch (event.kind) {
+            case 5:
+              _handleDeleteEvent(event);
+              break;
+            case 43:
+              _handleHideMessageEvent(event);
+              break;
+            case 44:
+              _handleMuteUserEvent(event);
+              break;
+            default:
+              LogUtils.v(() => 'messages unhandled message ${event.toJson()}');
+              break;
+          }
+        }, eoseCallBack: (String requestId, OKEvent ok, String relay, List<String> unCompletedRelays) {
+          Relays.sharedInstance.syncRelaysToDB();
+        });
   }
 
   Future<void> closeMessagesActionsRequests() async {
@@ -118,25 +156,25 @@ class Messages {
     }
     messagesActionsRequestsId = Connect.sharedInstance.addSubscription([f],
         eventCallBack: (event, relay) {
-      switch (event.kind) {
-        case 7:
-          handleReactionEvent(event);
-          break;
-        case 9735:
-          handleZapRecordEvent(event);
-          break;
-        default:
-          LogUtils.v(() => 'unhandled message $event');
-          break;
-      }
-    });
+          switch (event.kind) {
+            case 7:
+              handleReactionEvent(event);
+              break;
+            case 9735:
+              handleZapRecordEvent(event);
+              break;
+            default:
+              LogUtils.v(() => 'unhandled message $event');
+              break;
+          }
+        });
   }
 
   Future<MessageDBISAR?> loadMessageDBFromDB(String messageId) async {
     List<MessageDBISAR> result = loadMessagesFromCache(messageIds: [messageId]);
     if (result.isNotEmpty) return result.first.withGrowableLevels();
     final isar = DBISAR.sharedInstance.isar;
-    var queryBuilder = isar.messageDBISARs.where().filter().messageIdEqualTo(messageId);
+    var queryBuilder = isar.messageDBISARs.where().messageIdEqualTo(messageId);
     final message = await queryBuilder.findFirst();
     return message?.withGrowableLevels();
   }
@@ -206,16 +244,16 @@ class Messages {
       switch (messageDB.chatType) {
         case 0:
         case 3:
-          // OKEvent ok =
-          //     await Feed.sharedInstance.sendPrivateMessage([messageDB.sender, pubkey], event);
-          // if (!completer.isCompleted) completer.complete(ok);
-          // break;
+        // OKEvent ok =
+        //     await Feed.sharedInstance.sendPrivateMessage([messageDB.sender, pubkey], event);
+        // if (!completer.isCompleted) completer.complete(ok);
+        // break;
         case 1:
-          // if (groupId != null) {
-          //   OKEvent ok = await Groups.sharedInstance.sendToGroup(groupId, event);
-          //   if (!completer.isCompleted) completer.complete(ok);
-          //   break;
-          // }
+        // if (groupId != null) {
+        //   OKEvent ok = await Groups.sharedInstance.sendToGroup(groupId, event);
+        //   if (!completer.isCompleted) completer.complete(ok);
+        //   break;
+        // }
         case 4:
           if (groupId != null) {
             OKEvent ok = await RelayGroup.sharedInstance.sendToGroup(groupId, event);
@@ -231,6 +269,115 @@ class Messages {
       return completer.future;
     } else {
       return OKEvent(messageId, false, 'reacted message DB == null');
+    }
+  }
+
+  Future<void> _handleDeleteEvent(Event event) async {
+    DeleteEvent? deleteEvent = Nip9.decode(event);
+    if (deleteEvent != null) {
+      MessageDBISAR messageDB = MessageDBISAR(
+          messageId: event.id,
+          sender: event.pubkey,
+          kind: event.kind,
+          tags: jsonEncode(event.tags),
+          content: event.content,
+          createTime: event.createdAt);
+      await saveMessageToDB(messageDB);
+      await _handleDeleteMessages(deleteEvent.deleteEvents, deleteEvent.pubkey);
+    }
+  }
+
+  Future<void> _handleDeleteMessages(List<String> eventIds, String pubkey) async {
+    MessageDBISAR? message = await loadMessageDBFromDB(eventIds.first);
+    if (message != null && message.sender == pubkey) {
+      await deleteMessagesFromDB(messageIds: [message.messageId]);
+    }
+  }
+
+  Future<List<DeleteEvent>> _loadDeleteMessagesFromDB() async {
+    final isar = DBISAR.sharedInstance.isar;
+    var queryBuilder = isar.messageDBISARs.where().kindEqualTo(5);
+    final messages = await queryBuilder.sortByCreateTimeDesc().findAll();
+    List<DeleteEvent> deleteEvents = [];
+    if (messages.isNotEmpty) {
+      var message = messages.first;
+      List<dynamic> tags = jsonDecode(message.tags);
+      List<String> deleteEventIds = Nip9.tagsToList(tags.map((item) {
+        return List<String>.from(item.cast<String>());
+      }).toList());
+      if (deleteEventIds.isNotEmpty) {
+        DeleteEvent deleteEvent =
+        DeleteEvent(message.sender, deleteEventIds, message.content, message.createTime);
+        deleteEvents.add(deleteEvent);
+      }
+    }
+    return deleteEvents;
+  }
+
+  Future<void> _handleHideMessageEvent(Event event) async {
+    ChannelMessageHidden messageHidden = Nip28.getMessageHidden(event);
+    MessageDBISAR messageDB = MessageDBISAR(
+        messageId: event.id,
+        sender: event.pubkey,
+        kind: event.kind,
+        tags: jsonEncode(event.tags),
+        content: event.content,
+        createTime: event.createdAt);
+    await saveMessageToDB(messageDB);
+    await _handleHideMessage(messageHidden.messageId, messageHidden.operator);
+  }
+
+  Future<void> _handleHideMessage(String messageId, String operator) async {
+    MessageDBISAR? message = await loadMessageDBFromDB(messageId);
+    if (message != null) {
+      if (operator == pubkey) {
+        // hide by me, delete
+        await deleteMessagesFromDB(messageIds: [message.messageId]);
+      } else {
+        // hide by others, add to report list
+        List<String>? reportList = message.reportList;
+        if (reportList != null && reportList.isNotEmpty) {
+          if (reportList.length >= maxReportCount) {
+            await deleteMessagesFromDB(messageIds: [messageId]);
+          } else {
+            reportList.add(messageId);
+            message.reportList = reportList;
+          }
+        }
+      }
+    }
+  }
+
+  Future<List<ChannelMessageHidden>> _loadHideMessagesFromDB() async {
+    final isar = DBISAR.sharedInstance.isar;
+    var queryBuilder = isar.messageDBISARs.where().kindEqualTo(43);
+    final messages = await queryBuilder.sortByCreateTimeDesc().findAll();
+    List<ChannelMessageHidden> hiddenMessages = [];
+    if (messages.isNotEmpty) {
+      var message = messages.first;
+      List<dynamic> tags = jsonDecode(message.tags);
+      String? hiddenMessageId = Nip28.tagsToMessageId(tags.map((item) {
+        return List<String>.from(item.cast<String>());
+      }).toList());
+      ChannelMessageHidden hidden = ChannelMessageHidden(
+          message.sender, hiddenMessageId!, message.content, message.createTime);
+      hiddenMessages.add(hidden);
+    }
+    return hiddenMessages;
+  }
+
+  Future<void> _handleMuteUserEvent(Event event) async {
+    ChannelUserMuted userMuted = Nip28.getUserMuted(event);
+    if (userMuted.operator == pubkey) {
+      MessageDBISAR messageDB = MessageDBISAR(
+          messageId: event.id,
+          sender: event.pubkey,
+          kind: event.kind,
+          tags: jsonEncode(event.tags),
+          content: event.content,
+          createTime: event.createdAt);
+      await saveMessageToDB(messageDB);
+      // await Channels.sharedInstance.handleMuteUser(userMuted.userPubkey);
     }
   }
 
@@ -264,7 +411,7 @@ class Messages {
       }
       if (query && receiver != null) {
         query = (message.sender == receiver &&
-                message.receiver == Account.sharedInstance.currentPubkey) ||
+            message.receiver == Account.sharedInstance.currentPubkey) ||
             (message.sender == Account.sharedInstance.currentPubkey &&
                 message.receiver == receiver);
       }
@@ -302,22 +449,22 @@ class Messages {
     assert(until == null || since == null, 'unsupported filter');
 
     final isar = DBISAR.sharedInstance.isar;
-    var queryBuilder = isar.messageDBISARs.filter().idLessThan(Isar.maxId);
+    dynamic queryBuilder = isar.messageDBISARs.where();
     if (receiver != null) {
       queryBuilder = queryBuilder.group((q) => q
           .group((q) => q
-              .senderEqualTo(receiver)
-              .and()
-              .receiverEqualTo(Account.sharedInstance.currentPubkey)
-              .and()
-              .sessionIdIsEmpty())
+          .senderEqualTo(receiver)
+          .and()
+          .receiverEqualTo(Account.sharedInstance.currentPubkey)
+          .and()
+          .sessionIdIsEmpty())
           .or()
           .group((q) => q
-              .senderEqualTo(Account.sharedInstance.currentPubkey)
-              .and()
-              .receiverEqualTo(receiver)
-              .and()
-              .sessionIdIsEmpty()));
+          .senderEqualTo(Account.sharedInstance.currentPubkey)
+          .and()
+          .receiverEqualTo(receiver)
+          .and()
+          .sessionIdIsEmpty()));
     }
     if (sessionId != null){
       queryBuilder = queryBuilder.sessionIdEqualTo(sessionId);
@@ -346,32 +493,29 @@ class Messages {
       });
     }
 
-    var queryBuilderAfterSort = queryBuilder.sortByCreateTimeDesc();
     if (until != null) {
-      queryBuilderAfterSort = queryBuilder
-          .and()
-          .createTimeLessThan(until, include: true)
-          .sortByCreateTimeDesc();
+      queryBuilder = queryBuilder.createTimeLessThan(until);
     }
     if (since != null) {
-      queryBuilderAfterSort = queryBuilder
-          .and()
-          .createTimeGreaterThan(since, include: true)
-          .sortByCreateTime();
+      queryBuilder = queryBuilder.createTimeGreaterThan(since);
     }
 
+    // Sort in memory after filtering
+    var allMessages = await (queryBuilder as dynamic).findAll();
+    allMessages.sort((a, b) => b.createTime.compareTo(a.createTime));
+
     final messages = limit == null
-        ? await queryBuilderAfterSort.findAll()
-        : await queryBuilderAfterSort.limit(limit).findAll();
+        ? allMessages
+        : allMessages.take(limit).toList();
 
     int theLastTime = 0;
     List<MessageDBISAR> result = loadMessagesFromCache(
-      receiver: receiver,
-      groupId: groupId,
-      sessionId: sessionId,
-      messageTypes: messageTypes,
-      until: until,
-      hasPreviewData: hasPreviewData
+        receiver: receiver,
+        groupId: groupId,
+        sessionId: sessionId,
+        messageTypes: messageTypes,
+        until: until,
+        hasPreviewData: hasPreviewData
     );
     for (var message in messages) {
       message = message.withGrowableLevels();
@@ -393,14 +537,14 @@ class Messages {
     List<MessageDBISAR> messages;
     if (groupId != null) {
       messages = await isar.messageDBISARs
-          .filter()
+          .where()
           .groupIdEqualTo(groupId)
           .decryptContentContains(decryptContentLike, caseSensitive: false)
           .sortByCreateTimeDesc()
           .findAll();
     } else {
       messages = await isar.messageDBISARs
-          .filter()
+          .where()
           .groupIdIsNotEmpty()
           .decryptContentContains(decryptContentLike, caseSensitive: false)
           .sortByCreateTimeDesc()
@@ -425,24 +569,24 @@ class Messages {
     List<MessageDBISAR> messages;
     if (chatId == null) {
       messages = await isar.messageDBISARs
-          .filter()
+          .where()
           .senderIsNotEmpty()
           .receiverIsNotEmpty()
           .decryptContentContains(orignalSearchTxt, caseSensitive: false)
           .findAll();
     } else {
       messages = await isar.messageDBISARs
-          .filter()
+          .where()
           .group((q) => q
-              .group((q) => q
-                  .senderEqualTo(chatId)
-                  .and()
-                  .receiverEqualTo(Account.sharedInstance.currentPubkey))
-              .or()
-              .group((q) => q
-                  .senderEqualTo(Account.sharedInstance.currentPubkey)
-                  .and()
-                  .receiverEqualTo(chatId)))
+          .group((q) => q
+          .senderEqualTo(chatId)
+          .and()
+          .receiverEqualTo(Account.sharedInstance.currentPubkey))
+          .or()
+          .group((q) => q
+          .senderEqualTo(Account.sharedInstance.currentPubkey)
+          .and()
+          .receiverEqualTo(chatId)))
           .and()
           .decryptContentContains(orignalSearchTxt, caseSensitive: false)
           .findAll();
@@ -473,9 +617,9 @@ class Messages {
       final messages = await queryBuilder
           .anyOf(messageIds, (q, messageId) => q.messageIdEqualTo(messageId))
           .findAll();
-      await isar.writeTxn(() async {
+      await isar.write((isar) async {
         await isar.messageDBISARs
-            .filter()
+            .where()
             .anyOf(messageIds, (q, messageId) => q.messageIdEqualTo(messageId))
             .deleteAll();
       });
@@ -486,17 +630,17 @@ class Messages {
   static deleteGroupMessagesFromDB(String? groupId) async {
     if (groupId != null) {
       final isar = DBISAR.sharedInstance.isar;
-      await isar.writeTxn(() async {
-        await isar.messageDBISARs.filter().groupIdEqualTo(groupId).deleteAll();
+      await isar.write((isar) async {
+        await isar.messageDBISARs.where().groupIdEqualTo(groupId).deleteAll();
       });
     }
   }
 
   static deleteSingleChatMessagesFromDB(String sender, String receiver) async {
     final isar = DBISAR.sharedInstance.isar;
-    await isar.writeTxn(() async {
+    await isar.write((isar) async {
       await isar.messageDBISARs
-          .filter()
+          .where()
           .senderEqualTo(sender)
           .receiverEqualTo(receiver)
           .chatTypeEqualTo(0)
@@ -506,8 +650,8 @@ class Messages {
 
   static deleteSecretChatMessagesFromDB(String sessionId) async {
     final isar = DBISAR.sharedInstance.isar;
-    await isar.writeTxn(() async {
-      await isar.messageDBISARs.filter().sessionIdEqualTo(sessionId).deleteAll();
+    await isar.write((isar) async {
+      await isar.messageDBISARs.where().sessionIdEqualTo(sessionId).deleteAll();
     });
   }
 

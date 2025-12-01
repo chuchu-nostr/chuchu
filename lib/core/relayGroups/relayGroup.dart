@@ -6,7 +6,7 @@ import 'package:chuchu/core/relayGroups/relayGroup+member.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+message.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:flutter/foundation.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 
 import '../account/account.dart';
 import '../account/model/relayDB_isar.dart';
@@ -407,7 +407,7 @@ class RelayGroup {
   }
 
   Future<void> deleteGroupFromDB(String groupId) async {
-    await DBISAR.sharedInstance.isar.writeTxn(() async {
+    await DBISAR.sharedInstance.isar.write((isar) async {
       await DBISAR.sharedInstance.isar.relayGroupDBISARs
           .where()
           .groupIdEqualTo(groupId)
@@ -489,11 +489,10 @@ class RelayGroup {
     List<String> previous = [];
     final isar = DBISAR.sharedInstance.isar;
     List<MessageDBISAR> messages = await isar.messageDBISARs
-        .filter()
+        .where()
         .groupIdEqualTo(groupId)
         .sortByCreateTimeDesc()
-        .limit(3)
-        .findAll();
+        .findAll(limit: 3);
     for (var message in messages) {
       previous.add(message.messageId.substring(0, 8));
     }

@@ -10,11 +10,10 @@ extension Notification on Feed {
   Future<List<NotificationDBISAR>?> loadNotificationsFromDB(int until, {int limit = 50}) async {
     final isar = DBISAR.sharedInstance.isar;
     List<NotificationDBISAR> notifications = await isar.notificationDBISARs
-        .filter()
+        .where()
         .createAtLessThan(until)
         .sortByCreateAtDesc()
-        .limit(limit)
-        .findAll();
+        .findAll(limit: limit);
     
     // Only update latestNotificationTime if we have notifications
     if (notifications.isNotEmpty) {
@@ -51,8 +50,8 @@ extension Notification on Feed {
   Future<void> deleteAllNotifications() async {
     newNotifications.clear();
     final isar = DBISAR.sharedInstance.isar;
-    await isar.writeTxn(() async {
-      await isar.notificationDBISARs.clear();
+    await isar.write((isar) async {
+      isar.notificationDBISARs.clear();
     });
   }
 }

@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import '../account/account.dart';
 import '../database/db_isar.dart';
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 import 'package:bolt11_decoder/bolt11_decoder.dart';
 import 'package:decimal/decimal.dart';
 
@@ -851,20 +851,20 @@ class Wallet {
       final isar = DBISAR.sharedInstance.isar;
       
       // Clear wallet info
-      await isar.writeTxn(() async {
-        await isar.walletInfos.clear();
+      await isar.write((isar) async {
+        isar.walletInfos.clear();
         LogUtils.d(() => 'Cleared wallet info from database');
       });
       
       // Clear transactions
-      await isar.writeTxn(() async {
-        await isar.walletTransactions.clear();
+      await isar.write((isar) async {
+        isar.walletTransactions.clear();
         LogUtils.d(() => 'Cleared transactions from database');
       });
       
       // Clear invoices
-      await isar.writeTxn(() async {
-        await isar.walletInvoices.clear();
+      await isar.write((isar) async {
+        isar.walletInvoices.clear();
         LogUtils.d(() => 'Cleared invoices from database');
       });
       

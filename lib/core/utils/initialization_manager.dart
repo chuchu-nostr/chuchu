@@ -1,5 +1,7 @@
-import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Conditional import for dart:io classes
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:flutter/services.dart';
 
 import '../manager/chuchu_user_info_manager.dart';
@@ -26,8 +28,11 @@ class InitializationManager {
       return;
     }
     try {
-      HttpOverrides.global = ChuCHuHttpOverrides();
-      debugPrint('🔧 HttpOverrides.global set successfully');
+      // HttpOverrides is not available on web platform
+      if (!kIsWeb) {
+        HttpOverrides.global = ChuCHuHttpOverrides();
+        debugPrint('🔧 HttpOverrides.global set successfully');
+      }
       
       await _initializeCore();
       await _initializeBasicServices();

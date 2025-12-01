@@ -4,6 +4,7 @@ import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:chuchu/presentation/feed/widgets/locked_content_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/config/config.dart';
@@ -33,14 +34,14 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController();
 
+  bool _isInitialLoading = true;
   ESubscriptionStatus subscriptionStatus = ESubscriptionStatus.unsubscribed;
+  bool _isFetchingRemoteNotes = false;
 
   bool _isShowAppBar = false;
 
   List<NotedUIModel?> notesList = [];
   int? _allNotesFromDBLastTimestamp;
-  int? _latestNotesTimestamp;
-  bool _isSyncingRemoteNotes = false;
 
   static const int _limit = 1000;
   static const double _triggerOffset = 100;
@@ -58,30 +59,56 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     updateNotesList(true);
   }
 
-  void getSubscriptionStatus() async {
-    String myPubkey = Account.sharedInstance.currentPubkey;
+  Future<void> getSubscriptionStatus() async {
+    final myPubkey = Account.sharedInstance.currentPubkey;
     if (widget.relayGroupDB.author == myPubkey) {
       subscriptionStatus = ESubscriptionStatus.author;
-    } else {
-      RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance
-          .getGroupMetadataFromRelay(
-            widget.relayGroupDB.groupId,
-            relay: Config.sharedInstance.recommendGroupRelays.first,
-            author: widget.relayGroupDB.author,
-          );
-      subscriptionStatus = ESubscriptionStatus.free;
-      if (relayGroup != null &&
-          relayGroup.subscriptionAmount > 0 &&
-          relayGroup.members != null) {
-        if (relayGroup.members!.contains(
-          Account.sharedInstance.currentPubkey,
-        )) {
-          subscriptionStatus = ESubscriptionStatus.subscribed;
-        } else {
-          subscriptionStatus = ESubscriptionStatus.unsubscribed;
-        }
-      }
+      setState(() {});
+      return;
     }
+
+    RelayGroupDBISAR group = widget.relayGroupDB;
+    try {
+      final remoteGroup = await RelayGroup.sharedInstance.getGroupMetadataFromRelay(
+        widget.relayGroupDB.groupId,
+        relay: Config.sharedInstance.recommendGroupRelays.first,
+        author: widget.relayGroupDB.author,
+      );
+      if (remoteGroup != null) {
+        group = remoteGroup;
+        debugPrint(
+            'FeedPersonalPage: fetched remote group metadata (subscriptionAmount=${group.subscriptionAmount}, members=${group.members?.length ?? 0})');
+      }
+
+      // Ensure we have member info. If missing, pull from relays.
+      if (group.members == null || group.members!.isEmpty) {
+        final refreshedGroup =
+        await RelayGroup.sharedInstance.searchGroupMembersFromRelays(group);
+        group = refreshedGroup;
+        debugPrint(
+            'FeedPersonalPage: refreshed members from relays (members=${group.members?.length ?? 0})');
+      }
+    } catch (e) {
+      debugPrint('FeedPersonalPage getSubscriptionStatus failed: $e');
+    }
+
+    final List<String> members = (group.members ??
+        widget.relayGroupDB.members ??
+        const <String>[])
+        .toList();
+    debugPrint(
+        'FeedPersonalPage: evaluating subscription status. subscriptionAmount=${group.subscriptionAmount}, membersCount=${members.length}, containsMe=${members.contains(myPubkey)}');
+    final bool isSubscribed = members.contains(myPubkey);
+    final bool isPaidGroup = group.subscriptionAmount > 0;
+
+    if (isPaidGroup) {
+      subscriptionStatus =
+      isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.unsubscribed;
+    } else {
+      subscriptionStatus =
+      isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.free;
+    }
+
     setState(() {});
   }
 
@@ -160,7 +187,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       onPressed: () {
         ChuChuNavigator.pushPage(
           context,
-          (context) => ProfileEditPage(relayGroup: widget.relayGroupDB),
+              (context) => ProfileEditPage(relayGroup: widget.relayGroupDB),
         );
       },
       icon: CommonImage(
@@ -224,11 +251,11 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
         return Column(
           children: [
             SubscribedOptionWidget(
-              relayGroup: widget.relayGroupDB,
-              subscriptionStatus: subscriptionStatus,
-              onSubscriptionSuccess: () {
-                getSubscriptionStatus();
-              }
+                relayGroup: widget.relayGroupDB,
+                subscriptionStatus: subscriptionStatus,
+                onSubscriptionSuccess: () {
+                  getSubscriptionStatus();
+                }
             ),
             dividerWidget(),
           ],
@@ -280,9 +307,9 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
         notedUIModel: notedUIModel,
         clickMomentCallback:
             (m) => ChuChuNavigator.pushPage(
-              context,
+          context,
               (_) => FeedInfoPage(notedUIModel: m),
-            ),
+        ),
       ),
     );
   }
@@ -297,13 +324,24 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
   Future<void> updateNotesList(bool isInit) async {
     try {
-      await _syncNotesFromRelay(isInit);
-
+      final until = isInit ? null : _allNotesFromDBLastTimestamp;
       List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
           widget.relayGroupDB.groupId,
-          until: isInit ? null : _allNotesFromDBLastTimestamp,
+          until: until,
           limit: _limit) ??
           [];
+
+      if (list.isEmpty) {
+        await _fetchNotesFromRelay(isInitial: isInit);
+        list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
+            widget.relayGroupDB.groupId,
+            until: until,
+            limit: _limit) ??
+            [];
+      }
+
+      debugPrint(
+          'FeedPersonalPage: fetched ${list.length} notes from ISAR (group=${widget.relayGroupDB.groupId}, until=$until, init=$isInit)');
       if (list.isEmpty) {
         isInit
             ? _refreshController.refreshCompleted()
@@ -323,11 +361,29 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     }
   }
 
+  Future<void> _fetchNotesFromRelay({required bool isInitial}) async {
+    if (_isFetchingRemoteNotes) return;
+    _isFetchingRemoteNotes = true;
+    try {
+      final RelayGroupDBISAR group =
+          RelayGroup.sharedInstance.groups[widget.relayGroupDB.groupId]?.value ??
+              widget.relayGroupDB;
+      await RelayGroup.sharedInstance.fetchGroupNotesFromRelays(
+        group,
+        limit: _limit,
+        until: isInitial ? null : _allNotesFromDBLastTimestamp,
+      );
+    } catch (e) {
+      debugPrint('FeedPersonalPage: remote fetch failed $e');
+    } finally {
+      _isFetchingRemoteNotes = false;
+    }
+  }
+
   void _updateUI(List<NoteDBISAR> showList, bool isInit, int fetchedCount) {
     List<NotedUIModel> list = showList
         .map((note) => NotedUIModel(noteDB: note))
         .toList();
-    _updateLatestTimestamp(list);
     if (isInit) {
       notesList = list;
     } else {
@@ -355,45 +411,60 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
         .toList();
   }
 
-  Future<void> _syncNotesFromRelay(bool isInit) async {
-    if (_isSyncingRemoteNotes) return;
-    _isSyncingRemoteNotes = true;
-    try {
-      int? since;
-      int? until;
-      if (isInit) {
-        if (_latestNotesTimestamp != null) {
-          since = _latestNotesTimestamp! + 1;
-        }
-      } else {
-        if (_allNotesFromDBLastTimestamp != null) {
-          until = _allNotesFromDBLastTimestamp! - 1;
-          if (until <= 0) {
-            until = null;
-          }
-        }
-      }
-      await RelayGroup.sharedInstance
-          .syncGroupNotesFromRelay(
-            widget.relayGroupDB.groupId,
-            limit: _limit,
-            since: since,
-            until: until,
-          )
-          .timeout(const Duration(seconds: 10), onTimeout: () {});
-    } catch (e) {
-      debugPrint('syncGroupNotesFromRelay failed: $e');
-    } finally {
-      _isSyncingRemoteNotes = false;
+  void _updateUIWithNotes(
+      List<NoteDBISAR> filteredNotes,
+      bool isInit,
+      int fetchedCount,
+      ) {
+    if (filteredNotes.isEmpty) {
+      _handleEmptyFilteredNotes(isInit);
+      return;
     }
+
+    final uiModels =
+    filteredNotes.map((item) => NotedUIModel(noteDB: item)).toList();
+
+    if (isInit) {
+      notesList = uiModels;
+    } else {
+      notesList.addAll(uiModels);
+    }
+    if (filteredNotes.isNotEmpty) {
+      _allNotesFromDBLastTimestamp = filteredNotes.last.createAt;
+    }
+
+    if (isInit) {
+      _refreshController.refreshCompleted();
+    } else {
+      fetchedCount < _limit
+          ? _refreshController.loadNoData()
+          : _refreshController.loadComplete();
+    }
+
+    if (_isInitialLoading) {
+      _isInitialLoading = false;
+    }
+
+    setState(() {});
   }
 
-  void _updateLatestTimestamp(List<NotedUIModel> models) {
-    for (final model in models) {
-      final ts = model.noteDB.createAt;
-      if (_latestNotesTimestamp == null || ts > _latestNotesTimestamp!) {
-        _latestNotesTimestamp = ts;
-      }
+  void _handleEmptyFilteredNotes(bool isInit) {
+    if (isInit) {
+      notesList = [];
     }
+
+    _refreshController.refreshCompleted();
+
+    if (_isInitialLoading) {
+      _isInitialLoading = false;
+    }
+
+    setState(() {});
+  }
+
+  void _handleLoadingError(dynamic error) {
+    debugPrint('Error loading notes: $error');
+    _refreshController.loadFailed();
+    setState(() => _isInitialLoading = false);
   }
 }

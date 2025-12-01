@@ -1,9 +1,7 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+info.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
-import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
@@ -11,6 +9,7 @@ import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 import '../../../core/config/config.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/navigator/navigator.dart';
+import '../../../core/widgets/chuchu_cached_network_Image.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -101,17 +100,17 @@ class _SearchPageState extends State<SearchPage> {
     final theme = Theme.of(context);
     
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 18.px, vertical: 16.px),
+      padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       child: Row(
         children: [
           // Search input field
           Expanded(
             child: Container(
-              padding: EdgeInsets.symmetric(horizontal: 16),
-              height: 48.px,
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              height: 44,
               decoration: BoxDecoration(
                 color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(16.px),
+                borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: theme.colorScheme.outline.withOpacity(0.2),
                   width: 1,
@@ -123,9 +122,9 @@ class _SearchPageState extends State<SearchPage> {
                   Icon(
                     Icons.search,
                     color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    size: 22,
+                    size: 20,
                   ),
-                  SizedBox(width: 12.px),
+                  const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
                       controller: _searchController,
@@ -134,14 +133,14 @@ class _SearchPageState extends State<SearchPage> {
                         hintText: 'Search npub...',
                         hintStyle: TextStyle(
                           color: theme.colorScheme.onSurface.withOpacity(0.6),
-                          fontSize: 16.px,
+                          fontSize: 16,
                           fontWeight: FontWeight.w400,
                         ),
                         border: InputBorder.none,
                         isDense: true,
                       ),
                       style: TextStyle(
-                        fontSize: 16.px,
+                        fontSize: 16,
                         color: theme.colorScheme.onSurface,
                         fontWeight: FontWeight.w400,
                       ),
@@ -181,31 +180,31 @@ class _SearchPageState extends State<SearchPage> {
       return Column(
         children: [
           Container(
-            padding: EdgeInsets.all(32.px),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: theme.colorScheme.primary.withOpacity(0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.search,
-              size: 80.px,
+              size: 60,
               color: theme.colorScheme.primary,
             ),
           ),
-          SizedBox(height: 24.px),
+          const SizedBox(height: 20),
           Text(
             'Search for users',
             style: TextStyle(
-              fontSize: 20.px,
+              fontSize: 18,
               color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 8.px),
+          const SizedBox(height: 8),
           Text(
             'Enter a username or npub to find users',
             style: TextStyle(
-              fontSize: 16.px,
+              fontSize: 16,
               color: theme.colorScheme.onSurface.withOpacity(0.7),
               fontWeight: FontWeight.w400,
             ),
@@ -223,11 +222,11 @@ class _SearchPageState extends State<SearchPage> {
             CircularProgressIndicator(
               color: theme.colorScheme.primary,
             ),
-            SizedBox(height: 16.px),
+            const SizedBox(height: 16),
             Text(
               'Searching...',
               style: TextStyle(
-                fontSize: 16.px,
+                fontSize: 16,
                 color: theme.colorScheme.onSurface.withOpacity(0.7),
                 fontWeight: FontWeight.w500,
               ),
@@ -242,31 +241,31 @@ class _SearchPageState extends State<SearchPage> {
       return Column(
         children: [
           Container(
-            padding: EdgeInsets.all(32.px),
+            padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: theme.colorScheme.surfaceContainerHighest,
               shape: BoxShape.circle,
             ),
             child: Icon(
               Icons.person_search,
-              size: 80.px,
+              size: 60,
               color: theme.colorScheme.onSurface.withOpacity(0.5),
             ),
           ),
-          SizedBox(height: 24.px),
+          const SizedBox(height: 20),
           Text(
             'No users found',
             style: TextStyle(
-              fontSize: 20.px,
+              fontSize: 18,
               color: theme.colorScheme.onSurface,
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: 8.px),
+          const SizedBox(height: 8),
           Text(
             'Try searching with a different term',
             style: TextStyle(
-              fontSize: 16.px,
+              fontSize: 16,
               color: theme.colorScheme.onSurface.withOpacity(0.7),
               fontWeight: FontWeight.w400,
             ),
@@ -277,7 +276,7 @@ class _SearchPageState extends State<SearchPage> {
 
     // Show search results
     return ListView.builder(
-      padding: EdgeInsets.symmetric(vertical: 8.px, horizontal: 4.px),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
       itemCount: _searchResults.length,
       itemBuilder: (context, index) {
         return _authorCard(_searchResults[index]);
@@ -293,8 +292,8 @@ class _SearchPageState extends State<SearchPage> {
         ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(relayGroupDB: relayGroup,));
       },
       child: Container(
-        margin: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        height: Adapt.px(160),
+        margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        height: 140,
         width: double.infinity,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(16),
@@ -313,9 +312,33 @@ class _SearchPageState extends State<SearchPage> {
               Positioned.fill(
                 child:
                 relayGroup.picture.isNotEmpty
-                    ? CachedNetworkImage(
+                    ? ChuChuCachedNetworkImage(
                   imageUrl: relayGroup.picture,
                   fit: BoxFit.cover,
+                  placeholder: (context, url) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.primaryContainer,
+                        ],
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, url, error) => Container(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          theme.colorScheme.primary,
+                          theme.colorScheme.primaryContainer,
+                        ],
+                      ),
+                    ),
+                  ),
                 )
                     : Container(
                   decoration: BoxDecoration(
@@ -355,14 +378,14 @@ class _SearchPageState extends State<SearchPage> {
                         children: [
                           Text(
                             relayGroup.name,
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.w700,
-                              fontSize: 20,
+                              fontSize: 18,
                             ),
                             overflow: TextOverflow.ellipsis,
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
                             relayGroup.about,
                             style: TextStyle(
@@ -388,41 +411,41 @@ class _SearchPageState extends State<SearchPage> {
 
   Widget _followsUserPicWidget(RelayGroupDBISAR relayGroup) {
     Widget picWidget;
+    final defaultImage = CommonImage(
+      iconName: 'icon_user_default.png',
+      width: 60,
+      height: 60,
+    );
+    
     if (relayGroup.picture.isNotEmpty) {
-      picWidget = CachedNetworkImage(
+      picWidget = ChuChuCachedNetworkImage(
         imageUrl: relayGroup.picture,
         fit: BoxFit.contain,
-        // placeholder: (context, url) => _badgePlaceholderImage,
-        // errorWidget: (context, url, error) => _badgePlaceholderImage,
-        width: Adapt.px(80),
-        height: Adapt.px(80),
+        placeholder: (context, url) => defaultImage,
+        errorWidget: (context, url, error) => defaultImage,
+        width: 60,
+        height: 60,
       );
     } else {
-      picWidget = CommonImage(
-        iconName: 'icon_user_default.png',
-        width: Adapt.px(80),
-        height: Adapt.px(80),
-      );
+      picWidget = defaultImage;
     }
 
     return GestureDetector(
       onTap: () {
       },
       child: Container(
-        width: Adapt.px(80),
-        height: Adapt.px(80),
+        width: 60,
+        height: 60,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 3),
+          border: Border.all(color: Colors.white, width: 2),
         ),
         child: ClipRRect(
-          borderRadius: BorderRadius.circular(Adapt.px(40)),
+          borderRadius: BorderRadius.circular(30),
           child: picWidget,
         ),
       ),
     );
-
-    //
   }
 
   /// Validate npub1 format

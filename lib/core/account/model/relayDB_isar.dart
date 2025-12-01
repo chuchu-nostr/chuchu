@@ -8,9 +8,10 @@ part 'relayDB_isar.g.dart';
 
 @collection
 class RelayDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String url;
 
   String? name;

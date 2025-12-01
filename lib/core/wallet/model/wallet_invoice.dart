@@ -13,10 +13,11 @@ enum InvoiceStatus {
 /// Wallet invoice model for storing Lightning Network invoices
 @collection
 class WalletInvoice {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
   /// Invoice ID
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String invoiceId;
 
   /// Bolt11 invoice string
@@ -32,7 +33,6 @@ class WalletInvoice {
   String? description;
 
   /// Invoice status
-  @enumerated
   InvoiceStatus status;
 
   /// Timestamp when invoice was created

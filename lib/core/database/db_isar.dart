@@ -1,7 +1,8 @@
 import 'dart:async';
-import 'dart:io';
-
 import 'package:isar/isar.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+// Conditional import for dart:io classes
+import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../account/model/relayDB_isar.dart';
@@ -30,9 +31,10 @@ class DBISAR {
 
   final Map<Type, List<dynamic>> _buffers = {};
 
+  static bool _isarInitialized = false;
   Timer? _timer;
 
-  List<CollectionSchema<dynamic>> schemas = [
+  List<IsarGeneratedSchema> schemas = [
     MessageDBISARSchema,
     UserDBISARSchema,
     RelayDBISARSchema,
@@ -56,21 +58,95 @@ class DBISAR {
       throw ArgumentError('pubkey cannot be empty');
     }
     
-    bool isOS = Platform.isIOS || Platform.isMacOS;
-    Directory directory = isOS ? await getLibraryDirectory() : await getApplicationDocumentsDirectory();
-    var dbPath = directory.path;
-    
-    if (!await directory.exists()) {
-      await directory.create(recursive: true);
-    }
-    
-    print(() => 'DBISAR open: $dbPath, pubkey: $pubkey');
-    isar = Isar.getInstance(pubkey) ??
-        await Isar.open(
-          schemas,
+    if (kIsWeb) {
+      // On web platform, Isar uses IndexedDB and doesn't need a directory
+      print(() => 'DBISAR open: web platform, pubkey: $pubkey');
+      if (!_isarInitialized) {
+        await Isar.initialize();
+        _isarInitialized = true;
+      }
+      final webDirectory = 'isar_$pubkey';
+      try {
+        isar = await Isar.open(
+          schemas: schemas,
+          directory: webDirectory,
+          name: pubkey,
+          engine: IsarEngine.sqlite,
+        );
+      } on IsarError catch (e) {
+        // Handle schema mismatch errors
+        if (e.toString().contains('Schema error') || 
+            e.toString().contains('Could not deserialize existing schema')) {
+          print(() => 'Schema error detected on web, clearing IndexedDB and retrying: $e');
+          // On web, we can't directly delete IndexedDB, so we use a different name
+          // or fall back to in-memory database
+          try {
+            // Try with a new name (adding timestamp to force new database)
+            final newWebDirectory = '${webDirectory}_${DateTime.now().millisecondsSinceEpoch}';
+            isar = await Isar.open(
+              schemas: schemas,
+              directory: newWebDirectory,
+              name: pubkey,
+              engine: IsarEngine.sqlite,
+            );
+            print(() => 'Successfully opened new database with directory: $newWebDirectory');
+          } catch (e2) {
+            // Final fallback to in-memory instance
+            print(() => 'Failed to open new database, falling back to in-memory: $e2');
+            isar = await Isar.open(
+              schemas: schemas,
+              directory: Isar.sqliteInMemory,
+              name: pubkey,
+              engine: IsarEngine.sqlite,
+            );
+          }
+        } else {
+          // Fallback to in-memory instance for other errors (e.g. private browsing or missing OPFS)
+          print(() => 'Isar web open failed with $e. Falling back to in-memory database.');
+          isar = await Isar.open(
+            schemas: schemas,
+            directory: Isar.sqliteInMemory,
+            name: pubkey,
+            engine: IsarEngine.sqlite,
+          );
+        }
+      }
+    } else {
+      bool isOS = Platform.isIOS || Platform.isMacOS;
+      // Type cast needed because of conditional import
+      dynamic dir = isOS ? await getLibraryDirectory() : await getApplicationDocumentsDirectory();
+      Directory directory = dir as Directory;
+      var dbPath = directory.path;
+      
+      if (!await directory.exists()) {
+        await directory.create(recursive: true);
+      }
+      
+      print(() => 'DBISAR open: $dbPath, pubkey: $pubkey');
+      try {
+        isar = await Isar.open(
+          schemas: schemas,
           directory: dbPath,
           name: pubkey,
         );
+      } on IsarError catch (e) {
+        // Handle schema mismatch errors by deleting old database and recreating
+        if (e.toString().contains('Schema error') || 
+            e.toString().contains('Could not deserialize existing schema')) {
+          print(() => 'Schema error detected, deleting old database and recreating: $e');
+          await _deleteDatabaseFiles(directory, pubkey);
+          // Retry opening the database after deletion
+          isar = await Isar.open(
+            schemas: schemas,
+            directory: dbPath,
+            name: pubkey,
+          );
+        } else {
+          // Re-throw other errors
+          rethrow;
+        }
+      }
+    }
   }
 
   Map<Type, List<dynamic>> getBuffers() {
@@ -105,18 +181,71 @@ class DBISAR {
     final Map<Type, List<dynamic>> typeMap = Map.from(_buffers);
     _buffers.clear();
 
-    await isar.writeTxn(() async {
-      await Future.forEach(typeMap.keys, (type) async {
-        await _saveTOISAR(typeMap[type]!, type);
-      });
+    // Regardless of platform, ensure writes happen synchronously within
+    // the transaction callback to keep Isar's write txn active.
+    await isar.write((isar) {
+      for (var type in typeMap.keys) {
+        _saveTOISARSync(typeMap[type]!, type, isar);
+      }
     });
   }
 
-  Future<void> _saveTOISAR(List<dynamic> objects, Type type) async {
-    String typeName = type.toString().replaceAll('?', '');
-    IsarCollection? collection = isar.getCollectionByNameInternal(typeName);
-    if (collection != null) {
-      await collection.putAll(objects);
+  // Synchronous version for web platform
+  void _saveTOISARSync(List<dynamic> objects, Type type, Isar isar) {
+    // All operations must be synchronous within the write transaction on web
+    if (type == MessageDBISAR) {
+      isar.messageDBISARs.putAll(objects.cast<MessageDBISAR>());
+    } else if (type == UserDBISAR) {
+      isar.userDBISARs.putAll(objects.cast<UserDBISAR>());
+    } else if (type == RelayDBISAR) {
+      isar.relayDBISARs.putAll(objects.cast<RelayDBISAR>());
+    } else if (type == ZapRecordsDBISAR) {
+      isar.zapRecordsDBISARs.putAll(objects.cast<ZapRecordsDBISAR>());
+    } else if (type == ZapsDBISAR) {
+      isar.zapsDBISARs.putAll(objects.cast<ZapsDBISAR>());
+    } else if (type == GroupDBISAR) {
+      isar.groupDBISARs.putAll(objects.cast<GroupDBISAR>());
+    } else if (type == JoinRequestDBISAR) {
+      isar.joinRequestDBISARs.putAll(objects.cast<JoinRequestDBISAR>());
+    } else if (type == ModerationDBISAR) {
+      isar.moderationDBISARs.putAll(objects.cast<ModerationDBISAR>());
+    } else if (type == RelayGroupDBISAR) {
+      isar.relayGroupDBISARs.putAll(objects.cast<RelayGroupDBISAR>());
+    } else if (type == NoteDBISAR) {
+      isar.noteDBISARs.putAll(objects.cast<NoteDBISAR>());
+    } else if (type == NotificationDBISAR) {
+      isar.notificationDBISARs.putAll(objects.cast<NotificationDBISAR>());
+    } else if (type == ConfigDBISAR) {
+      isar.configDBISARs.putAll(objects.cast<ConfigDBISAR>());
+    } else if (type == EventDBISAR) {
+      isar.eventDBISARs.putAll(objects.cast<EventDBISAR>());
+    } else if (type == WalletInfo) {
+      isar.walletInfos.putAll(objects.cast<WalletInfo>());
+    } else if (type == WalletTransaction) {
+      isar.walletTransactions.putAll(objects.cast<WalletTransaction>());
+    } else if (type == WalletInvoice) {
+      isar.walletInvoices.putAll(objects.cast<WalletInvoice>());
+    }
+  }
+
+  /// Delete all database files for a given pubkey
+  Future<void> _deleteDatabaseFiles(Directory directory, String pubkey) async {
+    try {
+      // Isar database files: {name}.isar and {name}.isar.lock
+      final dbFile = File('${directory.path}/$pubkey.isar');
+      final lockFile = File('${directory.path}/$pubkey.isar.lock');
+      
+      if (await dbFile.exists()) {
+        await dbFile.delete();
+        print(() => 'Deleted database file: ${dbFile.path}');
+      }
+      
+      if (await lockFile.exists()) {
+        await lockFile.delete();
+        print(() => 'Deleted lock file: ${lockFile.path}');
+      }
+    } catch (e) {
+      print(() => 'Error deleting database files: $e');
     }
   }
 
@@ -127,4 +256,3 @@ class DBISAR {
     if (isar.isOpen) await isar.close();
   }
 }
-

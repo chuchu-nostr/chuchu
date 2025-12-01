@@ -24,9 +24,10 @@ extension UserDBISARExtensions on UserDBISAR {
 
 @collection
 class UserDBISAR {
-  Id id = Isar.autoIncrement;
+  @Id()
+  int id = 0;
 
-  @Index(unique: true, replace: true)
+  @Index(unique: true)
   String pubKey;
 
   String? privkey;

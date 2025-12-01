@@ -3,1128 +3,688 @@
 part of 'wallet_invoice.dart';
 
 // **************************************************************************
-// IsarCollectionGenerator
+// _IsarCollectionGenerator
 // **************************************************************************
 
 // coverage:ignore-file
-// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+// ignore_for_file: duplicate_ignore, invalid_use_of_protected_member, lines_longer_than_80_chars, constant_identifier_names, avoid_js_rounded_ints, no_leading_underscores_for_local_identifiers, require_trailing_commas, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_in_if_null_operators, library_private_types_in_public_api, prefer_const_constructors
+// ignore_for_file: type=lint
 
 extension GetWalletInvoiceCollection on Isar {
-  IsarCollection<WalletInvoice> get walletInvoices => this.collection();
+  IsarCollection<int, WalletInvoice> get walletInvoices => this.collection();
 }
 
-const WalletInvoiceSchema = CollectionSchema(
-  name: r'WalletInvoice',
-  id: -8213832481351696553,
-  properties: {
-    r'amount': PropertySchema(
-      id: 0,
-      name: r'amount',
-      type: IsarType.long,
-    ),
-    r'amountBTC': PropertySchema(
-      id: 1,
-      name: r'amountBTC',
-      type: IsarType.double,
-    ),
-    r'bolt11': PropertySchema(
-      id: 2,
-      name: r'bolt11',
-      type: IsarType.string,
-    ),
-    r'createdAt': PropertySchema(
-      id: 3,
-      name: r'createdAt',
-      type: IsarType.long,
-    ),
-    r'description': PropertySchema(
-      id: 4,
-      name: r'description',
-      type: IsarType.string,
-    ),
-    r'expiresAt': PropertySchema(
-      id: 5,
-      name: r'expiresAt',
-      type: IsarType.long,
-    ),
-    r'hashCode': PropertySchema(
-      id: 6,
-      name: r'hashCode',
-      type: IsarType.long,
-    ),
-    r'invoiceId': PropertySchema(
-      id: 7,
-      name: r'invoiceId',
-      type: IsarType.string,
-    ),
-    r'isCancelled': PropertySchema(
-      id: 8,
-      name: r'isCancelled',
-      type: IsarType.bool,
-    ),
-    r'isExpired': PropertySchema(
-      id: 9,
-      name: r'isExpired',
-      type: IsarType.bool,
-    ),
-    r'isExpiringSoon': PropertySchema(
-      id: 10,
-      name: r'isExpiringSoon',
-      type: IsarType.bool,
-    ),
-    r'isPaid': PropertySchema(
-      id: 11,
-      name: r'isPaid',
-      type: IsarType.bool,
-    ),
-    r'isPending': PropertySchema(
-      id: 12,
-      name: r'isPending',
-      type: IsarType.bool,
-    ),
-    r'paidAt': PropertySchema(
-      id: 13,
-      name: r'paidAt',
-      type: IsarType.long,
-    ),
-    r'paymentHash': PropertySchema(
-      id: 14,
-      name: r'paymentHash',
-      type: IsarType.string,
-    ),
-    r'preimage': PropertySchema(
-      id: 15,
-      name: r'preimage',
-      type: IsarType.string,
-    ),
-    r'relatedPubkey': PropertySchema(
-      id: 16,
-      name: r'relatedPubkey',
-      type: IsarType.string,
-    ),
-    r'status': PropertySchema(
-      id: 17,
-      name: r'status',
-      type: IsarType.byte,
-      enumMap: _WalletInvoicestatusEnumValueMap,
-    ),
-    r'timeUntilExpiration': PropertySchema(
-      id: 18,
-      name: r'timeUntilExpiration',
-      type: IsarType.long,
-    ),
-    r'walletId': PropertySchema(
-      id: 19,
-      name: r'walletId',
-      type: IsarType.string,
-    )
-  },
-  estimateSize: _walletInvoiceEstimateSize,
-  serialize: _walletInvoiceSerialize,
-  deserialize: _walletInvoiceDeserialize,
-  deserializeProp: _walletInvoiceDeserializeProp,
-  idName: r'id',
-  indexes: {
-    r'invoiceId': IndexSchema(
-      id: 7861523084118270123,
-      name: r'invoiceId',
-      unique: true,
-      replace: true,
-      properties: [
-        IndexPropertySchema(
-          name: r'invoiceId',
-          type: IndexType.hash,
-          caseSensitive: true,
-        )
-      ],
-    )
-  },
-  links: {},
-  embeddedSchemas: {},
-  getId: _walletInvoiceGetId,
-  getLinks: _walletInvoiceGetLinks,
-  attach: _walletInvoiceAttach,
-  version: '3.1.0+1',
+const WalletInvoiceSchema = IsarGeneratedSchema(
+  schema: IsarSchema(
+    name: 'WalletInvoice',
+    idName: 'id',
+    embedded: false,
+    properties: [
+      IsarPropertySchema(
+        name: 'invoiceId',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'bolt11',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'paymentHash',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'amount',
+        type: IsarType.long,
+      ),
+      IsarPropertySchema(
+        name: 'description',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'status',
+        type: IsarType.byte,
+        enumMap: {"pending": 0, "paid": 1, "expired": 2, "cancelled": 3},
+      ),
+      IsarPropertySchema(
+        name: 'createdAt',
+        type: IsarType.long,
+      ),
+      IsarPropertySchema(
+        name: 'expiresAt',
+        type: IsarType.long,
+      ),
+      IsarPropertySchema(
+        name: 'paidAt',
+        type: IsarType.long,
+      ),
+      IsarPropertySchema(
+        name: 'walletId',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'relatedPubkey',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'preimage',
+        type: IsarType.string,
+      ),
+      IsarPropertySchema(
+        name: 'amountBTC',
+        type: IsarType.double,
+      ),
+      IsarPropertySchema(
+        name: 'isPaid',
+        type: IsarType.bool,
+      ),
+      IsarPropertySchema(
+        name: 'isPending',
+        type: IsarType.bool,
+      ),
+      IsarPropertySchema(
+        name: 'isExpired',
+        type: IsarType.bool,
+      ),
+      IsarPropertySchema(
+        name: 'isCancelled',
+        type: IsarType.bool,
+      ),
+      IsarPropertySchema(
+        name: 'timeUntilExpiration',
+        type: IsarType.long,
+      ),
+      IsarPropertySchema(
+        name: 'isExpiringSoon',
+        type: IsarType.bool,
+      ),
+    ],
+    indexes: [
+      IsarIndexSchema(
+        name: 'invoiceId',
+        properties: [
+          "invoiceId",
+        ],
+        unique: true,
+        hash: false,
+      ),
+    ],
+  ),
+  converter: IsarObjectConverter<int, WalletInvoice>(
+    serialize: serializeWalletInvoice,
+    deserialize: deserializeWalletInvoice,
+    deserializeProperty: deserializeWalletInvoiceProp,
+  ),
+  embeddedSchemas: [],
 );
 
-int _walletInvoiceEstimateSize(
-  WalletInvoice object,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  var bytesCount = offsets.last;
-  bytesCount += 3 + object.bolt11.length * 3;
+@isarProtected
+int serializeWalletInvoice(IsarWriter writer, WalletInvoice object) {
+  IsarCore.writeString(writer, 1, object.invoiceId);
+  IsarCore.writeString(writer, 2, object.bolt11);
+  IsarCore.writeString(writer, 3, object.paymentHash);
+  IsarCore.writeLong(writer, 4, object.amount);
   {
     final value = object.description;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    if (value == null) {
+      IsarCore.writeNull(writer, 5);
+    } else {
+      IsarCore.writeString(writer, 5, value);
     }
   }
-  bytesCount += 3 + object.invoiceId.length * 3;
-  bytesCount += 3 + object.paymentHash.length * 3;
-  {
-    final value = object.preimage;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
+  IsarCore.writeByte(writer, 6, object.status.index);
+  IsarCore.writeLong(writer, 7, object.createdAt);
+  IsarCore.writeLong(writer, 8, object.expiresAt);
+  IsarCore.writeLong(writer, 9, object.paidAt ?? -9223372036854775808);
+  IsarCore.writeString(writer, 10, object.walletId);
   {
     final value = object.relatedPubkey;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
+    if (value == null) {
+      IsarCore.writeNull(writer, 11);
+    } else {
+      IsarCore.writeString(writer, 11, value);
     }
   }
-  bytesCount += 3 + object.walletId.length * 3;
-  return bytesCount;
+  {
+    final value = object.preimage;
+    if (value == null) {
+      IsarCore.writeNull(writer, 12);
+    } else {
+      IsarCore.writeString(writer, 12, value);
+    }
+  }
+  IsarCore.writeDouble(writer, 13, object.amountBTC);
+  IsarCore.writeBool(writer, 14, object.isPaid);
+  IsarCore.writeBool(writer, 15, object.isPending);
+  IsarCore.writeBool(writer, 16, object.isExpired);
+  IsarCore.writeBool(writer, 17, object.isCancelled);
+  IsarCore.writeLong(writer, 18, object.timeUntilExpiration);
+  IsarCore.writeBool(writer, 19, object.isExpiringSoon);
+  return object.id;
 }
 
-void _walletInvoiceSerialize(
-  WalletInvoice object,
-  IsarWriter writer,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
-  writer.writeLong(offsets[0], object.amount);
-  writer.writeDouble(offsets[1], object.amountBTC);
-  writer.writeString(offsets[2], object.bolt11);
-  writer.writeLong(offsets[3], object.createdAt);
-  writer.writeString(offsets[4], object.description);
-  writer.writeLong(offsets[5], object.expiresAt);
-  writer.writeLong(offsets[6], object.hashCode);
-  writer.writeString(offsets[7], object.invoiceId);
-  writer.writeBool(offsets[8], object.isCancelled);
-  writer.writeBool(offsets[9], object.isExpired);
-  writer.writeBool(offsets[10], object.isExpiringSoon);
-  writer.writeBool(offsets[11], object.isPaid);
-  writer.writeBool(offsets[12], object.isPending);
-  writer.writeLong(offsets[13], object.paidAt);
-  writer.writeString(offsets[14], object.paymentHash);
-  writer.writeString(offsets[15], object.preimage);
-  writer.writeString(offsets[16], object.relatedPubkey);
-  writer.writeByte(offsets[17], object.status.index);
-  writer.writeLong(offsets[18], object.timeUntilExpiration);
-  writer.writeString(offsets[19], object.walletId);
-}
-
-WalletInvoice _walletInvoiceDeserialize(
-  Id id,
-  IsarReader reader,
-  List<int> offsets,
-  Map<Type, List<int>> allOffsets,
-) {
+@isarProtected
+WalletInvoice deserializeWalletInvoice(IsarReader reader) {
+  final String _invoiceId;
+  _invoiceId = IsarCore.readString(reader, 1) ?? '';
+  final String _bolt11;
+  _bolt11 = IsarCore.readString(reader, 2) ?? '';
+  final String _paymentHash;
+  _paymentHash = IsarCore.readString(reader, 3) ?? '';
+  final int _amount;
+  _amount = IsarCore.readLong(reader, 4);
+  final String? _description;
+  _description = IsarCore.readString(reader, 5);
+  final InvoiceStatus _status;
+  {
+    if (IsarCore.readNull(reader, 6)) {
+      _status = InvoiceStatus.pending;
+    } else {
+      _status = _walletInvoiceStatus[IsarCore.readByte(reader, 6)] ??
+          InvoiceStatus.pending;
+    }
+  }
+  final int _createdAt;
+  _createdAt = IsarCore.readLong(reader, 7);
+  final int _expiresAt;
+  _expiresAt = IsarCore.readLong(reader, 8);
+  final int? _paidAt;
+  {
+    final value = IsarCore.readLong(reader, 9);
+    if (value == -9223372036854775808) {
+      _paidAt = null;
+    } else {
+      _paidAt = value;
+    }
+  }
+  final String _walletId;
+  _walletId = IsarCore.readString(reader, 10) ?? '';
+  final String? _relatedPubkey;
+  _relatedPubkey = IsarCore.readString(reader, 11);
+  final String? _preimage;
+  _preimage = IsarCore.readString(reader, 12);
   final object = WalletInvoice(
-    amount: reader.readLong(offsets[0]),
-    bolt11: reader.readString(offsets[2]),
-    createdAt: reader.readLong(offsets[3]),
-    description: reader.readStringOrNull(offsets[4]),
-    expiresAt: reader.readLong(offsets[5]),
-    invoiceId: reader.readString(offsets[7]),
-    paidAt: reader.readLongOrNull(offsets[13]),
-    paymentHash: reader.readString(offsets[14]),
-    preimage: reader.readStringOrNull(offsets[15]),
-    relatedPubkey: reader.readStringOrNull(offsets[16]),
-    status:
-        _WalletInvoicestatusValueEnumMap[reader.readByteOrNull(offsets[17])] ??
-            InvoiceStatus.pending,
-    walletId: reader.readString(offsets[19]),
+    invoiceId: _invoiceId,
+    bolt11: _bolt11,
+    paymentHash: _paymentHash,
+    amount: _amount,
+    description: _description,
+    status: _status,
+    createdAt: _createdAt,
+    expiresAt: _expiresAt,
+    paidAt: _paidAt,
+    walletId: _walletId,
+    relatedPubkey: _relatedPubkey,
+    preimage: _preimage,
   );
-  object.id = id;
+  object.id = IsarCore.readId(reader);
   return object;
 }
 
-P _walletInvoiceDeserializeProp<P>(
-  IsarReader reader,
-  int propertyId,
-  int offset,
-  Map<Type, List<int>> allOffsets,
-) {
-  switch (propertyId) {
+@isarProtected
+dynamic deserializeWalletInvoiceProp(IsarReader reader, int property) {
+  switch (property) {
     case 0:
-      return (reader.readLong(offset)) as P;
+      return IsarCore.readId(reader);
     case 1:
-      return (reader.readDouble(offset)) as P;
+      return IsarCore.readString(reader, 1) ?? '';
     case 2:
-      return (reader.readString(offset)) as P;
+      return IsarCore.readString(reader, 2) ?? '';
     case 3:
-      return (reader.readLong(offset)) as P;
+      return IsarCore.readString(reader, 3) ?? '';
     case 4:
-      return (reader.readStringOrNull(offset)) as P;
+      return IsarCore.readLong(reader, 4);
     case 5:
-      return (reader.readLong(offset)) as P;
+      return IsarCore.readString(reader, 5);
     case 6:
-      return (reader.readLong(offset)) as P;
+      {
+        if (IsarCore.readNull(reader, 6)) {
+          return InvoiceStatus.pending;
+        } else {
+          return _walletInvoiceStatus[IsarCore.readByte(reader, 6)] ??
+              InvoiceStatus.pending;
+        }
+      }
     case 7:
-      return (reader.readString(offset)) as P;
+      return IsarCore.readLong(reader, 7);
     case 8:
-      return (reader.readBool(offset)) as P;
+      return IsarCore.readLong(reader, 8);
     case 9:
-      return (reader.readBool(offset)) as P;
+      {
+        final value = IsarCore.readLong(reader, 9);
+        if (value == -9223372036854775808) {
+          return null;
+        } else {
+          return value;
+        }
+      }
     case 10:
-      return (reader.readBool(offset)) as P;
+      return IsarCore.readString(reader, 10) ?? '';
     case 11:
-      return (reader.readBool(offset)) as P;
+      return IsarCore.readString(reader, 11);
     case 12:
-      return (reader.readBool(offset)) as P;
+      return IsarCore.readString(reader, 12);
     case 13:
-      return (reader.readLongOrNull(offset)) as P;
+      return IsarCore.readDouble(reader, 13);
     case 14:
-      return (reader.readString(offset)) as P;
+      return IsarCore.readBool(reader, 14);
     case 15:
-      return (reader.readStringOrNull(offset)) as P;
+      return IsarCore.readBool(reader, 15);
     case 16:
-      return (reader.readStringOrNull(offset)) as P;
+      return IsarCore.readBool(reader, 16);
     case 17:
-      return (_WalletInvoicestatusValueEnumMap[reader.readByteOrNull(offset)] ??
-          InvoiceStatus.pending) as P;
+      return IsarCore.readBool(reader, 17);
     case 18:
-      return (reader.readLong(offset)) as P;
+      return IsarCore.readLong(reader, 18);
     case 19:
-      return (reader.readString(offset)) as P;
+      return IsarCore.readBool(reader, 19);
     default:
-      throw IsarError('Unknown property with id $propertyId');
+      throw ArgumentError('Unknown property: $property');
   }
 }
 
-const _WalletInvoicestatusEnumValueMap = {
-  'pending': 0,
-  'paid': 1,
-  'expired': 2,
-  'cancelled': 3,
-};
-const _WalletInvoicestatusValueEnumMap = {
+sealed class _WalletInvoiceUpdate {
+  bool call({
+    required int id,
+    String? invoiceId,
+    String? bolt11,
+    String? paymentHash,
+    int? amount,
+    String? description,
+    InvoiceStatus? status,
+    int? createdAt,
+    int? expiresAt,
+    int? paidAt,
+    String? walletId,
+    String? relatedPubkey,
+    String? preimage,
+    double? amountBTC,
+    bool? isPaid,
+    bool? isPending,
+    bool? isExpired,
+    bool? isCancelled,
+    int? timeUntilExpiration,
+    bool? isExpiringSoon,
+  });
+}
+
+class _WalletInvoiceUpdateImpl implements _WalletInvoiceUpdate {
+  const _WalletInvoiceUpdateImpl(this.collection);
+
+  final IsarCollection<int, WalletInvoice> collection;
+
+  @override
+  bool call({
+    required int id,
+    Object? invoiceId = ignore,
+    Object? bolt11 = ignore,
+    Object? paymentHash = ignore,
+    Object? amount = ignore,
+    Object? description = ignore,
+    Object? status = ignore,
+    Object? createdAt = ignore,
+    Object? expiresAt = ignore,
+    Object? paidAt = ignore,
+    Object? walletId = ignore,
+    Object? relatedPubkey = ignore,
+    Object? preimage = ignore,
+    Object? amountBTC = ignore,
+    Object? isPaid = ignore,
+    Object? isPending = ignore,
+    Object? isExpired = ignore,
+    Object? isCancelled = ignore,
+    Object? timeUntilExpiration = ignore,
+    Object? isExpiringSoon = ignore,
+  }) {
+    return collection.updateProperties([
+          id
+        ], {
+          if (invoiceId != ignore) 1: invoiceId as String?,
+          if (bolt11 != ignore) 2: bolt11 as String?,
+          if (paymentHash != ignore) 3: paymentHash as String?,
+          if (amount != ignore) 4: amount as int?,
+          if (description != ignore) 5: description as String?,
+          if (status != ignore) 6: status as InvoiceStatus?,
+          if (createdAt != ignore) 7: createdAt as int?,
+          if (expiresAt != ignore) 8: expiresAt as int?,
+          if (paidAt != ignore) 9: paidAt as int?,
+          if (walletId != ignore) 10: walletId as String?,
+          if (relatedPubkey != ignore) 11: relatedPubkey as String?,
+          if (preimage != ignore) 12: preimage as String?,
+          if (amountBTC != ignore) 13: amountBTC as double?,
+          if (isPaid != ignore) 14: isPaid as bool?,
+          if (isPending != ignore) 15: isPending as bool?,
+          if (isExpired != ignore) 16: isExpired as bool?,
+          if (isCancelled != ignore) 17: isCancelled as bool?,
+          if (timeUntilExpiration != ignore) 18: timeUntilExpiration as int?,
+          if (isExpiringSoon != ignore) 19: isExpiringSoon as bool?,
+        }) >
+        0;
+  }
+}
+
+sealed class _WalletInvoiceUpdateAll {
+  int call({
+    required List<int> id,
+    String? invoiceId,
+    String? bolt11,
+    String? paymentHash,
+    int? amount,
+    String? description,
+    InvoiceStatus? status,
+    int? createdAt,
+    int? expiresAt,
+    int? paidAt,
+    String? walletId,
+    String? relatedPubkey,
+    String? preimage,
+    double? amountBTC,
+    bool? isPaid,
+    bool? isPending,
+    bool? isExpired,
+    bool? isCancelled,
+    int? timeUntilExpiration,
+    bool? isExpiringSoon,
+  });
+}
+
+class _WalletInvoiceUpdateAllImpl implements _WalletInvoiceUpdateAll {
+  const _WalletInvoiceUpdateAllImpl(this.collection);
+
+  final IsarCollection<int, WalletInvoice> collection;
+
+  @override
+  int call({
+    required List<int> id,
+    Object? invoiceId = ignore,
+    Object? bolt11 = ignore,
+    Object? paymentHash = ignore,
+    Object? amount = ignore,
+    Object? description = ignore,
+    Object? status = ignore,
+    Object? createdAt = ignore,
+    Object? expiresAt = ignore,
+    Object? paidAt = ignore,
+    Object? walletId = ignore,
+    Object? relatedPubkey = ignore,
+    Object? preimage = ignore,
+    Object? amountBTC = ignore,
+    Object? isPaid = ignore,
+    Object? isPending = ignore,
+    Object? isExpired = ignore,
+    Object? isCancelled = ignore,
+    Object? timeUntilExpiration = ignore,
+    Object? isExpiringSoon = ignore,
+  }) {
+    return collection.updateProperties(id, {
+      if (invoiceId != ignore) 1: invoiceId as String?,
+      if (bolt11 != ignore) 2: bolt11 as String?,
+      if (paymentHash != ignore) 3: paymentHash as String?,
+      if (amount != ignore) 4: amount as int?,
+      if (description != ignore) 5: description as String?,
+      if (status != ignore) 6: status as InvoiceStatus?,
+      if (createdAt != ignore) 7: createdAt as int?,
+      if (expiresAt != ignore) 8: expiresAt as int?,
+      if (paidAt != ignore) 9: paidAt as int?,
+      if (walletId != ignore) 10: walletId as String?,
+      if (relatedPubkey != ignore) 11: relatedPubkey as String?,
+      if (preimage != ignore) 12: preimage as String?,
+      if (amountBTC != ignore) 13: amountBTC as double?,
+      if (isPaid != ignore) 14: isPaid as bool?,
+      if (isPending != ignore) 15: isPending as bool?,
+      if (isExpired != ignore) 16: isExpired as bool?,
+      if (isCancelled != ignore) 17: isCancelled as bool?,
+      if (timeUntilExpiration != ignore) 18: timeUntilExpiration as int?,
+      if (isExpiringSoon != ignore) 19: isExpiringSoon as bool?,
+    });
+  }
+}
+
+extension WalletInvoiceUpdate on IsarCollection<int, WalletInvoice> {
+  _WalletInvoiceUpdate get update => _WalletInvoiceUpdateImpl(this);
+
+  _WalletInvoiceUpdateAll get updateAll => _WalletInvoiceUpdateAllImpl(this);
+}
+
+sealed class _WalletInvoiceQueryUpdate {
+  int call({
+    String? invoiceId,
+    String? bolt11,
+    String? paymentHash,
+    int? amount,
+    String? description,
+    InvoiceStatus? status,
+    int? createdAt,
+    int? expiresAt,
+    int? paidAt,
+    String? walletId,
+    String? relatedPubkey,
+    String? preimage,
+    double? amountBTC,
+    bool? isPaid,
+    bool? isPending,
+    bool? isExpired,
+    bool? isCancelled,
+    int? timeUntilExpiration,
+    bool? isExpiringSoon,
+  });
+}
+
+class _WalletInvoiceQueryUpdateImpl implements _WalletInvoiceQueryUpdate {
+  const _WalletInvoiceQueryUpdateImpl(this.query, {this.limit});
+
+  final IsarQuery<WalletInvoice> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? invoiceId = ignore,
+    Object? bolt11 = ignore,
+    Object? paymentHash = ignore,
+    Object? amount = ignore,
+    Object? description = ignore,
+    Object? status = ignore,
+    Object? createdAt = ignore,
+    Object? expiresAt = ignore,
+    Object? paidAt = ignore,
+    Object? walletId = ignore,
+    Object? relatedPubkey = ignore,
+    Object? preimage = ignore,
+    Object? amountBTC = ignore,
+    Object? isPaid = ignore,
+    Object? isPending = ignore,
+    Object? isExpired = ignore,
+    Object? isCancelled = ignore,
+    Object? timeUntilExpiration = ignore,
+    Object? isExpiringSoon = ignore,
+  }) {
+    return query.updateProperties(limit: limit, {
+      if (invoiceId != ignore) 1: invoiceId as String?,
+      if (bolt11 != ignore) 2: bolt11 as String?,
+      if (paymentHash != ignore) 3: paymentHash as String?,
+      if (amount != ignore) 4: amount as int?,
+      if (description != ignore) 5: description as String?,
+      if (status != ignore) 6: status as InvoiceStatus?,
+      if (createdAt != ignore) 7: createdAt as int?,
+      if (expiresAt != ignore) 8: expiresAt as int?,
+      if (paidAt != ignore) 9: paidAt as int?,
+      if (walletId != ignore) 10: walletId as String?,
+      if (relatedPubkey != ignore) 11: relatedPubkey as String?,
+      if (preimage != ignore) 12: preimage as String?,
+      if (amountBTC != ignore) 13: amountBTC as double?,
+      if (isPaid != ignore) 14: isPaid as bool?,
+      if (isPending != ignore) 15: isPending as bool?,
+      if (isExpired != ignore) 16: isExpired as bool?,
+      if (isCancelled != ignore) 17: isCancelled as bool?,
+      if (timeUntilExpiration != ignore) 18: timeUntilExpiration as int?,
+      if (isExpiringSoon != ignore) 19: isExpiringSoon as bool?,
+    });
+  }
+}
+
+extension WalletInvoiceQueryUpdate on IsarQuery<WalletInvoice> {
+  _WalletInvoiceQueryUpdate get updateFirst =>
+      _WalletInvoiceQueryUpdateImpl(this, limit: 1);
+
+  _WalletInvoiceQueryUpdate get updateAll =>
+      _WalletInvoiceQueryUpdateImpl(this);
+}
+
+class _WalletInvoiceQueryBuilderUpdateImpl
+    implements _WalletInvoiceQueryUpdate {
+  const _WalletInvoiceQueryBuilderUpdateImpl(this.query, {this.limit});
+
+  final QueryBuilder<WalletInvoice, WalletInvoice, QOperations> query;
+  final int? limit;
+
+  @override
+  int call({
+    Object? invoiceId = ignore,
+    Object? bolt11 = ignore,
+    Object? paymentHash = ignore,
+    Object? amount = ignore,
+    Object? description = ignore,
+    Object? status = ignore,
+    Object? createdAt = ignore,
+    Object? expiresAt = ignore,
+    Object? paidAt = ignore,
+    Object? walletId = ignore,
+    Object? relatedPubkey = ignore,
+    Object? preimage = ignore,
+    Object? amountBTC = ignore,
+    Object? isPaid = ignore,
+    Object? isPending = ignore,
+    Object? isExpired = ignore,
+    Object? isCancelled = ignore,
+    Object? timeUntilExpiration = ignore,
+    Object? isExpiringSoon = ignore,
+  }) {
+    final q = query.build();
+    try {
+      return q.updateProperties(limit: limit, {
+        if (invoiceId != ignore) 1: invoiceId as String?,
+        if (bolt11 != ignore) 2: bolt11 as String?,
+        if (paymentHash != ignore) 3: paymentHash as String?,
+        if (amount != ignore) 4: amount as int?,
+        if (description != ignore) 5: description as String?,
+        if (status != ignore) 6: status as InvoiceStatus?,
+        if (createdAt != ignore) 7: createdAt as int?,
+        if (expiresAt != ignore) 8: expiresAt as int?,
+        if (paidAt != ignore) 9: paidAt as int?,
+        if (walletId != ignore) 10: walletId as String?,
+        if (relatedPubkey != ignore) 11: relatedPubkey as String?,
+        if (preimage != ignore) 12: preimage as String?,
+        if (amountBTC != ignore) 13: amountBTC as double?,
+        if (isPaid != ignore) 14: isPaid as bool?,
+        if (isPending != ignore) 15: isPending as bool?,
+        if (isExpired != ignore) 16: isExpired as bool?,
+        if (isCancelled != ignore) 17: isCancelled as bool?,
+        if (timeUntilExpiration != ignore) 18: timeUntilExpiration as int?,
+        if (isExpiringSoon != ignore) 19: isExpiringSoon as bool?,
+      });
+    } finally {
+      q.close();
+    }
+  }
+}
+
+extension WalletInvoiceQueryBuilderUpdate
+    on QueryBuilder<WalletInvoice, WalletInvoice, QOperations> {
+  _WalletInvoiceQueryUpdate get updateFirst =>
+      _WalletInvoiceQueryBuilderUpdateImpl(this, limit: 1);
+
+  _WalletInvoiceQueryUpdate get updateAll =>
+      _WalletInvoiceQueryBuilderUpdateImpl(this);
+}
+
+const _walletInvoiceStatus = {
   0: InvoiceStatus.pending,
   1: InvoiceStatus.paid,
   2: InvoiceStatus.expired,
   3: InvoiceStatus.cancelled,
 };
 
-Id _walletInvoiceGetId(WalletInvoice object) {
-  return object.id;
-}
-
-List<IsarLinkBase<dynamic>> _walletInvoiceGetLinks(WalletInvoice object) {
-  return [];
-}
-
-void _walletInvoiceAttach(
-    IsarCollection<dynamic> col, Id id, WalletInvoice object) {
-  object.id = id;
-}
-
-extension WalletInvoiceByIndex on IsarCollection<WalletInvoice> {
-  Future<WalletInvoice?> getByInvoiceId(String invoiceId) {
-    return getByIndex(r'invoiceId', [invoiceId]);
-  }
-
-  WalletInvoice? getByInvoiceIdSync(String invoiceId) {
-    return getByIndexSync(r'invoiceId', [invoiceId]);
-  }
-
-  Future<bool> deleteByInvoiceId(String invoiceId) {
-    return deleteByIndex(r'invoiceId', [invoiceId]);
-  }
-
-  bool deleteByInvoiceIdSync(String invoiceId) {
-    return deleteByIndexSync(r'invoiceId', [invoiceId]);
-  }
-
-  Future<List<WalletInvoice?>> getAllByInvoiceId(List<String> invoiceIdValues) {
-    final values = invoiceIdValues.map((e) => [e]).toList();
-    return getAllByIndex(r'invoiceId', values);
-  }
-
-  List<WalletInvoice?> getAllByInvoiceIdSync(List<String> invoiceIdValues) {
-    final values = invoiceIdValues.map((e) => [e]).toList();
-    return getAllByIndexSync(r'invoiceId', values);
-  }
-
-  Future<int> deleteAllByInvoiceId(List<String> invoiceIdValues) {
-    final values = invoiceIdValues.map((e) => [e]).toList();
-    return deleteAllByIndex(r'invoiceId', values);
-  }
-
-  int deleteAllByInvoiceIdSync(List<String> invoiceIdValues) {
-    final values = invoiceIdValues.map((e) => [e]).toList();
-    return deleteAllByIndexSync(r'invoiceId', values);
-  }
-
-  Future<Id> putByInvoiceId(WalletInvoice object) {
-    return putByIndex(r'invoiceId', object);
-  }
-
-  Id putByInvoiceIdSync(WalletInvoice object, {bool saveLinks = true}) {
-    return putByIndexSync(r'invoiceId', object, saveLinks: saveLinks);
-  }
-
-  Future<List<Id>> putAllByInvoiceId(List<WalletInvoice> objects) {
-    return putAllByIndex(r'invoiceId', objects);
-  }
-
-  List<Id> putAllByInvoiceIdSync(List<WalletInvoice> objects,
-      {bool saveLinks = true}) {
-    return putAllByIndexSync(r'invoiceId', objects, saveLinks: saveLinks);
-  }
-}
-
-extension WalletInvoiceQueryWhereSort
-    on QueryBuilder<WalletInvoice, WalletInvoice, QWhere> {
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterWhere> anyId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(const IdWhereClause.any());
-    });
-  }
-}
-
-extension WalletInvoiceQueryWhere
-    on QueryBuilder<WalletInvoice, WalletInvoice, QWhereClause> {
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterWhereClause> idEqualTo(
-      Id id) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterWhereClause> idNotEqualTo(
-      Id id) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            )
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            );
-      } else {
-        return query
-            .addWhereClause(
-              IdWhereClause.greaterThan(lower: id, includeLower: false),
-            )
-            .addWhereClause(
-              IdWhereClause.lessThan(upper: id, includeUpper: false),
-            );
-      }
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.greaterThan(lower: id, includeLower: include),
-      );
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(
-        IdWhereClause.lessThan(upper: id, includeUpper: include),
-      );
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterWhereClause> idBetween(
-    Id lowerId,
-    Id upperId, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterWhereClause>
-      invoiceIdEqualTo(String invoiceId) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IndexWhereClause.equalTo(
-        indexName: r'invoiceId',
-        value: [invoiceId],
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterWhereClause>
-      invoiceIdNotEqualTo(String invoiceId) {
-    return QueryBuilder.apply(this, (query) {
-      if (query.whereSort == Sort.asc) {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'invoiceId',
-              lower: [],
-              upper: [invoiceId],
-              includeUpper: false,
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'invoiceId',
-              lower: [invoiceId],
-              includeLower: false,
-              upper: [],
-            ));
-      } else {
-        return query
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'invoiceId',
-              lower: [invoiceId],
-              includeLower: false,
-              upper: [],
-            ))
-            .addWhereClause(IndexWhereClause.between(
-              indexName: r'invoiceId',
-              lower: [],
-              upper: [invoiceId],
-              includeUpper: false,
-            ));
-      }
-    });
-  }
-}
-
 extension WalletInvoiceQueryFilter
     on QueryBuilder<WalletInvoice, WalletInvoice, QFilterCondition> {
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      amountEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'amount',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      amountGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'amount',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      amountLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'amount',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      amountBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'amount',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      amountBTCEqualTo(
-    double value, {
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'amountBTC',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      amountBTCGreaterThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'amountBTC',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      amountBTCLessThan(
-    double value, {
-    bool include = false,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'amountBTC',
-        value: value,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      amountBTCBetween(
-    double lower,
-    double upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    double epsilon = Query.epsilon,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'amountBTC',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11EqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'bolt11',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11GreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'bolt11',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11LessThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'bolt11',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11Between(
-    String lower,
-    String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'bolt11',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11StartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'bolt11',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11EndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'bolt11',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11Contains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'bolt11',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11Matches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'bolt11',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11IsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'bolt11',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      bolt11IsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'bolt11',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      createdAtEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'createdAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      createdAtGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      createdAtLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'createdAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      createdAtBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'createdAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'description',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'description',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'description',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'description',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'description',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'description',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'description',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'description',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'description',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'description',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'description',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      descriptionIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'description',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      expiresAtEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'expiresAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      expiresAtGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'expiresAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      expiresAtLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'expiresAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      expiresAtBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'expiresAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      hashCodeEqualTo(int value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'hashCode',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      hashCodeGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'hashCode',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      hashCodeLessThan(
-    int value, {
-    bool include = false,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'hashCode',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      hashCodeBetween(
-    int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'hashCode',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition> idEqualTo(
-      Id value) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 0,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 0,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      idGreaterThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 0,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition> idLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 0,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      idLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 0,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition> idBetween(
-    Id lower,
-    Id upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
+    int lower,
+    int upper,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 0,
+          lower: lower,
+          upper: upper,
+        ),
+      );
     });
   }
 
@@ -1134,43 +694,77 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'invoiceId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       invoiceIdGreaterThan(
     String value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'invoiceId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      invoiceIdGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       invoiceIdLessThan(
     String value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'invoiceId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      invoiceIdLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1178,19 +772,17 @@ extension WalletInvoiceQueryFilter
       invoiceIdBetween(
     String lower,
     String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'invoiceId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 1,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1200,11 +792,13 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'invoiceId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1214,177 +808,243 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'invoiceId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       invoiceIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'invoiceId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 1,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       invoiceIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'invoiceId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 1,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       invoiceIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'invoiceId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 1,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       invoiceIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'invoiceId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 1,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      isCancelledEqualTo(bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isCancelled',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      isExpiredEqualTo(bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isExpired',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      isExpiringSoonEqualTo(bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isExpiringSoon',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      isPaidEqualTo(bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isPaid',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      isPendingEqualTo(bool value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isPending',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      paidAtIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'paidAt',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      paidAtIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'paidAt',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      paidAtEqualTo(int? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'paidAt',
-        value: value,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      paidAtGreaterThan(
-    int? value, {
-    bool include = false,
+      bolt11EqualTo(
+    String value, {
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'paidAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      paidAtLessThan(
-    int? value, {
-    bool include = false,
+      bolt11GreaterThan(
+    String value, {
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'paidAt',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      paidAtBetween(
-    int? lower,
-    int? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
+      bolt11GreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'paidAt',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11LessThan(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11LessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11Between(
+    String lower,
+    String upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 2,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11StartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11EndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11Contains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 2,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11Matches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 2,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11IsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 2,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      bolt11IsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 2,
+          value: '',
+        ),
+      );
     });
   }
 
@@ -1394,43 +1054,77 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'paymentHash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       paymentHashGreaterThan(
     String value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'paymentHash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paymentHashGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       paymentHashLessThan(
     String value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'paymentHash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paymentHashLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1438,19 +1132,17 @@ extension WalletInvoiceQueryFilter
       paymentHashBetween(
     String lower,
     String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'paymentHash',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 3,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1460,11 +1152,13 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'paymentHash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1474,473 +1168,701 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'paymentHash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       paymentHashContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'paymentHash',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 3,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       paymentHashMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'paymentHash',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 3,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       paymentHashIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'paymentHash',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 3,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       paymentHashIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'paymentHash',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 3,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageIsNull() {
+      amountEqualTo(
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'preimage',
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 4,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageIsNotNull() {
+      amountGreaterThan(
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'preimage',
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 4,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageEqualTo(
+      amountGreaterThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 4,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 4,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 4,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 4,
+          lower: lower,
+          upper: upper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      descriptionIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 5));
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      descriptionIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 5));
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      descriptionEqualTo(
     String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'preimage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageGreaterThan(
+      descriptionGreaterThan(
     String? value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'preimage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageLessThan(
+      descriptionGreaterThanOrEqualTo(
     String? value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'preimage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageBetween(
+      descriptionLessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      descriptionLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      descriptionBetween(
     String? lower,
     String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'preimage',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 5,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageStartsWith(
+      descriptionStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'preimage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageEndsWith(
+      descriptionEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'preimage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageContains(String value, {bool caseSensitive = true}) {
+      descriptionContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'preimage',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 5,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageMatches(String pattern, {bool caseSensitive = true}) {
+      descriptionMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'preimage',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 5,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageIsEmpty() {
+      descriptionIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'preimage',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 5,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      preimageIsNotEmpty() {
+      descriptionIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'preimage',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 5,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyIsNull() {
+      statusEqualTo(
+    InvoiceStatus value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'relatedPubkey',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'relatedPubkey',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'relatedPubkey',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyGreaterThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'relatedPubkey',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyLessThan(
-    String? value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'relatedPubkey',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyBetween(
-    String? lower,
-    String? upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'relatedPubkey',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'relatedPubkey',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'relatedPubkey',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'relatedPubkey',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'relatedPubkey',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'relatedPubkey',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      relatedPubkeyIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'relatedPubkey',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      statusEqualTo(InvoiceStatus value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'status',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 6,
+          value: value.index,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       statusGreaterThan(
-    InvoiceStatus value, {
-    bool include = false,
-  }) {
+    InvoiceStatus value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'status',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 6,
+          value: value.index,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      statusGreaterThanOrEqualTo(
+    InvoiceStatus value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 6,
+          value: value.index,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       statusLessThan(
-    InvoiceStatus value, {
-    bool include = false,
-  }) {
+    InvoiceStatus value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'status',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 6,
+          value: value.index,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      statusLessThanOrEqualTo(
+    InvoiceStatus value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 6,
+          value: value.index,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       statusBetween(
     InvoiceStatus lower,
-    InvoiceStatus upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
+    InvoiceStatus upper,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'status',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 6,
+          lower: lower.index,
+          upper: upper.index,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      timeUntilExpirationEqualTo(int value) {
+      createdAtEqualTo(
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'timeUntilExpiration',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 7,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      timeUntilExpirationGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+      createdAtGreaterThan(
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'timeUntilExpiration',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 7,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      timeUntilExpirationLessThan(
-    int value, {
-    bool include = false,
-  }) {
+      createdAtGreaterThanOrEqualTo(
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'timeUntilExpiration',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 7,
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
-      timeUntilExpirationBetween(
+      createdAtLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 7,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      createdAtLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 7,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      createdAtBetween(
     int lower,
-    int upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
-  }) {
+    int upper,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'timeUntilExpiration',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 7,
+          lower: lower,
+          upper: upper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      expiresAtEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 8,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      expiresAtGreaterThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 8,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      expiresAtGreaterThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 8,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      expiresAtLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 8,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      expiresAtLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 8,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      expiresAtBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 8,
+          lower: lower,
+          upper: upper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paidAtIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 9));
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paidAtIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 9));
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paidAtEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 9,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paidAtGreaterThan(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 9,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paidAtGreaterThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 9,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paidAtLessThan(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 9,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paidAtLessThanOrEqualTo(
+    int? value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 9,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      paidAtBetween(
+    int? lower,
+    int? upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 9,
+          lower: lower,
+          upper: upper,
+        ),
+      );
     });
   }
 
@@ -1950,43 +1872,77 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'walletId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       walletIdGreaterThan(
     String value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'walletId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      walletIdGreaterThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       walletIdLessThan(
     String value, {
-    bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'walletId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        LessCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      walletIdLessThanOrEqualTo(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -1994,19 +1950,17 @@ extension WalletInvoiceQueryFilter
       walletIdBetween(
     String lower,
     String upper, {
-    bool includeLower = true,
-    bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'walletId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 10,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -2016,11 +1970,13 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'walletId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
@@ -2030,53 +1986,705 @@ extension WalletInvoiceQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'walletId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       walletIdContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'walletId',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 10,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       walletIdMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'walletId',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 10,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       walletIdIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'walletId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 10,
+          value: '',
+        ),
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
       walletIdIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'walletId',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 10,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 11));
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 11));
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 11,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyGreaterThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 11,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyGreaterThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 11,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyLessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 11,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 11,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyBetween(
+    String? lower,
+    String? upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 11,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 11,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 11,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 11,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 11,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 11,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      relatedPubkeyIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 11,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 12));
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageIsNotNull() {
+    return QueryBuilder.apply(not(), (query) {
+      return query.addFilterCondition(const IsNullCondition(property: 12));
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 12,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageGreaterThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 12,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageGreaterThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 12,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageLessThan(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 12,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageLessThanOrEqualTo(
+    String? value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 12,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageBetween(
+    String? lower,
+    String? upper, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 12,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageStartsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        StartsWithCondition(
+          property: 12,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageEndsWith(
+    String value, {
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EndsWithCondition(
+          property: 12,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageContains(String value, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        ContainsCondition(
+          property: 12,
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageMatches(String pattern, {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        MatchesCondition(
+          property: 12,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const EqualCondition(
+          property: 12,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      preimageIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        const GreaterCondition(
+          property: 12,
+          value: '',
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountBTCEqualTo(
+    double value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 13,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountBTCGreaterThan(
+    double value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 13,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountBTCGreaterThanOrEqualTo(
+    double value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 13,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountBTCLessThan(
+    double value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 13,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountBTCLessThanOrEqualTo(
+    double value, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 13,
+          value: value,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      amountBTCBetween(
+    double lower,
+    double upper, {
+    double epsilon = Filter.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 13,
+          lower: lower,
+          upper: upper,
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      isPaidEqualTo(
+    bool value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 14,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      isPendingEqualTo(
+    bool value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 15,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      isExpiredEqualTo(
+    bool value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 16,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      isCancelledEqualTo(
+    bool value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 17,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      timeUntilExpirationEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 18,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      timeUntilExpirationGreaterThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterCondition(
+          property: 18,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      timeUntilExpirationGreaterThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        GreaterOrEqualCondition(
+          property: 18,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      timeUntilExpirationLessThan(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessCondition(
+          property: 18,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      timeUntilExpirationLessThanOrEqualTo(
+    int value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        LessOrEqualCondition(
+          property: 18,
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      timeUntilExpirationBetween(
+    int lower,
+    int upper,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        BetweenCondition(
+          property: 18,
+          lower: lower,
+          upper: upper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterFilterCondition>
+      isExpiringSoonEqualTo(
+    bool value,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        EqualCondition(
+          property: 19,
+          value: value,
+        ),
+      );
     });
   }
 }
@@ -2084,805 +2692,1108 @@ extension WalletInvoiceQueryFilter
 extension WalletInvoiceQueryObject
     on QueryBuilder<WalletInvoice, WalletInvoice, QFilterCondition> {}
 
-extension WalletInvoiceQueryLinks
-    on QueryBuilder<WalletInvoice, WalletInvoice, QFilterCondition> {}
-
 extension WalletInvoiceQuerySortBy
     on QueryBuilder<WalletInvoice, WalletInvoice, QSortBy> {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByInvoiceId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        1,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByInvoiceIdDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        1,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByBolt11(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        2,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByBolt11Desc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        2,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPaymentHash(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        3,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
+      sortByPaymentHashDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        3,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByAmount() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'amount', Sort.asc);
+      return query.addSortBy(4);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByAmountDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'amount', Sort.desc);
+      return query.addSortBy(4, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByAmountBTC() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByDescription(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'amountBTC', Sort.asc);
+      return query.addSortBy(
+        5,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByAmountBTCDesc() {
+      sortByDescriptionDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'amountBTC', Sort.desc);
+      return query.addSortBy(
+        5,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByBolt11() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByStatus() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bolt11', Sort.asc);
+      return query.addSortBy(6);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByBolt11Desc() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByStatusDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bolt11', Sort.desc);
+      return query.addSortBy(6, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'createdAt', Sort.asc);
+      return query.addSortBy(7);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       sortByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'createdAt', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByDescription() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'description', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByDescriptionDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'description', Sort.desc);
+      return query.addSortBy(7, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByExpiresAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'expiresAt', Sort.asc);
+      return query.addSortBy(8);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       sortByExpiresAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'expiresAt', Sort.desc);
+      return query.addSortBy(8, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByHashCode() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPaidAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.asc);
+      return query.addSortBy(9);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByHashCodeDesc() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPaidAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.desc);
+      return query.addSortBy(9, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByInvoiceId() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByWalletId(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'invoiceId', Sort.asc);
+      return query.addSortBy(
+        10,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByInvoiceIdDesc() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByWalletIdDesc(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'invoiceId', Sort.desc);
+      return query.addSortBy(
+        10,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByIsCancelled() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByRelatedPubkey(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isCancelled', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByIsCancelledDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isCancelled', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByIsExpired() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isExpired', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByIsExpiredDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isExpired', Sort.desc);
+      return query.addSortBy(
+        11,
+        caseSensitive: caseSensitive,
+      );
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByIsExpiringSoon() {
+      sortByRelatedPubkeyDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isExpiringSoon', Sort.asc);
+      return query.addSortBy(
+        11,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPreimage(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        12,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPreimageDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(
+        12,
+        sort: Sort.desc,
+        caseSensitive: caseSensitive,
+      );
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByAmountBTC() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(13);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByIsExpiringSoonDesc() {
+      sortByAmountBTCDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isExpiringSoon', Sort.desc);
+      return query.addSortBy(13, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByIsPaid() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isPaid', Sort.asc);
+      return query.addSortBy(14);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByIsPaidDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isPaid', Sort.desc);
+      return query.addSortBy(14, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByIsPending() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isPending', Sort.asc);
+      return query.addSortBy(15);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       sortByIsPendingDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isPending', Sort.desc);
+      return query.addSortBy(15, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPaidAt() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByIsExpired() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'paidAt', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPaidAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'paidAt', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPaymentHash() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'paymentHash', Sort.asc);
+      return query.addSortBy(16);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByPaymentHashDesc() {
+      sortByIsExpiredDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'paymentHash', Sort.desc);
+      return query.addSortBy(16, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByPreimage() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByIsCancelled() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'preimage', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByPreimageDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'preimage', Sort.desc);
+      return query.addSortBy(17);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByRelatedPubkey() {
+      sortByIsCancelledDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'relatedPubkey', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByRelatedPubkeyDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'relatedPubkey', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByStatus() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'status', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByStatusDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'status', Sort.desc);
+      return query.addSortBy(17, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       sortByTimeUntilExpiration() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timeUntilExpiration', Sort.asc);
+      return query.addSortBy(18);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       sortByTimeUntilExpirationDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timeUntilExpiration', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> sortByWalletId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'walletId', Sort.asc);
+      return query.addSortBy(18, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      sortByWalletIdDesc() {
+      sortByIsExpiringSoon() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'walletId', Sort.desc);
+      return query.addSortBy(19);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
+      sortByIsExpiringSoonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(19, sort: Sort.desc);
     });
   }
 }
 
 extension WalletInvoiceQuerySortThenBy
     on QueryBuilder<WalletInvoice, WalletInvoice, QSortThenBy> {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenById() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIdDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(0, sort: Sort.desc);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByInvoiceId(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByInvoiceIdDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(1, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByBolt11(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByBolt11Desc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(2, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPaymentHash(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
+      thenByPaymentHashDesc({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(3, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByAmount() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'amount', Sort.asc);
+      return query.addSortBy(4);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByAmountDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'amount', Sort.desc);
+      return query.addSortBy(4, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByAmountBTC() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByDescription(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'amountBTC', Sort.asc);
+      return query.addSortBy(5, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByAmountBTCDesc() {
+      thenByDescriptionDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'amountBTC', Sort.desc);
+      return query.addSortBy(5, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByBolt11() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByStatus() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bolt11', Sort.asc);
+      return query.addSortBy(6);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByBolt11Desc() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByStatusDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'bolt11', Sort.desc);
+      return query.addSortBy(6, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByCreatedAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'createdAt', Sort.asc);
+      return query.addSortBy(7);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       thenByCreatedAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'createdAt', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByDescription() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'description', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByDescriptionDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'description', Sort.desc);
+      return query.addSortBy(7, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByExpiresAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'expiresAt', Sort.asc);
+      return query.addSortBy(8);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       thenByExpiresAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'expiresAt', Sort.desc);
+      return query.addSortBy(8, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByHashCode() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPaidAt() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.asc);
+      return query.addSortBy(9);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByHashCodeDesc() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPaidAtDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'hashCode', Sort.desc);
+      return query.addSortBy(9, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenById() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByWalletId(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.asc);
+      return query.addSortBy(10, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByWalletIdDesc(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'id', Sort.desc);
+      return query.addSortBy(10, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByInvoiceId() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByRelatedPubkey(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'invoiceId', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByInvoiceIdDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'invoiceId', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIsCancelled() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isCancelled', Sort.asc);
+      return query.addSortBy(11, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByIsCancelledDesc() {
+      thenByRelatedPubkeyDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isCancelled', Sort.desc);
+      return query.addSortBy(11, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIsExpired() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPreimage(
+      {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isExpired', Sort.asc);
+      return query.addSortBy(12, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPreimageDesc(
+      {bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(12, sort: Sort.desc, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByAmountBTC() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(13);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByIsExpiredDesc() {
+      thenByAmountBTCDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isExpired', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByIsExpiringSoon() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isExpiringSoon', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByIsExpiringSoonDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isExpiringSoon', Sort.desc);
+      return query.addSortBy(13, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIsPaid() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isPaid', Sort.asc);
+      return query.addSortBy(14);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIsPaidDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isPaid', Sort.desc);
+      return query.addSortBy(14, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIsPending() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isPending', Sort.asc);
+      return query.addSortBy(15);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       thenByIsPendingDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'isPending', Sort.desc);
+      return query.addSortBy(15, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPaidAt() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIsExpired() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'paidAt', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPaidAtDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'paidAt', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPaymentHash() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'paymentHash', Sort.asc);
+      return query.addSortBy(16);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByPaymentHashDesc() {
+      thenByIsExpiredDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'paymentHash', Sort.desc);
+      return query.addSortBy(16, sort: Sort.desc);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByPreimage() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByIsCancelled() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'preimage', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByPreimageDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'preimage', Sort.desc);
+      return query.addSortBy(17);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByRelatedPubkey() {
+      thenByIsCancelledDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'relatedPubkey', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByRelatedPubkeyDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'relatedPubkey', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByStatus() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'status', Sort.asc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByStatusDesc() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'status', Sort.desc);
+      return query.addSortBy(17, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       thenByTimeUntilExpiration() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timeUntilExpiration', Sort.asc);
+      return query.addSortBy(18);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
       thenByTimeUntilExpirationDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'timeUntilExpiration', Sort.desc);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy> thenByWalletId() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'walletId', Sort.asc);
+      return query.addSortBy(18, sort: Sort.desc);
     });
   }
 
   QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
-      thenByWalletIdDesc() {
+      thenByIsExpiringSoon() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'walletId', Sort.desc);
+      return query.addSortBy(19);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterSortBy>
+      thenByIsExpiringSoonDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(19, sort: Sort.desc);
     });
   }
 }
 
 extension WalletInvoiceQueryWhereDistinct
     on QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> {
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByAmount() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByInvoiceId({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'amount');
+      return query.addDistinctBy(1, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByAmountBTC() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'amountBTC');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByBolt11(
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct> distinctByBolt11(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'bolt11', caseSensitive: caseSensitive);
+      return query.addDistinctBy(2, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByCreatedAt() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByPaymentHash({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'createdAt');
+      return query.addDistinctBy(3, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByDescription(
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByAmount() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(4);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByDescription({bool caseSensitive = true}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(5, caseSensitive: caseSensitive);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByStatus() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(6);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByCreatedAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(7);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByExpiresAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(8);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByPaidAt() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(9);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct> distinctByWalletId(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
+      return query.addDistinctBy(10, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByExpiresAt() {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByRelatedPubkey({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'expiresAt');
+      return query.addDistinctBy(11, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByHashCode() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'hashCode');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByInvoiceId(
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct> distinctByPreimage(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'invoiceId', caseSensitive: caseSensitive);
+      return query.addDistinctBy(12, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct>
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByAmountBTC() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(13);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByIsPaid() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(14);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByIsPending() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(15);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByIsExpired() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(16);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
       distinctByIsCancelled() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'isCancelled');
+      return query.addDistinctBy(17);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByIsExpired() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'isExpired');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct>
-      distinctByIsExpiringSoon() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'isExpiringSoon');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByIsPaid() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'isPaid');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByIsPending() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'isPending');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByPaidAt() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'paidAt');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByPaymentHash(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'paymentHash', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByPreimage(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'preimage', caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByRelatedPubkey(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'relatedPubkey',
-          caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByStatus() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'status');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct>
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
       distinctByTimeUntilExpiration() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'timeUntilExpiration');
+      return query.addDistinctBy(18);
     });
   }
 
-  QueryBuilder<WalletInvoice, WalletInvoice, QDistinct> distinctByWalletId(
-      {bool caseSensitive = true}) {
+  QueryBuilder<WalletInvoice, WalletInvoice, QAfterDistinct>
+      distinctByIsExpiringSoon() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'walletId', caseSensitive: caseSensitive);
+      return query.addDistinctBy(19);
     });
   }
 }
 
-extension WalletInvoiceQueryProperty
-    on QueryBuilder<WalletInvoice, WalletInvoice, QQueryProperty> {
-  QueryBuilder<WalletInvoice, int, QQueryOperations> idProperty() {
+extension WalletInvoiceQueryProperty1
+    on QueryBuilder<WalletInvoice, WalletInvoice, QProperty> {
+  QueryBuilder<WalletInvoice, int, QAfterProperty> idProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'id');
+      return query.addProperty(0);
     });
   }
 
-  QueryBuilder<WalletInvoice, int, QQueryOperations> amountProperty() {
+  QueryBuilder<WalletInvoice, String, QAfterProperty> invoiceIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'amount');
+      return query.addProperty(1);
     });
   }
 
-  QueryBuilder<WalletInvoice, double, QQueryOperations> amountBTCProperty() {
+  QueryBuilder<WalletInvoice, String, QAfterProperty> bolt11Property() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'amountBTC');
+      return query.addProperty(2);
     });
   }
 
-  QueryBuilder<WalletInvoice, String, QQueryOperations> bolt11Property() {
+  QueryBuilder<WalletInvoice, String, QAfterProperty> paymentHashProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'bolt11');
+      return query.addProperty(3);
     });
   }
 
-  QueryBuilder<WalletInvoice, int, QQueryOperations> createdAtProperty() {
+  QueryBuilder<WalletInvoice, int, QAfterProperty> amountProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'createdAt');
+      return query.addProperty(4);
     });
   }
 
-  QueryBuilder<WalletInvoice, String?, QQueryOperations> descriptionProperty() {
+  QueryBuilder<WalletInvoice, String?, QAfterProperty> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'description');
+      return query.addProperty(5);
     });
   }
 
-  QueryBuilder<WalletInvoice, int, QQueryOperations> expiresAtProperty() {
+  QueryBuilder<WalletInvoice, InvoiceStatus, QAfterProperty> statusProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'expiresAt');
+      return query.addProperty(6);
     });
   }
 
-  QueryBuilder<WalletInvoice, int, QQueryOperations> hashCodeProperty() {
+  QueryBuilder<WalletInvoice, int, QAfterProperty> createdAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'hashCode');
+      return query.addProperty(7);
     });
   }
 
-  QueryBuilder<WalletInvoice, String, QQueryOperations> invoiceIdProperty() {
+  QueryBuilder<WalletInvoice, int, QAfterProperty> expiresAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'invoiceId');
+      return query.addProperty(8);
     });
   }
 
-  QueryBuilder<WalletInvoice, bool, QQueryOperations> isCancelledProperty() {
+  QueryBuilder<WalletInvoice, int?, QAfterProperty> paidAtProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isCancelled');
+      return query.addProperty(9);
     });
   }
 
-  QueryBuilder<WalletInvoice, bool, QQueryOperations> isExpiredProperty() {
+  QueryBuilder<WalletInvoice, String, QAfterProperty> walletIdProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isExpired');
+      return query.addProperty(10);
     });
   }
 
-  QueryBuilder<WalletInvoice, bool, QQueryOperations> isExpiringSoonProperty() {
+  QueryBuilder<WalletInvoice, String?, QAfterProperty> relatedPubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isExpiringSoon');
+      return query.addProperty(11);
     });
   }
 
-  QueryBuilder<WalletInvoice, bool, QQueryOperations> isPaidProperty() {
+  QueryBuilder<WalletInvoice, String?, QAfterProperty> preimageProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isPaid');
+      return query.addProperty(12);
     });
   }
 
-  QueryBuilder<WalletInvoice, bool, QQueryOperations> isPendingProperty() {
+  QueryBuilder<WalletInvoice, double, QAfterProperty> amountBTCProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'isPending');
+      return query.addProperty(13);
     });
   }
 
-  QueryBuilder<WalletInvoice, int?, QQueryOperations> paidAtProperty() {
+  QueryBuilder<WalletInvoice, bool, QAfterProperty> isPaidProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'paidAt');
+      return query.addProperty(14);
     });
   }
 
-  QueryBuilder<WalletInvoice, String, QQueryOperations> paymentHashProperty() {
+  QueryBuilder<WalletInvoice, bool, QAfterProperty> isPendingProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'paymentHash');
+      return query.addProperty(15);
     });
   }
 
-  QueryBuilder<WalletInvoice, String?, QQueryOperations> preimageProperty() {
+  QueryBuilder<WalletInvoice, bool, QAfterProperty> isExpiredProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'preimage');
+      return query.addProperty(16);
     });
   }
 
-  QueryBuilder<WalletInvoice, String?, QQueryOperations>
-      relatedPubkeyProperty() {
+  QueryBuilder<WalletInvoice, bool, QAfterProperty> isCancelledProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'relatedPubkey');
+      return query.addProperty(17);
     });
   }
 
-  QueryBuilder<WalletInvoice, InvoiceStatus, QQueryOperations>
-      statusProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'status');
-    });
-  }
-
-  QueryBuilder<WalletInvoice, int, QQueryOperations>
+  QueryBuilder<WalletInvoice, int, QAfterProperty>
       timeUntilExpirationProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'timeUntilExpiration');
+      return query.addProperty(18);
     });
   }
 
-  QueryBuilder<WalletInvoice, String, QQueryOperations> walletIdProperty() {
+  QueryBuilder<WalletInvoice, bool, QAfterProperty> isExpiringSoonProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'walletId');
+      return query.addProperty(19);
+    });
+  }
+}
+
+extension WalletInvoiceQueryProperty2<R>
+    on QueryBuilder<WalletInvoice, R, QAfterProperty> {
+  QueryBuilder<WalletInvoice, (R, int), QAfterProperty> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, String), QAfterProperty> invoiceIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, String), QAfterProperty> bolt11Property() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, String), QAfterProperty>
+      paymentHashProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, int), QAfterProperty> amountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, String?), QAfterProperty>
+      descriptionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, InvoiceStatus), QAfterProperty>
+      statusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, int), QAfterProperty> createdAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, int), QAfterProperty> expiresAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, int?), QAfterProperty> paidAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, String), QAfterProperty> walletIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(10);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, String?), QAfterProperty>
+      relatedPubkeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(11);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, String?), QAfterProperty> preimageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(12);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, double), QAfterProperty> amountBTCProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(13);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, bool), QAfterProperty> isPaidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(14);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, bool), QAfterProperty> isPendingProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(15);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, bool), QAfterProperty> isExpiredProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(16);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, bool), QAfterProperty> isCancelledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(17);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, int), QAfterProperty>
+      timeUntilExpirationProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(18);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R, bool), QAfterProperty>
+      isExpiringSoonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(19);
+    });
+  }
+}
+
+extension WalletInvoiceQueryProperty3<R1, R2>
+    on QueryBuilder<WalletInvoice, (R1, R2), QAfterProperty> {
+  QueryBuilder<WalletInvoice, (R1, R2, int), QOperations> idProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(0);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, String), QOperations>
+      invoiceIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(1);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, String), QOperations> bolt11Property() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(2);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, String), QOperations>
+      paymentHashProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(3);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, int), QOperations> amountProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(4);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, String?), QOperations>
+      descriptionProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(5);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, InvoiceStatus), QOperations>
+      statusProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(6);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, int), QOperations> createdAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(7);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, int), QOperations> expiresAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(8);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, int?), QOperations> paidAtProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(9);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, String), QOperations>
+      walletIdProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(10);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, String?), QOperations>
+      relatedPubkeyProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(11);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, String?), QOperations>
+      preimageProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(12);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, double), QOperations>
+      amountBTCProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(13);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, bool), QOperations> isPaidProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(14);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, bool), QOperations> isPendingProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(15);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, bool), QOperations> isExpiredProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(16);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, bool), QOperations>
+      isCancelledProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(17);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, int), QOperations>
+      timeUntilExpirationProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(18);
+    });
+  }
+
+  QueryBuilder<WalletInvoice, (R1, R2, bool), QOperations>
+      isExpiringSoonProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addProperty(19);
     });
   }
 }

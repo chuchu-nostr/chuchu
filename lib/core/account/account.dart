@@ -5,7 +5,7 @@ import 'package:chuchu/core/account/account+profile.dart';
 import 'package:chuchu/core/account/relays.dart';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
-import 'package:isar/isar.dart';
+import 'package:isar/isar.dart' hide Filter;
 import 'package:pointycastle/export.dart';
 import 'package:convert/convert.dart';
 import '../contacts/contacts.dart';
@@ -191,7 +191,7 @@ class Account {
 
   Future<UserDBISAR?> _searchUserFromDB(String pubkey) async {
     UserDBISAR? user =
-        await DBISAR.sharedInstance.isar.userDBISARs.filter().pubKeyEqualTo(pubkey).findFirst();
+        await DBISAR.sharedInstance.isar.userDBISARs.where().pubKeyEqualTo(pubkey).findFirst();
     if (user != null) {
       user = user.withGrowableLevels();
       userCache[user.pubKey] = ValueNotifier<UserDBISAR>(user);
@@ -449,3 +449,4 @@ class Account {
     return Keychain(privkey).sign(hexMessage);
   }
 }
+

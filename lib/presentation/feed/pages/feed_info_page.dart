@@ -1,7 +1,6 @@
 import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
-import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
@@ -158,6 +157,52 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     }
   }
 
+  void _handleZapTap() {
+    if (widget.notedUIModel == null) return;
+
+    // Show zap dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Send Zap'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('Send a zap to support this post?'),
+              SizedBox(height: 16),
+              Text(
+                'Current zap amount: \$${(widget.notedUIModel!.noteDB.zapAmount / 100000000.0).toStringAsFixed(2)}',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                CommonToast.instance.show(
+                  context,
+                  'Zap functionality coming soon',
+                );
+                // You can implement zap functionality here
+              },
+              child: Text('Send Zap'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   void _updateNoteDB() async {
     if (widget.notedUIModel == null) return;
 
@@ -292,7 +337,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                       value.name ?? '--',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 24.px,
+                        fontSize: 24,
                         fontWeight: FontWeight.w500,
                       ),
                       overflow: TextOverflow.ellipsis,
@@ -319,7 +364,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
               SingleChildScrollView(
                 controller: _scrollController,
                 child: Container(
-                  padding: EdgeInsets.only(bottom: 120.px),
+                  padding: EdgeInsets.only(bottom: 120),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -354,8 +399,8 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                       ),
                       Container(
                         padding: EdgeInsets.symmetric(
-                          horizontal: 16.px,
-                          vertical: 12.px,
+                          horizontal: 16,
+                          vertical: 12,
                         ),
                         width: double.infinity,
                         decoration: BoxDecoration(
@@ -383,7 +428,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         ),
                       _showReplyList(),
                       _noDataWidget(),
-                      SizedBox(height: 500.px),
+                      SizedBox(height: 500),
                     ],
                   ),
                 ),
@@ -455,7 +500,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   Widget _noDataWidget() {
     if (replyList.isNotEmpty) return const SizedBox();
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 50.px),
+      padding: EdgeInsets.symmetric(vertical: 50),
       child: Center(
         child: Column(
           children: [
@@ -463,7 +508,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
             Text(
               'No reply !',
               style: Theme.of(context).textTheme.titleLarge,
-            ).setPaddingOnly(top: 24.px),
+            ).setPaddingOnly(top: 24),
           ],
         ),
       ),
@@ -476,22 +521,26 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     final noteDB = widget.notedUIModel!.noteDB;
     final likeCount = noteDB.reactionCount;
     final commentCount = noteDB.replyCount;
+    final zapAmount = noteDB.zapAmount / 100000000.0; // Convert sats to BTC
+
+    final mediaQuery = MediaQuery.of(context);
+    final bottomInset = mediaQuery.padding.bottom;
     return Positioned(
       bottom: 0,
       left: 0,
       right: 0,
       child: Container(
-        padding: EdgeInsets.only(
-          left: 16.px,
-          right: 16.px,
-          top: 12.px,
-          bottom: 50.px,
+        padding: EdgeInsets.fromLTRB(
+          16,
+          12,
+          16,
+          16 + bottomInset,
         ),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(16.px),
-            topRight: Radius.circular(16.px),
+            topLeft: Radius.circular(16),
+            topRight: Radius.circular(16),
           ),
           boxShadow: [
             BoxShadow(
@@ -503,7 +552,6 @@ class _FeedInfoPageState extends State<FeedInfoPage>
         ),
         child: Column(
           children: [
-            SizedBox(height: 16.px),
             Row(
               children: [
                 // Message button
@@ -511,17 +559,17 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                 //   onTap: _handleMessageTap,
                 //   child: Container(
                 //     width: 200,
-                //     height: 48.px,
+                //     height: 48,
                 //     decoration: BoxDecoration(
                 //       color: Colors.grey.withOpacity(0.1),
-                //       borderRadius: BorderRadius.circular(24.px),
+                //       borderRadius: BorderRadius.circular(24),
                 //     ),
                 //     child: Center(
                 //       child: Text(
                 //         'Message',
                 //         style: TextStyle(
                 //           color: Colors.grey.shade700,
-                //           fontSize: 16.px,
+                //           fontSize: 16,
                 //           fontWeight: FontWeight.w500,
                 //         ),
                 //       ),
@@ -540,13 +588,13 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         value: likeCount.toString(),
                         onTap: _handleLikeTap,
                       ),
-                      SizedBox(width: 16.px),
+                      SizedBox(width: 16),
                       _buildEngagementItem(
                         iconName: 'reply_icon.png',
                         value: commentCount.toString(),
                         onTap: _handleCommentTap,
                       ),
-                      SizedBox(width: 16.px),
+                      SizedBox(width: 16),
                       _buildEngagementItem(
                         iconName: 'zap_icon.png',
                         value: '0',
@@ -554,6 +602,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         onTap: () {
                           CommonToast.instance.show(context, 'Zap coming soon');
                         },
+                        // _handleZapTap,
                       ),
                     ],
                   ),
@@ -577,18 +626,18 @@ class _FeedInfoPageState extends State<FeedInfoPage>
       children: [
         CommonImage(
           iconName: iconName,
-          size: 24,
+          size: 20,
           color:
               iconName == 'liked_icon.png'
                   ? null
                   : Theme.of(context).colorScheme.onSurface,
         ),
-        SizedBox(width: 4.px),
+        SizedBox(width: 4),
         Text(
           value,
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 20.px,
+            fontSize: 16,
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -600,7 +649,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
         behavior: HitTestBehavior.opaque,
         onTap: onTap,
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.px),
+          padding: EdgeInsets.symmetric(horizontal: 16),
           child: content,
         ),
       );
@@ -705,9 +754,9 @@ class MomentRootNotedWidgetState extends State<MomentRootNotedWidget> {
         children: [
           FeedWidgetsUtils.emptyNoteMomentWidget(null, 100),
           Container(
-            margin: EdgeInsets.only(left: 20.px),
-            width: 1.px,
-            height: 20.px,
+            margin: EdgeInsets.only(left: 20),
+            width: 1,
+            height: 20,
             color: Colors.grey.withOpacity(.5),
           ),
         ],
@@ -888,20 +937,20 @@ class MomentReplyWrapWidgetState extends State<MomentReplyWrapWidget> {
         setState(() {});
       },
       child: Container(
-        padding: EdgeInsets.only(left: 30.px, bottom: 24.px, top: 8.px),
+        padding: EdgeInsets.only(left: 30, bottom: 24, top: 8),
         child: Row(
           children: [
             Icon(
               Icons.more_vert,
-              size: 16.px,
+              size: 16,
               color: Theme.of(context).colorScheme.primary,
             ),
-            SizedBox(width: 8.px),
+            SizedBox(width: 8),
             Text(
               'Show reply',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.primary,
-                fontSize: 12.px,
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -976,8 +1025,8 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                 Column(
                   children: [
                     FeedWidgetsUtils.clipImage(
-                      borderRadius: 40.px,
-                      imageSize: 40.px,
+                      borderRadius: 40,
+                      imageSize: 40,
                       child: GestureDetector(
                         onTap: () {},
                         child: ChuChuCachedNetworkImage(
@@ -989,8 +1038,8 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                           errorWidget:
                               (context, url, error) =>
                                   FeedWidgetsUtils.badgePlaceholderImage(),
-                          width: 40.px,
-                          height: 40.px,
+                          width: 40,
+                          height: 40,
                         ),
                       ),
                     ),
@@ -1082,7 +1131,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
               userDB.name ?? '--',
               style: TextStyle(
                 color: Theme.of(context).colorScheme.onSurface,
-                fontSize: 18.px,
+            fontSize: 18,
                 fontWeight: FontWeight.w500,
               ),
             ),
@@ -1095,7 +1144,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           )[0],
           style: TextStyle(
             color: Theme.of(context).colorScheme.onSurface,
-            fontSize: 16.px,
+            fontSize: 16,
             fontWeight: FontWeight.w400,
           ),
         ),
