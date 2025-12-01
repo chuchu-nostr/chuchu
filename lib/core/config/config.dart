@@ -30,8 +30,10 @@ class Config {
   String defaultLnbitsUrl = 'https://lnbits.chuchu.app';
   // host config
   Map<String, String> hostConfig = {
-    "wss://relay.chuchu.app": "ws://54.183.141.200:5577",
-    "https://lnbits.chuchu.app": "http://54.183.141.200:5000",
+    // "wss://relay.chuchu.app": "ws://54.183.141.200:5577",
+    // "https://lnbits.chuchu.app": "http://54.183.141.200:5000",
+    "wss://relay.chuchu.app": "wss://relay.chuchu.app",
+    "https://lnbits.chuchu.app": "https://lnbits.chuchu.app",
   };
   final String wssHost = 'wss://relay.chuchu.app';
 
