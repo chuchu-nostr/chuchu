@@ -1,6 +1,4 @@
 import 'package:chuchu/core/feed/feed+load.dart';
-import 'package:flutter/cupertino.dart';
-
 import '../../core/account/model/userDB_isar.dart';
 import '../../core/feed/feed.dart';
 import '../../core/feed/model/noteDB_isar.dart';

@@ -74,14 +74,42 @@ class DBISAR {
           engine: IsarEngine.sqlite,
         );
       } on IsarError catch (e) {
-        // Fallback to in-memory instance (e.g. private browsing or missing OPFS)
-        print(() => 'Isar web open failed with $e. Falling back to in-memory database.');
-        isar = await Isar.open(
-          schemas: schemas,
-          directory: Isar.sqliteInMemory,
-          name: pubkey,
-          engine: IsarEngine.sqlite,
-        );
+        // Handle schema mismatch errors
+        if (e.toString().contains('Schema error') || 
+            e.toString().contains('Could not deserialize existing schema')) {
+          print(() => 'Schema error detected on web, clearing IndexedDB and retrying: $e');
+          // On web, we can't directly delete IndexedDB, so we use a different name
+          // or fall back to in-memory database
+          try {
+            // Try with a new name (adding timestamp to force new database)
+            final newWebDirectory = '${webDirectory}_${DateTime.now().millisecondsSinceEpoch}';
+            isar = await Isar.open(
+              schemas: schemas,
+              directory: newWebDirectory,
+              name: pubkey,
+              engine: IsarEngine.sqlite,
+            );
+            print(() => 'Successfully opened new database with directory: $newWebDirectory');
+          } catch (e2) {
+            // Final fallback to in-memory instance
+            print(() => 'Failed to open new database, falling back to in-memory: $e2');
+            isar = await Isar.open(
+              schemas: schemas,
+              directory: Isar.sqliteInMemory,
+              name: pubkey,
+              engine: IsarEngine.sqlite,
+            );
+          }
+        } else {
+          // Fallback to in-memory instance for other errors (e.g. private browsing or missing OPFS)
+          print(() => 'Isar web open failed with $e. Falling back to in-memory database.');
+          isar = await Isar.open(
+            schemas: schemas,
+            directory: Isar.sqliteInMemory,
+            name: pubkey,
+            engine: IsarEngine.sqlite,
+          );
+        }
       }
     } else {
       bool isOS = Platform.isIOS || Platform.isMacOS;
@@ -95,11 +123,29 @@ class DBISAR {
       }
       
       print(() => 'DBISAR open: $dbPath, pubkey: $pubkey');
-      isar = await Isar.open(
-        schemas: schemas,
-        directory: dbPath,
-        name: pubkey,
-      );
+      try {
+        isar = await Isar.open(
+          schemas: schemas,
+          directory: dbPath,
+          name: pubkey,
+        );
+      } on IsarError catch (e) {
+        // Handle schema mismatch errors by deleting old database and recreating
+        if (e.toString().contains('Schema error') || 
+            e.toString().contains('Could not deserialize existing schema')) {
+          print(() => 'Schema error detected, deleting old database and recreating: $e');
+          await _deleteDatabaseFiles(directory, pubkey);
+          // Retry opening the database after deletion
+          isar = await Isar.open(
+            schemas: schemas,
+            directory: dbPath,
+            name: pubkey,
+          );
+        } else {
+          // Re-throw other errors
+          rethrow;
+        }
+      }
     }
   }
 
@@ -179,6 +225,27 @@ class DBISAR {
       isar.walletTransactions.putAll(objects.cast<WalletTransaction>());
     } else if (type == WalletInvoice) {
       isar.walletInvoices.putAll(objects.cast<WalletInvoice>());
+    }
+  }
+
+  /// Delete all database files for a given pubkey
+  Future<void> _deleteDatabaseFiles(Directory directory, String pubkey) async {
+    try {
+      // Isar database files: {name}.isar and {name}.isar.lock
+      final dbFile = File('${directory.path}/$pubkey.isar');
+      final lockFile = File('${directory.path}/$pubkey.isar.lock');
+      
+      if (await dbFile.exists()) {
+        await dbFile.delete();
+        print(() => 'Deleted database file: ${dbFile.path}');
+      }
+      
+      if (await lockFile.exists()) {
+        await lockFile.delete();
+        print(() => 'Deleted lock file: ${lockFile.path}');
+      }
+    } catch (e) {
+      print(() => 'Error deleting database files: $e');
     }
   }
 

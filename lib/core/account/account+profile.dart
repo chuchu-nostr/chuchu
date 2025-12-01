@@ -369,7 +369,7 @@ extension AccountProfile on Account {
   Future<UserDBISAR?> _handleKind30003Event(UserDBISAR? db, Event event) async {
     if (db == null) return null;
     if (db.lastGroupsListUpdatedTime >= event.createdAt) return db;
-    Lists result = await Nip51.getLists(event, currentPubkey, currentPrivkey);
+    await Nip51.getLists(event, currentPubkey, currentPrivkey);
     // if (result.identifier == Groups.identifier) {
     //   // private group list
     //   db.lastGroupsListUpdatedTime = event.createdAt;

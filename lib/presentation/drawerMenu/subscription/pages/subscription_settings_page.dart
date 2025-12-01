@@ -2,7 +2,6 @@ import 'dart:async';
 import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+member.dart';
 import 'package:flutter/material.dart';
-import '../../../../core/account/relays.dart';
 import '../../../../core/config/config.dart';
 import '../../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../../core/relayGroups/relayGroup.dart';
@@ -394,28 +393,6 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
             ),
           ],
         ),
-      ),
-    );
-  }
-
-  Widget _buildBenefitItem(String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(
-            Icons.check_circle,
-            color: Theme.of(context).colorScheme.primary,
-            size: 20,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              text,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          ),
-        ],
       ),
     );
   }

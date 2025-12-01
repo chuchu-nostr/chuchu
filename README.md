@@ -1,11 +1,11 @@
 # ChuChu
 
-ChuChu is a decentralized content subscription platform based on the Nostr protocol, with a built-in hosted Lightning wallet, supporting subscription payments to creators through the Lightning Network.
+ChuChu is a decentralized content subscription platform based on the Nostr protocol, with a built-in custodial Lightning wallet, supporting subscription payments to creators through the Lightning Network.
 
 ## ChuChu Backend
 
 - **ChuChu Relay**: [chuchu-relay](https://github.com/nsnjx/chuchu-relay) - Based on [relay29](https://github.com/fiatjaf/relay29), enhanced with paid subscription group content functionality
-- **LNbits**: [lnbits](https://github.com/nsnjx/lnbits) - Hosted Lightning wallet service
+- **LNbits**: [lnbits](https://github.com/nsnjx/lnbits) - Custodial Lightning wallet service
 
 ## ChuChu Frontend
 
@@ -14,16 +14,34 @@ ChuChu is a decentralized content subscription platform based on the Nostr proto
 
 ## Features
 
+### Demo Videos
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Subscription creation</strong><br />
+      <img src="chuchu-demo/create-creator.gif" width="300" alt="Subscription creation demo" />
+    </td>
+    <td align="center">
+      <strong>Subscription flow</strong><br />
+      <img src="chuchu-demo/subscritions.gif" width="300" alt="Subscription flow demo" />
+    </td>
+    <td align="center">
+      <strong>Wallet experience</strong><br />
+      <img src="chuchu-demo/wallet.gif" width="300" alt="Wallet demo" />
+    </td>
+  </tr>
+</table>
+
 ### Implemented Features
 
 - **Nostr Account Login** - Support for Nostr key login and Amber login
-- **Built-in Lightning Wallet** - Integrated Lightning Network wallet with Lightning payment support
+- **Built-in Custodial Lightning Wallet** - Integrated Lightning Network wallet with Lightning payment support
 - **Follow List** - Manage creators you follow
 - **Comment Feature** - Comment and interact with posts
 - **Content Browsing** - Browse timeline
 - **Search Function** - Search creators
 - **Subscription Feature** - Subscribe to creator content
-- **Group Feature** - Join and manage Nostr groups
 - **Wallet Management** - View transaction history and manage wallet
 
 ### Development Roadmap
@@ -31,7 +49,7 @@ ChuChu is a decentralized content subscription platform based on the Nostr proto
 - [ ] Support for Apple, Google, and X login
 - [ ] Content Grouping: Posts can be categorized as public, subscriber-only, or custom groups
 - [ ] Draft Management
-- [ ] Tipping Feature: Support tipping with built-in wallet
+- [ ] Zap Feature: Support zaps with built-in wallet
 - [ ] iOS Version Support
 - [ ] Direct Messages (DM) with video chat support
 - [ ] Enhanced Search: Search by creator name, tags, and topics
@@ -99,7 +117,7 @@ Contributions are welcome! Please feel free to submit an Issue or Pull Request.
 
 ## License
 
-MIT License
+This project is distributed under the [MIT License](LICENSE).
 
 ## Contact
 

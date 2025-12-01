@@ -26,7 +26,6 @@ class FeedOptionWidget extends StatefulWidget {
 
 class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   bool _reactionTag = false;
-  bool _bookmarkTag = false;
 
   late NotedUIModel? notedUIModel;
 
@@ -225,7 +224,6 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
   }) {
     final content =
         clickNum == null || clickNum == 0 ? '' : clickNum.toString();
-    Color textColors = isSelect ? Color(0xFFA84F4F) : kIconState;
     return GestureDetector(
       onLongPress: onLongPress,
       behavior: HitTestBehavior.translucent,

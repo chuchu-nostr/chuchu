@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:chuchu/core/account/model/userDB_isar.dart';
@@ -5,13 +6,11 @@ import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
-import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 
 import '../../../core/account/account.dart';
-import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
@@ -72,6 +71,9 @@ class _FeedPageState extends State<FeedPage>
   bool _isStoriesVisible = true;
   double _storiesHeight = kStoriesSectionHeight;
 
+  Timer? _initDataTimer;
+  Timer? _scrollProcessingTimer;
+
   @override
   void initState() {
     super.initState();
@@ -91,8 +93,11 @@ class _FeedPageState extends State<FeedPage>
     _resetStoriesSection();
     _loadSubscriptionList();
 
-    Future.delayed(Duration(milliseconds: 5000), () {
-      updateNotesList(true);
+    _initDataTimer?.cancel();
+    _initDataTimer = Timer(Duration(milliseconds: 5000), () {
+      if (mounted) {
+        updateNotesList(true);
+      }
     });
   }
 
@@ -180,7 +185,8 @@ class _FeedPageState extends State<FeedPage>
       });
     }
 
-    Future.delayed(Duration(milliseconds: 100), () {
+    _scrollProcessingTimer?.cancel();
+    _scrollProcessingTimer = Timer(Duration(milliseconds: 100), () {
       _isScrollProcessing = false;
     });
   }
@@ -498,6 +504,10 @@ class _FeedPageState extends State<FeedPage>
 
   @override
   void dispose() {
+    // Cancel timers to prevent setState after dispose
+    _initDataTimer?.cancel();
+    _scrollProcessingTimer?.cancel();
+    
     ChuChuUserInfoManager.sharedInstance.removeObserver(this);
     ChuChuFeedManager.sharedInstance.removeObserver(this);
 
@@ -511,8 +521,12 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Future<void> updateNotesList(bool isInit) async {
+    if (!mounted) return;
+    
     if (isInit && notesList.isEmpty) {
-      setState(() => _isInitialLoading = true);
+      if (mounted) {
+        setState(() => _isInitialLoading = true);
+      }
     }
 
     if (isInit) {
@@ -525,6 +539,9 @@ class _FeedPageState extends State<FeedPage>
           until: isInit ? null : _allNotesFromDBLastTimestamp,
           limit: _limit) ??
           [];
+      
+      if (!mounted) return;
+      
       if (list.isEmpty) {
         isInit
             ? refreshController.refreshCompleted()
@@ -545,8 +562,10 @@ class _FeedPageState extends State<FeedPage>
       }
     } catch (e) {
       debugPrint('Error loading notes: $e');
-      refreshController.loadFailed();
-      _setInitialLoadingFalse();
+      if (mounted) {
+        refreshController.loadFailed();
+        _setInitialLoadingFalse();
+      }
     }
   }
 

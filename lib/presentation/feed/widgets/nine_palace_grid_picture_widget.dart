@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import 'package:chuchu/core/utils/adapt.dart';
-import 'package:chuchu/presentation/feed/widgets/preview_image.dart';
 import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 
@@ -37,8 +36,6 @@ class NinePalaceGridPictureWidget extends StatefulWidget {
 }
 
 class _NinePalaceGridPictureWidgetState extends State<NinePalaceGridPictureWidget> {
-  PageController? _galleryPageController;
-
   String tag = DateTime.now().millisecondsSinceEpoch.toString();
 
   @override
@@ -90,11 +87,6 @@ class _NinePalaceGridPictureWidgetState extends State<NinePalaceGridPictureWidge
     final widgetWidth = MediaQuery.of(context).size.width / widget.crossAxisCount;
     return GestureDetector(
       onTap: () {
-        List<PreviewImage> previewImageList = _getPreviewImageList(imageList);
-        final initialPage = previewImageList.indexWhere(
-              (element) => element.id == index.toString() && element.uri == imgPath,
-        );
-        _galleryPageController = PageController(initialPage: initialPage);
         CommonImageGallery.show(
           context: context,
           imageList: imageList.map((url) => ImageEntry(id: url + tag, url: url)).toList(),
@@ -118,13 +110,6 @@ class _NinePalaceGridPictureWidgetState extends State<NinePalaceGridPictureWidge
         ),
       ),
     );
-  }
-
-  List<PreviewImage> _getPreviewImageList(List<String> imageList) {
-    return imageList.map((String path) {
-      int findIndex = imageList.indexOf(path);
-      return PreviewImage(id: findIndex.toString(), uri: path);
-    }).toList();
   }
 
   Widget _showEditImageWidget(
@@ -219,8 +204,4 @@ class _NinePalaceGridPictureWidgetState extends State<NinePalaceGridPictureWidge
     return showImageList;
   }
 
-  void _onCloseGalleryPressed() {
-    _galleryPageController?.dispose();
-    _galleryPageController = null;
-  }
 }

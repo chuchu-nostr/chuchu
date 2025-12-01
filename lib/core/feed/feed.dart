@@ -7,7 +7,6 @@ import '../account/account.dart';
 import '../account/model/relayDB_isar.dart';
 import '../account/relays.dart';
 import '../contacts/contacts.dart';
-import '../database/db_isar.dart';
 import '../manager/chuchu_user_info_manager.dart';
 import '../network/connect.dart';
 import 'package:nostr_core_dart/src/filter.dart';

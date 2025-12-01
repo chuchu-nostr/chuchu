@@ -22,29 +22,29 @@ const ConfigDBISARSchema = IsarGeneratedSchema(
     properties: [
       IsarPropertySchema(
         name: 'd',
-      type: IsarType.string,
-    ),
+        type: IsarType.string,
+      ),
       IsarPropertySchema(
         name: 'eventId',
-      type: IsarType.string,
-    ),
+        type: IsarType.string,
+      ),
       IsarPropertySchema(
         name: 'time',
         type: IsarType.long,
       ),
       IsarPropertySchema(
         name: 'configJson',
-      type: IsarType.string,
-    ),
+        type: IsarType.string,
+      ),
       IsarPropertySchema(
         name: 'proxyJson',
-      type: IsarType.string,
-    ),
+        type: IsarType.string,
+      ),
     ],
     indexes: [
       IsarIndexSchema(
         name: 'd',
-      properties: [
+        properties: [
           "d",
         ],
         unique: true,
@@ -408,8 +408,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         GreaterOrEqualCondition(
           property: 1,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -423,8 +423,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         LessCondition(
           property: 1,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -439,8 +439,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         LessOrEqualCondition(
           property: 1,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -455,9 +455,9 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         BetweenCondition(
           property: 1,
-        lower: lower,
-        upper: upper,
-        caseSensitive: caseSensitive,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -471,8 +471,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         StartsWithCondition(
           property: 1,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -486,8 +486,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         EndsWithCondition(
           property: 1,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -500,8 +500,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         ContainsCondition(
           property: 1,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -514,8 +514,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         MatchesCondition(
           property: 1,
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -526,7 +526,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         const EqualCondition(
           property: 1,
-        value: '',
+          value: '',
         ),
       );
     });
@@ -538,7 +538,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         const GreaterCondition(
           property: 1,
-        value: '',
+          value: '',
         ),
       );
     });
@@ -553,8 +553,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         EqualCondition(
           property: 2,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -569,8 +569,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         GreaterCondition(
           property: 2,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -585,8 +585,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         GreaterOrEqualCondition(
           property: 2,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -634,9 +634,9 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         BetweenCondition(
           property: 2,
-        lower: lower,
-        upper: upper,
-        caseSensitive: caseSensitive,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -651,8 +651,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         StartsWithCondition(
           property: 2,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -667,8 +667,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         EndsWithCondition(
           property: 2,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -680,8 +680,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         ContainsCondition(
           property: 2,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -693,8 +693,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         MatchesCondition(
           property: 2,
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -706,7 +706,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         const EqualCondition(
           property: 2,
-        value: '',
+          value: '',
         ),
       );
     });
@@ -718,7 +718,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         const GreaterCondition(
           property: 2,
-        value: '',
+          value: '',
         ),
       );
     });
@@ -816,8 +816,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         EqualCondition(
           property: 4,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -832,8 +832,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         GreaterCondition(
           property: 4,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -848,8 +848,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         GreaterOrEqualCondition(
           property: 4,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -897,9 +897,9 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         BetweenCondition(
           property: 4,
-        lower: lower,
-        upper: upper,
-        caseSensitive: caseSensitive,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -914,8 +914,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         StartsWithCondition(
           property: 4,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -930,8 +930,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         EndsWithCondition(
           property: 4,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -943,8 +943,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         ContainsCondition(
           property: 4,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -956,8 +956,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         MatchesCondition(
           property: 4,
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -969,7 +969,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         const EqualCondition(
           property: 4,
-        value: '',
+          value: '',
         ),
       );
     });
@@ -981,7 +981,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         const GreaterCondition(
           property: 4,
-        value: '',
+          value: '',
         ),
       );
     });
@@ -996,7 +996,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         EqualCondition(
           property: 5,
-        value: value,
+          value: value,
           caseSensitive: caseSensitive,
         ),
       );
@@ -1012,7 +1012,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         GreaterCondition(
           property: 5,
-        value: value,
+          value: value,
           caseSensitive: caseSensitive,
         ),
       );
@@ -1028,8 +1028,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         GreaterOrEqualCondition(
           property: 5,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -1044,8 +1044,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         LessCondition(
           property: 5,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -1060,8 +1060,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         LessOrEqualCondition(
           property: 5,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -1077,9 +1077,9 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         BetweenCondition(
           property: 5,
-        lower: lower,
-        upper: upper,
-        caseSensitive: caseSensitive,
+          lower: lower,
+          upper: upper,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -1094,8 +1094,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         StartsWithCondition(
           property: 5,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -1110,8 +1110,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         EndsWithCondition(
           property: 5,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -1123,8 +1123,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         ContainsCondition(
           property: 5,
-        value: value,
-        caseSensitive: caseSensitive,
+          value: value,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -1136,8 +1136,8 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         MatchesCondition(
           property: 5,
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
         ),
       );
     });
@@ -1149,7 +1149,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         const EqualCondition(
           property: 5,
-        value: '',
+          value: '',
         ),
       );
     });
@@ -1161,7 +1161,7 @@ extension ConfigDBISARQueryFilter
       return query.addFilterCondition(
         const GreaterCondition(
           property: 5,
-        value: '',
+          value: '',
         ),
       );
     });
@@ -1363,7 +1363,7 @@ extension ConfigDBISARQuerySortThenBy
       return query.addSortBy(5, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
-  }
+}
 
 extension ConfigDBISARQueryWhereDistinct
     on QueryBuilder<ConfigDBISAR, ConfigDBISAR, QDistinct> {
@@ -1400,7 +1400,7 @@ extension ConfigDBISARQueryWhereDistinct
       return query.addDistinctBy(5, caseSensitive: caseSensitive);
     });
   }
-  }
+}
 
 extension ConfigDBISARQueryProperty1
     on QueryBuilder<ConfigDBISAR, ConfigDBISAR, QProperty> {
@@ -1414,7 +1414,7 @@ extension ConfigDBISARQueryProperty1
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(1);
     });
-}
+  }
 
   QueryBuilder<ConfigDBISAR, String, QAfterProperty> eventIdProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -1439,7 +1439,7 @@ extension ConfigDBISARQueryProperty1
       return query.addProperty(5);
     });
   }
-  }
+}
 
 extension ConfigDBISARQueryProperty2<R>
     on QueryBuilder<ConfigDBISAR, R, QAfterProperty> {
@@ -1453,7 +1453,7 @@ extension ConfigDBISARQueryProperty2<R>
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(1);
     });
-}
+  }
 
   QueryBuilder<ConfigDBISAR, (R, String), QAfterProperty> eventIdProperty() {
     return QueryBuilder.apply(this, (query) {
@@ -1478,7 +1478,7 @@ extension ConfigDBISARQueryProperty2<R>
       return query.addProperty(5);
     });
   }
-  }
+}
 
 extension ConfigDBISARQueryProperty3<R1, R2>
     on QueryBuilder<ConfigDBISAR, (R1, R2), QAfterProperty> {

@@ -30,7 +30,7 @@ class UploadUtils {
     if (kIsWeb && encryptedKey != null && encryptedKey.isNotEmpty) {
       return UploadResult.error('File encryption is not supported on web platform');
     }
-    
+
     File uploadFile = file;
     File? encryptedFile;
     if (!kIsWeb && encryptedKey != null && encryptedKey.isNotEmpty) {
@@ -50,11 +50,11 @@ class UploadUtils {
       encryptedFile = createFolderAndFile(directoryPath + "/encrytedfile", filename);
       // Type cast for non-web platforms where types match
       await AesEncryptUtils.encryptFileInIsolate(
-        file as dynamic, 
-        encryptedFile as dynamic, 
-        encryptedKey,
-        nonce: encryptedNonce, 
-        mode: AESMode.gcm
+          file as dynamic,
+          encryptedFile as dynamic,
+          encryptedKey,
+          nonce: encryptedNonce,
+          mode: AESMode.gcm
       );
       uploadFile = encryptedFile;
     }

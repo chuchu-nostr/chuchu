@@ -784,7 +784,8 @@ extension Load on Feed {
         queryBuilder = queryBuilder.groupIdEqualTo(groupId);
       } else if (groupId == null || groupId.isEmpty) {
         if (noteId == null) {
-          queryBuilder = queryBuilder.groupIdIsEmpty();
+          queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+              .groupIdIsEmpty();
         }
       }
       if (isWeb && queryBuilder == null) {

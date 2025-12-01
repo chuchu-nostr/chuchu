@@ -65,11 +65,11 @@ class Messages {
   Future<void> refindActionsFromDB() async {
     final isar = DBISAR.sharedInstance.isar;
     List<NoteDBISAR> reactions =
-        await isar.noteDBISARs.where().reactedIdIsNotEmpty().findEventEqualTo(false).findAll();
+    await isar.noteDBISARs.where().reactedIdIsNotEmpty().findEventEqualTo(false).findAll();
     for (var reaction in reactions) {
       String eventId = reaction.reactedId!;
       MessageDBISAR? message =
-          await isar.messageDBISARs.where().messageIdEqualTo(eventId).findFirst();
+      await isar.messageDBISARs.where().messageIdEqualTo(eventId).findFirst();
       if (message != null) {
         message = message.withGrowableLevels();
         message.reactionEventIds ??= [];
@@ -83,11 +83,11 @@ class Messages {
       }
     }
     List<ZapRecordsDBISAR> zaps =
-        await isar.zapRecordsDBISARs.where().findEventEqualTo(false).findAll();
+    await isar.zapRecordsDBISARs.where().findEventEqualTo(false).findAll();
     for (var zap in zaps) {
       String eventId = zap.eventId;
       MessageDBISAR? message =
-          await isar.messageDBISARs.where().messageIdEqualTo(eventId).findFirst();
+      await isar.messageDBISARs.where().messageIdEqualTo(eventId).findFirst();
       if (message != null) {
         message = message.withGrowableLevels();
         message.reactionEventIds ??= [];
@@ -116,25 +116,25 @@ class Messages {
 
     messageRequestsId =
         Connect.sharedInstance.addSubscriptions(subscriptions, eventCallBack: (event, relay) {
-      Relays.sharedInstance.setCommonMessageUntil(event.createdAt, relay);
-      Relays.sharedInstance.setCommonMessageSince(event.createdAt, relay);
-      switch (event.kind) {
-        case 5:
-          _handleDeleteEvent(event);
-          break;
-        case 43:
-          _handleHideMessageEvent(event);
-          break;
-        case 44:
-          _handleMuteUserEvent(event);
-          break;
-        default:
-          LogUtils.v(() => 'messages unhandled message ${event.toJson()}');
-          break;
-      }
-    }, eoseCallBack: (String requestId, OKEvent ok, String relay, List<String> unCompletedRelays) {
-      Relays.sharedInstance.syncRelaysToDB();
-    });
+          Relays.sharedInstance.setCommonMessageUntil(event.createdAt, relay);
+          Relays.sharedInstance.setCommonMessageSince(event.createdAt, relay);
+          switch (event.kind) {
+            case 5:
+              _handleDeleteEvent(event);
+              break;
+            case 43:
+              _handleHideMessageEvent(event);
+              break;
+            case 44:
+              _handleMuteUserEvent(event);
+              break;
+            default:
+              LogUtils.v(() => 'messages unhandled message ${event.toJson()}');
+              break;
+          }
+        }, eoseCallBack: (String requestId, OKEvent ok, String relay, List<String> unCompletedRelays) {
+          Relays.sharedInstance.syncRelaysToDB();
+        });
   }
 
   Future<void> closeMessagesActionsRequests() async {
@@ -156,18 +156,18 @@ class Messages {
     }
     messagesActionsRequestsId = Connect.sharedInstance.addSubscription([f],
         eventCallBack: (event, relay) {
-      switch (event.kind) {
-        case 7:
-          handleReactionEvent(event);
-          break;
-        case 9735:
-          handleZapRecordEvent(event);
-          break;
-        default:
-          LogUtils.v(() => 'unhandled message $event');
-          break;
-      }
-    });
+          switch (event.kind) {
+            case 7:
+              handleReactionEvent(event);
+              break;
+            case 9735:
+              handleZapRecordEvent(event);
+              break;
+            default:
+              LogUtils.v(() => 'unhandled message $event');
+              break;
+          }
+        });
   }
 
   Future<MessageDBISAR?> loadMessageDBFromDB(String messageId) async {
@@ -244,16 +244,16 @@ class Messages {
       switch (messageDB.chatType) {
         case 0:
         case 3:
-          // OKEvent ok =
-          //     await Feed.sharedInstance.sendPrivateMessage([messageDB.sender, pubkey], event);
-          // if (!completer.isCompleted) completer.complete(ok);
-          // break;
+        // OKEvent ok =
+        //     await Feed.sharedInstance.sendPrivateMessage([messageDB.sender, pubkey], event);
+        // if (!completer.isCompleted) completer.complete(ok);
+        // break;
         case 1:
-          // if (groupId != null) {
-          //   OKEvent ok = await Groups.sharedInstance.sendToGroup(groupId, event);
-          //   if (!completer.isCompleted) completer.complete(ok);
-          //   break;
-          // }
+        // if (groupId != null) {
+        //   OKEvent ok = await Groups.sharedInstance.sendToGroup(groupId, event);
+        //   if (!completer.isCompleted) completer.complete(ok);
+        //   break;
+        // }
         case 4:
           if (groupId != null) {
             OKEvent ok = await RelayGroup.sharedInstance.sendToGroup(groupId, event);
@@ -307,7 +307,7 @@ class Messages {
       }).toList());
       if (deleteEventIds.isNotEmpty) {
         DeleteEvent deleteEvent =
-            DeleteEvent(message.sender, deleteEventIds, message.content, message.createTime);
+        DeleteEvent(message.sender, deleteEventIds, message.content, message.createTime);
         deleteEvents.add(deleteEvent);
       }
     }
@@ -411,7 +411,7 @@ class Messages {
       }
       if (query && receiver != null) {
         query = (message.sender == receiver &&
-                message.receiver == Account.sharedInstance.currentPubkey) ||
+            message.receiver == Account.sharedInstance.currentPubkey) ||
             (message.sender == Account.sharedInstance.currentPubkey &&
                 message.receiver == receiver);
       }
@@ -453,18 +453,18 @@ class Messages {
     if (receiver != null) {
       queryBuilder = queryBuilder.group((q) => q
           .group((q) => q
-              .senderEqualTo(receiver)
-              .and()
-              .receiverEqualTo(Account.sharedInstance.currentPubkey)
-              .and()
-              .sessionIdIsEmpty())
+          .senderEqualTo(receiver)
+          .and()
+          .receiverEqualTo(Account.sharedInstance.currentPubkey)
+          .and()
+          .sessionIdIsEmpty())
           .or()
           .group((q) => q
-              .senderEqualTo(Account.sharedInstance.currentPubkey)
-              .and()
-              .receiverEqualTo(receiver)
-              .and()
-              .sessionIdIsEmpty()));
+          .senderEqualTo(Account.sharedInstance.currentPubkey)
+          .and()
+          .receiverEqualTo(receiver)
+          .and()
+          .sessionIdIsEmpty()));
     }
     if (sessionId != null){
       queryBuilder = queryBuilder.sessionIdEqualTo(sessionId);
@@ -499,23 +499,23 @@ class Messages {
     if (since != null) {
       queryBuilder = queryBuilder.createTimeGreaterThan(since);
     }
-    
+
     // Sort in memory after filtering
     var allMessages = await (queryBuilder as dynamic).findAll();
     allMessages.sort((a, b) => b.createTime.compareTo(a.createTime));
-    
+
     final messages = limit == null
         ? allMessages
         : allMessages.take(limit).toList();
 
     int theLastTime = 0;
     List<MessageDBISAR> result = loadMessagesFromCache(
-      receiver: receiver,
-      groupId: groupId,
-      sessionId: sessionId,
-      messageTypes: messageTypes,
-      until: until,
-      hasPreviewData: hasPreviewData
+        receiver: receiver,
+        groupId: groupId,
+        sessionId: sessionId,
+        messageTypes: messageTypes,
+        until: until,
+        hasPreviewData: hasPreviewData
     );
     for (var message in messages) {
       message = message.withGrowableLevels();
@@ -578,15 +578,15 @@ class Messages {
       messages = await isar.messageDBISARs
           .where()
           .group((q) => q
-              .group((q) => q
-                  .senderEqualTo(chatId)
-                  .and()
-                  .receiverEqualTo(Account.sharedInstance.currentPubkey))
-              .or()
-              .group((q) => q
-                  .senderEqualTo(Account.sharedInstance.currentPubkey)
-                  .and()
-                  .receiverEqualTo(chatId)))
+          .group((q) => q
+          .senderEqualTo(chatId)
+          .and()
+          .receiverEqualTo(Account.sharedInstance.currentPubkey))
+          .or()
+          .group((q) => q
+          .senderEqualTo(Account.sharedInstance.currentPubkey)
+          .and()
+          .receiverEqualTo(chatId)))
           .and()
           .decryptContentContains(orignalSearchTxt, caseSensitive: false)
           .findAll();

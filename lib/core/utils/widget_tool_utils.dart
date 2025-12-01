@@ -9,17 +9,17 @@ extension ChuChuCommonWidget on Widget {
   }
 
   Widget setPaddingOnly({
-    left = 0.0,
-    top = 0.0,
-    right = 0.0,
-    bottom = 0.0,
+    num left = 0.0,
+    num top = 0.0,
+    num right = 0.0,
+    num bottom = 0.0,
   }) {
     return Padding(
       padding: EdgeInsets.only(
-        top: top,
-        bottom: bottom,
-        left: left,
-        right: right,
+        top: top.toDouble(),
+        bottom: bottom.toDouble(),
+        left: left.toDouble(),
+        right: right.toDouble(),
       ),
       child: this,
     );

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:chuchu/core/contacts/contacts+blocklist.dart';
 import 'package:chuchu/core/contacts/contacts+isolateEvent.dart';
 import 'package:chuchu/core/feed/feed+load.dart';

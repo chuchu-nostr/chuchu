@@ -83,7 +83,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       // Ensure we have member info. If missing, pull from relays.
       if (group.members == null || group.members!.isEmpty) {
         final refreshedGroup =
-            await RelayGroup.sharedInstance.searchGroupMembersFromRelays(group);
+        await RelayGroup.sharedInstance.searchGroupMembersFromRelays(group);
         group = refreshedGroup;
         debugPrint(
             'FeedPersonalPage: refreshed members from relays (members=${group.members?.length ?? 0})');
@@ -93,8 +93,8 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     }
 
     final List<String> members = (group.members ??
-            widget.relayGroupDB.members ??
-            const <String>[])
+        widget.relayGroupDB.members ??
+        const <String>[])
         .toList();
     debugPrint(
         'FeedPersonalPage: evaluating subscription status. subscriptionAmount=${group.subscriptionAmount}, membersCount=${members.length}, containsMe=${members.contains(myPubkey)}');
@@ -103,10 +103,10 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
 
     if (isPaidGroup) {
       subscriptionStatus =
-          isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.unsubscribed;
+      isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.unsubscribed;
     } else {
       subscriptionStatus =
-          isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.free;
+      isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.free;
     }
 
     setState(() {});
@@ -187,7 +187,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
       onPressed: () {
         ChuChuNavigator.pushPage(
           context,
-          (context) => ProfileEditPage(relayGroup: widget.relayGroupDB),
+              (context) => ProfileEditPage(relayGroup: widget.relayGroupDB),
         );
       },
       icon: CommonImage(
@@ -251,11 +251,11 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
         return Column(
           children: [
             SubscribedOptionWidget(
-              relayGroup: widget.relayGroupDB,
-              subscriptionStatus: subscriptionStatus,
-              onSubscriptionSuccess: () {
-                getSubscriptionStatus();
-              }
+                relayGroup: widget.relayGroupDB,
+                subscriptionStatus: subscriptionStatus,
+                onSubscriptionSuccess: () {
+                  getSubscriptionStatus();
+                }
             ),
             dividerWidget(),
           ],
@@ -307,9 +307,9 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
         notedUIModel: notedUIModel,
         clickMomentCallback:
             (m) => ChuChuNavigator.pushPage(
-              context,
+          context,
               (_) => FeedInfoPage(notedUIModel: m),
-            ),
+        ),
       ),
     );
   }
@@ -326,17 +326,17 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
     try {
       final until = isInit ? null : _allNotesFromDBLastTimestamp;
       List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
-              widget.relayGroupDB.groupId,
-              until: until,
-              limit: _limit) ??
+          widget.relayGroupDB.groupId,
+          until: until,
+          limit: _limit) ??
           [];
 
       if (list.isEmpty) {
         await _fetchNotesFromRelay(isInitial: isInit);
         list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
-                widget.relayGroupDB.groupId,
-                until: until,
-                limit: _limit) ??
+            widget.relayGroupDB.groupId,
+            until: until,
+            limit: _limit) ??
             [];
       }
 
@@ -412,17 +412,17 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   }
 
   void _updateUIWithNotes(
-    List<NoteDBISAR> filteredNotes,
-    bool isInit,
-    int fetchedCount,
-  ) {
+      List<NoteDBISAR> filteredNotes,
+      bool isInit,
+      int fetchedCount,
+      ) {
     if (filteredNotes.isEmpty) {
       _handleEmptyFilteredNotes(isInit);
       return;
     }
 
     final uiModels =
-        filteredNotes.map((item) => NotedUIModel(noteDB: item)).toList();
+    filteredNotes.map((item) => NotedUIModel(noteDB: item)).toList();
 
     if (isInit) {
       notesList = uiModels;

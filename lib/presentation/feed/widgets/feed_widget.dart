@@ -1,6 +1,5 @@
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
-import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:flutter/material.dart';
 import '../../../core/account/account.dart';
@@ -23,7 +22,6 @@ import 'feed_reply_contact_widget.dart';
 import 'feed_rich_text_widget.dart';
 import 'feed_url_widget.dart';
 import 'feed_video_widget.dart';
-import 'nine_palace_grid_picture_widget.dart';
 
 enum EFeedWidgetLayout { fullScreen, halfScreen }
 
@@ -69,8 +67,6 @@ class _FeedWidgetState extends State<FeedWidget> {
   static const double _verticalPadding = 12.0;
   static const double _rightPadding = 8.0;
   static const double _bottomSpacing = 12.0;
-  static const int _imageSpacing = 4;
-  static const double _mediaWidthRatio = 0.64;
 
   NotedUIModel? notedUIModel;
 
@@ -344,10 +340,7 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   Widget _buildImageGrid(List<String> imageList) {
-    final width =
-        (_cachedMediaQuery ?? MediaQuery.of(context)).size.width *
-        _mediaWidthRatio;
-    return  CarouselWidget(items: imageList);
+    return CarouselWidget(items: imageList);
   }
 
   Widget _buildVideoWidget(String videoUrl) {
@@ -488,8 +481,6 @@ class _FeedWidgetState extends State<FeedWidget> {
     final model = notedUIModel;
     if (model == null || !widget.isShowUserInfo) return const SizedBox();
 
-    final pubKey = model.noteDB.author;
-
     return Container(
       child: Container(
         padding: EdgeInsets.only(bottom: _bottomSpacing),
@@ -526,9 +517,4 @@ class _FeedWidgetState extends State<FeedWidget> {
     await Account.sharedInstance.getUserInfo(pubKey);
   }
 
-  int _calculateColumnsForPictures(int picSize) {
-    if (picSize == 1) return 1;
-    if (picSize > 1 && picSize < 5) return 2;
-    return 3;
-  }
 }

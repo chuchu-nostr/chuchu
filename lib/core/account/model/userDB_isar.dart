@@ -30,9 +30,7 @@ class UserDBISAR {
   @Index(unique: true)
   String pubKey;
 
-  String? encryptedPrivKey;
   String? privkey;
-  String? defaultPassword;
 
   String? name;
   String? nickName;
@@ -113,9 +111,7 @@ class UserDBISAR {
 
   UserDBISAR({
     this.pubKey = '',
-    this.encryptedPrivKey = '',
     this.privkey = '',
-    this.defaultPassword = '',
     this.name = '',
     this.nickName = '',
     this.mainRelay = '',
@@ -258,8 +254,6 @@ class NostrWalletConnection {
 UserDBISAR _userInfoFromMap(Map<String, dynamic> map) {
   return UserDBISAR(
     pubKey: map['pubKey'].toString(),
-    encryptedPrivKey: map['encryptedPrivKey'].toString(),
-    defaultPassword: map['defaultPassword'].toString(),
     name: map['name'].toString(),
     nickName: map['nickName'].toString(),
     mainRelay: map['mainRelay'].toString(),

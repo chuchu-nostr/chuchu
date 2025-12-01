@@ -25,15 +25,7 @@ const UserDBISARSchema = IsarGeneratedSchema(
         type: IsarType.string,
       ),
       IsarPropertySchema(
-        name: 'encryptedPrivKey',
-        type: IsarType.string,
-      ),
-      IsarPropertySchema(
         name: 'privkey',
-        type: IsarType.string,
-      ),
-      IsarPropertySchema(
-        name: 'defaultPassword',
         type: IsarType.string,
       ),
       IsarPropertySchema(
@@ -252,7 +244,7 @@ const UserDBISARSchema = IsarGeneratedSchema(
 int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
   IsarCore.writeString(writer, 1, object.pubKey);
   {
-    final value = object.encryptedPrivKey;
+    final value = object.privkey;
     if (value == null) {
       IsarCore.writeNull(writer, 2);
     } else {
@@ -260,7 +252,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.privkey;
+    final value = object.name;
     if (value == null) {
       IsarCore.writeNull(writer, 3);
     } else {
@@ -268,7 +260,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.defaultPassword;
+    final value = object.nickName;
     if (value == null) {
       IsarCore.writeNull(writer, 4);
     } else {
@@ -276,7 +268,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.name;
+    final value = object.mainRelay;
     if (value == null) {
       IsarCore.writeNull(writer, 5);
     } else {
@@ -284,7 +276,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.nickName;
+    final value = object.dns;
     if (value == null) {
       IsarCore.writeNull(writer, 6);
     } else {
@@ -292,7 +284,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.mainRelay;
+    final value = object.lnurl;
     if (value == null) {
       IsarCore.writeNull(writer, 7);
     } else {
@@ -300,7 +292,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.dns;
+    final value = object.badges;
     if (value == null) {
       IsarCore.writeNull(writer, 8);
     } else {
@@ -308,7 +300,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.lnurl;
+    final value = object.gender;
     if (value == null) {
       IsarCore.writeNull(writer, 9);
     } else {
@@ -316,7 +308,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.badges;
+    final value = object.area;
     if (value == null) {
       IsarCore.writeNull(writer, 10);
     } else {
@@ -324,7 +316,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.gender;
+    final value = object.about;
     if (value == null) {
       IsarCore.writeNull(writer, 11);
     } else {
@@ -332,7 +324,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.area;
+    final value = object.picture;
     if (value == null) {
       IsarCore.writeNull(writer, 12);
     } else {
@@ -340,7 +332,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.about;
+    final value = object.banner;
     if (value == null) {
       IsarCore.writeNull(writer, 13);
     } else {
@@ -348,7 +340,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.picture;
+    final value = object.aliasPubkey;
     if (value == null) {
       IsarCore.writeNull(writer, 14);
     } else {
@@ -356,7 +348,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.banner;
+    final value = object.toAliasPubkey;
     if (value == null) {
       IsarCore.writeNull(writer, 15);
     } else {
@@ -364,7 +356,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.aliasPubkey;
+    final value = object.toAliasPrivkey;
     if (value == null) {
       IsarCore.writeNull(writer, 16);
     } else {
@@ -372,7 +364,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.toAliasPubkey;
+    final value = object.friendsList;
     if (value == null) {
       IsarCore.writeNull(writer, 17);
     } else {
@@ -380,23 +372,31 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.toAliasPrivkey;
-    if (value == null) {
+    final list = object.channelsList;
+    if (list == null) {
       IsarCore.writeNull(writer, 18);
     } else {
-      IsarCore.writeString(writer, 18, value);
+      final listWriter = IsarCore.beginList(writer, 18, list.length);
+      for (var i = 0; i < list.length; i++) {
+        IsarCore.writeString(listWriter, i, list[i]);
+      }
+      IsarCore.endList(writer, listWriter);
     }
   }
   {
-    final value = object.friendsList;
-    if (value == null) {
+    final list = object.groupsList;
+    if (list == null) {
       IsarCore.writeNull(writer, 19);
     } else {
-      IsarCore.writeString(writer, 19, value);
+      final listWriter = IsarCore.beginList(writer, 19, list.length);
+      for (var i = 0; i < list.length; i++) {
+        IsarCore.writeString(listWriter, i, list[i]);
+      }
+      IsarCore.endList(writer, listWriter);
     }
   }
   {
-    final list = object.channelsList;
+    final list = object.relayGroupsList;
     if (list == null) {
       IsarCore.writeNull(writer, 20);
     } else {
@@ -408,7 +408,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.groupsList;
+    final list = object.badgesList;
     if (list == null) {
       IsarCore.writeNull(writer, 21);
     } else {
@@ -420,7 +420,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.relayGroupsList;
+    final list = object.blockedList;
     if (list == null) {
       IsarCore.writeNull(writer, 22);
     } else {
@@ -432,7 +432,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.badgesList;
+    final list = object.blockedHashTags;
     if (list == null) {
       IsarCore.writeNull(writer, 23);
     } else {
@@ -444,7 +444,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.blockedList;
+    final list = object.blockedWords;
     if (list == null) {
       IsarCore.writeNull(writer, 24);
     } else {
@@ -456,7 +456,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.blockedHashTags;
+    final list = object.blockedThreads;
     if (list == null) {
       IsarCore.writeNull(writer, 25);
     } else {
@@ -468,7 +468,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.blockedWords;
+    final list = object.followingList;
     if (list == null) {
       IsarCore.writeNull(writer, 26);
     } else {
@@ -480,7 +480,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.blockedThreads;
+    final list = object.followersList;
     if (list == null) {
       IsarCore.writeNull(writer, 27);
     } else {
@@ -492,7 +492,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.followingList;
+    final list = object.relayList;
     if (list == null) {
       IsarCore.writeNull(writer, 28);
     } else {
@@ -504,7 +504,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.followersList;
+    final list = object.dmRelayList;
     if (list == null) {
       IsarCore.writeNull(writer, 29);
     } else {
@@ -516,7 +516,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.relayList;
+    final list = object.inboxRelayList;
     if (list == null) {
       IsarCore.writeNull(writer, 30);
     } else {
@@ -528,7 +528,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final list = object.dmRelayList;
+    final list = object.outboxRelayList;
     if (list == null) {
       IsarCore.writeNull(writer, 31);
     } else {
@@ -539,50 +539,42 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
       IsarCore.endList(writer, listWriter);
     }
   }
-  {
-    final list = object.inboxRelayList;
-    if (list == null) {
-      IsarCore.writeNull(writer, 32);
-    } else {
-      final listWriter = IsarCore.beginList(writer, 32, list.length);
-      for (var i = 0; i < list.length; i++) {
-        IsarCore.writeString(listWriter, i, list[i]);
-      }
-      IsarCore.endList(writer, listWriter);
-    }
-  }
-  {
-    final list = object.outboxRelayList;
-    if (list == null) {
-      IsarCore.writeNull(writer, 33);
-    } else {
-      final listWriter = IsarCore.beginList(writer, 33, list.length);
-      for (var i = 0; i < list.length; i++) {
-        IsarCore.writeString(listWriter, i, list[i]);
-      }
-      IsarCore.endList(writer, listWriter);
-    }
-  }
-  IsarCore.writeLong(writer, 34, object.lastFriendsListUpdatedTime);
-  IsarCore.writeLong(writer, 35, object.lastChannelsListUpdatedTime);
-  IsarCore.writeLong(writer, 36, object.lastGroupsListUpdatedTime);
-  IsarCore.writeLong(writer, 37, object.lastRelayGroupsListUpdatedTime);
-  IsarCore.writeLong(writer, 38, object.lastBadgesListUpdatedTime);
-  IsarCore.writeLong(writer, 39, object.lastBlockListUpdatedTime);
-  IsarCore.writeLong(writer, 40, object.lastRelayListUpdatedTime);
-  IsarCore.writeLong(writer, 41, object.lastFollowingListUpdatedTime);
-  IsarCore.writeLong(writer, 42, object.lastDMRelayListUpdatedTime);
+  IsarCore.writeLong(writer, 32, object.lastFriendsListUpdatedTime);
+  IsarCore.writeLong(writer, 33, object.lastChannelsListUpdatedTime);
+  IsarCore.writeLong(writer, 34, object.lastGroupsListUpdatedTime);
+  IsarCore.writeLong(writer, 35, object.lastRelayGroupsListUpdatedTime);
+  IsarCore.writeLong(writer, 36, object.lastBadgesListUpdatedTime);
+  IsarCore.writeLong(writer, 37, object.lastBlockListUpdatedTime);
+  IsarCore.writeLong(writer, 38, object.lastRelayListUpdatedTime);
+  IsarCore.writeLong(writer, 39, object.lastFollowingListUpdatedTime);
+  IsarCore.writeLong(writer, 40, object.lastDMRelayListUpdatedTime);
   {
     final value = object.mute;
     if (value == null) {
-      IsarCore.writeNull(writer, 43);
+      IsarCore.writeNull(writer, 41);
     } else {
-      IsarCore.writeBool(writer, 43, value);
+      IsarCore.writeBool(writer, 41, value);
     }
   }
-  IsarCore.writeLong(writer, 44, object.lastUpdatedTime);
+  IsarCore.writeLong(writer, 42, object.lastUpdatedTime);
   {
     final value = object.otherField;
+    if (value == null) {
+      IsarCore.writeNull(writer, 43);
+    } else {
+      IsarCore.writeString(writer, 43, value);
+    }
+  }
+  {
+    final value = object.nwcURI;
+    if (value == null) {
+      IsarCore.writeNull(writer, 44);
+    } else {
+      IsarCore.writeString(writer, 44, value);
+    }
+  }
+  {
+    final value = object.remoteSignerURI;
     if (value == null) {
       IsarCore.writeNull(writer, 45);
     } else {
@@ -590,7 +582,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.nwcURI;
+    final value = object.clientPrivateKey;
     if (value == null) {
       IsarCore.writeNull(writer, 46);
     } else {
@@ -598,7 +590,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.remoteSignerURI;
+    final value = object.remotePubkey;
     if (value == null) {
       IsarCore.writeNull(writer, 47);
     } else {
@@ -606,7 +598,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.clientPrivateKey;
+    final value = object.androidSignerKey;
     if (value == null) {
       IsarCore.writeNull(writer, 48);
     } else {
@@ -614,7 +606,7 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.remotePubkey;
+    final value = object.encodedKeyPackage;
     if (value == null) {
       IsarCore.writeNull(writer, 49);
     } else {
@@ -622,27 +614,11 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
     }
   }
   {
-    final value = object.androidSignerKey;
+    final value = object.settings;
     if (value == null) {
       IsarCore.writeNull(writer, 50);
     } else {
       IsarCore.writeString(writer, 50, value);
-    }
-  }
-  {
-    final value = object.encodedKeyPackage;
-    if (value == null) {
-      IsarCore.writeNull(writer, 51);
-    } else {
-      IsarCore.writeString(writer, 51, value);
-    }
-  }
-  {
-    final value = object.settings;
-    if (value == null) {
-      IsarCore.writeNull(writer, 52);
-    } else {
-      IsarCore.writeString(writer, 52, value);
     }
   }
   return object.id;
@@ -652,45 +628,41 @@ int serializeUserDBISAR(IsarWriter writer, UserDBISAR object) {
 UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   final String _pubKey;
   _pubKey = IsarCore.readString(reader, 1) ?? '';
-  final String? _encryptedPrivKey;
-  _encryptedPrivKey = IsarCore.readString(reader, 2) ?? '';
   final String? _privkey;
-  _privkey = IsarCore.readString(reader, 3) ?? '';
-  final String? _defaultPassword;
-  _defaultPassword = IsarCore.readString(reader, 4) ?? '';
+  _privkey = IsarCore.readString(reader, 2) ?? '';
   final String? _name;
-  _name = IsarCore.readString(reader, 5) ?? '';
+  _name = IsarCore.readString(reader, 3) ?? '';
   final String? _nickName;
-  _nickName = IsarCore.readString(reader, 6) ?? '';
+  _nickName = IsarCore.readString(reader, 4) ?? '';
   final String? _mainRelay;
-  _mainRelay = IsarCore.readString(reader, 7) ?? '';
+  _mainRelay = IsarCore.readString(reader, 5) ?? '';
   final String? _dns;
-  _dns = IsarCore.readString(reader, 8) ?? '';
+  _dns = IsarCore.readString(reader, 6) ?? '';
   final String? _lnurl;
-  _lnurl = IsarCore.readString(reader, 9) ?? '';
+  _lnurl = IsarCore.readString(reader, 7) ?? '';
   final String? _badges;
-  _badges = IsarCore.readString(reader, 10) ?? '';
+  _badges = IsarCore.readString(reader, 8) ?? '';
   final String? _gender;
-  _gender = IsarCore.readString(reader, 11) ?? '';
+  _gender = IsarCore.readString(reader, 9) ?? '';
   final String? _area;
-  _area = IsarCore.readString(reader, 12) ?? '';
+  _area = IsarCore.readString(reader, 10) ?? '';
   final String? _about;
-  _about = IsarCore.readString(reader, 13) ?? '';
+  _about = IsarCore.readString(reader, 11) ?? '';
   final String? _picture;
-  _picture = IsarCore.readString(reader, 14) ?? '';
+  _picture = IsarCore.readString(reader, 12) ?? '';
   final String? _banner;
-  _banner = IsarCore.readString(reader, 15) ?? '';
+  _banner = IsarCore.readString(reader, 13) ?? '';
   final String? _aliasPubkey;
-  _aliasPubkey = IsarCore.readString(reader, 16) ?? '';
+  _aliasPubkey = IsarCore.readString(reader, 14) ?? '';
   final String? _toAliasPubkey;
-  _toAliasPubkey = IsarCore.readString(reader, 17) ?? '';
+  _toAliasPubkey = IsarCore.readString(reader, 15) ?? '';
   final String? _toAliasPrivkey;
-  _toAliasPrivkey = IsarCore.readString(reader, 18) ?? '';
+  _toAliasPrivkey = IsarCore.readString(reader, 16) ?? '';
   final String? _friendsList;
-  _friendsList = IsarCore.readString(reader, 19);
+  _friendsList = IsarCore.readString(reader, 17);
   final List<String>? _channelsList;
   {
-    final length = IsarCore.readList(reader, 20, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 18, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -707,7 +679,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _groupsList;
   {
-    final length = IsarCore.readList(reader, 21, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 19, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -724,7 +696,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _relayGroupsList;
   {
-    final length = IsarCore.readList(reader, 22, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 20, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -741,7 +713,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _badgesList;
   {
-    final length = IsarCore.readList(reader, 23, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 21, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -758,7 +730,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _blockedList;
   {
-    final length = IsarCore.readList(reader, 24, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 22, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -775,7 +747,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _blockedHashTags;
   {
-    final length = IsarCore.readList(reader, 25, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 23, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -792,7 +764,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _blockedWords;
   {
-    final length = IsarCore.readList(reader, 26, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 24, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -809,7 +781,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _blockedThreads;
   {
-    final length = IsarCore.readList(reader, 27, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 25, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -826,7 +798,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _followingList;
   {
-    final length = IsarCore.readList(reader, 28, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 26, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -843,7 +815,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _followersList;
   {
-    final length = IsarCore.readList(reader, 29, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 27, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -860,7 +832,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _relayList;
   {
-    final length = IsarCore.readList(reader, 30, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 28, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -877,7 +849,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _dmRelayList;
   {
-    final length = IsarCore.readList(reader, 31, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 29, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -894,7 +866,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _inboxRelayList;
   {
-    final length = IsarCore.readList(reader, 32, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 30, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -911,7 +883,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final List<String>? _outboxRelayList;
   {
-    final length = IsarCore.readList(reader, 33, IsarCore.readerPtrPtr);
+    final length = IsarCore.readList(reader, 31, IsarCore.readerPtrPtr);
     {
       final reader = IsarCore.readerPtr;
       if (reader.isNull) {
@@ -928,7 +900,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastFriendsListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 34);
+    final value = IsarCore.readLong(reader, 32);
     if (value == -9223372036854775808) {
       _lastFriendsListUpdatedTime = 0;
     } else {
@@ -937,7 +909,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastChannelsListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 35);
+    final value = IsarCore.readLong(reader, 33);
     if (value == -9223372036854775808) {
       _lastChannelsListUpdatedTime = 0;
     } else {
@@ -946,7 +918,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastGroupsListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 36);
+    final value = IsarCore.readLong(reader, 34);
     if (value == -9223372036854775808) {
       _lastGroupsListUpdatedTime = 0;
     } else {
@@ -955,7 +927,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastRelayGroupsListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 37);
+    final value = IsarCore.readLong(reader, 35);
     if (value == -9223372036854775808) {
       _lastRelayGroupsListUpdatedTime = 0;
     } else {
@@ -964,7 +936,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastBadgesListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 38);
+    final value = IsarCore.readLong(reader, 36);
     if (value == -9223372036854775808) {
       _lastBadgesListUpdatedTime = 0;
     } else {
@@ -973,7 +945,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastBlockListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 39);
+    final value = IsarCore.readLong(reader, 37);
     if (value == -9223372036854775808) {
       _lastBlockListUpdatedTime = 0;
     } else {
@@ -982,7 +954,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastRelayListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 40);
+    final value = IsarCore.readLong(reader, 38);
     if (value == -9223372036854775808) {
       _lastRelayListUpdatedTime = 0;
     } else {
@@ -991,7 +963,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastFollowingListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 41);
+    final value = IsarCore.readLong(reader, 39);
     if (value == -9223372036854775808) {
       _lastFollowingListUpdatedTime = 0;
     } else {
@@ -1000,7 +972,7 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
   }
   final int _lastDMRelayListUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 42);
+    final value = IsarCore.readLong(reader, 40);
     if (value == -9223372036854775808) {
       _lastDMRelayListUpdatedTime = 0;
     } else {
@@ -1008,10 +980,10 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
     }
   }
   final bool? _mute;
-  _mute = IsarCore.readBool(reader, 43);
+  _mute = IsarCore.readBool(reader, 41);
   final int _lastUpdatedTime;
   {
-    final value = IsarCore.readLong(reader, 44);
+    final value = IsarCore.readLong(reader, 42);
     if (value == -9223372036854775808) {
       _lastUpdatedTime = 0;
     } else {
@@ -1019,26 +991,24 @@ UserDBISAR deserializeUserDBISAR(IsarReader reader) {
     }
   }
   final String? _otherField;
-  _otherField = IsarCore.readString(reader, 45) ?? '{}';
+  _otherField = IsarCore.readString(reader, 43) ?? '{}';
   final String? _nwcURI;
-  _nwcURI = IsarCore.readString(reader, 46);
+  _nwcURI = IsarCore.readString(reader, 44);
   final String? _remoteSignerURI;
-  _remoteSignerURI = IsarCore.readString(reader, 47);
+  _remoteSignerURI = IsarCore.readString(reader, 45);
   final String? _clientPrivateKey;
-  _clientPrivateKey = IsarCore.readString(reader, 48);
+  _clientPrivateKey = IsarCore.readString(reader, 46);
   final String? _remotePubkey;
-  _remotePubkey = IsarCore.readString(reader, 49);
+  _remotePubkey = IsarCore.readString(reader, 47);
   final String? _androidSignerKey;
-  _androidSignerKey = IsarCore.readString(reader, 50);
+  _androidSignerKey = IsarCore.readString(reader, 48);
   final String? _encodedKeyPackage;
-  _encodedKeyPackage = IsarCore.readString(reader, 51);
+  _encodedKeyPackage = IsarCore.readString(reader, 49);
   final String? _settings;
-  _settings = IsarCore.readString(reader, 52);
+  _settings = IsarCore.readString(reader, 50);
   final object = UserDBISAR(
     pubKey: _pubKey,
-    encryptedPrivKey: _encryptedPrivKey,
     privkey: _privkey,
-    defaultPassword: _defaultPassword,
     name: _name,
     nickName: _nickName,
     mainRelay: _mainRelay,
@@ -1130,11 +1100,41 @@ dynamic deserializeUserDBISARProp(IsarReader reader, int property) {
     case 16:
       return IsarCore.readString(reader, 16) ?? '';
     case 17:
-      return IsarCore.readString(reader, 17) ?? '';
+      return IsarCore.readString(reader, 17);
     case 18:
-      return IsarCore.readString(reader, 18) ?? '';
+      {
+        final length = IsarCore.readList(reader, 18, IsarCore.readerPtrPtr);
+        {
+          final reader = IsarCore.readerPtr;
+          if (reader.isNull) {
+            return null;
+          } else {
+            final list = List<String>.filled(length, '', growable: true);
+            for (var i = 0; i < length; i++) {
+              list[i] = IsarCore.readString(reader, i) ?? '';
+            }
+            IsarCore.freeReader(reader);
+            return list;
+          }
+        }
+      }
     case 19:
-      return IsarCore.readString(reader, 19);
+      {
+        final length = IsarCore.readList(reader, 19, IsarCore.readerPtrPtr);
+        {
+          final reader = IsarCore.readerPtr;
+          if (reader.isNull) {
+            return null;
+          } else {
+            final list = List<String>.filled(length, '', growable: true);
+            for (var i = 0; i < length; i++) {
+              list[i] = IsarCore.readString(reader, i) ?? '';
+            }
+            IsarCore.freeReader(reader);
+            return list;
+          }
+        }
+      }
     case 20:
       {
         final length = IsarCore.readList(reader, 20, IsarCore.readerPtrPtr);
@@ -1341,36 +1341,20 @@ dynamic deserializeUserDBISARProp(IsarReader reader, int property) {
       }
     case 32:
       {
-        final length = IsarCore.readList(reader, 32, IsarCore.readerPtrPtr);
-        {
-          final reader = IsarCore.readerPtr;
-          if (reader.isNull) {
-            return null;
-          } else {
-            final list = List<String>.filled(length, '', growable: true);
-            for (var i = 0; i < length; i++) {
-              list[i] = IsarCore.readString(reader, i) ?? '';
-            }
-            IsarCore.freeReader(reader);
-            return list;
-          }
+        final value = IsarCore.readLong(reader, 32);
+        if (value == -9223372036854775808) {
+          return 0;
+        } else {
+          return value;
         }
       }
     case 33:
       {
-        final length = IsarCore.readList(reader, 33, IsarCore.readerPtrPtr);
-        {
-          final reader = IsarCore.readerPtr;
-          if (reader.isNull) {
-            return null;
-          } else {
-            final list = List<String>.filled(length, '', growable: true);
-            for (var i = 0; i < length; i++) {
-              list[i] = IsarCore.readString(reader, i) ?? '';
-            }
-            IsarCore.freeReader(reader);
-            return list;
-          }
+        final value = IsarCore.readLong(reader, 33);
+        if (value == -9223372036854775808) {
+          return 0;
+        } else {
+          return value;
         }
       }
     case 34:
@@ -1437,14 +1421,7 @@ dynamic deserializeUserDBISARProp(IsarReader reader, int property) {
         }
       }
     case 41:
-      {
-        final value = IsarCore.readLong(reader, 41);
-        if (value == -9223372036854775808) {
-          return 0;
-        } else {
-          return value;
-        }
-      }
+      return IsarCore.readBool(reader, 41);
     case 42:
       {
         final value = IsarCore.readLong(reader, 42);
@@ -1455,18 +1432,11 @@ dynamic deserializeUserDBISARProp(IsarReader reader, int property) {
         }
       }
     case 43:
-      return IsarCore.readBool(reader, 43);
+      return IsarCore.readString(reader, 43) ?? '{}';
     case 44:
-      {
-        final value = IsarCore.readLong(reader, 44);
-        if (value == -9223372036854775808) {
-          return 0;
-        } else {
-          return value;
-        }
-      }
+      return IsarCore.readString(reader, 44);
     case 45:
-      return IsarCore.readString(reader, 45) ?? '{}';
+      return IsarCore.readString(reader, 45);
     case 46:
       return IsarCore.readString(reader, 46);
     case 47:
@@ -1477,10 +1447,6 @@ dynamic deserializeUserDBISARProp(IsarReader reader, int property) {
       return IsarCore.readString(reader, 49);
     case 50:
       return IsarCore.readString(reader, 50);
-    case 51:
-      return IsarCore.readString(reader, 51);
-    case 52:
-      return IsarCore.readString(reader, 52);
     default:
       throw ArgumentError('Unknown property: $property');
   }
@@ -1490,9 +1456,7 @@ sealed class _UserDBISARUpdate {
   bool call({
     required int id,
     String? pubKey,
-    String? encryptedPrivKey,
     String? privkey,
-    String? defaultPassword,
     String? name,
     String? nickName,
     String? mainRelay,
@@ -1539,9 +1503,7 @@ class _UserDBISARUpdateImpl implements _UserDBISARUpdate {
   bool call({
     required int id,
     Object? pubKey = ignore,
-    Object? encryptedPrivKey = ignore,
     Object? privkey = ignore,
-    Object? defaultPassword = ignore,
     Object? name = ignore,
     Object? nickName = ignore,
     Object? mainRelay = ignore,
@@ -1581,52 +1543,50 @@ class _UserDBISARUpdateImpl implements _UserDBISARUpdate {
           id
         ], {
           if (pubKey != ignore) 1: pubKey as String?,
-          if (encryptedPrivKey != ignore) 2: encryptedPrivKey as String?,
-          if (privkey != ignore) 3: privkey as String?,
-          if (defaultPassword != ignore) 4: defaultPassword as String?,
-          if (name != ignore) 5: name as String?,
-          if (nickName != ignore) 6: nickName as String?,
-          if (mainRelay != ignore) 7: mainRelay as String?,
-          if (dns != ignore) 8: dns as String?,
-          if (lnurl != ignore) 9: lnurl as String?,
-          if (badges != ignore) 10: badges as String?,
-          if (gender != ignore) 11: gender as String?,
-          if (area != ignore) 12: area as String?,
-          if (about != ignore) 13: about as String?,
-          if (picture != ignore) 14: picture as String?,
-          if (banner != ignore) 15: banner as String?,
-          if (aliasPubkey != ignore) 16: aliasPubkey as String?,
-          if (toAliasPubkey != ignore) 17: toAliasPubkey as String?,
-          if (toAliasPrivkey != ignore) 18: toAliasPrivkey as String?,
-          if (friendsList != ignore) 19: friendsList as String?,
+          if (privkey != ignore) 2: privkey as String?,
+          if (name != ignore) 3: name as String?,
+          if (nickName != ignore) 4: nickName as String?,
+          if (mainRelay != ignore) 5: mainRelay as String?,
+          if (dns != ignore) 6: dns as String?,
+          if (lnurl != ignore) 7: lnurl as String?,
+          if (badges != ignore) 8: badges as String?,
+          if (gender != ignore) 9: gender as String?,
+          if (area != ignore) 10: area as String?,
+          if (about != ignore) 11: about as String?,
+          if (picture != ignore) 12: picture as String?,
+          if (banner != ignore) 13: banner as String?,
+          if (aliasPubkey != ignore) 14: aliasPubkey as String?,
+          if (toAliasPubkey != ignore) 15: toAliasPubkey as String?,
+          if (toAliasPrivkey != ignore) 16: toAliasPrivkey as String?,
+          if (friendsList != ignore) 17: friendsList as String?,
           if (lastFriendsListUpdatedTime != ignore)
-            34: lastFriendsListUpdatedTime as int?,
+            32: lastFriendsListUpdatedTime as int?,
           if (lastChannelsListUpdatedTime != ignore)
-            35: lastChannelsListUpdatedTime as int?,
+            33: lastChannelsListUpdatedTime as int?,
           if (lastGroupsListUpdatedTime != ignore)
-            36: lastGroupsListUpdatedTime as int?,
+            34: lastGroupsListUpdatedTime as int?,
           if (lastRelayGroupsListUpdatedTime != ignore)
-            37: lastRelayGroupsListUpdatedTime as int?,
+            35: lastRelayGroupsListUpdatedTime as int?,
           if (lastBadgesListUpdatedTime != ignore)
-            38: lastBadgesListUpdatedTime as int?,
+            36: lastBadgesListUpdatedTime as int?,
           if (lastBlockListUpdatedTime != ignore)
-            39: lastBlockListUpdatedTime as int?,
+            37: lastBlockListUpdatedTime as int?,
           if (lastRelayListUpdatedTime != ignore)
-            40: lastRelayListUpdatedTime as int?,
+            38: lastRelayListUpdatedTime as int?,
           if (lastFollowingListUpdatedTime != ignore)
-            41: lastFollowingListUpdatedTime as int?,
+            39: lastFollowingListUpdatedTime as int?,
           if (lastDMRelayListUpdatedTime != ignore)
-            42: lastDMRelayListUpdatedTime as int?,
-          if (mute != ignore) 43: mute as bool?,
-          if (lastUpdatedTime != ignore) 44: lastUpdatedTime as int?,
-          if (otherField != ignore) 45: otherField as String?,
-          if (nwcURI != ignore) 46: nwcURI as String?,
-          if (remoteSignerURI != ignore) 47: remoteSignerURI as String?,
-          if (clientPrivateKey != ignore) 48: clientPrivateKey as String?,
-          if (remotePubkey != ignore) 49: remotePubkey as String?,
-          if (androidSignerKey != ignore) 50: androidSignerKey as String?,
-          if (encodedKeyPackage != ignore) 51: encodedKeyPackage as String?,
-          if (settings != ignore) 52: settings as String?,
+            40: lastDMRelayListUpdatedTime as int?,
+          if (mute != ignore) 41: mute as bool?,
+          if (lastUpdatedTime != ignore) 42: lastUpdatedTime as int?,
+          if (otherField != ignore) 43: otherField as String?,
+          if (nwcURI != ignore) 44: nwcURI as String?,
+          if (remoteSignerURI != ignore) 45: remoteSignerURI as String?,
+          if (clientPrivateKey != ignore) 46: clientPrivateKey as String?,
+          if (remotePubkey != ignore) 47: remotePubkey as String?,
+          if (androidSignerKey != ignore) 48: androidSignerKey as String?,
+          if (encodedKeyPackage != ignore) 49: encodedKeyPackage as String?,
+          if (settings != ignore) 50: settings as String?,
         }) >
         0;
   }
@@ -1636,9 +1596,7 @@ sealed class _UserDBISARUpdateAll {
   int call({
     required List<int> id,
     String? pubKey,
-    String? encryptedPrivKey,
     String? privkey,
-    String? defaultPassword,
     String? name,
     String? nickName,
     String? mainRelay,
@@ -1685,9 +1643,7 @@ class _UserDBISARUpdateAllImpl implements _UserDBISARUpdateAll {
   int call({
     required List<int> id,
     Object? pubKey = ignore,
-    Object? encryptedPrivKey = ignore,
     Object? privkey = ignore,
-    Object? defaultPassword = ignore,
     Object? name = ignore,
     Object? nickName = ignore,
     Object? mainRelay = ignore,
@@ -1725,52 +1681,50 @@ class _UserDBISARUpdateAllImpl implements _UserDBISARUpdateAll {
   }) {
     return collection.updateProperties(id, {
       if (pubKey != ignore) 1: pubKey as String?,
-      if (encryptedPrivKey != ignore) 2: encryptedPrivKey as String?,
-      if (privkey != ignore) 3: privkey as String?,
-      if (defaultPassword != ignore) 4: defaultPassword as String?,
-      if (name != ignore) 5: name as String?,
-      if (nickName != ignore) 6: nickName as String?,
-      if (mainRelay != ignore) 7: mainRelay as String?,
-      if (dns != ignore) 8: dns as String?,
-      if (lnurl != ignore) 9: lnurl as String?,
-      if (badges != ignore) 10: badges as String?,
-      if (gender != ignore) 11: gender as String?,
-      if (area != ignore) 12: area as String?,
-      if (about != ignore) 13: about as String?,
-      if (picture != ignore) 14: picture as String?,
-      if (banner != ignore) 15: banner as String?,
-      if (aliasPubkey != ignore) 16: aliasPubkey as String?,
-      if (toAliasPubkey != ignore) 17: toAliasPubkey as String?,
-      if (toAliasPrivkey != ignore) 18: toAliasPrivkey as String?,
-      if (friendsList != ignore) 19: friendsList as String?,
+      if (privkey != ignore) 2: privkey as String?,
+      if (name != ignore) 3: name as String?,
+      if (nickName != ignore) 4: nickName as String?,
+      if (mainRelay != ignore) 5: mainRelay as String?,
+      if (dns != ignore) 6: dns as String?,
+      if (lnurl != ignore) 7: lnurl as String?,
+      if (badges != ignore) 8: badges as String?,
+      if (gender != ignore) 9: gender as String?,
+      if (area != ignore) 10: area as String?,
+      if (about != ignore) 11: about as String?,
+      if (picture != ignore) 12: picture as String?,
+      if (banner != ignore) 13: banner as String?,
+      if (aliasPubkey != ignore) 14: aliasPubkey as String?,
+      if (toAliasPubkey != ignore) 15: toAliasPubkey as String?,
+      if (toAliasPrivkey != ignore) 16: toAliasPrivkey as String?,
+      if (friendsList != ignore) 17: friendsList as String?,
       if (lastFriendsListUpdatedTime != ignore)
-        34: lastFriendsListUpdatedTime as int?,
+        32: lastFriendsListUpdatedTime as int?,
       if (lastChannelsListUpdatedTime != ignore)
-        35: lastChannelsListUpdatedTime as int?,
+        33: lastChannelsListUpdatedTime as int?,
       if (lastGroupsListUpdatedTime != ignore)
-        36: lastGroupsListUpdatedTime as int?,
+        34: lastGroupsListUpdatedTime as int?,
       if (lastRelayGroupsListUpdatedTime != ignore)
-        37: lastRelayGroupsListUpdatedTime as int?,
+        35: lastRelayGroupsListUpdatedTime as int?,
       if (lastBadgesListUpdatedTime != ignore)
-        38: lastBadgesListUpdatedTime as int?,
+        36: lastBadgesListUpdatedTime as int?,
       if (lastBlockListUpdatedTime != ignore)
-        39: lastBlockListUpdatedTime as int?,
+        37: lastBlockListUpdatedTime as int?,
       if (lastRelayListUpdatedTime != ignore)
-        40: lastRelayListUpdatedTime as int?,
+        38: lastRelayListUpdatedTime as int?,
       if (lastFollowingListUpdatedTime != ignore)
-        41: lastFollowingListUpdatedTime as int?,
+        39: lastFollowingListUpdatedTime as int?,
       if (lastDMRelayListUpdatedTime != ignore)
-        42: lastDMRelayListUpdatedTime as int?,
-      if (mute != ignore) 43: mute as bool?,
-      if (lastUpdatedTime != ignore) 44: lastUpdatedTime as int?,
-      if (otherField != ignore) 45: otherField as String?,
-      if (nwcURI != ignore) 46: nwcURI as String?,
-      if (remoteSignerURI != ignore) 47: remoteSignerURI as String?,
-      if (clientPrivateKey != ignore) 48: clientPrivateKey as String?,
-      if (remotePubkey != ignore) 49: remotePubkey as String?,
-      if (androidSignerKey != ignore) 50: androidSignerKey as String?,
-      if (encodedKeyPackage != ignore) 51: encodedKeyPackage as String?,
-      if (settings != ignore) 52: settings as String?,
+        40: lastDMRelayListUpdatedTime as int?,
+      if (mute != ignore) 41: mute as bool?,
+      if (lastUpdatedTime != ignore) 42: lastUpdatedTime as int?,
+      if (otherField != ignore) 43: otherField as String?,
+      if (nwcURI != ignore) 44: nwcURI as String?,
+      if (remoteSignerURI != ignore) 45: remoteSignerURI as String?,
+      if (clientPrivateKey != ignore) 46: clientPrivateKey as String?,
+      if (remotePubkey != ignore) 47: remotePubkey as String?,
+      if (androidSignerKey != ignore) 48: androidSignerKey as String?,
+      if (encodedKeyPackage != ignore) 49: encodedKeyPackage as String?,
+      if (settings != ignore) 50: settings as String?,
     });
   }
 }
@@ -1784,9 +1738,7 @@ extension UserDBISARUpdate on IsarCollection<int, UserDBISAR> {
 sealed class _UserDBISARQueryUpdate {
   int call({
     String? pubKey,
-    String? encryptedPrivKey,
     String? privkey,
-    String? defaultPassword,
     String? name,
     String? nickName,
     String? mainRelay,
@@ -1833,9 +1785,7 @@ class _UserDBISARQueryUpdateImpl implements _UserDBISARQueryUpdate {
   @override
   int call({
     Object? pubKey = ignore,
-    Object? encryptedPrivKey = ignore,
     Object? privkey = ignore,
-    Object? defaultPassword = ignore,
     Object? name = ignore,
     Object? nickName = ignore,
     Object? mainRelay = ignore,
@@ -1873,52 +1823,50 @@ class _UserDBISARQueryUpdateImpl implements _UserDBISARQueryUpdate {
   }) {
     return query.updateProperties(limit: limit, {
       if (pubKey != ignore) 1: pubKey as String?,
-      if (encryptedPrivKey != ignore) 2: encryptedPrivKey as String?,
-      if (privkey != ignore) 3: privkey as String?,
-      if (defaultPassword != ignore) 4: defaultPassword as String?,
-      if (name != ignore) 5: name as String?,
-      if (nickName != ignore) 6: nickName as String?,
-      if (mainRelay != ignore) 7: mainRelay as String?,
-      if (dns != ignore) 8: dns as String?,
-      if (lnurl != ignore) 9: lnurl as String?,
-      if (badges != ignore) 10: badges as String?,
-      if (gender != ignore) 11: gender as String?,
-      if (area != ignore) 12: area as String?,
-      if (about != ignore) 13: about as String?,
-      if (picture != ignore) 14: picture as String?,
-      if (banner != ignore) 15: banner as String?,
-      if (aliasPubkey != ignore) 16: aliasPubkey as String?,
-      if (toAliasPubkey != ignore) 17: toAliasPubkey as String?,
-      if (toAliasPrivkey != ignore) 18: toAliasPrivkey as String?,
-      if (friendsList != ignore) 19: friendsList as String?,
+      if (privkey != ignore) 2: privkey as String?,
+      if (name != ignore) 3: name as String?,
+      if (nickName != ignore) 4: nickName as String?,
+      if (mainRelay != ignore) 5: mainRelay as String?,
+      if (dns != ignore) 6: dns as String?,
+      if (lnurl != ignore) 7: lnurl as String?,
+      if (badges != ignore) 8: badges as String?,
+      if (gender != ignore) 9: gender as String?,
+      if (area != ignore) 10: area as String?,
+      if (about != ignore) 11: about as String?,
+      if (picture != ignore) 12: picture as String?,
+      if (banner != ignore) 13: banner as String?,
+      if (aliasPubkey != ignore) 14: aliasPubkey as String?,
+      if (toAliasPubkey != ignore) 15: toAliasPubkey as String?,
+      if (toAliasPrivkey != ignore) 16: toAliasPrivkey as String?,
+      if (friendsList != ignore) 17: friendsList as String?,
       if (lastFriendsListUpdatedTime != ignore)
-        34: lastFriendsListUpdatedTime as int?,
+        32: lastFriendsListUpdatedTime as int?,
       if (lastChannelsListUpdatedTime != ignore)
-        35: lastChannelsListUpdatedTime as int?,
+        33: lastChannelsListUpdatedTime as int?,
       if (lastGroupsListUpdatedTime != ignore)
-        36: lastGroupsListUpdatedTime as int?,
+        34: lastGroupsListUpdatedTime as int?,
       if (lastRelayGroupsListUpdatedTime != ignore)
-        37: lastRelayGroupsListUpdatedTime as int?,
+        35: lastRelayGroupsListUpdatedTime as int?,
       if (lastBadgesListUpdatedTime != ignore)
-        38: lastBadgesListUpdatedTime as int?,
+        36: lastBadgesListUpdatedTime as int?,
       if (lastBlockListUpdatedTime != ignore)
-        39: lastBlockListUpdatedTime as int?,
+        37: lastBlockListUpdatedTime as int?,
       if (lastRelayListUpdatedTime != ignore)
-        40: lastRelayListUpdatedTime as int?,
+        38: lastRelayListUpdatedTime as int?,
       if (lastFollowingListUpdatedTime != ignore)
-        41: lastFollowingListUpdatedTime as int?,
+        39: lastFollowingListUpdatedTime as int?,
       if (lastDMRelayListUpdatedTime != ignore)
-        42: lastDMRelayListUpdatedTime as int?,
-      if (mute != ignore) 43: mute as bool?,
-      if (lastUpdatedTime != ignore) 44: lastUpdatedTime as int?,
-      if (otherField != ignore) 45: otherField as String?,
-      if (nwcURI != ignore) 46: nwcURI as String?,
-      if (remoteSignerURI != ignore) 47: remoteSignerURI as String?,
-      if (clientPrivateKey != ignore) 48: clientPrivateKey as String?,
-      if (remotePubkey != ignore) 49: remotePubkey as String?,
-      if (androidSignerKey != ignore) 50: androidSignerKey as String?,
-      if (encodedKeyPackage != ignore) 51: encodedKeyPackage as String?,
-      if (settings != ignore) 52: settings as String?,
+        40: lastDMRelayListUpdatedTime as int?,
+      if (mute != ignore) 41: mute as bool?,
+      if (lastUpdatedTime != ignore) 42: lastUpdatedTime as int?,
+      if (otherField != ignore) 43: otherField as String?,
+      if (nwcURI != ignore) 44: nwcURI as String?,
+      if (remoteSignerURI != ignore) 45: remoteSignerURI as String?,
+      if (clientPrivateKey != ignore) 46: clientPrivateKey as String?,
+      if (remotePubkey != ignore) 47: remotePubkey as String?,
+      if (androidSignerKey != ignore) 48: androidSignerKey as String?,
+      if (encodedKeyPackage != ignore) 49: encodedKeyPackage as String?,
+      if (settings != ignore) 50: settings as String?,
     });
   }
 }
@@ -1939,9 +1887,7 @@ class _UserDBISARQueryBuilderUpdateImpl implements _UserDBISARQueryUpdate {
   @override
   int call({
     Object? pubKey = ignore,
-    Object? encryptedPrivKey = ignore,
     Object? privkey = ignore,
-    Object? defaultPassword = ignore,
     Object? name = ignore,
     Object? nickName = ignore,
     Object? mainRelay = ignore,
@@ -1981,52 +1927,50 @@ class _UserDBISARQueryBuilderUpdateImpl implements _UserDBISARQueryUpdate {
     try {
       return q.updateProperties(limit: limit, {
         if (pubKey != ignore) 1: pubKey as String?,
-        if (encryptedPrivKey != ignore) 2: encryptedPrivKey as String?,
-        if (privkey != ignore) 3: privkey as String?,
-        if (defaultPassword != ignore) 4: defaultPassword as String?,
-        if (name != ignore) 5: name as String?,
-        if (nickName != ignore) 6: nickName as String?,
-        if (mainRelay != ignore) 7: mainRelay as String?,
-        if (dns != ignore) 8: dns as String?,
-        if (lnurl != ignore) 9: lnurl as String?,
-        if (badges != ignore) 10: badges as String?,
-        if (gender != ignore) 11: gender as String?,
-        if (area != ignore) 12: area as String?,
-        if (about != ignore) 13: about as String?,
-        if (picture != ignore) 14: picture as String?,
-        if (banner != ignore) 15: banner as String?,
-        if (aliasPubkey != ignore) 16: aliasPubkey as String?,
-        if (toAliasPubkey != ignore) 17: toAliasPubkey as String?,
-        if (toAliasPrivkey != ignore) 18: toAliasPrivkey as String?,
-        if (friendsList != ignore) 19: friendsList as String?,
+        if (privkey != ignore) 2: privkey as String?,
+        if (name != ignore) 3: name as String?,
+        if (nickName != ignore) 4: nickName as String?,
+        if (mainRelay != ignore) 5: mainRelay as String?,
+        if (dns != ignore) 6: dns as String?,
+        if (lnurl != ignore) 7: lnurl as String?,
+        if (badges != ignore) 8: badges as String?,
+        if (gender != ignore) 9: gender as String?,
+        if (area != ignore) 10: area as String?,
+        if (about != ignore) 11: about as String?,
+        if (picture != ignore) 12: picture as String?,
+        if (banner != ignore) 13: banner as String?,
+        if (aliasPubkey != ignore) 14: aliasPubkey as String?,
+        if (toAliasPubkey != ignore) 15: toAliasPubkey as String?,
+        if (toAliasPrivkey != ignore) 16: toAliasPrivkey as String?,
+        if (friendsList != ignore) 17: friendsList as String?,
         if (lastFriendsListUpdatedTime != ignore)
-          34: lastFriendsListUpdatedTime as int?,
+          32: lastFriendsListUpdatedTime as int?,
         if (lastChannelsListUpdatedTime != ignore)
-          35: lastChannelsListUpdatedTime as int?,
+          33: lastChannelsListUpdatedTime as int?,
         if (lastGroupsListUpdatedTime != ignore)
-          36: lastGroupsListUpdatedTime as int?,
+          34: lastGroupsListUpdatedTime as int?,
         if (lastRelayGroupsListUpdatedTime != ignore)
-          37: lastRelayGroupsListUpdatedTime as int?,
+          35: lastRelayGroupsListUpdatedTime as int?,
         if (lastBadgesListUpdatedTime != ignore)
-          38: lastBadgesListUpdatedTime as int?,
+          36: lastBadgesListUpdatedTime as int?,
         if (lastBlockListUpdatedTime != ignore)
-          39: lastBlockListUpdatedTime as int?,
+          37: lastBlockListUpdatedTime as int?,
         if (lastRelayListUpdatedTime != ignore)
-          40: lastRelayListUpdatedTime as int?,
+          38: lastRelayListUpdatedTime as int?,
         if (lastFollowingListUpdatedTime != ignore)
-          41: lastFollowingListUpdatedTime as int?,
+          39: lastFollowingListUpdatedTime as int?,
         if (lastDMRelayListUpdatedTime != ignore)
-          42: lastDMRelayListUpdatedTime as int?,
-        if (mute != ignore) 43: mute as bool?,
-        if (lastUpdatedTime != ignore) 44: lastUpdatedTime as int?,
-        if (otherField != ignore) 45: otherField as String?,
-        if (nwcURI != ignore) 46: nwcURI as String?,
-        if (remoteSignerURI != ignore) 47: remoteSignerURI as String?,
-        if (clientPrivateKey != ignore) 48: clientPrivateKey as String?,
-        if (remotePubkey != ignore) 49: remotePubkey as String?,
-        if (androidSignerKey != ignore) 50: androidSignerKey as String?,
-        if (encodedKeyPackage != ignore) 51: encodedKeyPackage as String?,
-        if (settings != ignore) 52: settings as String?,
+          40: lastDMRelayListUpdatedTime as int?,
+        if (mute != ignore) 41: mute as bool?,
+        if (lastUpdatedTime != ignore) 42: lastUpdatedTime as int?,
+        if (otherField != ignore) 43: otherField as String?,
+        if (nwcURI != ignore) 44: nwcURI as String?,
+        if (remoteSignerURI != ignore) 45: remoteSignerURI as String?,
+        if (clientPrivateKey != ignore) 46: clientPrivateKey as String?,
+        if (remotePubkey != ignore) 47: remotePubkey as String?,
+        if (androidSignerKey != ignore) 48: androidSignerKey as String?,
+        if (encodedKeyPackage != ignore) 49: encodedKeyPackage as String?,
+        if (settings != ignore) 50: settings as String?,
       });
     } finally {
       q.close();
@@ -2302,210 +2246,16 @@ extension UserDBISARQueryFilter
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 2));
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyIsNotNull() {
-    return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 2));
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EqualCondition(
-          property: 2,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyGreaterThan(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterCondition(
-          property: 2,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyGreaterThanOrEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterOrEqualCondition(
-          property: 2,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyLessThan(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessCondition(
-          property: 2,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyLessThanOrEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessOrEqualCondition(
-          property: 2,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyBetween(
-    String? lower,
-    String? upper, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        BetweenCondition(
-          property: 2,
-          lower: lower,
-          upper: upper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        StartsWithCondition(
-          property: 2,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EndsWithCondition(
-          property: 2,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        ContainsCondition(
-          property: 2,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        MatchesCondition(
-          property: 2,
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const EqualCondition(
-          property: 2,
-          value: '',
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      encryptedPrivKeyIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const GreaterCondition(
-          property: 2,
-          value: '',
-        ),
-      );
-    });
-  }
-
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> privkeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 3));
+      return query.addFilterCondition(const IsNullCondition(property: 2));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       privkeyIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 3));
+      return query.addFilterCondition(const IsNullCondition(property: 2));
     });
   }
 
@@ -2516,7 +2266,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 3,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2532,7 +2282,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 3,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2548,7 +2298,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 3,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2563,7 +2313,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 3,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2579,7 +2329,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 3,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2595,7 +2345,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 3,
+          property: 2,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -2611,7 +2361,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 3,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2626,7 +2376,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 3,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2640,7 +2390,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 3,
+          property: 2,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2654,7 +2404,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 3,
+          property: 2,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -2666,7 +2416,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 3,
+          property: 2,
           value: '',
         ),
       );
@@ -2678,201 +2428,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 3,
-          value: '',
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 4));
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordIsNotNull() {
-    return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 4));
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EqualCondition(
-          property: 4,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordGreaterThan(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterCondition(
-          property: 4,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordGreaterThanOrEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        GreaterOrEqualCondition(
-          property: 4,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordLessThan(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessCondition(
-          property: 4,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordLessThanOrEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        LessOrEqualCondition(
-          property: 4,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordBetween(
-    String? lower,
-    String? upper, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        BetweenCondition(
-          property: 4,
-          lower: lower,
-          upper: upper,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        StartsWithCondition(
-          property: 4,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        EndsWithCondition(
-          property: 4,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        ContainsCondition(
-          property: 4,
-          value: value,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        MatchesCondition(
-          property: 4,
-          wildcard: pattern,
-          caseSensitive: caseSensitive,
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const EqualCondition(
-          property: 4,
-          value: '',
-        ),
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
-      defaultPasswordIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(
-        const GreaterCondition(
-          property: 4,
+          property: 2,
           value: '',
         ),
       );
@@ -2881,13 +2437,13 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> nameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 5));
+      return query.addFilterCondition(const IsNullCondition(property: 3));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> nameIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 5));
+      return query.addFilterCondition(const IsNullCondition(property: 3));
     });
   }
 
@@ -2898,7 +2454,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 5,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2913,7 +2469,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 5,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2929,7 +2485,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 5,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2944,7 +2500,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 5,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2960,7 +2516,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 5,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -2976,7 +2532,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 5,
+          property: 3,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -2992,7 +2548,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 5,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3007,7 +2563,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 5,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3021,7 +2577,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 5,
+          property: 3,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3035,7 +2591,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 5,
+          property: 3,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -3047,7 +2603,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 5,
+          property: 3,
           value: '',
         ),
       );
@@ -3058,7 +2614,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 5,
+          property: 3,
           value: '',
         ),
       );
@@ -3067,14 +2623,14 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> nickNameIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 6));
+      return query.addFilterCondition(const IsNullCondition(property: 4));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       nickNameIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 6));
+      return query.addFilterCondition(const IsNullCondition(property: 4));
     });
   }
 
@@ -3085,7 +2641,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 6,
+          property: 4,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3101,7 +2657,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 6,
+          property: 4,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3117,7 +2673,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 6,
+          property: 4,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3132,7 +2688,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 6,
+          property: 4,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3148,7 +2704,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 6,
+          property: 4,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3164,7 +2720,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 6,
+          property: 4,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -3181,7 +2737,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 6,
+          property: 4,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3196,7 +2752,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 6,
+          property: 4,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3210,7 +2766,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 6,
+          property: 4,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3224,7 +2780,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 6,
+          property: 4,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -3237,7 +2793,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 6,
+          property: 4,
           value: '',
         ),
       );
@@ -3249,7 +2805,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 6,
+          property: 4,
           value: '',
         ),
       );
@@ -3259,14 +2815,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       mainRelayIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 7));
+      return query.addFilterCondition(const IsNullCondition(property: 5));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       mainRelayIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 7));
+      return query.addFilterCondition(const IsNullCondition(property: 5));
     });
   }
 
@@ -3277,7 +2833,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 7,
+          property: 5,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3293,7 +2849,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 7,
+          property: 5,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3309,7 +2865,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 7,
+          property: 5,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3324,7 +2880,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 7,
+          property: 5,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3340,7 +2896,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 7,
+          property: 5,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3356,7 +2912,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 7,
+          property: 5,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -3373,7 +2929,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 7,
+          property: 5,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3388,7 +2944,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 7,
+          property: 5,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3402,7 +2958,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 7,
+          property: 5,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3416,7 +2972,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 7,
+          property: 5,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -3429,7 +2985,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 7,
+          property: 5,
           value: '',
         ),
       );
@@ -3441,7 +2997,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 7,
+          property: 5,
           value: '',
         ),
       );
@@ -3450,13 +3006,13 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> dnsIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 8));
+      return query.addFilterCondition(const IsNullCondition(property: 6));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> dnsIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 8));
+      return query.addFilterCondition(const IsNullCondition(property: 6));
     });
   }
 
@@ -3467,7 +3023,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 8,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3482,7 +3038,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 8,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3498,7 +3054,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 8,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3513,7 +3069,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 8,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3529,7 +3085,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 8,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3545,7 +3101,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 8,
+          property: 6,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -3561,7 +3117,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 8,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3576,7 +3132,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 8,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3590,7 +3146,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 8,
+          property: 6,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3604,7 +3160,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 8,
+          property: 6,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -3616,7 +3172,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 8,
+          property: 6,
           value: '',
         ),
       );
@@ -3627,7 +3183,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 8,
+          property: 6,
           value: '',
         ),
       );
@@ -3636,13 +3192,13 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> lnurlIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 9));
+      return query.addFilterCondition(const IsNullCondition(property: 7));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> lnurlIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 9));
+      return query.addFilterCondition(const IsNullCondition(property: 7));
     });
   }
 
@@ -3653,7 +3209,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 9,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3668,7 +3224,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 9,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3684,7 +3240,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 9,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3699,7 +3255,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 9,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3715,7 +3271,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 9,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3731,7 +3287,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 9,
+          property: 7,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -3747,7 +3303,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 9,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3762,7 +3318,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 9,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3776,7 +3332,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 9,
+          property: 7,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3790,7 +3346,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 9,
+          property: 7,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -3802,7 +3358,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 9,
+          property: 7,
           value: '',
         ),
       );
@@ -3814,7 +3370,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 9,
+          property: 7,
           value: '',
         ),
       );
@@ -3823,14 +3379,14 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> badgesIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 10));
+      return query.addFilterCondition(const IsNullCondition(property: 8));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       badgesIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 10));
+      return query.addFilterCondition(const IsNullCondition(property: 8));
     });
   }
 
@@ -3841,7 +3397,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 10,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3856,7 +3412,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 10,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3872,7 +3428,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 10,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3887,7 +3443,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 10,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3903,7 +3459,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 10,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3919,7 +3475,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 10,
+          property: 8,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -3935,7 +3491,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 10,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3950,7 +3506,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 10,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3964,7 +3520,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 10,
+          property: 8,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -3978,7 +3534,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 10,
+          property: 8,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -3990,7 +3546,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 10,
+          property: 8,
           value: '',
         ),
       );
@@ -4002,7 +3558,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 10,
+          property: 8,
           value: '',
         ),
       );
@@ -4011,14 +3567,14 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> genderIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 11));
+      return query.addFilterCondition(const IsNullCondition(property: 9));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       genderIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 11));
+      return query.addFilterCondition(const IsNullCondition(property: 9));
     });
   }
 
@@ -4029,7 +3585,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 11,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4044,7 +3600,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 11,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4060,7 +3616,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 11,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4075,7 +3631,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 11,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4091,7 +3647,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 11,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4107,7 +3663,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 11,
+          property: 9,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -4123,7 +3679,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 11,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4138,7 +3694,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 11,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4152,7 +3708,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 11,
+          property: 9,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4166,7 +3722,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 11,
+          property: 9,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -4178,7 +3734,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 11,
+          property: 9,
           value: '',
         ),
       );
@@ -4190,7 +3746,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 11,
+          property: 9,
           value: '',
         ),
       );
@@ -4199,13 +3755,13 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> areaIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 12));
+      return query.addFilterCondition(const IsNullCondition(property: 10));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> areaIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 12));
+      return query.addFilterCondition(const IsNullCondition(property: 10));
     });
   }
 
@@ -4216,7 +3772,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 12,
+          property: 10,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4231,7 +3787,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 12,
+          property: 10,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4247,7 +3803,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 12,
+          property: 10,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4262,7 +3818,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 12,
+          property: 10,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4278,7 +3834,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 12,
+          property: 10,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4294,7 +3850,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 12,
+          property: 10,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -4310,7 +3866,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 12,
+          property: 10,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4325,7 +3881,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 12,
+          property: 10,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4339,7 +3895,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 12,
+          property: 10,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4353,7 +3909,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 12,
+          property: 10,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -4365,7 +3921,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 12,
+          property: 10,
           value: '',
         ),
       );
@@ -4376,7 +3932,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 12,
+          property: 10,
           value: '',
         ),
       );
@@ -4385,13 +3941,13 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> aboutIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 13));
+      return query.addFilterCondition(const IsNullCondition(property: 11));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> aboutIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 13));
+      return query.addFilterCondition(const IsNullCondition(property: 11));
     });
   }
 
@@ -4402,7 +3958,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 13,
+          property: 11,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4417,7 +3973,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 13,
+          property: 11,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4433,7 +3989,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 13,
+          property: 11,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4448,7 +4004,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 13,
+          property: 11,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4464,7 +4020,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 13,
+          property: 11,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4480,7 +4036,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 13,
+          property: 11,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -4496,7 +4052,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 13,
+          property: 11,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4511,7 +4067,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 13,
+          property: 11,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4525,7 +4081,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 13,
+          property: 11,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4539,7 +4095,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 13,
+          property: 11,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -4551,7 +4107,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 13,
+          property: 11,
           value: '',
         ),
       );
@@ -4563,7 +4119,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 13,
+          property: 11,
           value: '',
         ),
       );
@@ -4572,14 +4128,14 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> pictureIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 14));
+      return query.addFilterCondition(const IsNullCondition(property: 12));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       pictureIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 14));
+      return query.addFilterCondition(const IsNullCondition(property: 12));
     });
   }
 
@@ -4590,7 +4146,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 14,
+          property: 12,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4606,7 +4162,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 14,
+          property: 12,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4622,7 +4178,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 14,
+          property: 12,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4637,7 +4193,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 14,
+          property: 12,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4653,7 +4209,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 14,
+          property: 12,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4669,7 +4225,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 14,
+          property: 12,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -4685,7 +4241,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 14,
+          property: 12,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4700,7 +4256,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 14,
+          property: 12,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4714,7 +4270,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 14,
+          property: 12,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4728,7 +4284,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 14,
+          property: 12,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -4740,7 +4296,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 14,
+          property: 12,
           value: '',
         ),
       );
@@ -4752,7 +4308,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 14,
+          property: 12,
           value: '',
         ),
       );
@@ -4761,14 +4317,14 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> bannerIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 15));
+      return query.addFilterCondition(const IsNullCondition(property: 13));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       bannerIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 15));
+      return query.addFilterCondition(const IsNullCondition(property: 13));
     });
   }
 
@@ -4779,7 +4335,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 15,
+          property: 13,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4794,7 +4350,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 15,
+          property: 13,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4810,7 +4366,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 15,
+          property: 13,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4825,7 +4381,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 15,
+          property: 13,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4841,7 +4397,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 15,
+          property: 13,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4857,7 +4413,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 15,
+          property: 13,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -4873,7 +4429,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 15,
+          property: 13,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4888,7 +4444,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 15,
+          property: 13,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4902,7 +4458,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 15,
+          property: 13,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4916,7 +4472,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 15,
+          property: 13,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -4928,7 +4484,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 15,
+          property: 13,
           value: '',
         ),
       );
@@ -4940,7 +4496,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 15,
+          property: 13,
           value: '',
         ),
       );
@@ -4950,14 +4506,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       aliasPubkeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 16));
+      return query.addFilterCondition(const IsNullCondition(property: 14));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       aliasPubkeyIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 16));
+      return query.addFilterCondition(const IsNullCondition(property: 14));
     });
   }
 
@@ -4969,7 +4525,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 16,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -4985,7 +4541,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 16,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5001,7 +4557,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 16,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5017,7 +4573,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 16,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5033,7 +4589,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 16,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5050,7 +4606,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 16,
+          property: 14,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -5067,7 +4623,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 16,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5083,7 +4639,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 16,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5096,7 +4652,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 16,
+          property: 14,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5109,7 +4665,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 16,
+          property: 14,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -5122,7 +4678,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 16,
+          property: 14,
           value: '',
         ),
       );
@@ -5134,7 +4690,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 16,
+          property: 14,
           value: '',
         ),
       );
@@ -5144,14 +4700,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       toAliasPubkeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 17));
+      return query.addFilterCondition(const IsNullCondition(property: 15));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       toAliasPubkeyIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 17));
+      return query.addFilterCondition(const IsNullCondition(property: 15));
     });
   }
 
@@ -5163,7 +4719,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 17,
+          property: 15,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5179,7 +4735,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 17,
+          property: 15,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5195,7 +4751,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 17,
+          property: 15,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5211,7 +4767,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 17,
+          property: 15,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5227,7 +4783,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 17,
+          property: 15,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5244,7 +4800,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 17,
+          property: 15,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -5261,7 +4817,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 17,
+          property: 15,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5277,7 +4833,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 17,
+          property: 15,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5290,7 +4846,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 17,
+          property: 15,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5303,7 +4859,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 17,
+          property: 15,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -5316,7 +4872,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 17,
+          property: 15,
           value: '',
         ),
       );
@@ -5328,7 +4884,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 17,
+          property: 15,
           value: '',
         ),
       );
@@ -5338,14 +4894,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       toAliasPrivkeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 18));
+      return query.addFilterCondition(const IsNullCondition(property: 16));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       toAliasPrivkeyIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 18));
+      return query.addFilterCondition(const IsNullCondition(property: 16));
     });
   }
 
@@ -5357,7 +4913,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 18,
+          property: 16,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5373,7 +4929,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 18,
+          property: 16,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5389,7 +4945,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 18,
+          property: 16,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5405,7 +4961,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 18,
+          property: 16,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5421,7 +4977,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 18,
+          property: 16,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5438,7 +4994,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 18,
+          property: 16,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -5455,7 +5011,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 18,
+          property: 16,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5471,7 +5027,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 18,
+          property: 16,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5484,7 +5040,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 18,
+          property: 16,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5497,7 +5053,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 18,
+          property: 16,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -5510,7 +5066,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 18,
+          property: 16,
           value: '',
         ),
       );
@@ -5522,7 +5078,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 18,
+          property: 16,
           value: '',
         ),
       );
@@ -5532,14 +5088,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       friendsListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 19));
+      return query.addFilterCondition(const IsNullCondition(property: 17));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       friendsListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 19));
+      return query.addFilterCondition(const IsNullCondition(property: 17));
     });
   }
 
@@ -5551,7 +5107,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 19,
+          property: 17,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5567,7 +5123,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 19,
+          property: 17,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5583,7 +5139,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 19,
+          property: 17,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5599,7 +5155,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 19,
+          property: 17,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5615,7 +5171,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 19,
+          property: 17,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5632,7 +5188,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 19,
+          property: 17,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -5649,7 +5205,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 19,
+          property: 17,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5665,7 +5221,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 19,
+          property: 17,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5678,7 +5234,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 19,
+          property: 17,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5691,7 +5247,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 19,
+          property: 17,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -5704,7 +5260,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 19,
+          property: 17,
           value: '',
         ),
       );
@@ -5716,7 +5272,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 19,
+          property: 17,
           value: '',
         ),
       );
@@ -5726,14 +5282,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       channelsListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 20));
+      return query.addFilterCondition(const IsNullCondition(property: 18));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       channelsListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 20));
+      return query.addFilterCondition(const IsNullCondition(property: 18));
     });
   }
 
@@ -5745,7 +5301,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 20,
+          property: 18,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5761,7 +5317,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 20,
+          property: 18,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5777,7 +5333,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 20,
+          property: 18,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5793,7 +5349,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 20,
+          property: 18,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5809,7 +5365,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 20,
+          property: 18,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5826,7 +5382,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 20,
+          property: 18,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -5843,7 +5399,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 20,
+          property: 18,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5859,7 +5415,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 20,
+          property: 18,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5872,7 +5428,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 20,
+          property: 18,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5885,7 +5441,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 20,
+          property: 18,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -5898,7 +5454,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 20,
+          property: 18,
           value: '',
         ),
       );
@@ -5910,7 +5466,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 20,
+          property: 18,
           value: '',
         ),
       );
@@ -5928,7 +5484,7 @@ extension UserDBISARQueryFilter
       channelsListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 20, value: null),
+        const GreaterOrEqualCondition(property: 18, value: null),
       );
     });
   }
@@ -5936,14 +5492,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       groupsListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 21));
+      return query.addFilterCondition(const IsNullCondition(property: 19));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       groupsListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 21));
+      return query.addFilterCondition(const IsNullCondition(property: 19));
     });
   }
 
@@ -5955,7 +5511,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 21,
+          property: 19,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5971,7 +5527,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 21,
+          property: 19,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -5987,7 +5543,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 21,
+          property: 19,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6003,7 +5559,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 21,
+          property: 19,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6019,7 +5575,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 21,
+          property: 19,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6036,7 +5592,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 21,
+          property: 19,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -6053,7 +5609,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 21,
+          property: 19,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6069,7 +5625,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 21,
+          property: 19,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6082,7 +5638,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 21,
+          property: 19,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6095,7 +5651,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 21,
+          property: 19,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -6108,7 +5664,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 21,
+          property: 19,
           value: '',
         ),
       );
@@ -6120,7 +5676,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 21,
+          property: 19,
           value: '',
         ),
       );
@@ -6138,7 +5694,7 @@ extension UserDBISARQueryFilter
       groupsListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 21, value: null),
+        const GreaterOrEqualCondition(property: 19, value: null),
       );
     });
   }
@@ -6146,14 +5702,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       relayGroupsListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 22));
+      return query.addFilterCondition(const IsNullCondition(property: 20));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       relayGroupsListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 22));
+      return query.addFilterCondition(const IsNullCondition(property: 20));
     });
   }
 
@@ -6165,7 +5721,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 22,
+          property: 20,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6181,7 +5737,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 22,
+          property: 20,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6197,7 +5753,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 22,
+          property: 20,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6213,7 +5769,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 22,
+          property: 20,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6229,7 +5785,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 22,
+          property: 20,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6246,7 +5802,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 22,
+          property: 20,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -6263,7 +5819,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 22,
+          property: 20,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6279,7 +5835,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 22,
+          property: 20,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6293,7 +5849,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 22,
+          property: 20,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6307,7 +5863,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 22,
+          property: 20,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -6320,7 +5876,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 22,
+          property: 20,
           value: '',
         ),
       );
@@ -6332,7 +5888,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 22,
+          property: 20,
           value: '',
         ),
       );
@@ -6350,7 +5906,7 @@ extension UserDBISARQueryFilter
       relayGroupsListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 22, value: null),
+        const GreaterOrEqualCondition(property: 20, value: null),
       );
     });
   }
@@ -6358,14 +5914,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       badgesListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 23));
+      return query.addFilterCondition(const IsNullCondition(property: 21));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       badgesListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 23));
+      return query.addFilterCondition(const IsNullCondition(property: 21));
     });
   }
 
@@ -6377,7 +5933,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 23,
+          property: 21,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6393,7 +5949,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 23,
+          property: 21,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6409,7 +5965,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 23,
+          property: 21,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6425,7 +5981,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 23,
+          property: 21,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6441,7 +5997,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 23,
+          property: 21,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6458,7 +6014,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 23,
+          property: 21,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -6475,7 +6031,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 23,
+          property: 21,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6491,7 +6047,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 23,
+          property: 21,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6504,7 +6060,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 23,
+          property: 21,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6517,7 +6073,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 23,
+          property: 21,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -6530,7 +6086,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 23,
+          property: 21,
           value: '',
         ),
       );
@@ -6542,7 +6098,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 23,
+          property: 21,
           value: '',
         ),
       );
@@ -6560,7 +6116,7 @@ extension UserDBISARQueryFilter
       badgesListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 23, value: null),
+        const GreaterOrEqualCondition(property: 21, value: null),
       );
     });
   }
@@ -6568,14 +6124,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       blockedListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 24));
+      return query.addFilterCondition(const IsNullCondition(property: 22));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       blockedListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 24));
+      return query.addFilterCondition(const IsNullCondition(property: 22));
     });
   }
 
@@ -6587,7 +6143,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 24,
+          property: 22,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6603,7 +6159,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 24,
+          property: 22,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6619,7 +6175,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 24,
+          property: 22,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6635,7 +6191,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 24,
+          property: 22,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6651,7 +6207,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 24,
+          property: 22,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6668,7 +6224,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 24,
+          property: 22,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -6685,7 +6241,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 24,
+          property: 22,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6701,7 +6257,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 24,
+          property: 22,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6714,7 +6270,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 24,
+          property: 22,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6727,7 +6283,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 24,
+          property: 22,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -6740,7 +6296,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 24,
+          property: 22,
           value: '',
         ),
       );
@@ -6752,7 +6308,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 24,
+          property: 22,
           value: '',
         ),
       );
@@ -6770,7 +6326,7 @@ extension UserDBISARQueryFilter
       blockedListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 24, value: null),
+        const GreaterOrEqualCondition(property: 22, value: null),
       );
     });
   }
@@ -6778,14 +6334,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       blockedHashTagsIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 25));
+      return query.addFilterCondition(const IsNullCondition(property: 23));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       blockedHashTagsIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 25));
+      return query.addFilterCondition(const IsNullCondition(property: 23));
     });
   }
 
@@ -6797,7 +6353,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 25,
+          property: 23,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6813,7 +6369,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 25,
+          property: 23,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6829,7 +6385,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 25,
+          property: 23,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6845,7 +6401,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 25,
+          property: 23,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6861,7 +6417,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 25,
+          property: 23,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6878,7 +6434,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 25,
+          property: 23,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -6895,7 +6451,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 25,
+          property: 23,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6911,7 +6467,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 25,
+          property: 23,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6925,7 +6481,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 25,
+          property: 23,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -6939,7 +6495,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 25,
+          property: 23,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -6952,7 +6508,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 25,
+          property: 23,
           value: '',
         ),
       );
@@ -6964,7 +6520,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 25,
+          property: 23,
           value: '',
         ),
       );
@@ -6982,7 +6538,7 @@ extension UserDBISARQueryFilter
       blockedHashTagsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 25, value: null),
+        const GreaterOrEqualCondition(property: 23, value: null),
       );
     });
   }
@@ -6990,14 +6546,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       blockedWordsIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 26));
+      return query.addFilterCondition(const IsNullCondition(property: 24));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       blockedWordsIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 26));
+      return query.addFilterCondition(const IsNullCondition(property: 24));
     });
   }
 
@@ -7009,7 +6565,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 26,
+          property: 24,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7025,7 +6581,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 26,
+          property: 24,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7041,7 +6597,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 26,
+          property: 24,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7057,7 +6613,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 26,
+          property: 24,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7073,7 +6629,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 26,
+          property: 24,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7090,7 +6646,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 26,
+          property: 24,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -7107,7 +6663,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 26,
+          property: 24,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7123,7 +6679,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 26,
+          property: 24,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7136,7 +6692,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 26,
+          property: 24,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7149,7 +6705,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 26,
+          property: 24,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -7162,7 +6718,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 26,
+          property: 24,
           value: '',
         ),
       );
@@ -7174,7 +6730,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 26,
+          property: 24,
           value: '',
         ),
       );
@@ -7192,7 +6748,7 @@ extension UserDBISARQueryFilter
       blockedWordsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 26, value: null),
+        const GreaterOrEqualCondition(property: 24, value: null),
       );
     });
   }
@@ -7200,14 +6756,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       blockedThreadsIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 27));
+      return query.addFilterCondition(const IsNullCondition(property: 25));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       blockedThreadsIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 27));
+      return query.addFilterCondition(const IsNullCondition(property: 25));
     });
   }
 
@@ -7219,7 +6775,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 27,
+          property: 25,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7235,7 +6791,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 27,
+          property: 25,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7251,7 +6807,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 27,
+          property: 25,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7267,7 +6823,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 27,
+          property: 25,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7283,7 +6839,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 27,
+          property: 25,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7300,7 +6856,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 27,
+          property: 25,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -7317,7 +6873,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 27,
+          property: 25,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7333,7 +6889,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 27,
+          property: 25,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7346,7 +6902,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 27,
+          property: 25,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7360,7 +6916,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 27,
+          property: 25,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -7373,7 +6929,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 27,
+          property: 25,
           value: '',
         ),
       );
@@ -7385,7 +6941,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 27,
+          property: 25,
           value: '',
         ),
       );
@@ -7403,7 +6959,7 @@ extension UserDBISARQueryFilter
       blockedThreadsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 27, value: null),
+        const GreaterOrEqualCondition(property: 25, value: null),
       );
     });
   }
@@ -7411,14 +6967,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       followingListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 28));
+      return query.addFilterCondition(const IsNullCondition(property: 26));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       followingListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 28));
+      return query.addFilterCondition(const IsNullCondition(property: 26));
     });
   }
 
@@ -7430,7 +6986,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 28,
+          property: 26,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7446,7 +7002,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 28,
+          property: 26,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7462,7 +7018,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 28,
+          property: 26,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7478,7 +7034,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 28,
+          property: 26,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7494,7 +7050,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 28,
+          property: 26,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7511,7 +7067,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 28,
+          property: 26,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -7528,7 +7084,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 28,
+          property: 26,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7544,7 +7100,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 28,
+          property: 26,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7557,7 +7113,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 28,
+          property: 26,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7570,7 +7126,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 28,
+          property: 26,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -7583,7 +7139,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 28,
+          property: 26,
           value: '',
         ),
       );
@@ -7595,7 +7151,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 28,
+          property: 26,
           value: '',
         ),
       );
@@ -7613,7 +7169,7 @@ extension UserDBISARQueryFilter
       followingListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 28, value: null),
+        const GreaterOrEqualCondition(property: 26, value: null),
       );
     });
   }
@@ -7621,14 +7177,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       followersListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 29));
+      return query.addFilterCondition(const IsNullCondition(property: 27));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       followersListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 29));
+      return query.addFilterCondition(const IsNullCondition(property: 27));
     });
   }
 
@@ -7640,7 +7196,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 29,
+          property: 27,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7656,7 +7212,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 29,
+          property: 27,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7672,7 +7228,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 29,
+          property: 27,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7688,7 +7244,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 29,
+          property: 27,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7704,7 +7260,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 29,
+          property: 27,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7721,7 +7277,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 29,
+          property: 27,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -7738,7 +7294,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 29,
+          property: 27,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7754,7 +7310,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 29,
+          property: 27,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7767,7 +7323,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 29,
+          property: 27,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7780,7 +7336,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 29,
+          property: 27,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -7793,7 +7349,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 29,
+          property: 27,
           value: '',
         ),
       );
@@ -7805,7 +7361,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 29,
+          property: 27,
           value: '',
         ),
       );
@@ -7823,7 +7379,7 @@ extension UserDBISARQueryFilter
       followersListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 29, value: null),
+        const GreaterOrEqualCondition(property: 27, value: null),
       );
     });
   }
@@ -7831,14 +7387,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       relayListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 30));
+      return query.addFilterCondition(const IsNullCondition(property: 28));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       relayListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 30));
+      return query.addFilterCondition(const IsNullCondition(property: 28));
     });
   }
 
@@ -7850,7 +7406,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 30,
+          property: 28,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7866,7 +7422,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 30,
+          property: 28,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7882,7 +7438,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 30,
+          property: 28,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7898,7 +7454,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 30,
+          property: 28,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7914,7 +7470,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 30,
+          property: 28,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7931,7 +7487,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 30,
+          property: 28,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -7948,7 +7504,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 30,
+          property: 28,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7964,7 +7520,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 30,
+          property: 28,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7977,7 +7533,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 30,
+          property: 28,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -7990,7 +7546,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 30,
+          property: 28,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -8003,7 +7559,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 30,
+          property: 28,
           value: '',
         ),
       );
@@ -8015,7 +7571,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 30,
+          property: 28,
           value: '',
         ),
       );
@@ -8033,7 +7589,7 @@ extension UserDBISARQueryFilter
       relayListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 30, value: null),
+        const GreaterOrEqualCondition(property: 28, value: null),
       );
     });
   }
@@ -8041,14 +7597,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       dmRelayListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 31));
+      return query.addFilterCondition(const IsNullCondition(property: 29));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       dmRelayListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 31));
+      return query.addFilterCondition(const IsNullCondition(property: 29));
     });
   }
 
@@ -8060,7 +7616,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 31,
+          property: 29,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8076,7 +7632,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 31,
+          property: 29,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8092,7 +7648,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 31,
+          property: 29,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8108,7 +7664,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 31,
+          property: 29,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8124,7 +7680,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 31,
+          property: 29,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8141,7 +7697,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 31,
+          property: 29,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -8158,7 +7714,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 31,
+          property: 29,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8174,7 +7730,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 31,
+          property: 29,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8187,7 +7743,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 31,
+          property: 29,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8200,7 +7756,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 31,
+          property: 29,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -8213,7 +7769,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 31,
+          property: 29,
           value: '',
         ),
       );
@@ -8225,7 +7781,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 31,
+          property: 29,
           value: '',
         ),
       );
@@ -8243,7 +7799,7 @@ extension UserDBISARQueryFilter
       dmRelayListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 31, value: null),
+        const GreaterOrEqualCondition(property: 29, value: null),
       );
     });
   }
@@ -8251,14 +7807,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       inboxRelayListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 32));
+      return query.addFilterCondition(const IsNullCondition(property: 30));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       inboxRelayListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 32));
+      return query.addFilterCondition(const IsNullCondition(property: 30));
     });
   }
 
@@ -8270,7 +7826,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 32,
+          property: 30,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8286,7 +7842,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 32,
+          property: 30,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8302,7 +7858,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 32,
+          property: 30,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8318,7 +7874,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 32,
+          property: 30,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8334,7 +7890,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 32,
+          property: 30,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8351,7 +7907,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 32,
+          property: 30,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -8368,7 +7924,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 32,
+          property: 30,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8384,7 +7940,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 32,
+          property: 30,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8397,7 +7953,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 32,
+          property: 30,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8411,7 +7967,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 32,
+          property: 30,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -8424,7 +7980,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 32,
+          property: 30,
           value: '',
         ),
       );
@@ -8436,7 +7992,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 32,
+          property: 30,
           value: '',
         ),
       );
@@ -8454,7 +8010,7 @@ extension UserDBISARQueryFilter
       inboxRelayListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 32, value: null),
+        const GreaterOrEqualCondition(property: 30, value: null),
       );
     });
   }
@@ -8462,14 +8018,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       outboxRelayListIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 33));
+      return query.addFilterCondition(const IsNullCondition(property: 31));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       outboxRelayListIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 33));
+      return query.addFilterCondition(const IsNullCondition(property: 31));
     });
   }
 
@@ -8481,7 +8037,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 33,
+          property: 31,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8497,7 +8053,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 33,
+          property: 31,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8513,7 +8069,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 33,
+          property: 31,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8529,7 +8085,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 33,
+          property: 31,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8545,7 +8101,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 33,
+          property: 31,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8562,7 +8118,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 33,
+          property: 31,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -8579,7 +8135,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 33,
+          property: 31,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8595,7 +8151,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 33,
+          property: 31,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8609,7 +8165,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 33,
+          property: 31,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -8623,7 +8179,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 33,
+          property: 31,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -8636,7 +8192,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 33,
+          property: 31,
           value: '',
         ),
       );
@@ -8648,7 +8204,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 33,
+          property: 31,
           value: '',
         ),
       );
@@ -8666,7 +8222,7 @@ extension UserDBISARQueryFilter
       outboxRelayListIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
-        const GreaterOrEqualCondition(property: 33, value: null),
+        const GreaterOrEqualCondition(property: 31, value: null),
       );
     });
   }
@@ -8678,7 +8234,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 34,
+          property: 32,
           value: value,
         ),
       );
@@ -8692,7 +8248,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 34,
+          property: 32,
           value: value,
         ),
       );
@@ -8706,7 +8262,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 34,
+          property: 32,
           value: value,
         ),
       );
@@ -8720,7 +8276,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 34,
+          property: 32,
           value: value,
         ),
       );
@@ -8734,7 +8290,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 34,
+          property: 32,
           value: value,
         ),
       );
@@ -8749,7 +8305,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 34,
+          property: 32,
           lower: lower,
           upper: upper,
         ),
@@ -8764,7 +8320,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 35,
+          property: 33,
           value: value,
         ),
       );
@@ -8778,7 +8334,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 35,
+          property: 33,
           value: value,
         ),
       );
@@ -8792,7 +8348,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 35,
+          property: 33,
           value: value,
         ),
       );
@@ -8806,7 +8362,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 35,
+          property: 33,
           value: value,
         ),
       );
@@ -8820,7 +8376,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 35,
+          property: 33,
           value: value,
         ),
       );
@@ -8835,7 +8391,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 35,
+          property: 33,
           lower: lower,
           upper: upper,
         ),
@@ -8850,7 +8406,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 36,
+          property: 34,
           value: value,
         ),
       );
@@ -8864,7 +8420,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 36,
+          property: 34,
           value: value,
         ),
       );
@@ -8878,7 +8434,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 36,
+          property: 34,
           value: value,
         ),
       );
@@ -8892,7 +8448,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 36,
+          property: 34,
           value: value,
         ),
       );
@@ -8906,7 +8462,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 36,
+          property: 34,
           value: value,
         ),
       );
@@ -8921,7 +8477,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 36,
+          property: 34,
           lower: lower,
           upper: upper,
         ),
@@ -8936,7 +8492,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 37,
+          property: 35,
           value: value,
         ),
       );
@@ -8950,7 +8506,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 37,
+          property: 35,
           value: value,
         ),
       );
@@ -8964,7 +8520,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 37,
+          property: 35,
           value: value,
         ),
       );
@@ -8978,7 +8534,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 37,
+          property: 35,
           value: value,
         ),
       );
@@ -8992,7 +8548,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 37,
+          property: 35,
           value: value,
         ),
       );
@@ -9007,7 +8563,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 37,
+          property: 35,
           lower: lower,
           upper: upper,
         ),
@@ -9022,7 +8578,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 38,
+          property: 36,
           value: value,
         ),
       );
@@ -9036,7 +8592,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 38,
+          property: 36,
           value: value,
         ),
       );
@@ -9050,7 +8606,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 38,
+          property: 36,
           value: value,
         ),
       );
@@ -9064,7 +8620,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 38,
+          property: 36,
           value: value,
         ),
       );
@@ -9078,7 +8634,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 38,
+          property: 36,
           value: value,
         ),
       );
@@ -9093,7 +8649,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 38,
+          property: 36,
           lower: lower,
           upper: upper,
         ),
@@ -9108,7 +8664,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 39,
+          property: 37,
           value: value,
         ),
       );
@@ -9122,7 +8678,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 39,
+          property: 37,
           value: value,
         ),
       );
@@ -9136,7 +8692,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 39,
+          property: 37,
           value: value,
         ),
       );
@@ -9150,7 +8706,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 39,
+          property: 37,
           value: value,
         ),
       );
@@ -9164,7 +8720,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 39,
+          property: 37,
           value: value,
         ),
       );
@@ -9179,7 +8735,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 39,
+          property: 37,
           lower: lower,
           upper: upper,
         ),
@@ -9194,7 +8750,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 40,
+          property: 38,
           value: value,
         ),
       );
@@ -9208,7 +8764,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 40,
+          property: 38,
           value: value,
         ),
       );
@@ -9222,7 +8778,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 40,
+          property: 38,
           value: value,
         ),
       );
@@ -9236,7 +8792,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 40,
+          property: 38,
           value: value,
         ),
       );
@@ -9250,7 +8806,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 40,
+          property: 38,
           value: value,
         ),
       );
@@ -9265,7 +8821,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 40,
+          property: 38,
           lower: lower,
           upper: upper,
         ),
@@ -9280,7 +8836,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 41,
+          property: 39,
           value: value,
         ),
       );
@@ -9294,7 +8850,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 41,
+          property: 39,
           value: value,
         ),
       );
@@ -9308,7 +8864,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 41,
+          property: 39,
           value: value,
         ),
       );
@@ -9322,7 +8878,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 41,
+          property: 39,
           value: value,
         ),
       );
@@ -9336,7 +8892,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 41,
+          property: 39,
           value: value,
         ),
       );
@@ -9351,7 +8907,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 41,
+          property: 39,
           lower: lower,
           upper: upper,
         ),
@@ -9366,7 +8922,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 42,
+          property: 40,
           value: value,
         ),
       );
@@ -9380,7 +8936,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 42,
+          property: 40,
           value: value,
         ),
       );
@@ -9394,7 +8950,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 42,
+          property: 40,
           value: value,
         ),
       );
@@ -9408,7 +8964,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 42,
+          property: 40,
           value: value,
         ),
       );
@@ -9422,7 +8978,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 42,
+          property: 40,
           value: value,
         ),
       );
@@ -9437,7 +8993,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 42,
+          property: 40,
           lower: lower,
           upper: upper,
         ),
@@ -9447,13 +9003,13 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> muteIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 43));
+      return query.addFilterCondition(const IsNullCondition(property: 41));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> muteIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 43));
+      return query.addFilterCondition(const IsNullCondition(property: 41));
     });
   }
 
@@ -9463,7 +9019,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 43,
+          property: 41,
           value: value,
         ),
       );
@@ -9477,7 +9033,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 44,
+          property: 42,
           value: value,
         ),
       );
@@ -9491,7 +9047,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 44,
+          property: 42,
           value: value,
         ),
       );
@@ -9505,7 +9061,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 44,
+          property: 42,
           value: value,
         ),
       );
@@ -9519,7 +9075,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 44,
+          property: 42,
           value: value,
         ),
       );
@@ -9533,7 +9089,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 44,
+          property: 42,
           value: value,
         ),
       );
@@ -9548,7 +9104,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 44,
+          property: 42,
           lower: lower,
           upper: upper,
         ),
@@ -9559,14 +9115,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       otherFieldIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 45));
+      return query.addFilterCondition(const IsNullCondition(property: 43));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       otherFieldIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 45));
+      return query.addFilterCondition(const IsNullCondition(property: 43));
     });
   }
 
@@ -9577,7 +9133,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 45,
+          property: 43,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9593,7 +9149,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 45,
+          property: 43,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9609,7 +9165,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 45,
+          property: 43,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9625,7 +9181,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 45,
+          property: 43,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9641,7 +9197,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 45,
+          property: 43,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9657,7 +9213,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 45,
+          property: 43,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -9674,7 +9230,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 45,
+          property: 43,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9690,7 +9246,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 45,
+          property: 43,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9703,7 +9259,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 45,
+          property: 43,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9717,7 +9273,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 45,
+          property: 43,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -9730,7 +9286,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 45,
+          property: 43,
           value: '',
         ),
       );
@@ -9742,7 +9298,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 45,
+          property: 43,
           value: '',
         ),
       );
@@ -9751,14 +9307,14 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> nwcURIIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 46));
+      return query.addFilterCondition(const IsNullCondition(property: 44));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       nwcURIIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 46));
+      return query.addFilterCondition(const IsNullCondition(property: 44));
     });
   }
 
@@ -9769,7 +9325,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 46,
+          property: 44,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9784,7 +9340,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 46,
+          property: 44,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9800,7 +9356,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 46,
+          property: 44,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9815,7 +9371,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 46,
+          property: 44,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9831,7 +9387,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 46,
+          property: 44,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9847,7 +9403,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 46,
+          property: 44,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -9863,7 +9419,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 46,
+          property: 44,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9878,7 +9434,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 46,
+          property: 44,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9892,7 +9448,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 46,
+          property: 44,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9906,7 +9462,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 46,
+          property: 44,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -9918,7 +9474,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 46,
+          property: 44,
           value: '',
         ),
       );
@@ -9930,7 +9486,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 46,
+          property: 44,
           value: '',
         ),
       );
@@ -9940,14 +9496,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       remoteSignerURIIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 47));
+      return query.addFilterCondition(const IsNullCondition(property: 45));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       remoteSignerURIIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 47));
+      return query.addFilterCondition(const IsNullCondition(property: 45));
     });
   }
 
@@ -9959,7 +9515,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 47,
+          property: 45,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9975,7 +9531,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 47,
+          property: 45,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -9991,7 +9547,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 47,
+          property: 45,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10007,7 +9563,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 47,
+          property: 45,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10023,7 +9579,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 47,
+          property: 45,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10040,7 +9596,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 47,
+          property: 45,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -10057,7 +9613,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 47,
+          property: 45,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10073,7 +9629,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 47,
+          property: 45,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10086,7 +9642,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 47,
+          property: 45,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10099,7 +9655,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 47,
+          property: 45,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -10112,7 +9668,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 47,
+          property: 45,
           value: '',
         ),
       );
@@ -10124,7 +9680,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 47,
+          property: 45,
           value: '',
         ),
       );
@@ -10134,14 +9690,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       clientPrivateKeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 48));
+      return query.addFilterCondition(const IsNullCondition(property: 46));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       clientPrivateKeyIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 48));
+      return query.addFilterCondition(const IsNullCondition(property: 46));
     });
   }
 
@@ -10153,7 +9709,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 48,
+          property: 46,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10169,7 +9725,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 48,
+          property: 46,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10185,7 +9741,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 48,
+          property: 46,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10201,7 +9757,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 48,
+          property: 46,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10217,7 +9773,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 48,
+          property: 46,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10234,7 +9790,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 48,
+          property: 46,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -10251,7 +9807,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 48,
+          property: 46,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10267,7 +9823,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 48,
+          property: 46,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10280,7 +9836,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 48,
+          property: 46,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10293,7 +9849,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 48,
+          property: 46,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -10306,7 +9862,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 48,
+          property: 46,
           value: '',
         ),
       );
@@ -10318,7 +9874,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 48,
+          property: 46,
           value: '',
         ),
       );
@@ -10328,14 +9884,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       remotePubkeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 49));
+      return query.addFilterCondition(const IsNullCondition(property: 47));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       remotePubkeyIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 49));
+      return query.addFilterCondition(const IsNullCondition(property: 47));
     });
   }
 
@@ -10347,7 +9903,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 49,
+          property: 47,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10363,7 +9919,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 49,
+          property: 47,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10379,7 +9935,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 49,
+          property: 47,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10395,7 +9951,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 49,
+          property: 47,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10411,7 +9967,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 49,
+          property: 47,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10428,7 +9984,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 49,
+          property: 47,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -10445,7 +10001,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 49,
+          property: 47,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10461,7 +10017,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 49,
+          property: 47,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10474,7 +10030,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 49,
+          property: 47,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10487,7 +10043,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 49,
+          property: 47,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -10500,7 +10056,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 49,
+          property: 47,
           value: '',
         ),
       );
@@ -10512,7 +10068,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 49,
+          property: 47,
           value: '',
         ),
       );
@@ -10522,14 +10078,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       androidSignerKeyIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 50));
+      return query.addFilterCondition(const IsNullCondition(property: 48));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       androidSignerKeyIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 50));
+      return query.addFilterCondition(const IsNullCondition(property: 48));
     });
   }
 
@@ -10541,7 +10097,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 50,
+          property: 48,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10557,7 +10113,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 50,
+          property: 48,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10573,7 +10129,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 50,
+          property: 48,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10589,7 +10145,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 50,
+          property: 48,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10605,7 +10161,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 50,
+          property: 48,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10622,7 +10178,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 50,
+          property: 48,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -10639,7 +10195,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 50,
+          property: 48,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10655,7 +10211,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 50,
+          property: 48,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10668,7 +10224,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 50,
+          property: 48,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10681,7 +10237,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 50,
+          property: 48,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -10694,7 +10250,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 50,
+          property: 48,
           value: '',
         ),
       );
@@ -10706,7 +10262,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 50,
+          property: 48,
           value: '',
         ),
       );
@@ -10716,14 +10272,14 @@ extension UserDBISARQueryFilter
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       encodedKeyPackageIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 51));
+      return query.addFilterCondition(const IsNullCondition(property: 49));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       encodedKeyPackageIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 51));
+      return query.addFilterCondition(const IsNullCondition(property: 49));
     });
   }
 
@@ -10735,7 +10291,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 51,
+          property: 49,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10751,7 +10307,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 51,
+          property: 49,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10767,7 +10323,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 51,
+          property: 49,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10783,7 +10339,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 51,
+          property: 49,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10799,7 +10355,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 51,
+          property: 49,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10816,7 +10372,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 51,
+          property: 49,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -10833,7 +10389,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 51,
+          property: 49,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10849,7 +10405,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 51,
+          property: 49,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10862,7 +10418,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 51,
+          property: 49,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10875,7 +10431,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 51,
+          property: 49,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -10888,7 +10444,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 51,
+          property: 49,
           value: '',
         ),
       );
@@ -10900,7 +10456,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 51,
+          property: 49,
           value: '',
         ),
       );
@@ -10909,14 +10465,14 @@ extension UserDBISARQueryFilter
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition> settingsIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 52));
+      return query.addFilterCondition(const IsNullCondition(property: 50));
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterFilterCondition>
       settingsIsNotNull() {
     return QueryBuilder.apply(not(), (query) {
-      return query.addFilterCondition(const IsNullCondition(property: 52));
+      return query.addFilterCondition(const IsNullCondition(property: 50));
     });
   }
 
@@ -10927,7 +10483,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EqualCondition(
-          property: 52,
+          property: 50,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10943,7 +10499,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterCondition(
-          property: 52,
+          property: 50,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10959,7 +10515,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         GreaterOrEqualCondition(
-          property: 52,
+          property: 50,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10974,7 +10530,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessCondition(
-          property: 52,
+          property: 50,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -10990,7 +10546,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         LessOrEqualCondition(
-          property: 52,
+          property: 50,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -11006,7 +10562,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         BetweenCondition(
-          property: 52,
+          property: 50,
           lower: lower,
           upper: upper,
           caseSensitive: caseSensitive,
@@ -11023,7 +10579,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         StartsWithCondition(
-          property: 52,
+          property: 50,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -11038,7 +10594,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         EndsWithCondition(
-          property: 52,
+          property: 50,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -11052,7 +10608,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         ContainsCondition(
-          property: 52,
+          property: 50,
           value: value,
           caseSensitive: caseSensitive,
         ),
@@ -11066,7 +10622,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         MatchesCondition(
-          property: 52,
+          property: 50,
           wildcard: pattern,
           caseSensitive: caseSensitive,
         ),
@@ -11079,7 +10635,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const EqualCondition(
-          property: 52,
+          property: 50,
           value: '',
         ),
       );
@@ -11091,7 +10647,7 @@ extension UserDBISARQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(
         const GreaterCondition(
-          property: 52,
+          property: 50,
           value: '',
         ),
       );
@@ -11137,32 +10693,11 @@ extension UserDBISARQuerySortBy
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByEncryptedPrivKey(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(
-        2,
-        caseSensitive: caseSensitive,
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByEncryptedPrivKeyDesc(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(
-        2,
-        sort: Sort.desc,
-        caseSensitive: caseSensitive,
-      );
-    });
-  }
-
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByPrivkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        3,
+        2,
         caseSensitive: caseSensitive,
       );
     });
@@ -11172,28 +10707,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        3,
-        sort: Sort.desc,
-        caseSensitive: caseSensitive,
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByDefaultPassword(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(
-        4,
-        caseSensitive: caseSensitive,
-      );
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByDefaultPasswordDesc(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(
-        4,
+        2,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11204,7 +10718,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        5,
+        3,
         caseSensitive: caseSensitive,
       );
     });
@@ -11214,7 +10728,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        5,
+        3,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11225,7 +10739,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        6,
+        4,
         caseSensitive: caseSensitive,
       );
     });
@@ -11235,7 +10749,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        6,
+        4,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11246,7 +10760,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        7,
+        5,
         caseSensitive: caseSensitive,
       );
     });
@@ -11256,7 +10770,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        7,
+        5,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11267,7 +10781,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        8,
+        6,
         caseSensitive: caseSensitive,
       );
     });
@@ -11277,7 +10791,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        8,
+        6,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11288,7 +10802,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        9,
+        7,
         caseSensitive: caseSensitive,
       );
     });
@@ -11298,7 +10812,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        9,
+        7,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11309,7 +10823,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        10,
+        8,
         caseSensitive: caseSensitive,
       );
     });
@@ -11319,7 +10833,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        10,
+        8,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11330,7 +10844,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        11,
+        9,
         caseSensitive: caseSensitive,
       );
     });
@@ -11340,7 +10854,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        11,
+        9,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11351,7 +10865,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        12,
+        10,
         caseSensitive: caseSensitive,
       );
     });
@@ -11361,7 +10875,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        12,
+        10,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11372,7 +10886,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        13,
+        11,
         caseSensitive: caseSensitive,
       );
     });
@@ -11382,7 +10896,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        13,
+        11,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11393,7 +10907,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        14,
+        12,
         caseSensitive: caseSensitive,
       );
     });
@@ -11403,7 +10917,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        14,
+        12,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11414,7 +10928,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        15,
+        13,
         caseSensitive: caseSensitive,
       );
     });
@@ -11424,7 +10938,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        15,
+        13,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11435,7 +10949,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        16,
+        14,
         caseSensitive: caseSensitive,
       );
     });
@@ -11445,7 +10959,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        16,
+        14,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11456,7 +10970,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        17,
+        15,
         caseSensitive: caseSensitive,
       );
     });
@@ -11466,7 +10980,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        17,
+        15,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11477,7 +10991,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        18,
+        16,
         caseSensitive: caseSensitive,
       );
     });
@@ -11487,7 +11001,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        18,
+        16,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11498,7 +11012,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        19,
+        17,
         caseSensitive: caseSensitive,
       );
     });
@@ -11508,7 +11022,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        19,
+        17,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11518,151 +11032,151 @@ extension UserDBISARQuerySortBy
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastFriendsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(34);
+      return query.addSortBy(32);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastFriendsListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(34, sort: Sort.desc);
+      return query.addSortBy(32, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastChannelsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(35);
+      return query.addSortBy(33);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastChannelsListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(35, sort: Sort.desc);
+      return query.addSortBy(33, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastGroupsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(36);
+      return query.addSortBy(34);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastGroupsListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(36, sort: Sort.desc);
+      return query.addSortBy(34, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastRelayGroupsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(37);
+      return query.addSortBy(35);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastRelayGroupsListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(37, sort: Sort.desc);
+      return query.addSortBy(35, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastBadgesListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(38);
+      return query.addSortBy(36);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastBadgesListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(38, sort: Sort.desc);
+      return query.addSortBy(36, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastBlockListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(39);
+      return query.addSortBy(37);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastBlockListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(39, sort: Sort.desc);
+      return query.addSortBy(37, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastRelayListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(40);
+      return query.addSortBy(38);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastRelayListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(40, sort: Sort.desc);
+      return query.addSortBy(38, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastFollowingListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(41);
+      return query.addSortBy(39);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastFollowingListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(41, sort: Sort.desc);
+      return query.addSortBy(39, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastDMRelayListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(42);
+      return query.addSortBy(40);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastDMRelayListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(42, sort: Sort.desc);
+      return query.addSortBy(40, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByMute() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(43);
+      return query.addSortBy(41);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByMuteDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(43, sort: Sort.desc);
+      return query.addSortBy(41, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> sortByLastUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(44);
+      return query.addSortBy(42);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       sortByLastUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(44, sort: Sort.desc);
+      return query.addSortBy(42, sort: Sort.desc);
     });
   }
 
@@ -11670,7 +11184,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        45,
+        43,
         caseSensitive: caseSensitive,
       );
     });
@@ -11680,7 +11194,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        45,
+        43,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11691,7 +11205,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        46,
+        44,
         caseSensitive: caseSensitive,
       );
     });
@@ -11701,7 +11215,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        46,
+        44,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11712,7 +11226,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        47,
+        45,
         caseSensitive: caseSensitive,
       );
     });
@@ -11722,7 +11236,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        47,
+        45,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11733,7 +11247,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        48,
+        46,
         caseSensitive: caseSensitive,
       );
     });
@@ -11743,7 +11257,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        48,
+        46,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11754,7 +11268,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        49,
+        47,
         caseSensitive: caseSensitive,
       );
     });
@@ -11764,7 +11278,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        49,
+        47,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11775,7 +11289,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        50,
+        48,
         caseSensitive: caseSensitive,
       );
     });
@@ -11785,7 +11299,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        50,
+        48,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11796,7 +11310,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        51,
+        49,
         caseSensitive: caseSensitive,
       );
     });
@@ -11806,7 +11320,7 @@ extension UserDBISARQuerySortBy
       sortByEncodedKeyPackageDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        51,
+        49,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11817,7 +11331,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        52,
+        50,
         caseSensitive: caseSensitive,
       );
     });
@@ -11827,7 +11341,7 @@ extension UserDBISARQuerySortBy
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(
-        52,
+        50,
         sort: Sort.desc,
         caseSensitive: caseSensitive,
       );
@@ -11863,518 +11377,490 @@ extension UserDBISARQuerySortThenBy
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByEncryptedPrivKey(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByPrivkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(2, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByEncryptedPrivKeyDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByPrivkeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(2, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByPrivkey(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(3, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByPrivkeyDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByNameDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(3, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByDefaultPassword(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByNickName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(4, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByDefaultPasswordDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByNickNameDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(4, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByName(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByMainRelay(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByNameDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByMainRelayDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(5, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByNickName(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByDns(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(6, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByNickNameDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByDnsDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(6, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByMainRelay(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByLnurl(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(7, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByMainRelayDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByLnurlDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(7, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByDns(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByBadges(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(8, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByDnsDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByBadgesDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(8, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByLnurl(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByGender(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(9, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByLnurlDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByGenderDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(9, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByBadges(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByArea(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(10, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByBadgesDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAreaDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(10, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByGender(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAbout(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(11, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByGenderDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAboutDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(11, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByArea(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByPicture(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(12, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAreaDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByPictureDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(12, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAbout(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByBanner(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(13, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAboutDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByBannerDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(13, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByPicture(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAliasPubkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(14, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByPictureDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAliasPubkeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(14, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByBanner(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByToAliasPubkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(15, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByBannerDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByToAliasPubkeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(15, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAliasPubkey(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByToAliasPrivkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(16, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAliasPubkeyDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByToAliasPrivkeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(16, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByToAliasPubkey(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByFriendsList(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(17, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByToAliasPubkeyDesc(
+  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByFriendsListDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(17, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByToAliasPrivkey(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(18, caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByToAliasPrivkeyDesc(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(18, sort: Sort.desc, caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByFriendsList(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(19, caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByFriendsListDesc(
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(19, sort: Sort.desc, caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastFriendsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(34);
+      return query.addSortBy(32);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastFriendsListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(34, sort: Sort.desc);
+      return query.addSortBy(32, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastChannelsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(35);
+      return query.addSortBy(33);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastChannelsListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(35, sort: Sort.desc);
+      return query.addSortBy(33, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastGroupsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(36);
+      return query.addSortBy(34);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastGroupsListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(36, sort: Sort.desc);
+      return query.addSortBy(34, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastRelayGroupsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(37);
+      return query.addSortBy(35);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastRelayGroupsListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(37, sort: Sort.desc);
+      return query.addSortBy(35, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastBadgesListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(38);
+      return query.addSortBy(36);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastBadgesListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(38, sort: Sort.desc);
+      return query.addSortBy(36, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastBlockListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(39);
+      return query.addSortBy(37);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastBlockListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(39, sort: Sort.desc);
+      return query.addSortBy(37, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastRelayListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(40);
+      return query.addSortBy(38);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastRelayListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(40, sort: Sort.desc);
+      return query.addSortBy(38, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastFollowingListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(41);
+      return query.addSortBy(39);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastFollowingListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(41, sort: Sort.desc);
+      return query.addSortBy(39, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastDMRelayListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(42);
+      return query.addSortBy(40);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastDMRelayListUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(42, sort: Sort.desc);
+      return query.addSortBy(40, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByMute() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(43);
+      return query.addSortBy(41);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByMuteDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(43, sort: Sort.desc);
+      return query.addSortBy(41, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByLastUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(44);
+      return query.addSortBy(42);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByLastUpdatedTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(44, sort: Sort.desc);
+      return query.addSortBy(42, sort: Sort.desc);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByOtherField(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(45, caseSensitive: caseSensitive);
+      return query.addSortBy(43, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByOtherFieldDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(45, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(43, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByNwcURI(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(46, caseSensitive: caseSensitive);
+      return query.addSortBy(44, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByNwcURIDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(46, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(44, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByRemoteSignerURI(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(47, caseSensitive: caseSensitive);
+      return query.addSortBy(45, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByRemoteSignerURIDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(47, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(45, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByClientPrivateKey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(48, caseSensitive: caseSensitive);
+      return query.addSortBy(46, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByClientPrivateKeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(48, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(46, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByRemotePubkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(49, caseSensitive: caseSensitive);
+      return query.addSortBy(47, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByRemotePubkeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(49, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(47, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAndroidSignerKey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(50, caseSensitive: caseSensitive);
+      return query.addSortBy(48, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByAndroidSignerKeyDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(50, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(48, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenByEncodedKeyPackage(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(51, caseSensitive: caseSensitive);
+      return query.addSortBy(49, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy>
       thenByEncodedKeyPackageDesc({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(51, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(49, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenBySettings(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(52, caseSensitive: caseSensitive);
+      return query.addSortBy(50, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterSortBy> thenBySettingsDesc(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(52, sort: Sort.desc, caseSensitive: caseSensitive);
+      return query.addSortBy(50, sort: Sort.desc, caseSensitive: caseSensitive);
     });
   }
 }
@@ -12388,354 +11874,340 @@ extension UserDBISARQueryWhereDistinct
     });
   }
 
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
-      distinctByEncryptedPrivKey({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(2, caseSensitive: caseSensitive);
-    });
-  }
-
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByPrivkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(3, caseSensitive: caseSensitive);
-    });
-  }
-
-  QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
-      distinctByDefaultPassword({bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(4, caseSensitive: caseSensitive);
+      return query.addDistinctBy(2, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(5, caseSensitive: caseSensitive);
+      return query.addDistinctBy(3, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByNickName(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(6, caseSensitive: caseSensitive);
+      return query.addDistinctBy(4, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByMainRelay(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(7, caseSensitive: caseSensitive);
+      return query.addDistinctBy(5, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByDns(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(8, caseSensitive: caseSensitive);
+      return query.addDistinctBy(6, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByLnurl(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(9, caseSensitive: caseSensitive);
+      return query.addDistinctBy(7, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByBadges(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(10, caseSensitive: caseSensitive);
+      return query.addDistinctBy(8, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByGender(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(11, caseSensitive: caseSensitive);
+      return query.addDistinctBy(9, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByArea(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(12, caseSensitive: caseSensitive);
+      return query.addDistinctBy(10, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByAbout(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(13, caseSensitive: caseSensitive);
+      return query.addDistinctBy(11, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByPicture(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(14, caseSensitive: caseSensitive);
+      return query.addDistinctBy(12, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByBanner(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(15, caseSensitive: caseSensitive);
+      return query.addDistinctBy(13, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByAliasPubkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(16, caseSensitive: caseSensitive);
+      return query.addDistinctBy(14, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByToAliasPubkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(17, caseSensitive: caseSensitive);
+      return query.addDistinctBy(15, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByToAliasPrivkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(18, caseSensitive: caseSensitive);
+      return query.addDistinctBy(16, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByFriendsList(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(19, caseSensitive: caseSensitive);
+      return query.addDistinctBy(17, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByChannelsList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(20);
+      return query.addDistinctBy(18);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByGroupsList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(21);
+      return query.addDistinctBy(19);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByRelayGroupsList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(22);
+      return query.addDistinctBy(20);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByBadgesList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(23);
+      return query.addDistinctBy(21);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByBlockedList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(24);
+      return query.addDistinctBy(22);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByBlockedHashTags() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(25);
+      return query.addDistinctBy(23);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByBlockedWords() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(26);
+      return query.addDistinctBy(24);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByBlockedThreads() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(27);
+      return query.addDistinctBy(25);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByFollowingList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(28);
+      return query.addDistinctBy(26);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByFollowersList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(29);
+      return query.addDistinctBy(27);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByRelayList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(30);
+      return query.addDistinctBy(28);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByDmRelayList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(31);
+      return query.addDistinctBy(29);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByInboxRelayList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(32);
+      return query.addDistinctBy(30);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByOutboxRelayList() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(33);
+      return query.addDistinctBy(31);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastFriendsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(34);
+      return query.addDistinctBy(32);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastChannelsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(35);
+      return query.addDistinctBy(33);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastGroupsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(36);
+      return query.addDistinctBy(34);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastRelayGroupsListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(37);
+      return query.addDistinctBy(35);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastBadgesListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(38);
+      return query.addDistinctBy(36);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastBlockListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(39);
+      return query.addDistinctBy(37);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastRelayListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(40);
+      return query.addDistinctBy(38);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastFollowingListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(41);
+      return query.addDistinctBy(39);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastDMRelayListUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(42);
+      return query.addDistinctBy(40);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByMute() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(43);
+      return query.addDistinctBy(41);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByLastUpdatedTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(44);
+      return query.addDistinctBy(42);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByOtherField(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(45, caseSensitive: caseSensitive);
+      return query.addDistinctBy(43, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByNwcURI(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(46, caseSensitive: caseSensitive);
+      return query.addDistinctBy(44, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByRemoteSignerURI({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(47, caseSensitive: caseSensitive);
+      return query.addDistinctBy(45, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByClientPrivateKey({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(48, caseSensitive: caseSensitive);
+      return query.addDistinctBy(46, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctByRemotePubkey(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(49, caseSensitive: caseSensitive);
+      return query.addDistinctBy(47, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByAndroidSignerKey({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(50, caseSensitive: caseSensitive);
+      return query.addDistinctBy(48, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct>
       distinctByEncodedKeyPackage({bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(51, caseSensitive: caseSensitive);
+      return query.addDistinctBy(49, caseSensitive: caseSensitive);
     });
   }
 
   QueryBuilder<UserDBISAR, UserDBISAR, QAfterDistinct> distinctBySettings(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(52, caseSensitive: caseSensitive);
+      return query.addDistinctBy(50, caseSensitive: caseSensitive);
     });
   }
 }
@@ -12754,330 +12226,318 @@ extension UserDBISARQueryProperty1
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> encryptedPrivKeyProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> privkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> privkeyProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> defaultPasswordProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> nickNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> nameProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> mainRelayProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> nickNameProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> dnsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> mainRelayProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> lnurlProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> dnsProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> badgesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> lnurlProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> genderProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(9);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> badgesProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> areaProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(10);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> genderProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> aboutProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(11);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> areaProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> pictureProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(12);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> aboutProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> bannerProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(13);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> pictureProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> aliasPubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(14);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> bannerProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> toAliasPubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(15);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> aliasPubkeyProperty() {
+  QueryBuilder<UserDBISAR, String?, QAfterProperty> toAliasPrivkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(16);
     });
   }
 
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> toAliasPubkeyProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(17);
-    });
-  }
-
-  QueryBuilder<UserDBISAR, String?, QAfterProperty> toAliasPrivkeyProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(18);
-    });
-  }
-
   QueryBuilder<UserDBISAR, String?, QAfterProperty> friendsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(19);
+      return query.addProperty(17);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       channelsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(20);
+      return query.addProperty(18);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty> groupsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(21);
+      return query.addProperty(19);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       relayGroupsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(22);
+      return query.addProperty(20);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty> badgesListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(23);
+      return query.addProperty(21);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       blockedListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(24);
+      return query.addProperty(22);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       blockedHashTagsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(25);
+      return query.addProperty(23);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       blockedWordsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(26);
+      return query.addProperty(24);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       blockedThreadsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(27);
+      return query.addProperty(25);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       followingListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(28);
+      return query.addProperty(26);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       followersListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(29);
+      return query.addProperty(27);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty> relayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(30);
+      return query.addProperty(28);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       dmRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(31);
+      return query.addProperty(29);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       inboxRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(32);
+      return query.addProperty(30);
     });
   }
 
   QueryBuilder<UserDBISAR, List<String>?, QAfterProperty>
       outboxRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(33);
+      return query.addProperty(31);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastFriendsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(34);
+      return query.addProperty(32);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastChannelsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(35);
+      return query.addProperty(33);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastGroupsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(36);
+      return query.addProperty(34);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastRelayGroupsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(37);
+      return query.addProperty(35);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastBadgesListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(38);
+      return query.addProperty(36);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastBlockListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(39);
+      return query.addProperty(37);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastRelayListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(40);
+      return query.addProperty(38);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastFollowingListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(41);
+      return query.addProperty(39);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty>
       lastDMRelayListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(42);
+      return query.addProperty(40);
     });
   }
 
   QueryBuilder<UserDBISAR, bool?, QAfterProperty> muteProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(43);
+      return query.addProperty(41);
     });
   }
 
   QueryBuilder<UserDBISAR, int, QAfterProperty> lastUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(44);
+      return query.addProperty(42);
     });
   }
 
   QueryBuilder<UserDBISAR, String?, QAfterProperty> otherFieldProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(45);
+      return query.addProperty(43);
     });
   }
 
   QueryBuilder<UserDBISAR, String?, QAfterProperty> nwcURIProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(46);
+      return query.addProperty(44);
     });
   }
 
   QueryBuilder<UserDBISAR, String?, QAfterProperty> remoteSignerURIProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(47);
+      return query.addProperty(45);
     });
   }
 
   QueryBuilder<UserDBISAR, String?, QAfterProperty> clientPrivateKeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(48);
+      return query.addProperty(46);
     });
   }
 
   QueryBuilder<UserDBISAR, String?, QAfterProperty> remotePubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(49);
+      return query.addProperty(47);
     });
   }
 
   QueryBuilder<UserDBISAR, String?, QAfterProperty> androidSignerKeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(50);
+      return query.addProperty(48);
     });
   }
 
   QueryBuilder<UserDBISAR, String?, QAfterProperty>
       encodedKeyPackageProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(51);
+      return query.addProperty(49);
     });
   }
 
   QueryBuilder<UserDBISAR, String?, QAfterProperty> settingsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(52);
+      return query.addProperty(50);
     });
   }
 }
@@ -13096,341 +12556,327 @@ extension UserDBISARQueryProperty2<R>
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
-      encryptedPrivKeyProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> privkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> privkeyProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
-      defaultPasswordProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> nickNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> nameProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> mainRelayProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> nickNameProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> dnsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> mainRelayProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> lnurlProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> dnsProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> badgesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> lnurlProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> genderProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(9);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> badgesProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> areaProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(10);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> genderProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> aboutProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(11);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> areaProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> pictureProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(12);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> aboutProperty() {
+  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> bannerProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(13);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> pictureProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(14);
-    });
-  }
-
-  QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> bannerProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(15);
-    });
-  }
-
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> aliasPubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(16);
+      return query.addProperty(14);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
       toAliasPubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(17);
+      return query.addProperty(15);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
       toAliasPrivkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(18);
+      return query.addProperty(16);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> friendsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(19);
+      return query.addProperty(17);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       channelsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(20);
+      return query.addProperty(18);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       groupsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(21);
+      return query.addProperty(19);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       relayGroupsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(22);
+      return query.addProperty(20);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       badgesListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(23);
+      return query.addProperty(21);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       blockedListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(24);
+      return query.addProperty(22);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       blockedHashTagsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(25);
+      return query.addProperty(23);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       blockedWordsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(26);
+      return query.addProperty(24);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       blockedThreadsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(27);
+      return query.addProperty(25);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       followingListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(28);
+      return query.addProperty(26);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       followersListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(29);
+      return query.addProperty(27);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       relayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(30);
+      return query.addProperty(28);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       dmRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(31);
+      return query.addProperty(29);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       inboxRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(32);
+      return query.addProperty(30);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, List<String>?), QAfterProperty>
       outboxRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(33);
+      return query.addProperty(31);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastFriendsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(34);
+      return query.addProperty(32);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastChannelsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(35);
+      return query.addProperty(33);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastGroupsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(36);
+      return query.addProperty(34);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastRelayGroupsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(37);
+      return query.addProperty(35);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastBadgesListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(38);
+      return query.addProperty(36);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastBlockListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(39);
+      return query.addProperty(37);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastRelayListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(40);
+      return query.addProperty(38);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastFollowingListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(41);
+      return query.addProperty(39);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty>
       lastDMRelayListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(42);
+      return query.addProperty(40);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, bool?), QAfterProperty> muteProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(43);
+      return query.addProperty(41);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, int), QAfterProperty> lastUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(44);
+      return query.addProperty(42);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> otherFieldProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(45);
+      return query.addProperty(43);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> nwcURIProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(46);
+      return query.addProperty(44);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
       remoteSignerURIProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(47);
+      return query.addProperty(45);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
       clientPrivateKeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(48);
+      return query.addProperty(46);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
       remotePubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(49);
+      return query.addProperty(47);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
       androidSignerKeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(50);
+      return query.addProperty(48);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty>
       encodedKeyPackageProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(51);
+      return query.addProperty(49);
     });
   }
 
   QueryBuilder<UserDBISAR, (R, String?), QAfterProperty> settingsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(52);
+      return query.addProperty(50);
     });
   }
 }
@@ -13449,345 +12895,331 @@ extension UserDBISARQueryProperty3<R1, R2>
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
-      encryptedPrivKeyProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> privkeyProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(2);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> privkeyProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> nameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(3);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
-      defaultPasswordProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> nickNameProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(4);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> nameProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> mainRelayProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(5);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> nickNameProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> dnsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(6);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> mainRelayProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> lnurlProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(7);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> dnsProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> badgesProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(8);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> lnurlProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> genderProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(9);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> badgesProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> areaProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(10);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> genderProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> aboutProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(11);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> areaProperty() {
+  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> pictureProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addProperty(12);
     });
   }
 
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> aboutProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(13);
-    });
-  }
-
-  QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> pictureProperty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addProperty(14);
-    });
-  }
-
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> bannerProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(15);
+      return query.addProperty(13);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       aliasPubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(16);
+      return query.addProperty(14);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       toAliasPubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(17);
+      return query.addProperty(15);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       toAliasPrivkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(18);
+      return query.addProperty(16);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       friendsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(19);
+      return query.addProperty(17);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       channelsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(20);
+      return query.addProperty(18);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       groupsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(21);
+      return query.addProperty(19);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       relayGroupsListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(22);
+      return query.addProperty(20);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       badgesListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(23);
+      return query.addProperty(21);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       blockedListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(24);
+      return query.addProperty(22);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       blockedHashTagsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(25);
+      return query.addProperty(23);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       blockedWordsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(26);
+      return query.addProperty(24);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       blockedThreadsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(27);
+      return query.addProperty(25);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       followingListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(28);
+      return query.addProperty(26);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       followersListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(29);
+      return query.addProperty(27);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       relayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(30);
+      return query.addProperty(28);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       dmRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(31);
+      return query.addProperty(29);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       inboxRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(32);
+      return query.addProperty(30);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, List<String>?), QOperations>
       outboxRelayListProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(33);
+      return query.addProperty(31);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastFriendsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(34);
+      return query.addProperty(32);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastChannelsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(35);
+      return query.addProperty(33);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastGroupsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(36);
+      return query.addProperty(34);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastRelayGroupsListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(37);
+      return query.addProperty(35);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastBadgesListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(38);
+      return query.addProperty(36);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastBlockListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(39);
+      return query.addProperty(37);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastRelayListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(40);
+      return query.addProperty(38);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastFollowingListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(41);
+      return query.addProperty(39);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastDMRelayListUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(42);
+      return query.addProperty(40);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, bool?), QOperations> muteProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(43);
+      return query.addProperty(41);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, int), QOperations>
       lastUpdatedTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(44);
+      return query.addProperty(42);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       otherFieldProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(45);
+      return query.addProperty(43);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> nwcURIProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(46);
+      return query.addProperty(44);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       remoteSignerURIProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(47);
+      return query.addProperty(45);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       clientPrivateKeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(48);
+      return query.addProperty(46);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       remotePubkeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(49);
+      return query.addProperty(47);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       androidSignerKeyProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(50);
+      return query.addProperty(48);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations>
       encodedKeyPackageProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(51);
+      return query.addProperty(49);
     });
   }
 
   QueryBuilder<UserDBISAR, (R1, R2, String?), QOperations> settingsProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addProperty(52);
+      return query.addProperty(50);
     });
   }
 }

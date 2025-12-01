@@ -245,21 +245,6 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
       ),
     );
   }
-
-
-  Widget _buildBenefitItem(BuildContext context, String text) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Row(
-        children: [
-          Icon(Icons.check_circle, color: Theme.of(context).colorScheme.primary, size: 20),
-          const SizedBox(width: 12),
-          Expanded(child: Text(text, style: Theme.of(context).textTheme.bodyMedium)),
-        ],
-      ),
-    );
-  }
-
   int _calculatePrice(SubscriptionDuration duration) {
     final monthlyPrice = _getCurrentMonthlyPrice();
     return SubscriptionSettingsSection.calculatePriceForDuration(monthlyPrice, duration);

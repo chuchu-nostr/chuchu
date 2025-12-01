@@ -30,66 +30,67 @@ class _LoginPageState extends State<LoginPage> {
           FocusScope.of(context).requestFocus(FocusNode());
         },
         child: SafeArea(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24.0),
-            child: Column(
-              children: [
-                // Logo at the top
-                Padding(
-                  padding: EdgeInsets.only(top: 40),
-                  child: CommonImage(width: 325, iconName: 'logo_text_primary.png'),
-                ),
-                SizedBox(height: 50),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              child: Column(
+                children: [
+                  // Logo at the top
+                  Padding(
+                    padding: EdgeInsets.only(top: 40),
+                    child: CommonImage(width: 325, iconName: 'logo_text_primary.png'),
+                  ),
+                  SizedBox(height: 50),
 
-                // Login/Register toggle and form
-                Column(
-                  children: [
-                    // Mode selector
-                    Text(
-                      'Sign up to support your favorite creators',
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w400,
-                        color: Theme.of(context).colorScheme.onSurface,
+                  // Login/Register toggle and form
+                  Column(
+                    children: [
+                      // Mode selector
+                      Text(
+                        'Sign up to support your favorite creators',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w400,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        textAlign: TextAlign.left,
                       ),
-                      textAlign: TextAlign.left,
-                    ),
-                    SizedBox(height: 24),
-                    ModeSelector(
-                      isLoginMode: _isLoginMode,
-                      onModeChanged: _toggleMode,
-                    ),
+                      SizedBox(height: 24),
+                      ModeSelector(
+                        isLoginMode: _isLoginMode,
+                        onModeChanged: _toggleMode,
+                      ),
 
-                    SizedBox(height: 51),
+                      SizedBox(height: 51),
 
-                    // Conditional content based on mode with animation
-                    AnimatedSwitcher(
-                      duration: Duration(milliseconds: 300),
-                      transitionBuilder: (Widget child, Animation<double> animation) {
-                        return SlideTransition(
-                          position: Tween<Offset>(
-                            begin: Offset(0.3, 0.0),
-                            end: Offset.zero,
-                          ).animate(CurvedAnimation(
-                            parent: animation,
-                            curve: Curves.easeInOut,
-                          )),
-                          child: FadeTransition(
-                            opacity: animation,
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: _isLoginMode 
-                        ? LoginForm(key: ValueKey('login'))
-                        : RegisterForm(key: ValueKey('register')),
-                    ),
-                  ],
-                ),
-                
-                Spacer(),
-                
-                // Bottom section
+                      // Conditional content based on mode with animation
+                      AnimatedSwitcher(
+                        duration: Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return SlideTransition(
+                            position: Tween<Offset>(
+                              begin: Offset(0.3, 0.0),
+                              end: Offset.zero,
+                            ).animate(CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeInOut,
+                            )),
+                            child: FadeTransition(
+                              opacity: animation,
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: _isLoginMode 
+                          ? LoginForm(key: ValueKey('login'))
+                          : RegisterForm(key: ValueKey('register')),
+                      ),
+                    ],
+                  ),
+                  
+                  SizedBox(height: 40),
+                  
+                  // Bottom section
                 // Column(
                 //   children: [
                 //     Row(
@@ -131,7 +132,8 @@ class _LoginPageState extends State<LoginPage> {
                 //     SizedBox(height: 20),
                 //   ],
                 // ),
-              ],
+                ],
+              ),
             ),
           ),
         ),

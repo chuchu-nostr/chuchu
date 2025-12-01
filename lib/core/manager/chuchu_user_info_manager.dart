@@ -96,7 +96,10 @@ class ChuChuUserInfoManager {
             await Account.sharedInstance.loginWithPriKey(storedPrivkey);
         if (tempUserDB != null) {
           currentUserInfo = tempUserDB;
-          await SecureAccountStorage.savePrivateKey(storedPrivkey);
+          await SecureAccountStorage.savePrivateKey(
+            storedPrivkey,
+            pubkey: storedPubkey,
+          );
           _initDatas();
           return;
         }
@@ -110,14 +113,13 @@ class ChuChuUserInfoManager {
         .defaultOXCacheManager
         .getForeverData(StorageKeyTool.CHUCHU_USER_PUBKEY);
     if (localPubKey != null && localPubKey.isNotEmpty) {
-      await initDB(localPubKey);
-      final UserDBISAR? tempUserDB =
-          await Account.sharedInstance.loginWithPubKeyAndPassword(localPubKey);
-      if (tempUserDB != null) {
-        currentUserInfo = tempUserDB;
-        _initDatas();
-        return;
-      }
+        await initDB(localPubKey);
+        final UserDBISAR? tempUserDB = await Account.sharedInstance.loginWithPubKeyAndPassword(localPubKey);
+        if (tempUserDB != null) {
+          currentUserInfo = tempUserDB;
+          _initDatas();
+          return;
+        }
     }
   }
 
@@ -180,6 +182,9 @@ class ChuChuUserInfoManager {
     }
     await Account.sharedInstance.logout();
     await SecureAccountStorage.clearPrivateKey();
+    await SecureAccountStorage.clearPrivateKeyForPubkey(
+      currentUserInfo?.pubKey ?? '',
+    );
     resetData(needObserver: needObserver);
   }
 
@@ -217,7 +222,7 @@ class ChuChuUserInfoManager {
     DNS dns = DNS(name, domain, pubKey, relayAddressList);
     try {
       return await Account.checkDNS(dns);
-    } catch (error) {
+    } catch (error, stack) {
       return false;
     }
   }

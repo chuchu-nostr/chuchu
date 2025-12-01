@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 // Conditional import for dart:io classes
 import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:flutter/services.dart';
-import 'package:dart_ping_ios/dart_ping_ios.dart';
 
 import '../manager/chuchu_user_info_manager.dart';
 import '../manager/thread_pool_manager.dart';
@@ -19,11 +18,9 @@ class InitializationManager {
   static InitializationManager get instance => _instance;
 
   bool _isInitialized = false;
-  final List<String> _errors = [];
   final Map<String, bool> _initializationStatus = {};
 
   bool get isInitialized => _isInitialized;
-  List<String> get errors => List.unmodifiable(_errors);
   Map<String, bool> get initializationStatus => Map.unmodifiable(_initializationStatus);
 
   Future<void> initialize() async {
@@ -39,15 +36,11 @@ class InitializationManager {
       
       await _initializeCore();
       await _initializeBasicServices();
-
-      _initializePlatformSpecificAsync();
-      _initializeUserServicesAsync();
-      _initializeBackgroundServicesAsync();
+      await _initializeUserServices();
       
       _isInitialized = true;
     } catch (error, stackTrace) {
       final errorMessage = 'init fail: $error';
-      _errors.add(errorMessage);
       debugPrint(errorMessage);
       debugPrint('stackTrace: $stackTrace');
       
@@ -108,25 +101,9 @@ class InitializationManager {
     });
   }
 
-  void _initializePlatformSpecificAsync() {
-    _executeAsyncWithStatus('platform_specific', () async {
-      if (Platform.isIOS) {
-        DartPingIOS.register();
-        debugPrint('iOS init successfully');
-      } else if (Platform.isAndroid) {
-        debugPrint('Android init successfully');
-      }
-    });
-  }
-
-  void _initializeUserServicesAsync() {
-    _executeAsyncWithStatus('user_services', () async {
+  Future<void> _initializeUserServices() async {
+    await _executeWithStatus('user_services', () async {
       await ChuChuUserInfoManager.sharedInstance.initLocalData();
-    });
-  }
-
-  void _initializeBackgroundServicesAsync() {
-    _executeAsyncWithStatus('background_services', () async {
     });
   }
 
@@ -136,45 +113,16 @@ class InitializationManager {
       _initializationStatus[taskName] = true;
     } catch (error, stackTrace) {
       _initializationStatus[taskName] = false;
-      final errorMessage = '$taskName fail: $error';
-      _errors.add(errorMessage);
-      debugPrint(errorMessage);
+      debugPrint('$taskName fail: $error');
       debugPrint(': $stackTrace');
       rethrow;
     }
   }
 
-  void _executeAsyncWithStatus(String taskName, Future<void> Function() task) {
-    Future.microtask(() async {
-      try {
-        await task();
-        _initializationStatus[taskName] = true;
-      } catch (error, stackTrace) {
-        _initializationStatus[taskName] = false;
-        final errorMessage = '$taskName init fail: $error';
-        _errors.add(errorMessage);
-        debugPrint(errorMessage);
-        debugPrint(': $stackTrace');
-      }
-    });
-  }
-
   @visibleForTesting
   void reset() {
     _isInitialized = false;
-    _errors.clear();
     _initializationStatus.clear();
-  }
-
-  Map<String, dynamic> getInitializationSummary() {
-    return {
-      'isInitialized': _isInitialized,
-      'totalErrors': _errors.length,
-      'errors': _errors,
-      'componentStatus': _initializationStatus,
-      'successfulComponents': _initializationStatus.values.where((status) => status).length,
-      'failedComponents': _initializationStatus.values.where((status) => !status).length,
-    };
   }
 
   Future<bool> waitForComponent(String componentName, {Duration timeout = const Duration(seconds: 10)}) async {
@@ -189,12 +137,6 @@ class InitializationManager {
     }
     
     return false;
-  }
-
-  bool areKeyComponentsReady() {
-    final keyComponents = ['core_systems', 'basic_services'];
-    return keyComponents.every((component) => 
-        _initializationStatus[component] == true);
   }
 
   void _setEnvironmentVariable(String key, String value) {

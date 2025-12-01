@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:chuchu/core/account/relays.dart';
 import '../config/config.dart';
-import '../contacts/contacts.dart';
 import '../network/connect.dart';
 import 'package:nostr_core_dart/nostr.dart';
 import './account.dart';

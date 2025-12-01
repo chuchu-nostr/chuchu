@@ -82,10 +82,10 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
       ),
       child: SafeArea(
         child: Column(
-            children: [
-              _buildNavigationBar(user),
-              // _buildDataRow(),
-            ],
+          children: [
+            _buildNavigationBar(user),
+            // _buildDataRow(),
+          ],
         ),
       ),
     );
@@ -180,7 +180,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
     // Define placeholder and error widget functions
     final placeholderWidget = (_, __) => FeedWidgetsUtils.badgePlaceholderImage(size: 100);
     final errorWidgetBuilder = (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(size: 100);
-    
+
 
     return ValueListenableBuilder<UserDBISAR>(
       valueListenable: Account.sharedInstance.getUserNotifier(
@@ -214,13 +214,13 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
                   imageSize: 100,
                   child: imageUrl.isNotEmpty
                       ? ChuChuCachedNetworkImage(
-                          imageUrl: imageUrl,
-                          fit: BoxFit.cover,
-                          placeholder: placeholderWidget,
-                          errorWidget: errorWidgetBuilder,
-                          width: 100,
-                          height: 100,
-                        )
+                    imageUrl: imageUrl,
+                    fit: BoxFit.cover,
+                    placeholder: placeholderWidget,
+                    errorWidget: errorWidgetBuilder,
+                    width: 100,
+                    height: 100,
+                  )
                       : FeedWidgetsUtils.badgePlaceholderImage(size: 100),
                 ),
               ),
