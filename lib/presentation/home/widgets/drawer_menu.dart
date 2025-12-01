@@ -336,24 +336,41 @@ class _DrawerMenuState extends State<DrawerMenu> with SingleTickerProviderStateM
             ),
             FilledButton.tonal(
               onPressed: () async {
+                // Close dialog first
                 Navigator.of(context).pop();
-                bool? status = await ChuChuCacheManager
+                
+                // Wait a frame to ensure dialog is closed
+                await Future.delayed(const Duration(milliseconds: 100));
+                
+                // Close drawer if still open
+                if (Navigator.of(context).canPop()) {
+                  Navigator.of(context).pop();
+                }
+                
+                // Wait another frame to ensure drawer is closed
+                await Future.delayed(const Duration(milliseconds: 100));
+                
+                // Save user pubkey (clear it)
+                await ChuChuCacheManager
                     .defaultOXCacheManager
                     .saveForeverData(
                   StorageKeyTool.CHUCHU_USER_PUBKEY,
                   '',
                 );
 
-                if (status) {
-                  await ChuChuUserInfoManager.sharedInstance
-                      .logout(needObserver: true);
-                  if (context.mounted) {
-                    ChuChuNavigator.pushReplacement(
-                      context,
-                      const LoginPage(),
-                    );
-                  }
-                }
+                // Perform logout
+                await ChuChuUserInfoManager.sharedInstance
+                    .logout(needObserver: true);
+                
+                // Navigate to login page and clear entire navigation stack
+                // Use global navigator key to ensure we navigate from root context
+                final navigatorContext = ChuChuNavigator.navigatorKey.currentContext ?? context;
+                Navigator.of(navigatorContext).pushAndRemoveUntil(
+                  MaterialPageRoute(
+                    builder: (context) => const LoginPage(),
+                  ),
+                  (route) => false, // Remove all previous routes
+                );
               },
               child: Text(
                 'Logout',
