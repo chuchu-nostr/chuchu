@@ -128,39 +128,41 @@ class _MyProfilePageState extends State<MyProfilePage> {
               child: Stack(
                 children: [
                   // Show selected local image, existing picture, or placeholder
-                  if (_selectedAvatarBytes != null)
-                    ClipOval(
-                      child: Image.memory(
-                        _selectedAvatarBytes!,
-                        fit: BoxFit.cover,
-                        width: 100,
-                        height: 100,
-                      ),
-                    )
-                  else
-                    ValueListenableBuilder<UserDBISAR>(
-                      valueListenable: Account.sharedInstance.getUserNotifier(
-                        Account.sharedInstance.currentPubkey,
-                      ),
-                      builder: (context, user, child) {
-                        if (user.picture != null && user.picture!.isNotEmpty) {
-                          return FeedWidgetsUtils.clipImage(
-                            borderRadius: 100,
-                            imageSize: 100,
-                            child: ChuChuCachedNetworkImage(
-                              imageUrl: user.picture!,
-                              fit: BoxFit.cover,
-                              placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-                              errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-                              width: 100,
-                              height: 100,
-                            ),
-                          );
-                        } else {
-                          return FeedWidgetsUtils.badgePlaceholderImage(size:  100);
-                        }
-                      },
+                  ValueListenableBuilder<UserDBISAR>(
+                    valueListenable: Account.sharedInstance.getUserNotifier(
+                      Account.sharedInstance.currentPubkey,
                     ),
+                    builder: (context, user, child) {
+                      // Always prioritize local image if available
+                      // This ensures smooth experience without any flash of default image
+                      // Local image will be used until user selects a new one or page is refreshed
+                      if (_selectedAvatarBytes != null) {
+                        return ClipOval(
+                          child: Image.memory(
+                            _selectedAvatarBytes!,
+                            fit: BoxFit.cover,
+                            width: 100,
+                            height: 100,
+                          ),
+                        );
+                      } else if (user.picture != null && user.picture!.isNotEmpty) {
+                        return FeedWidgetsUtils.clipImage(
+                          borderRadius: 100,
+                          imageSize: 100,
+                          child: ChuChuCachedNetworkImage(
+                            imageUrl: user.picture!,
+                            fit: BoxFit.cover,
+                            placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                            errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
+                            width: 100,
+                            height: 100,
+                          ),
+                        );
+                      } else {
+                        return FeedWidgetsUtils.badgePlaceholderImage(size:  100);
+                      }
+                    },
+                  ),
                   
                   // Show loading overlay when uploading
                   if (_isUploadingAvatar)
@@ -701,12 +703,19 @@ class _MyProfilePageState extends State<MyProfilePage> {
     if (_uploadedAvatarUrl == null) return;
     
     try {
-      await _updateUserAvatar(_uploadedAvatarUrl!);
-      // Clear uploaded URL but keep local path for display
-      setState(() {
-        _uploadedAvatarUrl = null;
-        // Keep _selectedAvatarPath to continue showing local image
-      });
+      final uploadedUrl = _uploadedAvatarUrl!;
+      await _updateUserAvatar(uploadedUrl);
+      
+      // Clear uploaded URL to hide confirm/cancel buttons
+      // But keep local image bytes to continue showing local image
+      // This prevents any flash of default image or network loading
+      if (mounted) {
+        setState(() {
+          _uploadedAvatarUrl = null;
+          // Keep _selectedAvatarBytes and _selectedAvatarPath to continue using local image
+        });
+      }
+      
       CommonToast.instance.show(context, 'Avatar updated successfully');
     } catch (e, stackTrace) {
       // Print detailed error for debugging
@@ -714,7 +723,9 @@ class _MyProfilePageState extends State<MyProfilePage> {
       debugPrint('Stack trace: $stackTrace');
       
       // Show user-friendly error message
-      _showErrorSnackBar('Failed to update avatar. Please try again.');
+      if (mounted) {
+        _showErrorSnackBar('Failed to update avatar. Please try again.');
+      }
     }
   }
 
