@@ -14,6 +14,25 @@ ChuChu is a decentralized content subscription platform based on the Nostr proto
 
 ## Features
 
+### Demo Videos
+
+<table>
+  <tr>
+    <td align="center">
+      <strong>Subscription creation</strong><br />
+      <img src="chuchu-demo/create-creator.gif" width="300" alt="Subscription creation demo" />
+    </td>
+    <td align="center">
+      <strong>Subscription flow</strong><br />
+      <img src="chuchu-demo/subscritions.gif" width="300" alt="Subscription flow demo" />
+    </td>
+    <td align="center">
+      <strong>Wallet experience</strong><br />
+      <img src="chuchu-demo/wallet.gif" width="300" alt="Wallet demo" />
+    </td>
+  </tr>
+</table>
+
 ### Implemented Features
 
 - **Nostr Account Login** - Support for Nostr key login and Amber login
@@ -98,7 +117,7 @@ Contributions are welcome! Please feel free to submit an Issue or Pull Request.
 
 ## License
 
-MIT License
+This project is distributed under the [MIT License](LICENSE).
 
 ## Contact
 
