@@ -25,15 +25,17 @@ class EventCache {
       if (eventDB.expiration != null &&
           eventDB.expiration! > 0 &&
           eventDB.expiration! < currentUnixTimestampSeconds()) {
-        expiredEvents.add(eventDB.id);
+        if (eventDB.id != 0) {
+          expiredEvents.add(eventDB.id);
+        }
         continue;
       }
       cacheIds.add(eventDB.eventId);
     }
 
     if (expiredEvents.isEmpty || kIsWeb) return;
-    DBISAR.sharedInstance.isar.write((isar) async {
-      int result = await DBISAR.sharedInstance.isar.eventDBISARs.deleteAll(expiredEvents);
+    DBISAR.sharedInstance.isar.write((isar) {
+      int result = DBISAR.sharedInstance.isar.eventDBISARs.deleteAll(expiredEvents);
       LogUtils.v(() => 'Deleted event caches: $result');
     });
   }

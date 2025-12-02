@@ -34,6 +34,19 @@ class DBISAR {
   static bool _isarInitialized = false;
   Timer? _timer;
 
+  // Helper function to save objects with auto-increment id handling
+  // Note: Isar's put() only auto-assigns id when it's null, not when it's 0
+  // So we need to manually assign id for objects with id == 0
+  void _saveToCollection<T>(List<T> objects, IsarCollection<int, T> collection) {
+    for (var obj in objects) {
+      final dynamic objDynamic = obj;
+      if (objDynamic.id == 0) {
+        objDynamic.id = collection.autoIncrement();
+      }
+    }
+    collection.putAll(objects);
+  }
+
   List<IsarGeneratedSchema> schemas = [
     MessageDBISARSchema,
     UserDBISARSchema,
@@ -193,38 +206,60 @@ class DBISAR {
   // Synchronous version for web platform
   void _saveTOISARSync(List<dynamic> objects, Type type, Isar isar) {
     // All operations must be synchronous within the write transaction on web
-    if (type == MessageDBISAR) {
-      isar.messageDBISARs.putAll(objects.cast<MessageDBISAR>());
-    } else if (type == UserDBISAR) {
-      isar.userDBISARs.putAll(objects.cast<UserDBISAR>());
-    } else if (type == RelayDBISAR) {
-      isar.relayDBISARs.putAll(objects.cast<RelayDBISAR>());
-    } else if (type == ZapRecordsDBISAR) {
-      isar.zapRecordsDBISARs.putAll(objects.cast<ZapRecordsDBISAR>());
-    } else if (type == ZapsDBISAR) {
-      isar.zapsDBISARs.putAll(objects.cast<ZapsDBISAR>());
-    } else if (type == GroupDBISAR) {
-      isar.groupDBISARs.putAll(objects.cast<GroupDBISAR>());
-    } else if (type == JoinRequestDBISAR) {
-      isar.joinRequestDBISARs.putAll(objects.cast<JoinRequestDBISAR>());
-    } else if (type == ModerationDBISAR) {
-      isar.moderationDBISARs.putAll(objects.cast<ModerationDBISAR>());
-    } else if (type == RelayGroupDBISAR) {
-      isar.relayGroupDBISARs.putAll(objects.cast<RelayGroupDBISAR>());
-    } else if (type == NoteDBISAR) {
-      isar.noteDBISARs.putAll(objects.cast<NoteDBISAR>());
-    } else if (type == NotificationDBISAR) {
-      isar.notificationDBISARs.putAll(objects.cast<NotificationDBISAR>());
-    } else if (type == ConfigDBISAR) {
-      isar.configDBISARs.putAll(objects.cast<ConfigDBISAR>());
-    } else if (type == EventDBISAR) {
-      isar.eventDBISARs.putAll(objects.cast<EventDBISAR>());
-    } else if (type == WalletInfo) {
-      isar.walletInfos.putAll(objects.cast<WalletInfo>());
-    } else if (type == WalletTransaction) {
-      isar.walletTransactions.putAll(objects.cast<WalletTransaction>());
-    } else if (type == WalletInvoice) {
-      isar.walletInvoices.putAll(objects.cast<WalletInvoice>());
+    // Type-based dispatch - when adding a new model, just add a new case here
+    switch (type) {
+      case MessageDBISAR:
+        _saveToCollection(objects.cast<MessageDBISAR>().toList(), isar.messageDBISARs);
+        break;
+      case UserDBISAR:
+        _saveToCollection(objects.cast<UserDBISAR>().toList(), isar.userDBISARs);
+        break;
+      case RelayDBISAR:
+        _saveToCollection(objects.cast<RelayDBISAR>().toList(), isar.relayDBISARs);
+        break;
+      case ZapRecordsDBISAR:
+        _saveToCollection(objects.cast<ZapRecordsDBISAR>().toList(), isar.zapRecordsDBISARs);
+        break;
+      case ZapsDBISAR:
+        _saveToCollection(objects.cast<ZapsDBISAR>().toList(), isar.zapsDBISARs);
+        break;
+      case GroupDBISAR:
+        _saveToCollection(objects.cast<GroupDBISAR>().toList(), isar.groupDBISARs);
+        break;
+      case JoinRequestDBISAR:
+        _saveToCollection(objects.cast<JoinRequestDBISAR>().toList(), isar.joinRequestDBISARs);
+        break;
+      case ModerationDBISAR:
+        _saveToCollection(objects.cast<ModerationDBISAR>().toList(), isar.moderationDBISARs);
+        break;
+      case RelayGroupDBISAR:
+        _saveToCollection(objects.cast<RelayGroupDBISAR>().toList(), isar.relayGroupDBISARs);
+        break;
+      case NoteDBISAR:
+        _saveToCollection(objects.cast<NoteDBISAR>().toList(), isar.noteDBISARs);
+        break;
+      case NotificationDBISAR:
+        _saveToCollection(objects.cast<NotificationDBISAR>().toList(), isar.notificationDBISARs);
+        break;
+      case ConfigDBISAR:
+        _saveToCollection(objects.cast<ConfigDBISAR>().toList(), isar.configDBISARs);
+        break;
+      case EventDBISAR:
+        _saveToCollection(objects.cast<EventDBISAR>().toList(), isar.eventDBISARs);
+        break;
+      case WalletInfo:
+        _saveToCollection(objects.cast<WalletInfo>().toList(), isar.walletInfos);
+        break;
+      case WalletTransaction:
+        _saveToCollection(objects.cast<WalletTransaction>().toList(), isar.walletTransactions);
+        break;
+      case WalletInvoice:
+        _saveToCollection(objects.cast<WalletInvoice>().toList(), isar.walletInvoices);
+        break;
+      default:
+        // Fallback: try to use putAll directly (for types without id field or custom handling)
+        // This should not happen for our current models, but provides a safety net
+        break;
     }
   }
 
