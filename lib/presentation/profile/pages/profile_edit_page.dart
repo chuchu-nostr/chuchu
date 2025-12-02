@@ -11,6 +11,7 @@ import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/services/blossom_uploader.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/common_toast.dart';
+import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/account/web_file_registry_stub.dart'
     if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
     as web_file_registry;
@@ -302,12 +303,13 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
       );
     }
     if (widget.relayGroup.picture.isNotEmpty) {
-      return Image.network(
-        widget.relayGroup.picture,
+      return ChuChuCachedNetworkImage(
+        imageUrl: widget.relayGroup.picture,
         fit: BoxFit.cover,
         width: double.infinity,
         height: 200,
-        errorBuilder: (context, error, stackTrace) => _buildCoverPlaceholder(context),
+        placeholder: (_, __) => _buildCoverPlaceholder(context),
+        errorWidget: (_, __, ___) => _buildCoverPlaceholder(context),
       );
     }
     return _buildCoverPlaceholder(context);
