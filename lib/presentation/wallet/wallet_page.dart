@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
+import '../../core/utils/ui_refresh_mixin.dart';
 import 'transaction_detail_page.dart';
 import 'transactions_page.dart';
 import '../../core/wallet/model/wallet_info.dart';
@@ -15,7 +16,7 @@ class WalletPage extends StatefulWidget {
   _WalletPageState createState() => _WalletPageState();
 }
 
-class _WalletPageState extends State<WalletPage> {
+class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   final Wallet _wallet = Wallet.sharedInstance;
   bool _isLoading = false;
   String _statusMessage = '';
@@ -93,7 +94,7 @@ class _WalletPageState extends State<WalletPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(

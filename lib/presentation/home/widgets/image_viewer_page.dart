@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/adapt.dart';
+import 'package:chuchu/core/utils/ui_refresh_mixin.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ImageViewerPage extends StatefulWidget {
@@ -16,7 +17,7 @@ class ImageViewerPage extends StatefulWidget {
   State<ImageViewerPage> createState() => _ImageViewerPageState();
 }
 
-class _ImageViewerPageState extends State<ImageViewerPage> {
+class _ImageViewerPageState extends State<ImageViewerPage> with ChuChuUIRefreshMixin {
   late PageController _pageController;
   late int _currentIndex;
 
@@ -71,7 +72,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Material(
       color: Colors.black.withOpacity(0.5),
       child: Stack(

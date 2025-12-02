@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import '../../../core/account/account.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
 
 class NostrKeyPage extends StatefulWidget {
@@ -12,7 +13,7 @@ class NostrKeyPage extends StatefulWidget {
   State<NostrKeyPage> createState() => _NostrKeyPageState();
 }
 
-class _NostrKeyPageState extends State<NostrKeyPage> {
+class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
   bool _isPrivateKeyVisible = false;
   
   String get _npubKey {
@@ -31,7 +32,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     final theme = Theme.of(context);
     
     return Scaffold(

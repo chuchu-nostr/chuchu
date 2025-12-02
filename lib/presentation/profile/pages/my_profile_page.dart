@@ -22,6 +22,7 @@ import '../../../core/widgets/common_toast.dart';
 import '../../../core/config/storage_key_tool.dart';
 import '../../../core/manager/cache/chuchu_cache_manager.dart';
 import '../../../core/utils/navigator/navigator.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../login/pages/login_page.dart';
 import '../../nostrKey/pages/nostr_key_page.dart';
 
@@ -32,7 +33,7 @@ class MyProfilePage extends StatefulWidget {
   State<MyProfilePage> createState() => _MyProfilePageState();
 }
 
-class _MyProfilePageState extends State<MyProfilePage> {
+class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
 
@@ -68,7 +69,7 @@ class _MyProfilePageState extends State<MyProfilePage> {
 
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Profile'),

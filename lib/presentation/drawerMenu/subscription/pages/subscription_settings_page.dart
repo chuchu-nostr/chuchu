@@ -7,6 +7,7 @@ import '../../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../../core/relayGroups/relayGroup.dart';
 import '../../../../core/widgets/common_toast.dart';
 import '../../../../core/wallet/wallet.dart';
+import '../../../../core/utils/ui_refresh_mixin.dart';
 import '../widgets/subscription_payment_dialog.dart';
 
 class SubscriptionTier {
@@ -33,7 +34,7 @@ class SubscriptionSettingsPage extends StatefulWidget {
   State<SubscriptionSettingsPage> createState() => _SubscriptionSettingsPageState();
 }
 
-class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
+class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> with ChuChuUIRefreshMixin {
   final TextEditingController _priceController = TextEditingController();
 
   bool _isPaidSubscription = true;
@@ -151,7 +152,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Subscription'),

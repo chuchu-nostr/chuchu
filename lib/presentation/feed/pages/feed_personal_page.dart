@@ -12,6 +12,7 @@ import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/navigator/navigator.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/widgets/chuchu_smart_refresher.dart';
 import '../../../core/widgets/common_image.dart';
 import '../../../data/models/noted_ui_model.dart';
@@ -30,7 +31,7 @@ class FeedPersonalPage extends StatefulWidget {
   State<FeedPersonalPage> createState() => _FeedPersonalPageState();
 }
 
-class _FeedPersonalPageState extends State<FeedPersonalPage> {
+class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefreshMixin {
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController();
 
@@ -137,7 +138,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(appBar: _buildAppBar(), body: _buildBody());
   }
 

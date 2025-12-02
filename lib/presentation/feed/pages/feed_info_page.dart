@@ -20,6 +20,7 @@ import '../../../core/widgets/common_image.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/models/feed_extension_model.dart';
 import '../../../data/models/noted_ui_model.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import '../widgets/feed_widget.dart';
 import '../widgets/feed_option_widget.dart';
 import '../pages/feed_reply_page.dart';
@@ -38,7 +39,7 @@ class FeedInfoPage extends StatefulWidget {
 }
 
 class _FeedInfoPageState extends State<FeedInfoPage>
-    with NavigatorObserverMixin {
+    with NavigatorObserverMixin, ChuChuUIRefreshMixin {
   final GlobalKey _replyListContainerKey = GlobalKey();
   final GlobalKey _containerKey = GlobalKey();
 
@@ -283,7 +284,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     final theme = Theme.of(context);
 
     return GestureDetector(

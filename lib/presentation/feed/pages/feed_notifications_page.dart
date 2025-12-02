@@ -12,6 +12,7 @@ import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../data/models/noted_ui_model.dart';
@@ -64,7 +65,7 @@ class FeedNotificationsPage extends StatefulWidget {
 }
 
 class _FeedNotificationsPageState extends State<FeedNotificationsPage>
-    with ChuChuFeedObserver {
+    with ChuChuFeedObserver, ChuChuUIRefreshMixin {
   bool _isLoading = true;
   final ScrollController _scrollController = ScrollController();
   final int _limit = 50;
@@ -153,7 +154,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(

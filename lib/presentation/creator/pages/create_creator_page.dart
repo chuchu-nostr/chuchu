@@ -8,6 +8,7 @@ import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/wallet/wallet.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class CreateCreatorPage extends StatefulWidget {
@@ -17,7 +18,7 @@ class CreateCreatorPage extends StatefulWidget {
   State<CreateCreatorPage> createState() => CreateCreatorPageState();
 }
 
-class CreateCreatorPageState extends State<CreateCreatorPage> {
+class CreateCreatorPageState extends State<CreateCreatorPage> with ChuChuUIRefreshMixin {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
 
@@ -25,7 +26,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage> {
   int subscriptionPrice = SubscriptionConfig.defaultSubscriptionPrice;
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create Creator'),

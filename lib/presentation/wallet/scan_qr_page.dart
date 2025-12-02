@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import '../../core/utils/ui_refresh_mixin.dart';
 
 /// QR Code Scanner Page
 /// Scans QR codes to get Lightning invoices
@@ -8,7 +9,7 @@ class ScanQRPage extends StatefulWidget {
   _ScanQRPageState createState() => _ScanQRPageState();
 }
 
-class _ScanQRPageState extends State<ScanQRPage> {
+class _ScanQRPageState extends State<ScanQRPage> with ChuChuUIRefreshMixin {
   final MobileScannerController controller = MobileScannerController(
     detectionSpeed: DetectionSpeed.normal,
     facing: CameraFacing.back,
@@ -123,7 +124,7 @@ class _ScanQRPageState extends State<ScanQRPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(

@@ -23,6 +23,7 @@ import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/chuchu_smart_refresher.dart';
 import '../../../data/models/noted_ui_model.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 
 import '../../search/pages/search_page.dart';
 import '../widgets/feed_widget.dart';
@@ -43,7 +44,8 @@ class _FeedPageState extends State<FeedPage>
     with
         SingleTickerProviderStateMixin,
         ChuChuUserInfoObserver,
-        ChuChuFeedObserver {
+        ChuChuFeedObserver,
+        ChuChuUIRefreshMixin {
   List<NotedUIModel?> notesList = [];
   int _listVersion = 0; // Track list changes to force ListView refresh
   final int _limit = 1000;
@@ -239,7 +241,7 @@ class _FeedPageState extends State<FeedPage>
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     _cachedTheme ??= Theme.of(context);
 
     return SafeArea(

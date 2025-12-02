@@ -24,6 +24,7 @@ import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_content_analyze_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/common_toast.dart';
@@ -39,7 +40,7 @@ class FeedReplyPage extends StatefulWidget {
   State<FeedReplyPage> createState() => _FeedReplyPageState();
 }
 
-class _FeedReplyPageState extends State<FeedReplyPage> {
+class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin {
   final TextEditingController _textController = TextEditingController();
   // Align with create_feed_page: store selected images as File and support removal
   final List<File> _selectedImages = [];
@@ -57,7 +58,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
   bool _isUploading = false; // Track overall upload status
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
       resizeToAvoidBottomInset: true,

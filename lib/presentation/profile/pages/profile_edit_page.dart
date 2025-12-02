@@ -12,6 +12,7 @@ import '../../../core/services/blossom_uploader.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/account/web_file_registry_stub.dart'
     if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
     as web_file_registry;
@@ -25,7 +26,7 @@ class ProfileEditPage extends StatefulWidget {
   State<ProfileEditPage> createState() => _ProfileEditPageState();
 }
 
-class _ProfileEditPageState extends State<ProfileEditPage> {
+class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshMixin {
   static const String _pageTitle = 'Edit Profile';
   static const String _usernameLabel = 'Username';
   static const String _aboutLabel = 'About';
@@ -111,7 +112,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(appBar: _buildAppBar(), body: _buildBody());
   }
 

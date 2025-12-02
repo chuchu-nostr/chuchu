@@ -22,6 +22,7 @@ import '../../../core/utils/feed_utils.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/models/noted_ui_model.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import 'package:chuchu/core/account/web_file_registry_stub.dart'
     if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
     as web_file_registry;
@@ -36,7 +37,7 @@ class CreateFeedPage extends StatefulWidget {
   State createState() => _CreateFeedPageState();
 }
 
-class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver {
+class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver, ChuChuUIRefreshMixin {
   final TextEditingController _controller = TextEditingController();
   final List<File> _selectedImages = [];
   final List<String> _uploadedImageUrls = []; // Store uploaded image URLs
@@ -355,7 +356,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     final theme = Theme.of(context);
     
     return Scaffold(

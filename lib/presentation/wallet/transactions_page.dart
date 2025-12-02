@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
+import '../../core/utils/ui_refresh_mixin.dart';
 import 'transaction_detail_page.dart';
 
 class TransactionsPage extends StatefulWidget {
@@ -11,7 +12,7 @@ class TransactionsPage extends StatefulWidget {
   State<TransactionsPage> createState() => _TransactionsPageState();
 }
 
-class _TransactionsPageState extends State<TransactionsPage> {
+class _TransactionsPageState extends State<TransactionsPage> with ChuChuUIRefreshMixin {
   final Wallet _wallet = Wallet();
   List<WalletTransaction> _transactions = [];
   bool _isLoading = true;
@@ -204,7 +205,7 @@ class _TransactionsPageState extends State<TransactionsPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('All Transactions'),

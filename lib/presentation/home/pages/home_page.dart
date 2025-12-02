@@ -20,6 +20,7 @@ import '../../feed/pages/feed_page.dart';
 import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 
 
 enum BottomNavItem {
@@ -60,7 +61,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin, ChuChuFeedObserver {
+class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin, ChuChuFeedObserver, ChuChuUIRefreshMixin {
   final double maxSlide = 0.75;
   late final AnimationController _controller;
   late final ScrollController _scrollController;
@@ -146,7 +147,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: _buildAppBar(context),
 

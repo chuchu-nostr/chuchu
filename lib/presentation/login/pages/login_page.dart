@@ -1,5 +1,6 @@
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
+import 'package:chuchu/core/utils/ui_refresh_mixin.dart';
 import 'mode_selector.dart';
 import 'login_form.dart';
 import 'register_form.dart';
@@ -11,7 +12,7 @@ class LoginPage extends StatefulWidget {
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with ChuChuUIRefreshMixin {
   bool _isLoginMode = true;
 
   void _toggleMode(bool isLoginMode) {
@@ -21,7 +22,7 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: GestureDetector(

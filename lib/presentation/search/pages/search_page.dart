@@ -9,6 +9,7 @@ import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 import '../../../core/config/config.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/navigator/navigator.dart';
+import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 
 class SearchPage extends StatefulWidget {
@@ -18,7 +19,7 @@ class SearchPage extends StatefulWidget {
   State<SearchPage> createState() => _SearchPageState();
 }
 
-class _SearchPageState extends State<SearchPage> {
+class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
   final TextEditingController _searchController = TextEditingController();
   final FocusNode _searchFocusNode = FocusNode();
 
@@ -40,7 +41,7 @@ class _SearchPageState extends State<SearchPage> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget buildBody(BuildContext context) {
     final theme = Theme.of(context);
     
     return Scaffold(
