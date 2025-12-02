@@ -781,7 +781,8 @@ extension Load on Feed {
       }
       
       if (groupId != null && groupId.isNotEmpty) {
-        queryBuilder = queryBuilder.groupIdEqualTo(groupId);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .groupIdEqualTo(groupId);
       } else if (groupId == null || groupId.isEmpty) {
         if (noteId == null) {
           queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
@@ -801,42 +802,48 @@ extension Load on Feed {
       }
       
       if (root != null) {
-        queryBuilder = queryBuilder.rootEqualTo(root);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .rootEqualTo(root);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       
       if (reply != null) {
-        queryBuilder = queryBuilder.replyEqualTo(reply);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .replyEqualTo(reply);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       
       if (repostId != null) {
-        queryBuilder = queryBuilder.repostIdEqualTo(repostId);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .repostIdEqualTo(repostId);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       
       if (quoteRepostId != null) {
-        queryBuilder = queryBuilder.quoteRepostIdEqualTo(quoteRepostId);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .quoteRepostIdEqualTo(quoteRepostId);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       
       if (reactedId != null) {
-        queryBuilder = queryBuilder.reactedIdEqualTo(reactedId);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .reactedIdEqualTo(reactedId);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       
       if (until != null) {
-        queryBuilder = queryBuilder.createAtLessThan(until);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .createAtLessThan(until);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
@@ -950,37 +957,43 @@ extension Load on Feed {
         }
       }
       if (root != null) {
-        queryBuilder = queryBuilder.rootEqualTo(root);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .rootEqualTo(root);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       if (reply != null) {
-        queryBuilder = queryBuilder.replyEqualTo(reply);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .replyEqualTo(reply);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       if (repostId != null) {
-        queryBuilder = queryBuilder.repostIdEqualTo(repostId);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .repostIdEqualTo(repostId);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       if (quoteRepostId != null) {
-        queryBuilder = queryBuilder.quoteRepostIdEqualTo(quoteRepostId);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .quoteRepostIdEqualTo(quoteRepostId);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       if (reactedId != null) {
-        queryBuilder = queryBuilder.reactedIdEqualTo(reactedId);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .reactedIdEqualTo(reactedId);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
       }
       if (until != null) {
-        queryBuilder = queryBuilder.createAtLessThan(until);
+        queryBuilder = (queryBuilder as QueryBuilder<NoteDBISAR, NoteDBISAR, QFilterCondition>)
+            .createAtLessThan(until);
         if (isWeb && queryBuilder == null) {
           return _finalizeNoteResults(aggregated, limit);
         }
