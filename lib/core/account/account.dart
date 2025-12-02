@@ -164,10 +164,9 @@ class Account {
       changed = true;
     }
 
-    if (group.picture.isNotEmpty && user.picture != group.picture) {
-      user.picture = group.picture;
-      changed = true;
-    }
+    // Note: Do not sync group.picture to user.picture
+    // group.picture is for cover photo, user.picture is for avatar
+    // They should remain separate
 
     if (group.relay.isNotEmpty && user.mainRelay != group.relay) {
       user.mainRelay = group.relay;

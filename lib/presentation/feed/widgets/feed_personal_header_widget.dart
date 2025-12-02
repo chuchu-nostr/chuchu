@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/account/account.dart';
@@ -64,29 +63,39 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
   }
 
   Widget personalPageHeader(RelayGroupDBISAR user) {
-    final badgeUrl = user.picture ?? '';
-    DecorationImage? image;
-    if (badgeUrl.isNotEmpty) {
-      image = DecorationImage(
-        image: CachedNetworkImageProvider(badgeUrl),
-        fit: BoxFit.cover,
-        onError: (_, __) {},
-      );
-    }
+    final badgeUrl = user.picture;
     return Container(
       width: double.infinity,
       height: widget.isShowAppBar ? 150 : 220,
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.primary,
-        image: image,
       ),
-      child: SafeArea(
-        child: Column(
-          children: [
-            _buildNavigationBar(user),
-            // _buildDataRow(),
-          ],
-        ),
+      child: Stack(
+        children: [
+          if (badgeUrl.isNotEmpty)
+            Positioned.fill(
+              child: ChuChuCachedNetworkImage(
+                imageUrl: badgeUrl,
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: widget.isShowAppBar ? 150 : 220,
+                placeholder: (_, __) => Container(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                errorWidget: (_, __, ___) => Container(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          SafeArea(
+            child: Column(
+              children: [
+                _buildNavigationBar(user),
+                // _buildDataRow(),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -277,7 +286,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
           width: double.infinity,
           margin: const EdgeInsets.only(left: 18, top: 8),
           child: Text(
-            user.name ?? '',
+            user.name,
             style: TextStyle(
               color: Theme.of(context).colorScheme.onSurface,
               fontSize: 20,
