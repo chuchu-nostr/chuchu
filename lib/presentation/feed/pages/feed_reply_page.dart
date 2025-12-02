@@ -125,15 +125,26 @@ class _FeedReplyPageState extends State<FeedReplyPage> {
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            CircleAvatar(
-                              radius: 20,
-                              backgroundColor: theme.colorScheme.primary
-                                  .withOpacity(0.1),
-                              child: Icon(
-                                Icons.person,
-                                color: theme.colorScheme.primary,
-                                size: 18,
+                            ValueListenableBuilder<UserDBISAR>(
+                              valueListenable: Account.sharedInstance.getUserNotifier(
+                                Account.sharedInstance.currentPubkey,
                               ),
+                              builder: (context, value, child) {
+                                return FeedWidgetsUtils.clipImage(
+                                  borderRadius: 32,
+                                  imageSize: 32,
+                                  child: ChuChuCachedNetworkImage(
+                                    imageUrl: value.picture ?? '',
+                                    fit: BoxFit.cover,
+                                    placeholder: (context, url) =>
+                                        FeedWidgetsUtils.badgePlaceholderImage(size: 32),
+                                    errorWidget: (context, url, error) =>
+                                        FeedWidgetsUtils.badgePlaceholderImage(size: 32),
+                                    width: 32,
+                                    height: 32,
+                                  ),
+                                );
+                              },
                             ),
                             const SizedBox(width: 12),
                             Expanded(
