@@ -95,10 +95,7 @@ dependencies:
   nostr_core_dart:
     path: packages/nostr-dart
   isar_flutter_libs:
-    git:
-      url: https://github.com/nsnjx/isar.git
-      path: packages/isar_flutter_libs
-      ref: 4.0.3-fix
+    path: packages/isar_flutter_libs
 
 dev_dependencies:
   flutter_test:
