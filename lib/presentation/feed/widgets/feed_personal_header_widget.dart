@@ -68,7 +68,11 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
       width: double.infinity,
       height: widget.isShowAppBar ? 150 : 220,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [kPrimaryBlue, kSecondaryBlue],
+        ),
       ),
       child: Stack(
         children: [
@@ -80,10 +84,22 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
                 width: double.infinity,
                 height: widget.isShowAppBar ? 150 : 220,
                 placeholder: (_, __) => Container(
-                  color: Theme.of(context).colorScheme.primary,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [kPrimaryBlue, kSecondaryBlue],
+                    ),
+                  ),
                 ),
                 errorWidget: (_, __, ___) => Container(
-                  color: Theme.of(context).colorScheme.primary,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [kPrimaryBlue, kSecondaryBlue],
+                    ),
+                  ),
                 ),
               ),
             ),

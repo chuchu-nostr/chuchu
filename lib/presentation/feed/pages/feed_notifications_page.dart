@@ -11,6 +11,7 @@ import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
+import '../../../core/widgets/common_image.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/account/account.dart';
@@ -211,39 +212,34 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
   Widget _buildEmptyState() {
     final theme = Theme.of(context);
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withValues(alpha: 0.1),
-              shape: BoxShape.circle,
+      child: Padding(
+        padding: const EdgeInsets.only(top: 100),
+        child: Column(
+          children: [
+            CommonImage(
+              iconName: 'notifications_ill_icon.png',
+              width: 120,
+              height: 120,
             ),
-            child: Icon(
-              Icons.notifications_none,
-              size: 64,
-              color: theme.colorScheme.primary,
+            const SizedBox(height: 24),
+            Text(
+              'No Notifications',
+              style: theme.textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No Notifications',
-            style: theme.textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-              color: theme.colorScheme.onSurface,
+            const SizedBox(height: 12),
+            Text(
+              'You\'ll see notifications here when someone\ninteracts with your posts',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
+                height: 1.4,
+              ),
             ),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'You\'ll see notifications here when someone\ninteracts with your posts',
-            textAlign: TextAlign.center,
-            style: theme.textTheme.bodyMedium?.copyWith(
-              color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-              height: 1.4,
-            ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

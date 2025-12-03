@@ -176,21 +176,13 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
       // Show search icon placeholder
       return Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withOpacity(0.1),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.search,
-              size: 60,
-              color: theme.colorScheme.primary,
-            ),
+          CommonImage(
+            iconName: 'search_ill_icon.png',
+            width: 187,
           ),
           const SizedBox(height: 20),
           Text(
-            'Search for users',
+            'Search by npub',
             style: TextStyle(
               fontSize: 18,
               color: theme.colorScheme.onSurface,
@@ -199,12 +191,13 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
           ),
           const SizedBox(height: 8),
           Text(
-            'Enter a username or npub to find users',
+            'Enter a npub address to discover\nand subscribe to creators',
             style: TextStyle(
               fontSize: 16,
               color: theme.colorScheme.onSurface.withOpacity(0.7),
               fontWeight: FontWeight.w400,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ).setPaddingOnly(top: 60.0);

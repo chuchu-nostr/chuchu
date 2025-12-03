@@ -274,11 +274,40 @@ class _FeedPageState extends State<FeedPage>
     }
 
     if (notesList.isEmpty) {
+      final theme = Theme.of(context);
       return Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(height: 100),
-          CommonImage(iconName: 'no_feed.png', size: 150),
-          Text('No Content', style: Theme.of(context).textTheme.titleLarge),
+          CommonImage(iconName: 'no_feed_ill_icon.png', size: 150),
+          const SizedBox(height: 24),
+          Text(
+            'No Content Yet',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              'Subscribe to creators to see their latest posts in your feed',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+          const SizedBox(height: 32),
+          ElevatedButton.icon(
+            onPressed: () {
+              ChuChuNavigator.pushPage(context, (context) => SearchPage());
+            },
+            icon: const Icon(Icons.search, size: 20),
+            label: const Text('Discover Creators'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            ),
+          ),
         ],
       );
     }

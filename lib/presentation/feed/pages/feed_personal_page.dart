@@ -31,7 +31,8 @@ class FeedPersonalPage extends StatefulWidget {
   State<FeedPersonalPage> createState() => _FeedPersonalPageState();
 }
 
-class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefreshMixin {
+class _FeedPersonalPageState extends State<FeedPersonalPage>
+    with ChuChuUIRefreshMixin {
   final ScrollController _scrollController = ScrollController();
   final RefreshController _refreshController = RefreshController();
 
@@ -70,44 +71,51 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
 
     RelayGroupDBISAR group = widget.relayGroupDB;
     try {
-      final remoteGroup = await RelayGroup.sharedInstance.getGroupMetadataFromRelay(
-        widget.relayGroupDB.groupId,
-        relay: Config.sharedInstance.recommendGroupRelays.first,
-        author: widget.relayGroupDB.author,
-      );
+      final remoteGroup = await RelayGroup.sharedInstance
+          .getGroupMetadataFromRelay(
+            widget.relayGroupDB.groupId,
+            relay: Config.sharedInstance.recommendGroupRelays.first,
+            author: widget.relayGroupDB.author,
+          );
       if (remoteGroup != null) {
         group = remoteGroup;
         debugPrint(
-            'FeedPersonalPage: fetched remote group metadata (subscriptionAmount=${group.subscriptionAmount}, members=${group.members?.length ?? 0})');
+          'FeedPersonalPage: fetched remote group metadata (subscriptionAmount=${group.subscriptionAmount}, members=${group.members?.length ?? 0})',
+        );
       }
 
       // Ensure we have member info. If missing, pull from relays.
       if (group.members == null || group.members!.isEmpty) {
-        final refreshedGroup =
-        await RelayGroup.sharedInstance.searchGroupMembersFromRelays(group);
+        final refreshedGroup = await RelayGroup.sharedInstance
+            .searchGroupMembersFromRelays(group);
         group = refreshedGroup;
         debugPrint(
-            'FeedPersonalPage: refreshed members from relays (members=${group.members?.length ?? 0})');
+          'FeedPersonalPage: refreshed members from relays (members=${group.members?.length ?? 0})',
+        );
       }
     } catch (e) {
       debugPrint('FeedPersonalPage getSubscriptionStatus failed: $e');
     }
 
-    final List<String> members = (group.members ??
-        widget.relayGroupDB.members ??
-        const <String>[])
-        .toList();
+    final List<String> members =
+        (group.members ?? widget.relayGroupDB.members ?? const <String>[])
+            .toList();
     debugPrint(
-        'FeedPersonalPage: evaluating subscription status. subscriptionAmount=${group.subscriptionAmount}, membersCount=${members.length}, containsMe=${members.contains(myPubkey)}');
+      'FeedPersonalPage: evaluating subscription status. subscriptionAmount=${group.subscriptionAmount}, membersCount=${members.length}, containsMe=${members.contains(myPubkey)}',
+    );
     final bool isSubscribed = members.contains(myPubkey);
     final bool isPaidGroup = group.subscriptionAmount > 0;
 
     if (isPaidGroup) {
       subscriptionStatus =
-      isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.unsubscribed;
+          isSubscribed
+              ? ESubscriptionStatus.subscribed
+              : ESubscriptionStatus.unsubscribed;
     } else {
       subscriptionStatus =
-      isSubscribed ? ESubscriptionStatus.subscribed : ESubscriptionStatus.free;
+          isSubscribed
+              ? ESubscriptionStatus.subscribed
+              : ESubscriptionStatus.free;
     }
 
     setState(() {});
@@ -188,7 +196,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
       onPressed: () {
         ChuChuNavigator.pushPage(
           context,
-              (context) => ProfileEditPage(relayGroup: widget.relayGroupDB),
+          (context) => ProfileEditPage(relayGroup: widget.relayGroupDB),
         );
       },
       icon: CommonImage(
@@ -252,11 +260,11 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
         return Column(
           children: [
             SubscribedOptionWidget(
-                relayGroup: widget.relayGroupDB,
-                subscriptionStatus: subscriptionStatus,
-                onSubscriptionSuccess: () {
-                  getSubscriptionStatus();
-                }
+              relayGroup: widget.relayGroupDB,
+              subscriptionStatus: subscriptionStatus,
+              onSubscriptionSuccess: () {
+                getSubscriptionStatus();
+              },
             ),
             dividerWidget(),
           ],
@@ -264,15 +272,14 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
       }
     }
 
-    if(index == 2) {
-      if(subscriptionStatus == ESubscriptionStatus.unsubscribed) {
+    if (index == 2) {
+      if (subscriptionStatus == ESubscriptionStatus.unsubscribed) {
         return LockedContentSection();
       }
-      if(notesList.isEmpty){
+      if (notesList.isEmpty) {
         return _buildEmptyState();
       }
     }
-
 
     final noteIndex = index - 2;
     if (noteIndex >= 0 && noteIndex < notesList.length) {
@@ -288,12 +295,36 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
   }
 
   Widget _buildEmptyState() {
-    return Column(
-      children: [
-        const SizedBox(height: 100),
-        CommonImage(iconName: 'no_feed.png', size: 150),
-        Text('No Content', style: Theme.of(context).textTheme.titleLarge),
-      ],
+    final theme = Theme.of(context);
+    final isAuthor = subscriptionStatus == ESubscriptionStatus.author;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 50),
+      child: Column(
+        children: [
+          CommonImage(iconName: 'no_feed_ill_icon.png', size: 150),
+          const SizedBox(height: 24),
+          Text(
+            isAuthor ? 'Start Creating' : 'No Posts Yet',
+            style: theme.textTheme.titleLarge?.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 40),
+            child: Text(
+              isAuthor
+                  ? 'Share your first post and connect with your audience'
+                  : 'This creator hasn\'t shared any content yet',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -308,9 +339,9 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
         notedUIModel: notedUIModel,
         clickMomentCallback:
             (m) => ChuChuNavigator.pushPage(
-          context,
+              context,
               (_) => FeedInfoPage(notedUIModel: m),
-        ),
+            ),
       ),
     );
   }
@@ -326,23 +357,28 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
   Future<void> updateNotesList(bool isInit) async {
     try {
       final until = isInit ? null : _allNotesFromDBLastTimestamp;
-      List<NoteDBISAR> list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
-          widget.relayGroupDB.groupId,
-          until: until,
-          limit: _limit) ??
+      List<NoteDBISAR> list =
+          await RelayGroup.sharedInstance.loadGroupNotesFromDB(
+            widget.relayGroupDB.groupId,
+            until: until,
+            limit: _limit,
+          ) ??
           [];
 
       if (list.isEmpty) {
         await _fetchNotesFromRelay(isInitial: isInit);
-        list = await RelayGroup.sharedInstance.loadGroupNotesFromDB(
-            widget.relayGroupDB.groupId,
-            until: until,
-            limit: _limit) ??
+        list =
+            await RelayGroup.sharedInstance.loadGroupNotesFromDB(
+              widget.relayGroupDB.groupId,
+              until: until,
+              limit: _limit,
+            ) ??
             [];
       }
 
       debugPrint(
-          'FeedPersonalPage: fetched ${list.length} notes from ISAR (group=${widget.relayGroupDB.groupId}, until=$until, init=$isInit)');
+        'FeedPersonalPage: fetched ${list.length} notes from ISAR (group=${widget.relayGroupDB.groupId}, until=$until, init=$isInit)',
+      );
       if (list.isEmpty) {
         isInit
             ? _refreshController.refreshCompleted()
@@ -367,8 +403,11 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
     _isFetchingRemoteNotes = true;
     try {
       final RelayGroupDBISAR group =
-          RelayGroup.sharedInstance.groups[widget.relayGroupDB.groupId]?.value ??
-              widget.relayGroupDB;
+          RelayGroup
+              .sharedInstance
+              .groups[widget.relayGroupDB.groupId]
+              ?.value ??
+          widget.relayGroupDB;
       await RelayGroup.sharedInstance.fetchGroupNotesFromRelays(
         group,
         limit: _limit,
@@ -382,9 +421,8 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
   }
 
   void _updateUI(List<NoteDBISAR> showList, bool isInit, int fetchedCount) {
-    List<NotedUIModel> list = showList
-        .map((note) => NotedUIModel(noteDB: note))
-        .toList();
+    List<NotedUIModel> list =
+        showList.map((note) => NotedUIModel(noteDB: note)).toList();
     if (isInit) {
       notesList = list;
     } else {
@@ -403,27 +441,29 @@ class _FeedPersonalPageState extends State<FeedPersonalPage> with ChuChuUIRefres
     setState(() {});
   }
 
-
   List<NoteDBISAR> _filterNotes(List<NoteDBISAR> notes) {
     if (notes.isEmpty) return [];
 
     return notes
-        .where((note) => !note.isReaction &&  (note.root == null || note.root!.isEmpty))
+        .where(
+          (note) =>
+              !note.isReaction && (note.root == null || note.root!.isEmpty),
+        )
         .toList();
   }
 
   void _updateUIWithNotes(
-      List<NoteDBISAR> filteredNotes,
-      bool isInit,
-      int fetchedCount,
-      ) {
+    List<NoteDBISAR> filteredNotes,
+    bool isInit,
+    int fetchedCount,
+  ) {
     if (filteredNotes.isEmpty) {
       _handleEmptyFilteredNotes(isInit);
       return;
     }
 
     final uiModels =
-    filteredNotes.map((item) => NotedUIModel(noteDB: item)).toList();
+        filteredNotes.map((item) => NotedUIModel(noteDB: item)).toList();
 
     if (isInit) {
       notesList = uiModels;
