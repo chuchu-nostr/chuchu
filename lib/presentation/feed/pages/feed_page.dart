@@ -521,13 +521,35 @@ class _FeedPageState extends State<FeedPage>
       height: avatarSize,
       child: Center(
         child: Container(
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: Colors.grey[300],
-          ),
           width: avatarSize * 0.8,
           height: avatarSize * 0.8,
-          child: const Icon(Icons.add, size: 28, color: Colors.black87),
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            gradient: LinearGradient(
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+              colors: [
+                kPrimaryBlue.withOpacity(0.85),
+                kSecondaryBlue.withOpacity(0.85),
+              ],
+            ),
+            border: Border.all(
+              color: Colors.white,
+              width: 3,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: kPrimaryBlue.withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
+          ),
+          child: const Icon(
+            Icons.add,
+            size: 28,
+            color: Colors.white,
+          ),
         ),
       ),
     );
