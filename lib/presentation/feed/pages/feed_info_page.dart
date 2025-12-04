@@ -505,11 +505,21 @@ class _FeedInfoPageState extends State<FeedInfoPage>
       child: Center(
         child: Column(
           children: [
-            CommonImage(iconName: 'no_reply.png', size: 100),
+            CommonImage(iconName: 'no_reply_ill_icon.png', size: 100),
+            const SizedBox(height: 24),
             Text(
-              'No reply !',
-              style: Theme.of(context).textTheme.titleLarge,
-            ).setPaddingOnly(top: 24),
+              'No comments yet',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Be the first to share your thoughts',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
           ],
         ),
       ),
