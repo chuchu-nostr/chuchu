@@ -201,6 +201,7 @@ class _FeedVideoWidgetState extends State<FeedVideoWidget> {
             // Loading indicator
             if (_isLoadingThumbnail)
               Container(
+                height: 200,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: Colors.black.withOpacity(0.3),

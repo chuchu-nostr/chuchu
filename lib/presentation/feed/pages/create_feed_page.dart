@@ -59,6 +59,44 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     super.initState();
   }
 
+  // Check if there are any images or videos currently uploading
+  bool _isAnyUploading() {
+    // Check image upload status
+    for (int i = 0; i < _selectedImages.length; i++) {
+      if (_uploadingStatus[i] == true) {
+        return true;
+      }
+    }
+    // Check video upload status
+    for (int i = 0; i < _selectedVideos.length; i++) {
+      if (_videoUploadingStatus[i] == true) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  // Check if file size exceeds 20 MiB
+  Future<bool> _checkFileSize(File file) async {
+    try {
+      int fileSize;
+      if (kIsWeb || file.path.startsWith('webfile://')) {
+        // For web platform, get file size from bytes
+        final bytes = web_file_registry.getWebFileData(file.path);
+        if (bytes == null) return false;
+        fileSize = bytes.length;
+      } else {
+        // For non-web platforms, get file size from file system
+        fileSize = await file.length();
+      }
+      // 20 MiB = 20 * 1024 * 1024 bytes
+      const maxSize = 20 * 1024 * 1024;
+      return fileSize > maxSize;
+    } catch (e) {
+      return false;
+    }
+  }
+
   Widget _buildPlatformImage(
     File image, {
     BoxFit fit = BoxFit.cover,
@@ -113,8 +151,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         }
       });
       
-      // Auto-upload newly selected images
-      _uploadNewImages();
+      // Wait for the next frame to ensure state is updated before uploading
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _uploadNewImages();
+      });
     }
   }
 
@@ -148,8 +188,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         _generateVideoThumbnail(videoFile, index);
       });
       
-      // Auto-upload newly selected video
-      _uploadNewVideos();
+      // Wait for the next frame to ensure state is updated before uploading
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _uploadNewVideos();
+      });
     }
   }
 
@@ -158,6 +200,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     setState(() {
       final removedImage = _selectedImages.removeAt(index);
       // Remove corresponding upload status and URL
+      final wasUploading = _uploadingStatus[index] == true;
       _uploadingStatus.remove(index);
       if (index < _uploadedImageUrls.length) {
         _uploadedImageUrls.removeAt(index);
@@ -176,6 +219,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       });
       _uploadingStatus.clear();
       _uploadingStatus.addAll(newStatus);
+      // If we removed an uploading image and no other images are uploading, update _isUploading flag
+      if (wasUploading && !_isAnyUploading()) {
+        _isUploading = false;
+      }
     });
   }
 
@@ -183,6 +230,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     setState(() {
       final removedVideo = _selectedVideos.removeAt(index);
       // Remove corresponding upload status, URL and thumbnail
+      final wasUploading = _videoUploadingStatus[index] == true;
       _videoUploadingStatus.remove(index);
       _videoThumbnails.remove(index);
       if (index < _uploadedVideoUrls.length) {
@@ -212,6 +260,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       _videoThumbnails.clear();
       _videoUploadingStatus.addAll(newStatus);
       _videoThumbnails.addAll(newThumbnails);
+      // If we removed an uploading video and no other videos are uploading, update _isUploading flag
+      if (wasUploading && !_isAnyUploading()) {
+        _isUploading = false;
+      }
     });
   }
 
@@ -244,13 +296,31 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     });
 
     try {
-      // Upload images that haven't been uploaded yet
+      // Collect indices of images to upload
+      final indicesToUpload = <int>[];
       for (int i = _uploadedImageUrls.length; i < _selectedImages.length; i++) {
+        indicesToUpload.add(i);
+      }
+      
+      // Upload images that haven't been uploaded yet
+      final failedIndices = <int>[];
+      for (int i in indicesToUpload) {
         if (!mounted) return;
         
         final imageFile = _selectedImages[i];
         
         try {
+          // Check file size before uploading
+          final exceedsSize = await _checkFileSize(imageFile);
+          if (exceedsSize) {
+            if (mounted) {
+              CommonToast.instance.show(context, 'File size exceeds the maximum allowed size of 20 MiB');
+              // Mark for removal
+              failedIndices.add(i);
+            }
+            continue; // Skip this file, don't upload
+          }
+          
           // Set upload status to true
           if (mounted) {
             setState(() {
@@ -258,13 +328,29 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             });
           }
           
-          // Remove EXIF data before upload
-          final processedImageFile = await removeExifWithCompress(imageFile);
-          if(processedImageFile == null) return;
+          // Handle upload path based on platform
+          String uploadFilePath;
+          String fileName;
+          
+          if (kIsWeb || imageFile.path.startsWith('webfile://')) {
+            // For web platform, use the virtual path directly
+            // BolssomUploader will handle webfile:// paths internally
+            uploadFilePath = imageFile.path;
+            fileName = uploadFilePath.split('/').last;
+          } else {
+            // For non-web platforms, remove EXIF data before upload
+            final processedImageFile = await removeExifWithCompress(imageFile);
+            if (processedImageFile == null) {
+              throw Exception('Failed to process image');
+            }
+            uploadFilePath = processedImageFile.path;
+            fileName = uploadFilePath.split('/').last;
+          }
+          
           final imageUrl = await BolssomUploader.upload(
             'https://blossom.band',
-            processedImageFile.path,
-            fileName: processedImageFile.path.split('/').last,
+            uploadFilePath,
+            fileName: fileName,
           );
           if (imageUrl != null) {
             if (mounted) {
@@ -278,11 +364,21 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           }
         } catch (e) {
           if (mounted) {
-            setState(() {
-              _uploadingStatus[i] = false; // Reset upload status on failure
-            });
-            CommonToast.instance.show(context, 'Image ${i + 1} upload failed: $e');
+            final errorMessage = e.toString();
+            // Show error message
+            CommonToast.instance.show(context, errorMessage);
+            
+            // Mark as failed, will remove after loop
+            failedIndices.add(i);
           }
+        }
+      }
+      
+      // Remove failed images from back to front to avoid index issues
+      if (mounted && failedIndices.isNotEmpty) {
+        failedIndices.sort((a, b) => b.compareTo(a)); // Sort descending
+        for (int index in failedIndices) {
+          _removeImage(index);
         }
       }
     } finally {
@@ -303,13 +399,31 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     });
 
     try {
-      // Upload videos that haven't been uploaded yet
+      // Collect indices of videos to upload
+      final indicesToUpload = <int>[];
       for (int i = _uploadedVideoUrls.length; i < _selectedVideos.length; i++) {
+        indicesToUpload.add(i);
+      }
+      
+      // Upload videos that haven't been uploaded yet
+      final failedIndices = <int>[];
+      for (int i in indicesToUpload) {
         if (!mounted) return;
 
         final file = _selectedVideos[i];
 
         try {
+          // Check file size before uploading
+          final exceedsSize = await _checkFileSize(file);
+          if (exceedsSize) {
+            if (mounted) {
+              CommonToast.instance.show(context, 'File size exceeds the maximum allowed size of 20 MiB');
+              // Mark for removal
+              failedIndices.add(i);
+            }
+            continue; // Skip this file, don't upload
+          }
+          
           // Set upload status to true
           if (mounted) {
             setState(() {
@@ -339,11 +453,21 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           }
         } catch (e) {
           if (mounted) {
-            setState(() {
-              _videoUploadingStatus[i] = false; // Reset upload status
-            });
-            CommonToast.instance.show(context, 'Video ${i + 1} upload failed: $e');
+            final errorMessage = e.toString();
+            // Show error message
+            CommonToast.instance.show(context, errorMessage);
+            
+            // Mark as failed, will remove after loop
+            failedIndices.add(i);
           }
+        }
+      }
+      
+      // Remove failed videos from back to front to avoid index issues
+      if (mounted && failedIndices.isNotEmpty) {
+        failedIndices.sort((a, b) => b.compareTo(a)); // Sort descending
+        for (int index in failedIndices) {
+          _removeVideo(index);
         }
       }
     } finally {
@@ -382,10 +506,14 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           Padding(
             padding: const EdgeInsets.only(right: 12),
             child: ElevatedButton(
-              onPressed: _postMoment,
+              onPressed: _isAnyUploading() ? null : _postMoment,
               style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: Colors.white,
+                backgroundColor: _isAnyUploading()
+                    ? theme.colorScheme.outline.withOpacity(0.3)
+                    : theme.colorScheme.primary,
+                foregroundColor: _isAnyUploading()
+                    ? theme.colorScheme.onSurface.withOpacity(0.5)
+                    : Colors.white,
                 shape: const StadiumBorder(),
                 padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
                 elevation: 0,
