@@ -6,6 +6,7 @@ import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
 
+import '../../../core/account/account.dart';
 import '../../../core/config/config.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/navigator/navigator.dart';
@@ -408,13 +409,20 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
     );
     
     if (relayGroup.picture.isNotEmpty) {
-      picWidget = ChuChuCachedNetworkImage(
-        imageUrl: relayGroup.picture,
-        fit: BoxFit.contain,
-        placeholder: (context, url) => defaultImage,
-        errorWidget: (context, url, error) => defaultImage,
-        width: 60,
-        height: 60,
+      picWidget = ValueListenableBuilder<UserDBISAR>(
+        valueListenable: Account.sharedInstance.getUserNotifier(
+          relayGroup.groupId,
+        ),
+        builder: (context, userInfo, child) {
+          return ChuChuCachedNetworkImage(
+            imageUrl: userInfo.picture ?? '',
+            fit: BoxFit.contain,
+            placeholder: (context, url) => defaultImage,
+            errorWidget: (context, url, error) => defaultImage,
+            width: 60,
+            height: 60,
+          );
+        },
       );
     } else {
       picWidget = defaultImage;

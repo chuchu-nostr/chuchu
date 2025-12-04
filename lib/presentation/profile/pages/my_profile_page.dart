@@ -622,8 +622,10 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           });
         }
         
-        // Auto-upload avatar after showing local image
-        await _uploadAvatar();
+        // Wait for the next frame to ensure state is updated before uploading
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _uploadAvatar();
+        });
       }
     } catch (e, stackTrace) {
       // Print detailed error for debugging
@@ -644,14 +646,26 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
     });
 
     try {
-      final imageFile = File(_selectedAvatarPath!);
-      // Remove EXIF (GPS) by re-encoding image before upload
-      final processed = await _removeExifWithCompress(imageFile);
-      final uploadFilePath = (processed ?? imageFile).path;
+      String uploadFilePath;
+      String fileName;
+      
+      if (kIsWeb || _selectedAvatarPath!.startsWith('webfile://')) {
+        // For web platform, use the virtual path directly
+        // BolssomUploader will handle webfile:// paths internally
+        uploadFilePath = _selectedAvatarPath!;
+        fileName = uploadFilePath.split('/').last;
+      } else {
+        // For non-web platforms, remove EXIF and use processed file
+        final imageFile = File(_selectedAvatarPath!);
+        final processed = await _removeExifWithCompress(imageFile);
+        uploadFilePath = (processed ?? imageFile).path;
+        fileName = uploadFilePath.split('/').last;
+      }
+      
       final imageUrl = await BolssomUploader.upload(
         'https://blossom.band',
         uploadFilePath,
-        fileName: uploadFilePath.split('/').last,
+        fileName: fileName,
       );
 
       if (imageUrl != null && mounted) {

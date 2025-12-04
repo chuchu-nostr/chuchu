@@ -534,8 +534,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
           });
         }
         _hasChangesNotifier.value = _hasChanges();
-        // Auto-upload cover photo after showing local image
-        await _uploadCoverPhoto();
+        // Wait for the next frame to ensure state is updated before uploading
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _uploadCoverPhoto();
+        });
       }
     } catch (e, stackTrace) {
       debugPrint('Error picking cover photo: $e');
@@ -560,11 +562,25 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
     });
 
     try {
-      final imageFile = File(_selectedCoverPhotoPath!);
+      String uploadFilePath;
+      String fileName;
+      
+      if (kIsWeb || _selectedCoverPhotoPath!.startsWith('webfile://')) {
+        // For web platform, use the virtual path directly
+        // BolssomUploader will handle webfile:// paths internally
+        uploadFilePath = _selectedCoverPhotoPath!;
+        fileName = uploadFilePath.split('/').last;
+      } else {
+        // For non-web platforms, use file path
+        final imageFile = File(_selectedCoverPhotoPath!);
+        uploadFilePath = imageFile.path;
+        fileName = uploadFilePath.split('/').last;
+      }
+      
       final imageUrl = await BolssomUploader.upload(
         'https://blossom.band',
-        imageFile.path,
-        fileName: imageFile.path.split('/').last,
+        uploadFilePath,
+        fileName: fileName,
       );
       if (imageUrl != null && mounted) {
         // Save uploaded URL separately, keep local path for display
@@ -574,7 +590,9 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
       } else {
         throw Exception('Upload returned empty URL');
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
+      debugPrint('Error uploading cover photo: $e');
+      debugPrint('Stack trace: $stackTrace');
       if (mounted) {
         CommonToast.instance.show(context, 'Cover photo upload failed: $e');
       }
