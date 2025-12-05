@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 /// 🎨 Brand colors
 const Color kPrimary = Color(0xFFF6339A); // Main brand color
@@ -49,7 +50,7 @@ const Color kTextSecondary = Color(0xFF62748E); // Secondary text (gray)
 const Color kTextTertiary = Color(0xFF90A1B9); // Tertiary text (light gray)
 
 const Color kIconState = Color(0xFF8A96A3); // Icon default state color
-
+ 
 const Color KBorderColor = Color(0xFFF0F0F0); //
 
 final ColorScheme lightScheme = ColorScheme(
@@ -85,25 +86,26 @@ final ColorScheme lightScheme = ColorScheme(
 final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   colorScheme: lightScheme,
-  fontFamily: 'Poppins',
-  scaffoldBackgroundColor: kBgWhite,
-  textTheme: TextTheme(
-    displayLarge: TextStyle(color: kTextPrimary),
-    displayMedium: TextStyle(color: kTextPrimary),
-    displaySmall: TextStyle(color: kTextPrimary),
-    headlineLarge: TextStyle(color: kTextPrimary),
-    headlineMedium: TextStyle(color: kTextPrimary),
-    headlineSmall: TextStyle(color: kTextPrimary),
-    titleLarge: TextStyle(color: kTextPrimary),
-    titleMedium: TextStyle(color: kTextPrimary),
-    titleSmall: TextStyle(color: kTextPrimary),
-    bodyLarge: TextStyle(color: kTextSecondary),
-    bodyMedium: TextStyle(color: kTextSecondary),
-    bodySmall: TextStyle(color: kTextTertiary),
-    labelLarge: TextStyle(color: kTextSecondary),
-    labelMedium: TextStyle(color: kTextTertiary),
-    labelSmall: TextStyle(color: kTextTertiary),
+  textTheme: GoogleFonts.interTextTheme(
+    TextTheme(
+      displayLarge: TextStyle(color: kTextPrimary),
+      displayMedium: TextStyle(color: kTextPrimary),
+      displaySmall: TextStyle(color: kTextPrimary),
+      headlineLarge: TextStyle(color: kTextPrimary),
+      headlineMedium: TextStyle(color: kTextPrimary),
+      headlineSmall: TextStyle(color: kTextPrimary),
+      titleLarge: TextStyle(color: kTextPrimary),
+      titleMedium: TextStyle(color: kTextPrimary),
+      titleSmall: TextStyle(color: kTextPrimary),
+      bodyLarge: TextStyle(color: kTextSecondary),
+      bodyMedium: TextStyle(color: kTextSecondary),
+      bodySmall: TextStyle(color: kTextTertiary),
+      labelLarge: TextStyle(color: kTextSecondary),
+      labelMedium: TextStyle(color: kTextTertiary),
+      labelSmall: TextStyle(color: kTextTertiary),
+    ),
   ),
+  scaffoldBackgroundColor: kBgWhite,
   appBarTheme: const AppBarTheme(
     backgroundColor: kBgWhite,
     foregroundColor: kPrimary,

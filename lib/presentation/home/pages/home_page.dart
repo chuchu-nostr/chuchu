@@ -107,7 +107,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       context: context,
       barrierDismissible: true,
       barrierLabel: '',
-      barrierColor: Colors.black54,
+      barrierColor: Colors.transparent,
       transitionDuration: Duration(milliseconds: 300),
       pageBuilder: (context, animation1, animation2) {
         return Container();
@@ -115,24 +115,42 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
       transitionBuilder: (context, animation1, animation2, child) {
         // Use fixed width for web, relative width for mobile
         final screenWidth = MediaQuery.of(context).size.width;
-        final drawerWidth = kIsWeb ? 300.0 : screenWidth * 0.6;
+        final drawerWidth = kIsWeb ? 360.0 : screenWidth * 0.75;
         
-        return SlideTransition(
-          position: Tween<Offset>(
-            begin: Offset(1.0, 0.0),
-            end: Offset.zero,
-          ).animate(CurvedAnimation(
-            parent: animation1,
-            curve: Curves.easeInOut,
-          )),
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: Container(
-              width: drawerWidth,
-              height: MediaQuery.of(context).size.height,
-              child: DrawerMenu(),
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: FadeTransition(
+                opacity: animation1,
+                child: GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                    child: Container(
+                      color: Colors.black.withOpacity(0.3),
+                    ),
+                  ),
+                ),
+              ),
             ),
-          ),
+            SlideTransition(
+              position: Tween<Offset>(
+                begin: Offset(1.0, 0.0),
+                end: Offset.zero,
+              ).animate(CurvedAnimation(
+                parent: animation1,
+                curve: Curves.easeInOut,
+              )),
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: Container(
+                  width: drawerWidth,
+                  height: MediaQuery.of(context).size.height,
+                  child: DrawerMenu(),
+                ),
+              ),
+            ),
+          ],
         );
       },
     );
