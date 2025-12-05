@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import '../../core/theme/app_theme.dart';
+import '../../core/widgets/common_image.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
 import '../../core/utils/ui_refresh_mixin.dart';
@@ -97,6 +99,10 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back, color: Colors.black87),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
           'Wallet',
           style: TextStyle(
@@ -105,13 +111,13 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
             fontWeight: FontWeight.w600,
           ),
         ),
-        // backgroundColor: Theme.of(context).colorScheme.primary,
         foregroundColor: Colors.black87,
         actions: [
           IconButton(
-            icon: Icon(
-              Icons.refresh,
-              color: Theme.of(context).colorScheme.primary,
+            icon: CommonImage(
+              iconName: 'refresh_icon.png',
+              size: 24,
+              color: Colors.black87,
             ),
             onPressed: _isLoading ? null : _refreshData,
           ),
@@ -135,7 +141,6 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     _buildBalanceCard(),
-                    SizedBox(height: 16),
                     _buildQuickActions(),
                     SizedBox(height: 16),
                     _buildRecentTransactions(),
@@ -150,233 +155,210 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
 
     // Show loading state if no balance data
     if (balance == null) {
-      return Padding(
-        padding: EdgeInsets.all(16),
+      return AspectRatio(
+        aspectRatio: 1203 / 651, // Image aspect ratio
+        child: Container(
+          decoration: BoxDecoration(
+            image: DecorationImage(
+              image: AssetImage('assets/images/wallet_card_bg.png'),
+              fit: BoxFit.cover,
+            ),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Loading balance ', style: TextStyle(color: Colors.white70)),
+              SizedBox(width: 8),
+              SizedBox(
+                width: 12,
+                height: 12,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    //
+    String formatBalance(int balance) {
+      return balance.toString().replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        (Match m) => '${m[1]},',
+      );
+    }
+
+    return AspectRatio(
+      aspectRatio: 1203 / 651, // Image aspect ratio
+      child: Container(
+        padding: EdgeInsets.only(top: 40),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('assets/images/wallet_card_bg.png'),
+            fit: BoxFit.cover,
+          ),
+          borderRadius: BorderRadius.circular(16),
+        ),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             Text(
-              'Balance',
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              'TOTAL BALANCE',
+              style: TextStyle(
+                fontSize: 12,
                 fontWeight: FontWeight.w600,
-                fontSize: 20,
+                color: Colors.white.withOpacity(0.8),
+                letterSpacing: 0.5,
               ),
             ),
             SizedBox(height: 12),
             Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Text('Loading balance ', style: TextStyle(color: Colors.grey)),
+                Text(
+                  formatBalance(balance.totalBalance),
+                  style: TextStyle(
+                    fontSize: 36,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    height: 1.0,
+                  ),
+                ),
                 SizedBox(width: 8),
-                SizedBox(
-                  width: 12,
-                  height: 12,
-                  child: CircularProgressIndicator(strokeWidth: 2),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 6),
+                  child: Text(
+                    'sats',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.amber[300],
+                    ),
+                  ),
                 ),
               ],
             ),
+            if (_usdValue != null) ...[
+              SizedBox(height: 8),
+              Text(
+                '≈ \$${_usdValue!.toStringAsFixed(2)} USD',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.white.withOpacity(0.7),
+                ),
+              ),
+            ],
           ],
         ),
-      );
-    }
-
-    return Padding(
-      padding: EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Balance',
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w600,
-              fontSize: 14,
-            ),
-          ),
-          _buildBalanceItem(
-            'Total Balance',
-            '${balance.totalBalance} sats',
-            Theme.of(context).colorScheme.primary,
-            usdValue: _usdValue,
-          ),
-        ],
       ),
-    );
-  }
-
-  Widget _buildBalanceItem(
-    String label,
-    String value,
-    Color color, {
-    double? usdValue,
-  }) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        // Text(
-        //   label,
-        //   style: TextStyle(
-        //     fontSize: 12,
-        //     color: Colors.grey[600],
-        //   ),
-        // ),
-        // SizedBox(height: 4),
-        Container(
-          child: Text(
-            value,
-            style: TextStyle(
-              fontSize: 28,
-              fontWeight: FontWeight.w800,
-              color: color,
-            ),
-          ),
-        ),
-        if (usdValue != null) ...[
-          Container(
-            child: Text(
-              ' ≈ \$${usdValue.toStringAsFixed(2)} USD',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey[600],
-              ),
-            ),
-          ),
-        ],
-      ],
     );
   }
 
   Widget _buildQuickActions() {
-    return Container(
-      margin: EdgeInsets.symmetric(horizontal: 16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.grey.withOpacity(0.2),
-            spreadRadius: 1,
-            blurRadius: 8,
-            offset: Offset(0, 2),
+    final theme = Theme.of(context);
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: _buildActionButton(
+              'Send',
+              'send_icon.png',
+              Colors.white,
+              theme.colorScheme.primary,
+              theme.colorScheme.onSurface,
+              () => _showSendDialog(),
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: _buildActionButton(
+              'Scan',
+              'scan_icon.png',
+              null, // Use gradient instead
+              Colors.white,
+              theme.colorScheme.onSurface,
+              () => _showScanDialog(),
+              useGradient: true,
+            ),
+          ),
+          SizedBox(width: 12),
+          Expanded(
+            child: _buildActionButton(
+              'Receive',
+              'receive_icon.png',
+              Colors.white,
+              theme.colorScheme.tertiary,
+              theme.colorScheme.onSurface,
+              () => _showReceiveDialog(),
+            ),
           ),
         ],
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with icon and title
-            Row(
-              children: [
-                Text(
-                  'Quick Actions',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                ),
-              ],
-            ),
-            SizedBox(height: 16),
-
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(
-                    'Send',
-                    Icons.send_rounded,
-                    Colors.blue,
-                    () => _showSendDialog(),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    'Scan',
-                    Icons.qr_code_scanner_rounded,
-                    Colors.orange,
-                    () => _showScanDialog(),
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _buildActionButton(
-                    'Receive',
-                    Icons.qr_code_rounded,
-                    Colors.green,
-                    () => _showReceiveDialog(),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
       ),
     );
   }
 
   Widget _buildActionButton(
     String label,
-    IconData icon,
-    Color color,
-    VoidCallback onTap,
-  ) {
-    return Container(
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: color.withOpacity(0.1),
-            spreadRadius: 1,
-            blurRadius: 4,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+    String iconName,
+    Color? backgroundColor,
+    Color? iconColor,
+    Color textColor,
+    VoidCallback onTap, {
+    bool useGradient = false,
+  }) {
+    final theme = Theme.of(context);
+    return GestureDetector(
+      onTap: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Icon container with background
+          Container(
+            width: 64,
+            height: 64,
             decoration: BoxDecoration(
-              color: color.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: color.withOpacity(0.2), width: 1),
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Container(
-                  padding: EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: color.withOpacity(0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(icon, color: color, size: 24),
-                ),
-                SizedBox(height: 8),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                  ),
-                  textAlign: TextAlign.center,
+              color: useGradient ? null : backgroundColor,
+              gradient: useGradient ? getBrandGradientDiagonal() : null,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colorScheme.tertiary.withOpacity(0.2),
+                  blurRadius: 4,
+                  offset: Offset(0, 2),
                 ),
               ],
             ),
+            child: Center(
+              child: CommonImage(
+                iconName: iconName,
+                size: 32,
+                color: iconColor,
+              ),
+            ),
           ),
-        ),
+          SizedBox(height: 8),
+          // Text label below icon
+          Text(
+            label,
+            style: TextStyle(
+              color: textColor,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildRecentTransactions() {
+    final theme = Theme.of(context);
     return Container(
       margin: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       child: Column(
@@ -385,55 +367,33 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
           // Header with icon and title
           Row(
             children: [
-              Expanded(
-                child: Text(
-                  'Recent Transactions',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[800],
-                  ),
-                  overflow: TextOverflow.ellipsis,
+              Text(
+                'History',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
                 ),
               ),
-              SizedBox(width: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.grey[100],
-                  borderRadius: BorderRadius.circular(8),
+              Spacer(),
+              TextButton(
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => TransactionsPage()),
+                  );
+                },
+                style: TextButton.styleFrom(
+                  padding: EdgeInsets.zero,
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => TransactionsPage(),
-                      ),
-                    );
-                  },
-                  style: TextButton.styleFrom(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                    minimumSize: Size.zero,
-                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        'View All',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                      ),
-                      SizedBox(width: 2),
-                      Icon(
-                        Icons.arrow_forward_ios_rounded,
-                        size: 10,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
-                    ],
+                child: Text(
+                  'See All',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Color(0xFF6B46C1),
                   ),
                 ),
               ),
@@ -449,31 +409,27 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      Icons.receipt_long_rounded,
-                      size: 32,
-                      color: Colors.grey[400],
+                  CommonImage(
+                    iconName: 'wallet_history_icon.png',
+                    width: 150,
+                  ),
+                  SizedBox(height: 24),
+                  Text(
+                    'No transactions yet',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
-                  SizedBox(height: 12),
-                  Text(
-                    'No transaction records',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey[600],
+                  const SizedBox(height: 12),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+                    child: Text(
+                      'Your transaction history will appear here once you start using your wallet.',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      ),
+                      textAlign: TextAlign.center,
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Your transaction history will appear here',
-                    style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                   ),
                 ],
               ),
@@ -492,18 +448,82 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   }
 
   Widget _buildTransactionItem(WalletTransaction tx) {
+    String formatTimeAgo(int timestamp) {
+      final now = DateTime.now();
+      final txTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
+      final diff = now.difference(txTime);
+
+      if (diff.inDays >= 2) {
+        return '${diff.inDays} days ago';
+      } else if (diff.inDays >= 1) {
+        return 'Yesterday';
+      } else if (diff.inHours >= 1) {
+        return '${diff.inHours} hour${diff.inHours > 1 ? 's' : ''} ago';
+      } else if (diff.inMinutes >= 1) {
+        return '${diff.inMinutes} min${diff.inMinutes > 1 ? 's' : ''} ago';
+      } else {
+        return 'Just now';
+      }
+    }
+
+    String formatAmount(int amount) {
+      return amount.toString().replaceAllMapped(
+        RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+        (Match m) => '${m[1]},',
+      );
+    }
+
+    // Determine icon based on description
+    IconData getTransactionIcon() {
+      final desc = tx.description?.toLowerCase() ?? '';
+      if (desc.contains('zap')) {
+        return Icons.bolt_rounded;
+      } else if (desc.contains('coffee') || desc.contains('star')) {
+        return Icons.local_cafe_rounded;
+      } else if (desc.contains('subscription') || desc.contains('pro')) {
+        return Icons.shopping_cart_rounded;
+      }
+      return tx.isIncoming
+          ? Icons.arrow_downward_rounded
+          : Icons.arrow_upward_rounded;
+    }
+
+    Color getIconColor() {
+      final desc = tx.description?.toLowerCase() ?? '';
+      if (desc.contains('zap')) {
+        return Colors.amber[700]!;
+      } else if (desc.contains('coffee') || desc.contains('star')) {
+        return Colors.grey[700]!;
+      } else if (desc.contains('subscription') || desc.contains('pro')) {
+        return Color(0xFFE91E63);
+      }
+      return tx.isIncoming ? Colors.green[600]! : Colors.grey[700]!;
+    }
+
+    Color getIconBackgroundColor() {
+      final desc = tx.description?.toLowerCase() ?? '';
+      if (desc.contains('zap')) {
+        return Colors.amber[100]!;
+      } else if (desc.contains('coffee') || desc.contains('star')) {
+        return Colors.grey[200]!;
+      } else if (desc.contains('subscription') || desc.contains('pro')) {
+        return Color(0xFFFCE4EC);
+      }
+      return tx.isIncoming ? Colors.green[100]! : Colors.grey[200]!;
+    }
+
     return Container(
-      margin: EdgeInsets.only(bottom: 8),
+      margin: EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
-        color: Colors.grey[50],
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
         border: Border.all(color: Colors.grey[200]!, width: 1),
       ),
       child: Material(
         color: Colors.transparent,
         child: InkWell(
           onTap: () => _showTransactionDetail(tx),
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(16),
           child: Padding(
             padding: EdgeInsets.all(16),
             child: Row(
@@ -513,24 +533,12 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                   width: 48,
                   height: 48,
                   decoration: BoxDecoration(
-                    color:
-                        tx.isIncoming
-                            ? Colors.green.withOpacity(0.1)
-                            : Colors.red.withOpacity(0.1),
+                    color: getIconBackgroundColor(),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color:
-                          tx.isIncoming
-                              ? Colors.green.withOpacity(0.2)
-                              : Colors.red.withOpacity(0.2),
-                      width: 1,
-                    ),
                   ),
                   child: Icon(
-                    tx.isIncoming
-                        ? Icons.arrow_downward_rounded
-                        : Icons.arrow_upward_rounded,
-                    color: tx.isIncoming ? Colors.green[600] : Colors.red[600],
+                    getTransactionIcon(),
+                    color: getIconColor(),
                     size: 24,
                   ),
                 ),
@@ -541,7 +549,6 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Description or date
                       Text(
                         tx.description?.isNotEmpty == true
                             ? tx.description!
@@ -549,70 +556,53 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
-                          color: Colors.grey[800],
+                          color: Colors.grey[900],
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
                       SizedBox(height: 4),
-
-                      // Date
                       Text(
-                        DateTime.fromMillisecondsSinceEpoch(
-                          tx.createdAt * 1000,
-                        ).toString().substring(0, 16),
-                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                        formatTimeAgo(tx.createdAt),
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
                       ),
                     ],
                   ),
                 ),
 
-                // Amount and status
+                // Amount
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    // Amount
-                    Text(
-                      '${tx.isIncoming ? '+' : '-'}${tx.amount} sats',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color:
-                        tx.isIncoming
-                            ? Colors.green[600]
-                            : Colors.red[600],
-                      ),
-                      textAlign: TextAlign.end,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    SizedBox(height: 4),
-
-                    // Status badge
-                    Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: _getStatusColor(tx.status).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                        border: Border.all(
-                          color: _getStatusColor(tx.status).withOpacity(0.3),
-                          width: 1,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.baseline,
+                      textBaseline: TextBaseline.alphabetic,
+                      children: [
+                        Text(
+                          '${tx.isIncoming ? '+' : '-'}${formatAmount(tx.amount)}',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color:
+                                tx.isIncoming
+                                    ? Colors.green[600]
+                                    : Colors.grey[800],
+                          ),
                         ),
-                      ),
-                      child: Text(
-                        _getStatusText(tx.status),
-                        style: TextStyle(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w600,
-                          color: _getStatusColor(tx.status),
+                        SizedBox(width: 4),
+                        Text(
+                          'sats',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey[600],
+                          ),
                         ),
-                      ),
+                      ],
                     ),
                   ],
-                )
+                ),
               ],
             ),
           ),
@@ -960,267 +950,279 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
 
     showDialog(
       context: context,
-      builder: (context) => Dialog(
-        insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-        ),
-        elevation: 8,
-        child: SingleChildScrollView(
-          child: Container(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.of(context).size.height * 0.8,
-            ),
-            padding: EdgeInsets.all(24),
-            decoration: BoxDecoration(
+      builder:
+          (context) => Dialog(
+            insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+            shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(20),
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [Colors.white, Colors.grey[50]!],
-              ),
             ),
-            child: GestureDetector(
-              behavior: HitTestBehavior.translucent,
-              onTap: () {
-                FocusScope.of(context).requestFocus(FocusNode());
-              },
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Header with icon
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.payment_rounded,
-                        size: 24,
-                        color: Colors.orange[600],
-                      ),
-                      SizedBox(width: 12),
-                      // Title
-                      Text(
-                        'Confirm Payment',
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.grey[800],
-                        ),
-                      ),
-                    ],
+            elevation: 8,
+            child: SingleChildScrollView(
+              child: Container(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.of(context).size.height * 0.8,
+                ),
+                padding: EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(20),
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [Colors.white, Colors.grey[50]!],
                   ),
-                  SizedBox(height: 20),
-
-                  // Payment details card
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.grey.withOpacity(0.1),
-                          spreadRadius: 1,
-                          blurRadius: 8,
-                          offset: Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        // Amount field
-                        Container(
-                          padding: EdgeInsets.all(20),
-                          decoration: BoxDecoration(
-                            color: Colors.grey[50],
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(color: Colors.grey[200]!, width: 1),
+                ),
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onTap: () {
+                    FocusScope.of(context).requestFocus(FocusNode());
+                  },
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header with icon
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.payment_rounded,
+                            size: 24,
+                            color: Colors.orange[600],
                           ),
-                          child: Row(
-                            children: [
-                              Icon(
-                                Icons.bolt_rounded,
-                                color: Colors.green[600],
-                                size: 24,
+                          SizedBox(width: 12),
+                          // Title
+                          Text(
+                            'Confirm Payment',
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.grey[800],
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: 20),
+
+                      // Payment details card
+                      Container(
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(16),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.grey.withOpacity(0.1),
+                              spreadRadius: 1,
+                              blurRadius: 8,
+                              offset: Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            // Amount field
+                            Container(
+                              padding: EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.all(
+                                  color: Colors.grey[200]!,
+                                  width: 1,
+                                ),
                               ),
-                              SizedBox(width: 16),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Amount',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.bolt_rounded,
+                                    color: Colors.green[600],
+                                    size: 24,
+                                  ),
+                                  SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          'Amount',
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: Colors.grey[600],
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                        SizedBox(height: 4),
+                                        Text(
+                                          '$amount sats',
+                                          style: TextStyle(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.grey[800],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green[100],
+                                      borderRadius: BorderRadius.circular(6),
+                                    ),
+                                    child: Text(
+                                      'Lightning',
                                       style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                        fontWeight: FontWeight.w500,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.green[700],
                                       ),
                                     ),
-                                    SizedBox(height: 4),
-                                    Text(
-                                      '$amount sats',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.grey[800],
+                                  ),
+                                ],
+                              ),
+                            ),
+
+                            if (description.isNotEmpty) ...[
+                              SizedBox(height: 12),
+                              Container(
+                                padding: EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  color: Colors.grey[50],
+                                  borderRadius: BorderRadius.circular(16),
+                                  border: Border.all(
+                                    color: Colors.grey[200]!,
+                                    width: 1,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.description_rounded,
+                                      color: Colors.blue[600],
+                                      size: 24,
+                                    ),
+                                    SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            'Description',
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              color: Colors.grey[600],
+                                              fontWeight: FontWeight.w500,
+                                            ),
+                                          ),
+                                          SizedBox(height: 4),
+                                          Text(
+                                            description,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w500,
+                                              color: Colors.grey[800],
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
                                 ),
                               ),
-                              Container(
-                                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.green[100],
-                                  borderRadius: BorderRadius.circular(6),
+                            ],
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 12),
+
+                      Container(
+                        width: double.infinity,
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Text(
+                          'Review payment details before sending',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
+                          ),
+                          textAlign: TextAlign.left,
+                        ),
+                      ),
+                      SizedBox(height: 24),
+
+                      // Action buttons
+                      Row(
+                        children: [
+                          Container(
+                            height: 50,
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: OutlinedButton.styleFrom(
+                                side: BorderSide(
+                                  color: Colors.grey[300]!,
+                                  width: 1.5,
                                 ),
-                                child: Text(
-                                  'Lightning',
-                                  style: TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.green[700],
-                                  ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                               ),
-                            ],
-                          ),
-                        ),
-
-                        if (description.isNotEmpty) ...[
-                          SizedBox(height: 12),
-                          Container(
-                            padding: EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[50],
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.grey[200]!, width: 1),
-                            ),
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.description_rounded,
-                                  color: Colors.blue[600],
-                                  size: 24,
+                              child: Text(
+                                'Cancel',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.grey[600],
                                 ),
-                                SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Description',
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey[600],
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      SizedBox(height: 4),
-                                      Text(
-                                        description,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.grey[800],
-                                        ),
-                                      ),
-                                    ],
+                              ),
+                            ),
+                          ),
+                          SizedBox(width: 16),
+                          Expanded(
+                            child: Container(
+                              height: 50,
+                              child: ElevatedButton(
+                                onPressed:
+                                    () => _sendPayment(invoice, description),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.orange[600],
+                                  foregroundColor: Colors.white,
+                                  elevation: 0,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                              ],
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.send_rounded, size: 18),
+                                    SizedBox(width: 8),
+                                    Flexible(
+                                      child: Text(
+                                        'Send Payment',
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
                             ),
                           ),
                         ],
-                      ],
-                    ),
-                  ),
-
-                  SizedBox(height: 12),
-
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.symmetric(vertical: 8),
-                    child: Text(
-                      'Review payment details before sending',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Colors.grey[600],
-                      ),
-                      textAlign: TextAlign.left,
-                    ),
-                  ),
-                  SizedBox(height: 24),
-
-                  // Action buttons
-                  Row(
-                    children: [
-                      Container(
-                        height: 50,
-                        child: OutlinedButton(
-                          onPressed: () => Navigator.pop(context),
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(
-                              color: Colors.grey[300]!,
-                              width: 1.5,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          child: Text(
-                            'Cancel',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ),
-                      ),
-                      SizedBox(width: 16),
-                      Expanded(
-                        child: Container(
-                          height: 50,
-                          child: ElevatedButton(
-                            onPressed: () => _sendPayment(invoice, description),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange[600],
-                              foregroundColor: Colors.white,
-                              elevation: 0,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(Icons.send_rounded, size: 18),
-                                SizedBox(width: 8),
-                                Flexible(
-                                  child: Text(
-                                    'Send Payment',
-                                    style: TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
                       ),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
-        ),
-      ),
     );
   }
-
 
   Future<void> _sendPayment(String invoice, String description) async {
     Navigator.pop(context); // Close confirm dialog
@@ -1606,8 +1608,12 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
-                          Theme.of(context).colorScheme.primary.withOpacity(0.08),
-                          Theme.of(context).colorScheme.secondary.withOpacity(0.08),
+                          Theme.of(
+                            context,
+                          ).colorScheme.primary.withOpacity(0.08),
+                          Theme.of(
+                            context,
+                          ).colorScheme.secondary.withOpacity(0.08),
                         ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -1676,7 +1682,10 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.description_outlined, color: Colors.grey[600]),
+                          Icon(
+                            Icons.description_outlined,
+                            color: Colors.grey[600],
+                          ),
                           SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -1723,17 +1732,27 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                       children: [
                         SelectableText(
                           invoice.bolt11,
-                          style: TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontFamily: 'monospace',
+                          ),
                         ),
                         SizedBox(height: 8),
                         Row(
                           children: [
-                            Icon(Icons.info_outline, size: 14, color: Colors.grey[600]),
+                            Icon(
+                              Icons.info_outline,
+                              size: 14,
+                              color: Colors.grey[600],
+                            ),
                             SizedBox(width: 6),
                             Expanded(
                               child: Text(
                                 'Share or copy this invoice to receive Lightning payments.',
-                                style: TextStyle(fontSize: 12, color: Colors.grey[600]),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: Colors.grey[600],
+                                ),
                               ),
                             ),
                           ],
@@ -1848,9 +1867,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
     // Navigate to QR scanner page
     final String? scannedInvoice = await Navigator.push<String>(
       context,
-      MaterialPageRoute(
-        builder: (context) => ScanQRPage(),
-      ),
+      MaterialPageRoute(builder: (context) => ScanQRPage()),
     );
 
     // If invoice was scanned, process it

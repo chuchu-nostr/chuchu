@@ -65,8 +65,8 @@ final ColorScheme lightScheme = ColorScheme(
   secondaryContainer: Color(0xFFFFE5FC), // Light magenta tint
   onSecondaryContainer: Color(0xFF4A0033), // Dark magenta for contrast
 
-  tertiary: Color(0xFFFFB74D),
-  onTertiary: Color(0xFF0F172B),
+  tertiary: kTertiary,
+  onTertiary: Colors.white,
 
   error: Color(0xFFBA1A1A),
   onError: Colors.white,
