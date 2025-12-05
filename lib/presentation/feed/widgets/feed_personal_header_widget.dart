@@ -71,7 +71,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [kPrimaryBlue, kSecondaryBlue],
+          colors: [kPrimary, kSecondary],
         ),
       ),
       child: Stack(
@@ -88,7 +88,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [kPrimaryBlue, kSecondaryBlue],
+                      colors: [kPrimary, kSecondary],
                     ),
                   ),
                 ),
@@ -97,7 +97,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
-                      colors: [kPrimaryBlue, kSecondaryBlue],
+                      colors: [kPrimary, kSecondary],
                     ),
                   ),
                 ),

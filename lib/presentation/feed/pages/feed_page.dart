@@ -65,7 +65,7 @@ class _FeedPageState extends State<FeedPage>
   // Track processed note ids to prevent duplicate handling across callbacks
   final Set<String> _seenNoteIds = <String>{};
 
-  double avatarSize = 80;
+  double avatarSize = 75;
   double storyItemWidth = 85;
   double storyItemHeight = 128;
 
@@ -276,9 +276,10 @@ class _FeedPageState extends State<FeedPage>
     if (notesList.isEmpty) {
       final theme = Theme.of(context);
       return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        // mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          CommonImage(iconName: 'no_feed_ill_icon.png', size: 150),
+          const SizedBox(height: 50),
+          CommonImage(iconName: 'no_feed_ill_icon.png', width: 150),
           const SizedBox(height: 24),
           Text(
             'No Content Yet',
@@ -290,7 +291,7 @@ class _FeedPageState extends State<FeedPage>
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
-              'Subscribe to creators to see their latest posts in your feed',
+              'Subscribe to your favorite creators to see their exclusive content and updates.',
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurface.withOpacity(0.7),
               ),
@@ -298,14 +299,48 @@ class _FeedPageState extends State<FeedPage>
             ),
           ),
           const SizedBox(height: 32),
-          ElevatedButton.icon(
-            onPressed: () {
-              ChuChuNavigator.pushPage(context, (context) => SearchPage());
-            },
-            icon: const Icon(Icons.search, size: 20),
-            label: const Text('Discover Creators'),
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              width: double.infinity,
+              height: 48,
+              child: GestureDetector(
+                onTap: () {
+                  ChuChuNavigator.pushPage(context, (context) => SearchPage());
+                },
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: getBrandGradientHorizontal(),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: kPrimary.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 4),
+                        spreadRadius: 0,
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CommonImage(
+                        iconName: 'start_ill_icon.png',
+                        size: 20,
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'Discover Creators',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ),
         ],
@@ -478,7 +513,6 @@ class _FeedPageState extends State<FeedPage>
       height: storyItemHeight,
       margin: EdgeInsets.only(right: marginRight),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -490,7 +524,7 @@ class _FeedPageState extends State<FeedPage>
               relayGroup?.groupId ?? '',
             ),
             builder: (context, user, child) {
-              return  StoryCircle(
+              return StoryCircle(
                 imageUrl: user.picture ?? '',
                 size: avatarSize.toDouble(),
                 segmentCount: noteCount > 0 ? noteCount : 0,
@@ -499,7 +533,6 @@ class _FeedPageState extends State<FeedPage>
             },
           ),
 
-          const SizedBox(height: 8),
           Text(
             relayGroup?.name ?? 'Add',
             style: theme.textTheme.bodySmall?.copyWith(
@@ -517,39 +550,12 @@ class _FeedPageState extends State<FeedPage>
 
   Widget _buildAddButton() {
     return SizedBox(
-      width: avatarSize,
-      height: avatarSize,
+      width: avatarSize + avatarSize * 0.2,
+      height: avatarSize + avatarSize * 0.2,
       child: Center(
-        child: Container(
-          width: avatarSize * 0.8,
-          height: avatarSize * 0.8,
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                kPrimaryBlue.withOpacity(0.85),
-                kSecondaryBlue.withOpacity(0.85),
-              ],
-            ),
-            border: Border.all(
-              color: Colors.white,
-              width: 3,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: kPrimaryBlue.withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: const Icon(
-            Icons.add,
-            size: 28,
-            color: Colors.white,
-          ),
+        child: CommonImage(
+          iconName: 'add_circle_btn.png',
+          size: avatarSize,
         ),
       ),
     );
@@ -811,8 +817,8 @@ class StoryCircle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      width: size,
-      height: size,
+      width: size + size * 0.2,
+      height: size + size * 0.2,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -822,12 +828,12 @@ class StoryCircle extends StatelessWidget {
               fit: BoxFit.cover,
               placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
               errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-              width: size * 0.8,
-              height: size * 0.8,
+              width: segmentCount == 0 ? size : size * 0.94,
+              height: segmentCount == 0 ? size : size * 0.94,
             ),
           ),
           CustomPaint(
-            size: Size(size, size),
+            size: Size(size + size * 0.2, size + size * 0.2),
             painter: _SegmentedBorderPainter(
               segmentCount: segmentCount,
               gapRatio: gapRatio,
@@ -860,7 +866,7 @@ class _SegmentedBorderPainter extends CustomPainter {
       startAngle: 0,
       endAngle: 2 * pi,
       colors: isShowBorder
-          ? [kPrimaryBlue, kSecondaryBlue]
+          ? [kPrimary, kSecondary]
           : [Colors.transparent, Colors.transparent],
     );
 
@@ -903,5 +909,5 @@ class _SegmentedBorderPainter extends CustomPainter {
     }
     return true;
   }
-
 }
+

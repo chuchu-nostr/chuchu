@@ -21,12 +21,13 @@ import '../../../core/manager/chuchu_feed_manager.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
+import '../../../core/theme/app_theme.dart';
 
 
 enum BottomNavItem {
   home(
     selectedAsset: 'home_select_icon.png',
-    unselectedAsset: 'home_icon.png',
+    unselectedAsset: 'home_select_icon.png',
   ),
   // search(
   //   selectedAsset: 'search_select_icon.png',
@@ -316,7 +317,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     final theme       = Theme.of(context);
     final bottomInset = MediaQuery.of(context).padding.bottom;
 
-    const double barHeight  = 66;
+    const double barHeight  = 90;
     const double floatGap   = 24;
     const double sideMargin = 0;
 
@@ -365,11 +366,11 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     Widget iconWidget;
     if (item.unselectedAsset != null && item.selectedAsset != null) {
       final asset = isSelected ? item.selectedAsset! : item.unselectedAsset!;
-      iconWidget = CommonImage(iconName: asset,size: 32,);
+      iconWidget = CommonImage(iconName: asset,size: 23,);
     } else {
       iconWidget = Icon(
         Icons.add,
-        size: 32,
+        size: 23,
         color: isSelected ? theme.colorScheme.primary : Colors.grey[600],
       );
     }
@@ -384,10 +385,10 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         }
       },
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: isSelected
-              ? theme.colorScheme.primary.withOpacity(0.1)
+              ? theme.colorScheme.secondary.withOpacity(0.05)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(20),
         ),
@@ -427,16 +428,32 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
         }
       },
       child: Container(
-        width: 40,
-        height: 30,
+        width: 52,
+        height: 52,
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.primary,
-          borderRadius: BorderRadius.circular(8),
+          gradient: getBrandGradientDiagonal(),
+          borderRadius: BorderRadius.circular(16),
           boxShadow: [
+            // Main shadow - soft and natural
             BoxShadow(
-              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              color: kPrimary.withOpacity(0.25),
+              blurRadius: 12,
+              offset: Offset(0, 4),
+              spreadRadius: 0,
+            ),
+            // Secondary shadow - subtle depth
+            BoxShadow(
+              color: kSecondary.withOpacity(0.15),
               blurRadius: 8,
               offset: Offset(0, 2),
+              spreadRadius: -2,
+            ),
+            // Highlight shadow - adds glow effect
+            BoxShadow(
+              color: kTertiary.withOpacity(0.1),
+              blurRadius: 16,
+              offset: Offset(0, 0),
+              spreadRadius: 2,
             ),
           ],
         ),
