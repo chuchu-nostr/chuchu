@@ -5,6 +5,7 @@ import 'package:google_fonts/google_fonts.dart';
 const Color kPrimary = Color(0xFFF6339A); // Main brand color
 const Color kSecondary = Color(0xFFE12AFB); // Secondary brand color
 const Color kTertiary = Color(0xFF9810FA); // Tertiary brand color
+const Color kYellow = Color(0xFFFFB900); // Yellow accent color
 const Color kBgWhite = Color(0xFFFFFFFF);
 
 /// 🌈 Gradient colors

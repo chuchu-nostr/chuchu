@@ -152,7 +152,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
 
   Widget _buildBalanceCard() {
     WalletInfo? balance = _wallet.walletInfo;
-
+    final theme = Theme.of(context);
     // Show loading state if no balance data
     if (balance == null) {
       return AspectRatio(
@@ -208,13 +208,13 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
             Text(
               'TOTAL BALANCE',
               style: TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 fontWeight: FontWeight.w600,
-                color: Colors.white.withOpacity(0.8),
+                color: theme.colorScheme.outline,
                 letterSpacing: 0.5,
               ),
             ),
-            SizedBox(height: 12),
+            SizedBox(height: 8),
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.center,
@@ -222,7 +222,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 Text(
                   formatBalance(balance.totalBalance),
                   style: TextStyle(
-                    fontSize: 36,
+                    fontSize: 48,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     height: 1.0,
@@ -234,9 +234,9 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                   child: Text(
                     'sats',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 20,
                       fontWeight: FontWeight.w600,
-                      color: Colors.amber[300],
+                      color: kYellow,
                     ),
                   ),
                 ),
@@ -249,7 +249,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: Colors.white.withOpacity(0.7),
+                  color: theme.colorScheme.outline,
                 ),
               ),
             ],
@@ -371,8 +371,8 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 'History',
                 style: TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.grey[800],
+                  fontWeight: FontWeight.w600,
+                  color: Colors.black87,
                 ),
               ),
               Spacer(),
@@ -435,12 +435,45 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
               ),
             )
           else
-            Column(
-              children:
-                  _allTransactions
-                      .take(5)
-                      .map((tx) => _buildTransactionItem(tx))
-                      .toList(),
+            Container(
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.1),
+                    blurRadius: 2,
+                    // offset: Offset(0, 2),
+                    // spreadRadius: 0,
+                  ),
+                ],
+              ),
+              child: Column(
+                children: _allTransactions
+                    .take(5)
+                    .toList()
+                    .asMap()
+                    .entries
+                    .map((entry) {
+                      final index = entry.key;
+                      final tx = entry.value;
+                      final transactionsList = _allTransactions.take(5).toList();
+                      final isLast = index == transactionsList.length - 1;
+                      return Column(
+                        children: [
+                          _buildTransactionItem(tx),
+                          if (!isLast)
+                            Divider(
+                              height: 1,
+                              thickness: 1,
+                              color: theme.colorScheme.outline.withAlpha(10),
+                              indent: 80, // Start after icon and spacing
+                            ),
+                        ],
+                      );
+                    })
+                    .toList(),
+              ),
             ),
         ],
       ),
@@ -511,100 +544,88 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
       }
       return tx.isIncoming ? Colors.green[100]! : Colors.grey[200]!;
     }
-
-    return Container(
-      margin: EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.grey[200]!, width: 1),
-      ),
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: () => _showTransactionDetail(tx),
-          borderRadius: BorderRadius.circular(16),
-          child: Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                // Transaction icon
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: getIconBackgroundColor(),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Icon(
-                    getTransactionIcon(),
-                    color: getIconColor(),
-                    size: 24,
-                  ),
+    final theme = Theme.of(context);
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => _showTransactionDetail(tx),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Row(
+            children: [
+              // Transaction icon
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: getIconBackgroundColor(),
+                  borderRadius: BorderRadius.circular(12),
                 ),
-                SizedBox(width: 16),
-
-                // Transaction details
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        tx.description?.isNotEmpty == true
-                            ? tx.description!
-                            : 'Transaction',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.grey[900],
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      SizedBox(height: 4),
-                      Text(
-                        formatTimeAgo(tx.createdAt),
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
-                    ],
-                  ),
+                child: Icon(
+                  getTransactionIcon(),
+                  color: getIconColor(),
+                  size: 24,
                 ),
+              ),
+              SizedBox(width: 16),
 
-                // Amount
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisSize: MainAxisSize.min,
+              // Transaction details
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.baseline,
-                      textBaseline: TextBaseline.alphabetic,
-                      children: [
-                        Text(
-                          '${tx.isIncoming ? '+' : '-'}${formatAmount(tx.amount)}',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            color:
-                                tx.isIncoming
-                                    ? Colors.green[600]
-                                    : Colors.grey[800],
-                          ),
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          'sats',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                    Text(
+                      tx.description?.isNotEmpty == true
+                          ? tx.description!
+                          : 'Transaction',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    SizedBox(height: 4),
+                    Text(
+                      formatTimeAgo(tx.createdAt),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: theme.colorScheme.outline,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
-              ],
-            ),
+              ),
+
+              // Amount - vertical layout
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${tx.isIncoming ? '+' : '-'}${formatAmount(tx.amount)}',
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: tx.isIncoming
+                          ? Colors.green[600]
+                          : Colors.black87,
+                    ),
+                  ),
+                  SizedBox(height: 2),
+                  Text(
+                    'sats',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: theme.colorScheme.outline,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -747,7 +768,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                           borderRadius: BorderRadius.circular(16),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
+                              color: Colors.grey.withOpacity(0.05),
                               spreadRadius: 1,
                               blurRadius: 8,
                               offset: Offset(0, 2),
