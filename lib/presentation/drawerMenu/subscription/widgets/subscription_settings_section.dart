@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:chuchu/core/config/subscription_config.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../../core/theme/app_theme.dart';
 
 class SubscriptionTier {
   final String name;
@@ -24,17 +26,22 @@ class SubscriptionSettingsSection extends StatefulWidget {
     this.onPriceChanged,
   });
 
-  static int calculatePriceForDuration(int monthlyPrice, SubscriptionDuration duration) {
+  static int calculatePriceForDuration(
+    int monthlyPrice,
+    SubscriptionDuration duration,
+  ) {
     return SubscriptionConfig.calculatePriceForDuration(monthlyPrice, duration);
   }
 
   @override
-  State<SubscriptionSettingsSection> createState() => _SubscriptionSettingsSectionState();
+  State<SubscriptionSettingsSection> createState() =>
+      _SubscriptionSettingsSectionState();
 }
 
-class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSection> {
+class _SubscriptionSettingsSectionState
+    extends State<SubscriptionSettingsSection> {
   final TextEditingController _monthlyPriceController = TextEditingController();
-  
+
   List<SubscriptionTier> get _subscriptionTiers {
     return SubscriptionConfig.availableDurations.map((duration) {
       return SubscriptionTier(
@@ -44,7 +51,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
       );
     }).toList();
   }
-  
+
   String _getDurationDisplayName(SubscriptionDuration duration) {
     switch (duration) {
       case SubscriptionDuration.month:
@@ -57,7 +64,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
         return '12 Months';
     }
   }
-  
+
   int _getCurrentMonthlyPrice() {
     if (_monthlyPriceController.text.isNotEmpty) {
       try {
@@ -72,7 +79,7 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
   @override
   void initState() {
     super.initState();
-    if(widget.initialMonthlyPrice != null){
+    if (widget.initialMonthlyPrice != null) {
       _monthlyPriceController.text = widget.initialMonthlyPrice.toString();
     }
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -106,61 +113,86 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     );
   }
 
-
   Widget _buildPriceControls(BuildContext context) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
           'Set Monthly Subscription Price',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 2),
         Row(
           children: [
             Expanded(
-              child: TextField(
-                controller: _monthlyPriceController,
-                keyboardType: TextInputType.number,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                ],
-                onChanged: (value) {
-                  setState(() {});
-                  _notifyPriceChanged();
-                },
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
-                  fontWeight: FontWeight.w600,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withAlpha(50),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.grey.withOpacity(0.1),
+                      blurRadius: 8,
+                      offset: Offset(0, 2),
+                      spreadRadius: 0,
+                    ),
+                  ],
                 ),
-                decoration: InputDecoration(
-                  prefixText: '${SubscriptionConfig.currencyUnit} ',
-                  prefixStyle: TextStyle(
+                child: TextField(
+                  controller: _monthlyPriceController,
+                  keyboardType: TextInputType.number,
+                  textAlign: TextAlign.left,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  onChanged: (value) {
+                    setState(() {});
+                    _notifyPriceChanged();
+                  },
+                  style: TextStyle(
                     color: Theme.of(context).colorScheme.onSurface,
                     fontWeight: FontWeight.w600,
-
                   ),
-                  hintText: '',
-                  labelText: 'Monthly Price (${SubscriptionConfig.currencyUnit})',
-                  labelStyle: TextStyle(
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    fontWeight: FontWeight.w600,
-
-                  ),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Theme.of(context).colorScheme.primary, width: 2),
+                  decoration: InputDecoration(
+                    hintText: '1',
+                    hintStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                    suffixText: 'SATS',
+                    suffixStyle: TextStyle(
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide.none,
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(
+                        color: Theme.of(context).colorScheme.primary,
+                        width: 2,
+                      ),
+                    ),
+                    contentPadding: EdgeInsets.only(left: 20, right: 16, top: 12, bottom: 12),
                   ),
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 16),
+        const SizedBox(height: 22),
         Text(
           'Subscription Options',
-          style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+          style: GoogleFonts.inter(
+            color: Colors.black87,
+            fontWeight: FontWeight.bold,
+          ),
         ),
         const SizedBox(height: 8),
         Text(
@@ -181,27 +213,47 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
 
   Widget _buildDurationDisplay(BuildContext context, SubscriptionTier tier) {
     final calculatedPrice = _calculatePrice(tier.duration);
-    final discountPercent = SubscriptionConfig.getDiscountPercentage(tier.duration);
-    
+    final discountPercent = SubscriptionConfig.getDiscountPercentage(
+      tier.duration,
+    );
+
     String displayPrice = '$calculatedPrice ${SubscriptionConfig.currencyUnit}';
-    String durationText = tier.duration == SubscriptionDuration.year ? 'year' : tier.duration.value;
-    
+    String durationText;
+    if (tier.duration == SubscriptionDuration.year) {
+      durationText = 'year';
+    } else if (tier.duration == SubscriptionDuration.month) {
+      durationText = 'month';
+    } else {
+      durationText = tier.duration.value;
+    }
+
     final isMonthlyTier = tier.duration == SubscriptionDuration.month;
-    
+
     return Container(
+      height: isMonthlyTier ? 55 : 73,
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: isMonthlyTier 
-            ? Theme.of(context).colorScheme.primary
-            : Theme.of(context).colorScheme.surfaceVariant,
+        // gradient: isMonthlyTier ? getBrandGradientHorizontal() : null,
+        color: isMonthlyTier ? Theme.of(context).colorScheme.primary : Theme.of(context).colorScheme.outline.withAlpha(10),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isMonthlyTier 
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).dividerColor,
-          width: isMonthlyTier ? 2 : 1,
+          color:
+              isMonthlyTier
+                  ? Colors.transparent
+                  : Theme.of(context).dividerColor.withAlpha(50),
+          width: isMonthlyTier ? 0 : 1,
         ),
+        boxShadow: isMonthlyTier
+            ? []
+            : [
+                BoxShadow(
+                  color: Colors.grey.withOpacity(0.1),
+                  blurRadius: 8,
+                  offset: Offset(0, 2),
+                  spreadRadius: 0,
+                ),
+              ],
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -209,47 +261,57 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   tier.name,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: isMonthlyTier
-                        ? Theme.of(context).colorScheme.onPrimary
-                        : Theme.of(context).colorScheme.onSurface,
+                  style: GoogleFonts.inter(
+                    fontWeight: FontWeight.bold,
+                    color:
+                        isMonthlyTier
+                            ? Colors.white
+                            : Colors.black87,
+                    fontSize: 16,
                   ),
                 ),
-                if (discountPercent > 0)
+                if (discountPercent > 0) ...[
+                  const SizedBox(height: 4),
                   Text(
                     'Save $discountPercent%',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: isMonthlyTier
-                          ? Theme.of(context).colorScheme.onPrimary.withOpacity(0.9)
-                          : Theme.of(context).colorScheme.primary,
+                    style: GoogleFonts.inter(
+                      color: Theme.of(context).colorScheme.primary,
                       fontWeight: FontWeight.w500,
+                      fontSize: 14,
                     ),
                   ),
+                ],
               ],
             ),
           ),
           Text(
             '$displayPrice per $durationText',
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            style: GoogleFonts.inter(
               fontWeight: FontWeight.w600,
-              color: isMonthlyTier
-                  ? Theme.of(context).colorScheme.onPrimary
-                  : Theme.of(context).colorScheme.onSurface,
+              color:
+                  isMonthlyTier
+                      ? Colors.white
+                      : Colors.black87,
+              fontSize: 16,
             ),
           ),
         ],
       ),
     );
   }
+
   int _calculatePrice(SubscriptionDuration duration) {
     final monthlyPrice = _getCurrentMonthlyPrice();
-    return SubscriptionSettingsSection.calculatePriceForDuration(monthlyPrice, duration);
+    return SubscriptionSettingsSection.calculatePriceForDuration(
+      monthlyPrice,
+      duration,
+    );
   }
-  
+
   void _notifyPriceChanged() {
     if (widget.onPriceChanged != null) {
       int monthlyPrice = 0;
@@ -264,5 +326,3 @@ class _SubscriptionSettingsSectionState extends State<SubscriptionSettingsSectio
     }
   }
 }
-
-
