@@ -1,10 +1,12 @@
+import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:chuchu/core/utils/adapt.dart';
 import '../../../core/account/account.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/widgets/common_image.dart';
 
 class NostrKeyPage extends StatefulWidget {
   const NostrKeyPage({super.key});
@@ -37,75 +39,100 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
     
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
         title: Text(
-          'Nostr key',
-          style: TextStyle(
-            fontSize: 22,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
+          'Nostr Keys',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: Colors.black,
           ),
         ),
-        backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.onSurface,
+        backgroundColor: Colors.white,
         elevation: 0,
-        surfaceTintColor: Colors.transparent,
         centerTitle: true,
       ),
-      backgroundColor: theme.colorScheme.surface,
+      backgroundColor: Colors.white,
       body: SingleChildScrollView(
-        padding: EdgeInsets.all(20.px),
+        padding: EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _buildPageHeader(theme),
-            SizedBox(height: 24.px),
+            _buildSecurityWarning(),
+            SizedBox(height: 24),
             _buildKeySection(
               theme: theme,
-              title: 'Public key (npub)',
-              subtitle: 'Public identifier — safe to share',
+              title: 'Public Key (npub)',
+              subtitle: 'Your public identity. Safe to share.',
               value: _npubKey,
-              icon: Icons.public,
-              iconColor: theme.colorScheme.primary,
+              dotColor: Colors.green,
+              isPrivate: false,
             ),
-            SizedBox(height: 20.px),
+            SizedBox(height: 30),
             _buildKeySection(
               theme: theme,
-              title: 'Private key (nsec)',
-              subtitle: 'Secret — never share with anyone',
+              title: 'Private Key (nsec)',
+              subtitle: '',
               value: _nsecKey,
-              icon: Icons.lock,
-              iconColor: Colors.red.shade600,
+              dotColor: Colors.red,
               isPrivate: true,
             ),
-            SizedBox(height: 20.px),
+            SizedBox(height: 20),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildPageHeader(ThemeData theme) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Your Nostr keys',
-          style: TextStyle(
-            fontSize: 24.px,
-            fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onSurface,
-          ),
+  Widget _buildSecurityWarning() {
+    return Container(
+      padding: EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Color(0xFFFFFBEB), // Light yellow background
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: Color(0xFFFEF3C6), // Light orange border
+          width: 1,
         ),
-        SizedBox(height: 8.px),
-        Text(
-          'Back up these keys to restore your account if needed',
-          style: TextStyle(
-            fontSize: 16.px,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-            height: 1.4,
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            color: Color(0xFFFF9800), // Orange warning icon
+            size: 24,
           ),
-        ),
-      ],
+          SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Security Warning',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF973C00), // Dark orange/brown
+                  ),
+                ),
+                SizedBox(height: 4),
+                Text(
+                  'Never share your private key (nsec) with anyone. If you lose it, you will lose access to your account forever.',
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: Color(0xFF973C00), // Dark orange/brown
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -114,133 +141,104 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
     required String title,
     required String subtitle,
     required String value,
-    required IconData icon,
-    required Color iconColor,
+    required Color dotColor,
     bool isPrivate = false,
   }) {
-    return Container(
-      padding: EdgeInsets.all(18.px),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16.px),
-        border: Border.all(
-          color: theme.colorScheme.outline.withValues(alpha: 0.2),
-          width: 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 8,
-            offset: Offset(0, 2),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(8.px),
-                decoration: BoxDecoration(
-                  color: iconColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8.px),
-                ),
-                child: Icon(
-                  icon,
-                  color: iconColor,
-                  size: 20.px,
-                ),
-              ),
-              SizedBox(width: 12.px),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 18.px,
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface,
-                      ),
-                    ),
-                    SizedBox(height: 6.px),
-                    Text(
-                      subtitle,
-                      style: TextStyle(
-                        fontSize: 15.px,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                        height: 1.3,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              if (isPrivate)
-                IconButton(
-                  onPressed: () {
-                    setState(() {
-                      _isPrivateKeyVisible = !_isPrivateKeyVisible;
-                    });
-                  },
-                  icon: Icon(
-                    _isPrivateKeyVisible ? Icons.visibility_off : Icons.visibility,
-                    color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
-                  ),
-                ),
-            ],
-          ),
-          SizedBox(height: 16.px),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
             Container(
-              width: double.infinity,
-              padding: EdgeInsets.all(16.px),
+              width: 8,
+              height: 8,
               decoration: BoxDecoration(
-                color: theme.colorScheme.surfaceContainerHighest,
-                borderRadius: BorderRadius.circular(12.px),
-                border: Border.all(
-                  color: theme.colorScheme.outline.withValues(alpha: 0.1),
-                  width: 1,
-                ),
+                color: dotColor,
+                shape: BoxShape.circle,
               ),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    isPrivate && !_isPrivateKeyVisible
-                        ? '•' * 64
-                        : value,
-                    style: TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 14.px,
-                      color: theme.colorScheme.onSurface.withValues(alpha: 0.9),
-                      height: 1.4,
-                      letterSpacing: 0.5,
-                    ),
-                    maxLines: null,
-                  ),
-                ),
-                SizedBox(width: 12.px),
-                GestureDetector(
-                  onTap: value.isEmpty ? null : () => _copyToClipboard(value, title),
-                  child: Container(
-                    padding: EdgeInsets.all(8.px),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(6.px),
-                    ),
-                    child: Icon(
-                      Icons.copy,
-                      size: 16.px,
-                      color: theme.colorScheme.primary,
-                    ),
-                  ),
-                ),
-              ],
+            ),
+            SizedBox(width: 8),
+            Text(
+              title,
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Colors.black87,
+              ),
+            ),
+          ],
+        ),
+        if (subtitle.isNotEmpty) ...[
+          SizedBox(height: 8),
+          Padding(
+            padding: EdgeInsets.only(left: 16),
+            child: Text(
+              subtitle,
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: Colors.grey[600],
+              ),
             ),
           ),
         ],
-      ),
+        SizedBox(height: 2),
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+          decoration: BoxDecoration(
+            color: isPrivate ? Color(0xFF2C2C2C) : Color(0xFFF8FAFC),
+            borderRadius: BorderRadius.circular(12),
+            border: !isPrivate ? Border.all(
+              color: Colors.grey.withOpacity(0.2),
+              width: 1,
+            ) : null,
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  isPrivate && !_isPrivateKeyVisible
+                      ? '•' * 64
+                      : value,
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    color: isPrivate ? theme.colorScheme.outline : theme.colorScheme.onSurface,
+                    height: 1.4,
+                    letterSpacing: 0.5,
+                  ).copyWith(fontFamily: 'monospace'),
+                  maxLines: null,
+                ),
+              ),
+              SizedBox(width: 12),
+              GestureDetector(
+                onTap: value.isEmpty ? null : () => _copyToClipboard(value, title),
+                child: CommonImage(
+                  iconName: 'copy_bg_white_icon.png',
+                  size: 50,
+                ),
+              ),
+            ],
+          ),
+        ),
+        if (isPrivate) ...[
+          SizedBox(height: 8),
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isPrivateKeyVisible = !_isPrivateKeyVisible;
+              });
+            },
+            child: Text(
+              _isPrivateKeyVisible ? 'Hide key' : 'Show key',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: Theme.of(context).colorScheme.outline,
+                decoration: TextDecoration.underline,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 
@@ -252,7 +250,10 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
     
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('$keyType copied to clipboard'),
+        content: Text(
+          '$keyType copied to clipboard',
+          style: GoogleFonts.inter(),
+        ),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
         backgroundColor: Theme.of(context).colorScheme.primary,
