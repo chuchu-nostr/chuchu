@@ -1,5 +1,6 @@
 import 'package:chuchu/core/relayGroups/relayGroup+member.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart' show GoogleFonts;
 import '../../../../core/widgets/common_toast.dart';
 import '../../../core/account/account.dart';
 import '../../../core/config/config.dart';
@@ -9,6 +10,7 @@ import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/wallet/wallet.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
 
 class CreateCreatorPage extends StatefulWidget {
@@ -29,14 +31,34 @@ class CreateCreatorPageState extends State<CreateCreatorPage> with ChuChuUIRefre
   Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Creator'),
+        backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close),
+          icon: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.grey[100],
+            ),
+            child: Icon(
+              Icons.close,
+              size: 20,
+              color: Colors.grey[800],
+            ),
+          ),
           onPressed: () {
             Navigator.of(context).pop();
           },
         ),
+        title: Text(
+          'Create Poster',
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        centerTitle: true,
       ),
       body: SafeArea(
         child: GestureDetector(
@@ -53,74 +75,125 @@ class CreateCreatorPageState extends State<CreateCreatorPage> with ChuChuUIRefre
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Poster name',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          'Poster Name',
+                          style: GoogleFonts.inter(
+                            color: Colors.black87,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _nameController,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Enter your Poster name',
-                            hintStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        const SizedBox(height: 2),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline.withAlpha(50),
+                              width: 1,
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 2,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                                spreadRadius: 0,
                               ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _nameController,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Enter your Poster name',
+                              hintStyle: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                             ),
                           ),
                         ),
                         const SizedBox(height: 16),
                         Text(
                           'Introduction',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          style: GoogleFonts.inter(
+                            color: Colors.black87,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _aboutController,
-                          maxLines: 4,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                          decoration: InputDecoration(
-                            hintText: 'Poster introduction',
-                            hintStyle: TextStyle(
-                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        const SizedBox(height: 2),
+                        Container(
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline.withAlpha(50),
+                              width: 1,
                             ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                              borderSide: BorderSide(
-                                color: Theme.of(context).colorScheme.primary,
-                                width: 2,
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.1),
+                                blurRadius: 8,
+                                offset: Offset(0, 2),
+                                spreadRadius: 0,
                               ),
+                            ],
+                          ),
+                          child: TextField(
+                            controller: _aboutController,
+                            maxLines: 4,
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.onSurface,
+                            ),
+                            decoration: InputDecoration(
+                              hintText: 'Tell us about your content...',
+                              hintStyle: TextStyle(
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  width: 2,
+                                ),
+                              ),
+                              filled: true,
+                              fillColor: Colors.white,
+                              contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                             ),
                           ),
                         ),
                         const SizedBox(height: 24),
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10,vertical: 16),
+                          padding: const EdgeInsets.symmetric(horizontal: 16,vertical: 16),
                           decoration: BoxDecoration(
                             color: Theme.of(context).colorScheme.surface,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.grey.withOpacity(0.5),
+                                blurRadius: 2,
+                                offset: Offset(0, 1),
+                                spreadRadius: 0,
+                              ),
+                            ],
                           ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -130,17 +203,20 @@ class CreateCreatorPageState extends State<CreateCreatorPage> with ChuChuUIRefre
                                 children: [
                                   Text(
                                     _isPaidSubscription ? 'Premium Subscription' : 'Free Subscription',
-                                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                      fontWeight: FontWeight.w600,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      color: Colors.black87,
+                                      fontWeight: FontWeight.bold,
                                     ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     _isPaidSubscription
-                                        ? 'Users pay to access your content'
+                                        ? 'Earn sats from your subscribers'
                                         : 'Users can access your content for free',
-                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: Theme.of(context).colorScheme.outline,
                                     ),
                                   ),
                                 ],
@@ -168,17 +244,27 @@ class CreateCreatorPageState extends State<CreateCreatorPage> with ChuChuUIRefre
                         SizedBox(
                           width: double.infinity,
                           height: 50,
-                          child: ElevatedButton(
-                            onPressed: _createSettings,
-                            style: ElevatedButton.styleFrom(
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                              elevation: 0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: getBrandGradientHorizontal(),
+                              borderRadius: BorderRadius.circular(12),
                             ),
-                            child: Text(
-                              'Create',
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: Theme.of(context).colorScheme.onPrimary,
+                            child: ElevatedButton(
+                              onPressed: _createSettings,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.transparent,
+                                shadowColor: Colors.transparent,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 0,
+                              ),
+                              child: Text(
+                                'Create Poster',
+                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
                           ),
