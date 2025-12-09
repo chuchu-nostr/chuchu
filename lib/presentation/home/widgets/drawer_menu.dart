@@ -1,8 +1,9 @@
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
-import 'package:chuchu/presentation/login/pages/login_page.dart';
+import 'package:chuchu/presentation/login/pages/new_login_page.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
@@ -173,10 +174,10 @@ class _DrawerMenuState extends State<DrawerMenu>
                             children: [
                               Text(
                                 nikName ?? '--',
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 20,
-                                  color: theme.colorScheme.onTertiary,
+                                  color: Colors.black87,
                                 ),
                               ),
                               const SizedBox(width: 6),
@@ -200,7 +201,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: theme.colorScheme.onTertiary,
+                                  color: Colors.black87,
                                 ),
                               ),
                               Text(
@@ -217,7 +218,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: theme.colorScheme.onTertiary,
+                                  color: Colors.black87,
                                 ),
                               ),
                               Text(
@@ -323,6 +324,8 @@ class _DrawerMenuState extends State<DrawerMenu>
                       "Settings",
                       onTap: () {
                         // TODO: Navigate to settings page
+                            Navigator.of(context).pop(); // Close drawer first
+                            ChuChuNavigator.pushPage(context, (context) => const MyProfilePage());
                       },
                     ),
                     // _menuItem(
@@ -484,7 +487,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                 final navigatorContext =
                     ChuChuNavigator.navigatorKey.currentContext ?? context;
                 Navigator.of(navigatorContext).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const LoginPage()),
+                  MaterialPageRoute(builder: (context) => const NewLoginPage()),
                   (route) => false, // Remove all previous routes
                 );
               },

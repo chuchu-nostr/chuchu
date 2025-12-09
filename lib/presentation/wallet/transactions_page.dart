@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
 import '../../core/utils/ui_refresh_mixin.dart';
@@ -185,10 +186,10 @@ class _TransactionsPageState extends State<TransactionsPage> with ChuChuUIRefres
           SizedBox(height: 16),
           Text(
             'No transactions yet',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: Colors.grey[600],
+            style: GoogleFonts.inter(
+              fontSize: 25,
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
             ),
           ),
           SizedBox(height: 8),
