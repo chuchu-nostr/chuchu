@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/presentation/feed/pages/feed_personal_page.dart';
+import 'package:google_fonts/google_fonts.dart' show GoogleFonts;
 
 import '../../../core/account/account.dart';
 import '../../../core/config/config.dart';
@@ -44,7 +45,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
   @override
   Widget buildBody(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
@@ -84,9 +85,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
               _buildSearchHeader(),
 
               // Search content
-              Expanded(
-                child: _buildSearchContent(),
-              ),
+              Expanded(child: _buildSearchContent()),
             ],
           ),
         ),
@@ -96,7 +95,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
 
   Widget _buildSearchHeader() {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       child: Row(
@@ -172,21 +171,18 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
 
   Widget _buildSearchContent() {
     final theme = Theme.of(context);
-    
+
     if (!_hasSearched) {
       // Show search icon placeholder
       return Column(
         children: [
-          CommonImage(
-            iconName: 'search_ill_icon.png',
-            width: 187,
-          ),
+          CommonImage(iconName: 'search_ill_icon.png', width: 187),
           const SizedBox(height: 20),
           Text(
             'Search by npub',
-            style: TextStyle(
-              fontSize: 18,
-              color: theme.colorScheme.onSurface,
+            style: GoogleFonts.inter(
+              fontSize: 25,
+              color: Colors.black87,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -210,9 +206,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: theme.colorScheme.primary,
-            ),
+            CircularProgressIndicator(color: theme.colorScheme.primary),
             const SizedBox(height: 16),
             Text(
               'Searching...',
@@ -231,30 +225,19 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
       // Show no data icon
       return Column(
         children: [
-          Container(
-            padding: const EdgeInsets.all(24),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.surfaceContainerHighest,
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              Icons.person_search,
-              size: 60,
-              color: theme.colorScheme.onSurface.withOpacity(0.5),
-            ),
-          ),
+          CommonImage(iconName: 'no_result_ill.png', width: 187, height: 150),
           const SizedBox(height: 20),
           Text(
-            'No users found',
-            style: TextStyle(
-              fontSize: 18,
-              color: theme.colorScheme.onSurface,
+            'No creators found',
+            style: GoogleFonts.inter(
+              fontSize: 25,
+              color: Colors.black87,
               fontWeight: FontWeight.w600,
             ),
           ),
           const SizedBox(height: 8),
           Text(
-            'Try searching with a different term',
+            'Try searching with a different npub',
             style: TextStyle(
               fontSize: 16,
               color: theme.colorScheme.onSurface.withOpacity(0.7),
@@ -275,12 +258,14 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
     );
   }
 
-
   Widget _authorCard(RelayGroupDBISAR relayGroup) {
     final theme = Theme.of(context);
     return GestureDetector(
       onTap: () {
-        ChuChuNavigator.pushPage(context, (context) => FeedPersonalPage(relayGroupDB: relayGroup,));
+        ChuChuNavigator.pushPage(
+          context,
+          (context) => FeedPersonalPage(relayGroupDB: relayGroup),
+        );
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
@@ -302,53 +287,58 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
             children: [
               Positioned.fill(
                 child:
-                relayGroup.picture.isNotEmpty
-                    ? ChuChuCachedNetworkImage(
-                  imageUrl: relayGroup.picture,
-                  fit: BoxFit.cover,
-                  placeholder: (context, url) => Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          theme.colorScheme.primary,
-                          theme.colorScheme.primaryContainer,
-                        ],
-                      ),
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          theme.colorScheme.primary,
-                          theme.colorScheme.primaryContainer,
-                        ],
-                      ),
-                    ),
-                  ),
-                )
-                    : Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        theme.colorScheme.primary,
-                        theme.colorScheme.primaryContainer,
-                      ],
-                    ),
-                  ),
-                ),
+                    relayGroup.picture.isNotEmpty
+                        ? ChuChuCachedNetworkImage(
+                          imageUrl: relayGroup.picture,
+                          fit: BoxFit.cover,
+                          placeholder:
+                              (context, url) => Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      theme.colorScheme.primary,
+                                      theme.colorScheme.primaryContainer,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                          errorWidget:
+                              (context, url, error) => Container(
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                    colors: [
+                                      theme.colorScheme.primary,
+                                      theme.colorScheme.primaryContainer,
+                                    ],
+                                  ),
+                                ),
+                              ),
+                        )
+                        : Container(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                theme.colorScheme.primary,
+                                theme.colorScheme.primaryContainer,
+                              ],
+                            ),
+                          ),
+                        ),
               ),
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [Colors.transparent, Colors.black.withOpacity(0.5)],
+                      colors: [
+                        Colors.transparent,
+                        Colors.black.withOpacity(0.5),
+                      ],
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
                     ),
@@ -407,7 +397,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
       width: 60,
       height: 60,
     );
-    
+
     if (relayGroup.picture.isNotEmpty) {
       picWidget = ValueListenableBuilder<UserDBISAR>(
         valueListenable: Account.sharedInstance.getUserNotifier(
@@ -429,8 +419,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
     }
 
     return GestureDetector(
-      onTap: () {
-      },
+      onTap: () {},
       child: Container(
         width: 60,
         height: 60,
@@ -452,26 +441,26 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
     if (!input.startsWith('npub1')) {
       return false;
     }
-    
+
     // npub1 should be at least 63 characters long (npub1 + 58 chars of bech32 data)
     if (input.length < 63) {
       return false;
     }
-    
+
     // Extract the bech32 part (after 'npub1')
     String bech32Part = input.substring(5);
-    
+
     // Check if it contains only valid bech32 characters (qpzry9x8gf2tvdw0s3jn54khce6mua7l)
     RegExp bech32Regex = RegExp(r'^[qpzry9x8gf2tvdw0s3jn54khce6mua7l]+$');
     if (!bech32Regex.hasMatch(bech32Part)) {
       return false;
     }
-    
+
     // Additional length check for npub1 (should be around 63 characters)
     if (input.length != 63) {
       return false;
     }
-    
+
     return true;
   }
 
@@ -512,7 +501,11 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
       }
 
       // Get user info from Account
-      RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance.searchGroupsMetadataWithGroupID(pubkey,Config.sharedInstance.recommendGroupRelays.first);
+      RelayGroupDBISAR? relayGroup = await RelayGroup.sharedInstance
+          .searchGroupsMetadataWithGroupID(
+            pubkey,
+            Config.sharedInstance.recommendGroupRelays.first,
+          );
       print('🔍npub: $trimmedQuery');
       print('🔍pubkey: $pubkey');
       print('🔍relayGroup: $relayGroup');
@@ -540,5 +533,3 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
     }
   }
 }
-
- 
