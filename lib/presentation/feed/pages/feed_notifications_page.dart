@@ -3,6 +3,7 @@ import 'package:chuchu/core/feed/feed+notification.dart';
 import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/feed/feed.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
 import '../../../core/feed/model/notificationDB_isar.dart';
@@ -218,15 +219,15 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           children: [
             CommonImage(
               iconName: 'notifications_ill_icon.png',
-              width: 120,
-              height: 120,
+              width: 220,
             ),
             const SizedBox(height: 24),
             Text(
               'No Notifications',
-              style: theme.textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
+              style: GoogleFonts.inter(
+                fontSize: 25,
+                color: Colors.black87,
+                fontWeight: FontWeight.bold,
               ),
             ),
             const SizedBox(height: 12),
