@@ -1,9 +1,12 @@
 import 'dart:typed_data';
-import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
+import 'dart:io'
+    if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+admin.dart';
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
+import 'dart:ui';
 
 import 'package:nostr_core_dart/src/ok.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
@@ -12,11 +15,14 @@ import '../../../core/services/blossom_uploader.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
+import '../../../core/widgets/common_edit_field_dialog.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/account/web_file_registry_stub.dart'
     if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
     as web_file_registry;
-import '../../drawerMenu/subscription/widgets/subscription_settings_section.dart';
+import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_theme.dart';
+import 'package:flutter/services.dart';
 
 class ProfileEditPage extends StatefulWidget {
   final RelayGroupDBISAR relayGroup;
@@ -26,17 +32,15 @@ class ProfileEditPage extends StatefulWidget {
   State<ProfileEditPage> createState() => _ProfileEditPageState();
 }
 
-class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshMixin {
-  static const String _pageTitle = 'Edit Profile';
-  static const String _usernameLabel = 'Username';
-  static const String _aboutLabel = 'About';
-
-
+class _ProfileEditPageState extends State<ProfileEditPage>
+    with ChuChuUIRefreshMixin {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
 
-  String? _selectedCoverPhotoPath; // Local/virtual file path for display & upload
-  Uint8List? _selectedCoverPhotoBytes; // In-memory image for preview (web compatible)
+  String?
+  _selectedCoverPhotoPath; // Local/virtual file path for display & upload
+  Uint8List?
+  _selectedCoverPhotoBytes; // In-memory image for preview (web compatible)
   String? _uploadedCoverPhotoUrl; // Network URL after upload (used when saving)
   bool _isLoading = false;
   bool _isUploadingCoverPhoto = false;
@@ -54,7 +58,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
     _addListeners();
   }
 
-
   void _addListeners() {
     // Listen to text field changes
     _usernameController.addListener(_onFieldChanged);
@@ -64,7 +67,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
   void _onFieldChanged() {
     _hasChangesNotifier.value = _hasChanges();
   }
-
 
   // Check if relay group metadata has changed
   bool _hasGroupMetadataChanges() {
@@ -77,8 +79,10 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
     final updatedAbout = _aboutController.text.trim();
     // If user selected a new image (local path exists), consider it a change
     // Use uploaded URL if available for comparison, otherwise check if local path exists
-    final hasPictureChange = _selectedCoverPhotoPath != null && 
-        (_uploadedCoverPhotoUrl != originalPicture || _uploadedCoverPhotoUrl == null);
+    final hasPictureChange =
+        _selectedCoverPhotoPath != null &&
+        (_uploadedCoverPhotoUrl != originalPicture ||
+            _uploadedCoverPhotoUrl == null);
     final updatedSubscriptionAmount = subscriptionPrice;
     
     // Check if any group metadata values have actually changed
@@ -94,15 +98,22 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
   }
 
   void getGroupInfo() {
-    _usernameController.text = widget.relayGroup.name;
-    _aboutController.text = widget.relayGroup.about;
-    subscriptionPrice = widget.relayGroup.subscriptionAmount;
+    // Get the latest group data from RelayGroup.sharedInstance
+    // This ensures we always have the most up-to-date information
+    final latestGroup =
+        RelayGroup.sharedInstance.groups[widget.relayGroup.groupId]?.value;
+    final groupToUse = latestGroup ?? widget.relayGroup;
+
+    _usernameController.text = groupToUse.name;
+    _aboutController.text = groupToUse.about;
+    subscriptionPrice = groupToUse.subscriptionAmount;
     setState(() {});
   }
 
   @override
   void dispose() {
-    if (_selectedCoverPhotoPath != null && _selectedCoverPhotoPath!.startsWith('webfile://')) {
+    if (_selectedCoverPhotoPath != null &&
+        _selectedCoverPhotoPath!.startsWith('webfile://')) {
       web_file_registry.unregisterWebFileData(_selectedCoverPhotoPath!);
     }
     _hasChangesNotifier.dispose();
@@ -113,184 +124,711 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
 
   @override
   Widget buildBody(BuildContext context) {
-    return Scaffold(appBar: _buildAppBar(), body: _buildBody());
-  }
-
-  // Build app bar with close and save buttons
-  PreferredSizeWidget _buildAppBar() {
-    final theme = Theme.of(context);
-    
-    return AppBar(
-      title: Text(
-        _pageTitle,
-        style: TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.w600,
-          color: theme.colorScheme.onSurface,
-        ),
-      ),
-      backgroundColor: theme.colorScheme.surface,
-      foregroundColor: theme.colorScheme.onSurface,
-      elevation: 0,
-      surfaceTintColor: Colors.transparent,
-      leading: IconButton(
-        icon: Icon(
-          Icons.close, 
-          size: 24,
-          color: theme.colorScheme.onSurface,
-        ),
-        onPressed: () => Navigator.of(context).pop(),
-      ),
-      actions: [
-        _isLoading
-            ? Padding(
-              padding: const EdgeInsets.all(16),
-              child: SizedBox(
-                width: 20,
-                height: 20,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            )
-            : Padding(
-              padding: const EdgeInsets.only(right: 8),
-              child: ValueListenableBuilder<bool>(
-                valueListenable: _hasChangesNotifier,
-                builder: (context, hasChanges, child) {
-                  return ElevatedButton(
-                    onPressed: hasChanges ? _saveProfile : null,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: hasChanges
-                          ? theme.colorScheme.primary 
-                          : theme.colorScheme.outline.withOpacity(0.3),
-                      foregroundColor: hasChanges
-                          ? Colors.white 
-                          : theme.colorScheme.onSurface.withOpacity(0.5),
-                      shape: const StadiumBorder(),
-                      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                      elevation: 0,
-                    ),
-                    child: const Text(
-                      'Save',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
-      ],
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.light, // White status bar icons
+      child: Scaffold(body: _buildBody()),
     );
   }
 
   // Build main body content
   Widget _buildBody() {
-    final theme = Theme.of(context);
-    
     return Scaffold(
-      backgroundColor: theme.colorScheme.surface,
-      body: SafeArea(
-        child: GestureDetector(
-          onTap:() {
-            FocusScope.of(context).requestFocus(FocusNode());
-          },
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildCoverPhotoSection(),
-                const SizedBox(height: 32),
-                _buildFormSection(),
-                const SizedBox(height: 32),
-                _subscriptionWidget(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-
-  // Build cover photo section
-  Widget _buildCoverPhotoSection() {
-    final theme = Theme.of(context);
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Section header
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      backgroundColor: kBgLight,
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).requestFocus(FocusNode());
+        },
+        child: Column(
           children: [
-            Text(
-              'Cover Photo',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: theme.colorScheme.onSurface,
-              ),
-            ),
-            TextButton(
-              onPressed: _setImages,
-              child: Text(
-                'Edit',
-                style: TextStyle(
-                  color: theme.colorScheme.primary,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
+            _buildGradientHeader(),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildIdentitySection(),
+                    const SizedBox(height: 32),
+                    _buildMonetizationSection(),
+                  ],
                 ),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        // Cover photo display
-        Container(
-          width: double.infinity,
-          height: 200,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.2),
-              width: 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
+      ),
+    );
+  }
+
+  // Build gradient header with blurred background
+  Widget _buildGradientHeader() {
+    return Container(
+      width: double.infinity,
+      height: 220,
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: kGradientColors,
+          stops: [0.0, 0.5, 1.0],
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Cover photo background
+          Positioned.fill(child: _buildCoverPhotoContent(context)),
+          // Navigation bar
+          SafeArea(child: Column(children: [_buildNavigationBar()])),
+          // Uploading indicator
+          if (_isUploadingCoverPhoto)
+            Positioned.fill(
+              child: Container(
+                color: Colors.black.withOpacity(0.5),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                ),
               ),
-            ],
-          ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(16),
-            child: Stack(
-              children: [
-                _buildCoverPhotoContent(context),
-                if (_isUploadingCoverPhoto)
-                  Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      color: Colors.black.withOpacity(0.5),
-                    ),
-                    child: const Center(
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+            ),
+          // Change Cover button positioned at bottom right
+          Positioned(
+            bottom: 16,
+            right: 20,
+            child: GestureDetector(
+              onTap: _setImages,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Color(0xFF1E3A5F), // Dark blue
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                    SizedBox(width: 8),
+                    Text(
+                      'Change Cover',
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.white,
                       ),
                     ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build navigation bar
+  Widget _buildNavigationBar() {
+    return Row(
+      children: [
+        GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Container(
+            width: 40,
+            height: 40,
+            margin: EdgeInsets.only(left: 16),
+            decoration: BoxDecoration(shape: BoxShape.circle),
+            child: ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(
+                      0xFFFFE5F5,
+                    ).withOpacity(0.3), // Light pink with transparency
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
                   ),
-              ],
+                  child: Center(
+                    child: CommonImage(
+                      iconName: 'back_arrow_icon.png',
+                      size: 24,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  // Build Identity section
+  Widget _buildIdentitySection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'IDENTITY',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.grey.withOpacity(0.5),
+                blurRadius: 2,
+                offset: const Offset(0, 1),
+                spreadRadius: 0,
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              _buildInfoRow(
+                iconName: 'user_ill_icon.png',
+          label: 'Display Name',
+                value:
+                    _usernameController.text.isNotEmpty
+                        ? _usernameController.text
+                        : '',
+          onTap: () {
+            // Navigate to edit display name
+            _showEditDialog(
+              title: 'Display Name',
+              controller: _usernameController,
+              maxLines: 1,
+            );
+          },
+                isShowUnderline: true,
+              ),
+              _buildInfoRow(
+                iconName: 'bio_icon.png',
+          label: 'Bio',
+                value:
+                    _aboutController.text.isNotEmpty
+                        ? _aboutController.text
+                        : '',
+          onTap: () {
+            // Navigate to edit bio
+            _showEditDialog(
+              title: 'Bio',
+              controller: _aboutController,
+              maxLines: 3,
+            );
+          },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  // Build Monetization section
+  Widget _buildMonetizationSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'MONETIZATION',
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+        const SizedBox(height: 2),
+        _buildInfoCard(
+          iconName: 'lighting_bg_icon.png',
+          label: 'Subscription Price',
+          value:
+              subscriptionPrice > 0
+              ? '${subscriptionPrice.toString().replaceAllMapped(RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'), (Match m) => '${m[1]},')} sats / month'
+              : 'Free',
+          onTap: () {
+            // Show subscription settings dialog
+            _showSetPriceDialog();
+          },
+        ),
+      ],
+    );
+  }
+
+  // Build info row widget (similar to my_profile_page.dart)
+  Widget _buildInfoRow({
+    required String iconName,
+    required String label,
+    required String value,
+    required VoidCallback onTap,
+    isShowUnderline = false,
+  }) {
+    final theme = Theme.of(context);
+    return InkWell(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration:
+            isShowUnderline
+                ? BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      width: 0.5,
+                      color: Theme.of(context).dividerColor.withOpacity(0.15),
+                    ),
+                  ),
+                )
+                : null,
+        child: Row(
+          children: [
+            CommonImage(iconName: iconName, width: 40, height: 40),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  if (value.isNotEmpty)
+                    Text(
+                      value,
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.black87,
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Build info card widget (kept for Monetization section)
+  Widget _buildInfoCard({
+    required String iconName,
+    required String label,
+    required String value,
+    String? badge,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.grey.withOpacity(0.5),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
+              spreadRadius: 0,
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            CommonImage(iconName: iconName, size: 40),
+            SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                  SizedBox(height: 4),
+                  Text(
+                    value.length > 40 ? '${value.substring(0, 40)}...' : value,
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            if (badge != null) ...[
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Color(0xFFFFF9C4), // Light yellow
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  badge,
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+              ),
+              SizedBox(width: 8),
+            ],
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
+          ],
+        ),
+      ),
+    );
+  }
+
+  // Show edit dialog
+  void _showEditDialog({
+    required String title,
+    required TextEditingController controller,
+    int maxLines = 1,
+  }) {
+    final isDisplayName = title == 'Display Name';
+
+    CommonEditFieldDialog.show(
+      context: context,
+      title: title,
+      initialValue: controller.text,
+      hintText: isDisplayName ? 'Enter your display name' : 'Enter your bio',
+      instructionText: isDisplayName ? 'Enter your display name' : 'Tell us about yourself',
+      headerIcon: CommonImage(iconName:isDisplayName ? 'bio_icon.png' :  'user_ill_icon.png',size: 30,),
+          maxLines: maxLines,
+      validator: isDisplayName
+          ? (value) {
+              if (value.isEmpty) {
+                return 'Display name cannot be empty';
+              }
+              return null;
+            }
+          : null,
+      onSave: (newValue) async {
+        try {
+          controller.text = newValue;
+          OKEvent event = await _submitGroupMetadata(reason: '$title updated');
+          
+          if (event.status) {
+            getGroupInfo();
+            setState(() {});
+            if (mounted) {
+              FeedWidgetsUtils.showMessage(
+                context,
+                '$title updated successfully',
+                isError: false,
+              );
+            }
+            return true;
+          } else {
+            // Restore original value on failure
+            final latestGroup =
+                RelayGroup.sharedInstance.groups[widget.relayGroup.groupId]?.value ??
+                    widget.relayGroup;
+            controller.text = isDisplayName ? latestGroup.name : latestGroup.about;
+            if (mounted) {
+              FeedWidgetsUtils.showMessage(
+                context,
+                event.message.isNotEmpty ? event.message : 'Failed to update $title',
+                isError: true,
+              );
+            }
+            return false;
+          }
+        } catch (e) {
+          // Restore original value on error
+          final latestGroup =
+              RelayGroup.sharedInstance.groups[widget.relayGroup.groupId]?.value ??
+                  widget.relayGroup;
+          controller.text = isDisplayName ? latestGroup.name : latestGroup.about;
+          if (mounted) {
+            FeedWidgetsUtils.showMessage(
+              context,
+              'Error updating $title: $e',
+              isError: true,
+            );
+          }
+          return false;
+        }
+      },
+    );
+  }
+
+  // Show set price dialog
+  void _showSetPriceDialog() {
+    final TextEditingController priceController = TextEditingController(
+      text: subscriptionPrice > 0 ? subscriptionPrice.toString() : '',
+    );
+    bool isSaving = false;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder:
+          (context) => StatefulBuilder(
+            builder:
+                (context, setDialogState) => Container(
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(24),
+                      topRight: Radius.circular(24),
+                    ),
+                  ),
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                  ),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Header with title and close button
+                      Padding(
+                        padding: EdgeInsets.fromLTRB(24, 24, 16, 16),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Set Price',
+                              style: GoogleFonts.inter(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            if (!isSaving)
+                              GestureDetector(
+                                onTap: () => Navigator.of(context).pop(),
+                                child: Container(
+                                  width: 32,
+                                  height: 32,
+                                  decoration: BoxDecoration(
+                                    color:
+                                        Theme.of(
+                                          context,
+                                        ).colorScheme.surfaceVariant,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    Icons.close,
+                                    size: 20,
+                                    color: kTextSecondary,
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                      Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 24),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Warning info box
+                            Container(
+                              padding: EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: kWarningBg,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: kWarningBorder,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  CommonImage(
+                                    iconName: 'start_yellow_icon.png',
+                                    size: 20,
+                                  ),
+                                  SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      'Set a monthly subscription price in Satoshis. Your followers will pay this amount to access your exclusive content.',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: kWarningText,
+                                        height: 1.4,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 24),
+                            // Price input field
+                            Container(
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: KBorderColor,
+                                  width: 1,
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: priceController,
+                                      keyboardType: TextInputType.number,
+                                      enabled: !isSaving,
+                                      inputFormatters: [
+                                        FilteringTextInputFormatter.digitsOnly,
+                                      ],
+                                      style: GoogleFonts.inter(
+                                        fontSize: 18,
+                                        fontWeight: FontWeight.w600,
+                                        color: kTextPrimary,
+                                      ),
+          decoration: InputDecoration(
+                                        hintText: '1000',
+                                        hintStyle: GoogleFonts.inter(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.w600,
+                                          color: kTextTertiary,
+                                        ),
+                                        border: InputBorder.none,
+                                        contentPadding: EdgeInsets.symmetric(
+                                          horizontal: 16,
+                                          vertical: 16,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Container(
+                                    margin: EdgeInsets.only(right: 8),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.surfaceVariant,
+              borderRadius: BorderRadius.circular(8),
+            ),
+                                    child: Text(
+                                      'SATS',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w800,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.outline,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            SizedBox(height: 24),
+                            // Save Changes button
+                            SizedBox(
+                              width: double.infinity,
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient:
+                                      isSaving ? null : getBrandGradient(),
+                                  color: isSaving ? Colors.grey[300] : null,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    onTap:
+                                        isSaving
+                                            ? null
+                                            : () async {
+                                              await _handleSaveSubscriptionPrice(
+                                                priceText:
+                                                    priceController.text.trim(),
+                                                setSaving: (saving) =>
+                                                    setDialogState(
+                                                        () => isSaving = saving),
+                                                closeDialog: () =>
+                                                    Navigator.of(context).pop(),
+                                                showMessage:
+                                                    (msg, {bool isError = false}) {
+                                                  if (mounted) {
+                                                    FeedWidgetsUtils.showMessage(
+                                                      context,
+                                                      msg,
+                                                      isError: isError,
+                                                    );
+                                                  }
+                                                },
+                                              );
+                                            },
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      padding: EdgeInsets.symmetric(
+                                        vertical: 16,
+                                      ),
+                                      alignment: Alignment.center,
+                                      child:
+                                          isSaving
+                                              ? SizedBox(
+                                                width: 20,
+                                                height: 20,
+                                                child: CircularProgressIndicator(
+                                                  strokeWidth: 2,
+                                                  valueColor:
+                                                      AlwaysStoppedAnimation<
+                                                        Color
+                                                      >(Colors.white),
+                                                ),
+                                              )
+                                              : Text(
+                                                'Save Changes',
+                                                style: GoogleFonts.inter(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: Colors.white,
+                                                ),
+                                              ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            SizedBox(height: 24),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+      ),
     );
   }
 
@@ -320,187 +858,19 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
     return Container(
       width: double.infinity,
       height: 200,
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).colorScheme.primary.withOpacity(0.1),
-            Theme.of(context).colorScheme.primary.withOpacity(0.05),
-          ],
-        ),
-      ),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.add_photo_alternate_rounded,
-            size: 48,
-            color: Theme.of(context).colorScheme.primary.withOpacity(0.6),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'No Cover Photo',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w500,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
+      child: ClipRect(
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: kGradientColors.map((color) => color).toList(),
+                stops: [0.0, 0.5, 1.0],
+              ),
             ),
           ),
-          const SizedBox(height: 4),
-          Text(
-            'Click "Edit" to add',
-            style: TextStyle(
-              fontSize: 14,
-              color: Theme.of(context).colorScheme.onSurface.withOpacity(0.5),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build form section with username and about fields
-  Widget _buildFormSection() {
-    return Column(
-      children: [
-        _buildInputSection(
-          label: _usernameLabel,
-          controller: _usernameController,
-        ),
-        const SizedBox(height: 24),
-        _buildInputSection(
-          label: _aboutLabel,
-          controller: _aboutController,
-          maxLines: 3,
-        ),
-      ],
-    );
-  }
-
-  Widget _subscriptionWidget() {
-    if (widget.relayGroup.subscriptionAmount > 0) {
-      return SubscriptionSettingsSection(
-        initialMonthlyPrice: widget.relayGroup.subscriptionAmount,
-        onPriceChanged: (monthlyPrice) {
-          subscriptionPrice = monthlyPrice;
-          _hasChangesNotifier.value = _hasChanges();
-        },
-      );
-    }
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Theme.of(context).dividerColor.withAlpha(60)),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.check_circle,
-            color: Theme.of(context).colorScheme.primary,
-            size: 24,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Free Subscription',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w600,
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Users can access your content without payment',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Theme.of(context).colorScheme.onPrimaryContainer,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Build input section with label and text field
-  Widget _buildInputSection({
-    required String label,
-    required TextEditingController controller,
-    int maxLines = 1,
-  }) {
-    final theme = Theme.of(context);
-    
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: theme.colorScheme.onSurface,
-          ),
-        ),
-        const SizedBox(height: 12),
-        _buildTextField(controller, maxLines: maxLines),
-      ],
-    );
-  }
-
-  // Build text field widget
-  Widget _buildTextField(
-    TextEditingController controller, {
-    String? hintText,
-    int maxLines = 1,
-  }) {
-    final theme = Theme.of(context);
-    
-    return TextField(
-      controller: controller,
-      maxLines: maxLines,
-      style: TextStyle(
-        fontSize: 16,
-        color: theme.colorScheme.onSurface,
-        fontWeight: FontWeight.w600,
-      ),
-      decoration: InputDecoration(
-        hintText: hintText,
-        hintStyle: TextStyle(
-          color: theme.colorScheme.onSurface.withOpacity(0.6),
-          fontSize: 16,
-          fontWeight: FontWeight.w600,
-        ),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide.none,
-        ),
-        enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: theme.colorScheme.outline.withOpacity(0.2),
-            width: 1,
-          ),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(
-            color: theme.colorScheme.primary,
-            width: 2,
-          ),
-        ),
-        filled: true,
-        fillColor: theme.colorScheme.surfaceContainerHighest,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 16,
         ),
       ),
     );
@@ -516,21 +886,26 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
       if (picked != null) {
         final bytes = await picked.readAsBytes();
         if (kIsWeb) {
-          final virtualPath = web_file_registry.createVirtualFilePath(picked.name);
+          final virtualPath = web_file_registry.createVirtualFilePath(
+            picked.name,
+          );
           web_file_registry.registerWebFileData(virtualPath, bytes);
-          if (_selectedCoverPhotoPath != null && _selectedCoverPhotoPath!.startsWith('webfile://')) {
+          if (_selectedCoverPhotoPath != null &&
+              _selectedCoverPhotoPath!.startsWith('webfile://')) {
             web_file_registry.unregisterWebFileData(_selectedCoverPhotoPath!);
           }
           setState(() {
             _selectedCoverPhotoPath = virtualPath;
             _selectedCoverPhotoBytes = bytes;
-            _uploadedCoverPhotoUrl = null; // Clear previous uploaded URL when selecting new image
+            _uploadedCoverPhotoUrl =
+                null; // Clear previous uploaded URL when selecting new image
           });
         } else {
           setState(() {
             _selectedCoverPhotoPath = picked.path;
             _selectedCoverPhotoBytes = bytes;
-            _uploadedCoverPhotoUrl = null; // Clear previous uploaded URL when selecting new image
+            _uploadedCoverPhotoUrl =
+                null; // Clear previous uploaded URL when selecting new image
           });
         }
         _hasChangesNotifier.value = _hasChanges();
@@ -551,7 +926,6 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
   }
 
   // Action methods
-
 
   // Upload cover photo
   Future<void> _uploadCoverPhoto() async {
@@ -605,40 +979,22 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
     }
   }
 
+  /// Submit group metadata to server (name/about/picture/subscription)
+  Future<OKEvent> _submitGroupMetadata({
+    int? subscriptionAmountOverride,
+    String reason = 'Profile updated',
+  }) async {
+    // Use latest group data if available
+    final relayGroup =
+        RelayGroup.sharedInstance.groups[widget.relayGroup.groupId]?.value ??
+        widget.relayGroup;
 
-  Future<void> _saveProfile() async {
-    // Check if there are any changes to save
-    if (!_hasChanges()) {
-      FeedWidgetsUtils.showMessage(context, 'No changes to save', isError: false);
-      return;
-    }
-
-    // Validate inputs for group metadata changes
-    if (_hasGroupMetadataChanges()) {
-      final updatedName = _usernameController.text.trim();
-      if (updatedName.isEmpty) {
-        FeedWidgetsUtils.showMessage(context, 'Username cannot be empty', isError: true);
-        return;
-      }
-    }
-
-    setState(() => _isLoading = true);
-
-    try {
-      bool groupMetadataSaved = false;
-
-      // Update relay group metadata if changed
-      if (_hasGroupMetadataChanges()) {
-        RelayGroupDBISAR relayGroup = widget.relayGroup;
-
-        // Prepare updated parameters
         final updatedName = _usernameController.text.trim();
         final updatedAbout = _aboutController.text.trim();
-        // Use uploaded URL if available, otherwise keep original picture
         final updatedPicture = _uploadedCoverPhotoUrl ?? relayGroup.picture;
-        final updatedSubscriptionAmount = subscriptionPrice;
+    final updatedSubscriptionAmount =
+        subscriptionAmountOverride ?? subscriptionPrice;
 
-        // Call editMetadata with user input parameters
         OKEvent event = await RelayGroup.sharedInstance.editMetadata(
           relayGroup.groupId,
           updatedName,
@@ -646,38 +1002,64 @@ class _ProfileEditPageState extends State<ProfileEditPage> with ChuChuUIRefreshM
           updatedPicture,
           relayGroup.closed,
           relayGroup.private,
-          'Profile updated',
+      reason,
           subscriptionAmount: updatedSubscriptionAmount,
           groupWalletId: relayGroup.groupWalletId,
         );
 
         if (event.status) {
-          groupMetadataSaved = true;
-        } else {
-          if (mounted) {
-            FeedWidgetsUtils.showMessage(context, event.message, isError: true);
-          }
+      // Sync local state so _hasChanges() returns correct value
+      relayGroup.name = updatedName;
+      relayGroup.about = updatedAbout;
+      relayGroup.picture = updatedPicture;
+      relayGroup.subscriptionAmount = updatedSubscriptionAmount;
+      subscriptionPrice = updatedSubscriptionAmount;
+    }
+
+    return event;
+  }
+
+  /// Handle saving subscription price inside bottom sheet
+  Future<void> _handleSaveSubscriptionPrice({
+    required String priceText,
+    required void Function(bool) setSaving,
+    required VoidCallback closeDialog,
+    required void Function(String message, {bool isError}) showMessage,
+  }) async {
+    int newPrice = 0;
+    if (priceText.isNotEmpty) {
+      try {
+        newPrice = int.parse(priceText);
+      } catch (_) {
+        showMessage('Please enter a valid number', isError: true);
           return;
         }
       }
 
-      // Show success message based on what was saved
-      if (mounted) {
-        if (groupMetadataSaved) {
-          FeedWidgetsUtils.showMessage(context, 'Profile updated successfully');
-        }
-        
-        _hasChangesNotifier.value = false; // Reset changes flag after successful save
-        Navigator.of(context).pop(true); // Return true to indicate success
+    setSaving(true);
+    try {
+      OKEvent event = await _submitGroupMetadata(
+        subscriptionAmountOverride: newPrice,
+        reason: 'Subscription price updated',
+      );
+
+      if (event.status) {
+        subscriptionPrice = newPrice;
+        getGroupInfo();
+        closeDialog();
+        showMessage('Subscription price updated successfully', isError: false);
+      } else {
+        setSaving(false);
+        showMessage(
+          event.message.isNotEmpty
+              ? event.message
+              : 'Failed to update subscription price',
+          isError: true,
+        );
       }
     } catch (e) {
-      if (mounted) {
-        FeedWidgetsUtils.showMessage(context, 'Error updating profile: $e', isError: true);
-      }
-    } finally {
-      if (mounted) {
-        setState(() => _isLoading = false);
-      }
+      setSaving(false);
+      showMessage('Error updating subscription price: $e', isError: true);
     }
   }
 }

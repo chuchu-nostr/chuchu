@@ -21,6 +21,8 @@ import '../../../core/widgets/common_image.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/services/blossom_uploader.dart';
 import '../../../core/widgets/common_toast.dart';
+import '../../../core/widgets/common_edit_field_dialog.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/config/storage_key_tool.dart';
 import '../../../core/manager/cache/chuchu_cache_manager.dart';
 import '../../../core/utils/navigator/navigator.dart';
@@ -73,6 +75,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
   @override
   Widget buildBody(BuildContext context) {
     return Scaffold(
+      backgroundColor: Color(0xFFF8FAFC),
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
@@ -87,7 +90,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           ),
         ),
         elevation: 0,
-        backgroundColor: Colors.transparent,
+        backgroundColor: Color(0xFFF8FAFC),
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
@@ -443,193 +446,75 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
   }
 
   void _editField(String fieldName, TextEditingController controller) {
-    showDialog(
+    final isNickname = fieldName == 'Nickname';
+    
+    CommonEditFieldDialog.show(
       context: context,
-      builder: (BuildContext context) {
-        final TextEditingController editController = TextEditingController(text: controller.text);
-        return Dialog(
-          insetPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20),
-          ),
-          elevation: 8,
-          child: SingleChildScrollView(
-            child: Container(
-              constraints: BoxConstraints(
-                maxHeight: MediaQuery.of(context).size.height * 0.8,
-              ),
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20),
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [Colors.white, Colors.grey[50]!],
-                ),
-              ),
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onTap: () {
-                  FocusScope.of(context).requestFocus(FocusNode());
-                },
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    // Header with icon
-                    Row(
-                      children: [
-                        Icon(
-                          fieldName == 'Nickname' ? Icons.sentiment_satisfied_alt : Icons.star,
-                          size: 24,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 12),
-                        // Title
-                        Text(
-                          'Edit $fieldName',
-                          style: GoogleFonts.inter(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 20),
+      title: 'Edit $fieldName',
+      initialValue: controller.text,
+      hintText: isNickname ? 'Your display name' : 'Tell us about yourself',
+      instructionText: 'Update your $fieldName to personalize your profile',
+      headerIcon: CommonImage(iconName:isNickname ? 'user_ill_icon.png' :  'bio_icon.png',size: 30,),
 
-                    // Input field
-                    Container(
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.grey.withOpacity(0.1),
-                            spreadRadius: 1,
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: TextField(
-                        controller: editController,
-                        autofocus: false,
-                        maxLines: fieldName == 'Bio' ? 4 : 1,
-                        minLines: fieldName == 'Bio' ? 3 : 1,
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w500,
-                          color: Colors.grey[800],
-                        ),
-                        decoration: InputDecoration(
-                          labelText: 'Enter $fieldName',
-                          hintText: fieldName == 'Nickname' ? 'Your display name' : 'Tell us about yourself',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            borderSide: BorderSide.none,
-                          ),
-                          filled: true,
-                          fillColor: Colors.grey[50],
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 16,
-                          ),
-                          labelStyle: GoogleFonts.inter(
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w500,
-                          ),
-                          hintStyle: GoogleFonts.inter(
-                            color: Colors.grey[400],
-                          ),
-                        ),
-                      ),
-                    ),
+      maxLines: isNickname ? 1 : 3,
+      onSave: (newValue) async {
+        try {
+          // Get current user info
+          final currentUserInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
+          if (currentUserInfo == null) {
+            _showErrorSnackBar('Unable to update $fieldName. Please try again later.');
+            return false;
+          }
 
-                    const SizedBox(height: 12),
+          // Create updated user info using the new value
+          if (isNickname) {
+            currentUserInfo.name = newValue.trim();
+          } else {
+            currentUserInfo.about = newValue.trim();
+          }
 
-                    Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(
-                        'Update your $fieldName to personalize your profile',
-                        style: GoogleFonts.inter(
-                          fontSize: 14,
-                          color: Colors.grey[600],
-                        ),
-                        textAlign: TextAlign.left,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+          // Update profile through Account
+          final result = await Account.sharedInstance.updateProfile(currentUserInfo);
 
-                    // Action buttons
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Container(
-                            height: 50,
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: Colors.grey[300]!,
-                                  width: 1.5,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                'Cancel',
-                                style: GoogleFonts.inter(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Container(
-                            height: 50,
-                            child: ElevatedButton(
-                              onPressed: () async {
-                                await _updateProfile(fieldName, editController.text);
-                                Navigator.of(context).pop();
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Theme.of(context).colorScheme.primary,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(Icons.check_rounded, size: 18),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    'Save',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+          // Check if the update was successful
+          if (result == null) {
+            throw Exception('Failed to update profile - no data returned');
+          }
+          
+          // Update ChuChuUserInfoManager's currentUserInfo
+          ChuChuUserInfoManager.sharedInstance.currentUserInfo = result;
+
+          // Update local controllers
+          if (isNickname) {
+            _nameController.text = newValue;
+          } else {
+            _aboutController.text = newValue;
+          }
+          
+          // Show success message
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('$fieldName updated successfully!'),
+              backgroundColor: Colors.green,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
               ),
             ),
-          ),
-        );
+          );
+
+          // Refresh UI
+          setState(() {});
+          return true;
+        } catch (e, stackTrace) {
+          // Print detailed error for debugging
+          debugPrint('Error updating $fieldName: $e');
+          debugPrint('Stack trace: $stackTrace');
+          
+          // Show user-friendly error message
+          _showErrorSnackBar('Failed to update $fieldName. Please check your connection and try again.');
+          return false;
+        }
       },
     );
   }
@@ -839,79 +724,6 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
         builder: (context) => const NostrKeyPage(),
       ),
     );
-  }
-
-  Future<void> _updateProfile(String fieldName, String newValue) async {
-    try {
-      // Show loading indicator
-      showDialog(
-        context: context,
-        barrierDismissible: false,
-        builder: (context) => const Center(
-          child: CircularProgressIndicator(),
-        ),
-      );
-
-      // Get current user info
-      final currentUserInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
-      if (currentUserInfo == null) {
-        Navigator.of(context).pop(); // Close loading dialog
-        debugPrint('Error: User info not found when updating $fieldName');
-        _showErrorSnackBar('Unable to update $fieldName. Please try again later.');
-        return;
-      }
-
-      // Create updated user info using the new value from dialog
-      if (fieldName == 'Nickname') {
-        currentUserInfo.name = newValue.trim();
-      } else if (fieldName == 'Bio') {
-        currentUserInfo.about = newValue.trim();
-      }
-
-      // Update profile through Account
-      final result = await Account.sharedInstance.updateProfile(currentUserInfo);
-
-      // Check if the update was successful
-      if (result == null) {
-        throw Exception('Failed to update profile - no data returned');
-      }
-      
-      // Update ChuChuUserInfoManager's currentUserInfo
-      ChuChuUserInfoManager.sharedInstance.currentUserInfo = result;
-
-      // Update local controllers
-      if (fieldName == 'Nickname') {
-        _nameController.text = newValue;
-      } else if (fieldName == 'Bio') {
-        _aboutController.text = newValue;
-      }
-
-      Navigator.of(context).pop(); // Close loading dialog
-      
-      // Show success message
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('$fieldName updated successfully!'),
-          backgroundColor: Colors.green,
-          behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-      );
-
-      // Refresh UI
-      setState(() {});
-    } catch (e, stackTrace) {
-      Navigator.of(context).pop(); // Close loading dialog
-      
-      // Print detailed error for debugging
-      debugPrint('Error updating $fieldName: $e');
-      debugPrint('Stack trace: $stackTrace');
-      
-      // Show user-friendly error message
-      _showErrorSnackBar('Failed to update $fieldName. Please check your connection and try again.');
-    }
   }
 
   void _showErrorSnackBar(String message) {
