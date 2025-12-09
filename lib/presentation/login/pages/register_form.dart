@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'dart:ui';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/account/account+profile.dart';
@@ -8,7 +11,9 @@ import 'package:nostr_core_dart/src/keychain.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
 import '../../../core/account/secure_account_storage.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
+import '../../../core/widgets/common_image.dart';
 import '../../home/pages/home_page.dart';
+import '../../../core/theme/app_theme.dart';
 
 class RegisterForm extends StatefulWidget {
   const RegisterForm({super.key});
@@ -20,6 +25,7 @@ class RegisterForm extends StatefulWidget {
 class _RegisterFormState extends State<RegisterForm> {
   late Keychain _keychain;
   late String _pub;
+  bool _hasBackedUp = false;
 
   @override
   void initState() {
@@ -32,94 +38,446 @@ class _RegisterFormState extends State<RegisterForm> {
     _pub = Account.getPublicKey(_keychain.private);
   }
 
+  String get _npub {
+    return Nip19.encodePubkey(_pub);
+  }
+
+  String get _nsec {
+    return Nip19.encodePrivkey(_keychain.private);
+  }
+
+  void _copyToClipboard(String text, String label) {
+    Clipboard.setData(ClipboardData(text: text));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('$label copied to clipboard'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(
+    final screenSize = MediaQuery.of(context).size;
+    final theme = Theme.of(context);
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        body: SizedBox.expand(
+        child: Stack(
       children: [
-        // Public key display
-        TextField(
-          maxLines: 2,
-          textAlignVertical: TextAlignVertical.center,
-          decoration: InputDecoration(
-            filled: false,
-            floatingLabelBehavior: FloatingLabelBehavior.always,
-            enabled: false,
-            hintStyle: TextStyle(
-              fontSize: 16.0,
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            // Base gradient background (light purple to white)
+            Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Color(0xFFF5F0FF), // Very light lavender
+                    Color(0xFFFAF5FF), // Lighter purple
+                    Colors.white,
+                  ],
+                  stops: [0.0, 0.5, 1.0],
+                ),
+              ),
             ),
-            labelText: 'Nostr pubkey',
-            labelStyle: TextStyle(
-              fontSize: 16.0,
-              color: Theme.of(context).colorScheme.onSurface,
+            // Top-left purple blur block
+            Positioned(
+              top: -screenSize.height * 0.3,
+              left: -screenSize.width * 0.2,
+              child: Container(
+                width: screenSize.width * 1.2,
+                height: screenSize.height * 0.8,
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.topLeft,
+                    radius: 1.5,
+                    colors: [
+                      kTertiary.withOpacity(0.3),
+                      kTertiary.withOpacity(0.18),
+                      kTertiary.withOpacity(0.08),
+                      Colors.transparent,
+                    ],
+                    stops: [0.0, 0.2, 0.5, 1.0],
+                  ),
+                ),
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
+              ),
             ),
-            hintText: Nip19.encodePubkey(_pub),
-            border: UnderlineInputBorder(
-              borderSide: BorderSide(color: Theme.of(context).colorScheme.outline),
+            // Bottom-right pink blur block
+            Positioned(
+              bottom: -screenSize.height * 0.3,
+              right: -screenSize.width * 0.2,
+              child: Container(
+                width: screenSize.width * 1.2,
+                height: screenSize.height * 0.8,
+                decoration: BoxDecoration(
+                  gradient: RadialGradient(
+                    center: Alignment.bottomRight,
+                    radius: 1.5,
+                    colors: [
+                      kPrimary.withOpacity(0.3),
+                      kPrimary.withOpacity(0.18),
+                      kPrimary.withOpacity(0.08),
+                      Colors.transparent,
+                    ],
+                    stops: [0.0, 0.2, 0.5, 1.0],
+                  ),
+                ),
+                child: ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
+                    child: Container(color: Colors.transparent),
+                  ),
+                ),
+              ),
             ),
-            contentPadding: EdgeInsets.symmetric(horizontal: 0, vertical: 16),
+            // Content on top
+            Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: AppBar(
+                backgroundColor: Colors.transparent,
+                elevation: 0,
+                leading: IconButton(
+                  icon: Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Colors.grey[100],
+                    ),
+                    child: Icon(
+                      Icons.arrow_back_ios_new,
+                      size: 18,
+                      color: Colors.grey[800],
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+                title: Text(
+                  'NEW ACCOUNT',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.grey[900],
+                    letterSpacing: 0.5,
+                  ),
+                ),
+                centerTitle: true,
+              ),
+              body: SingleChildScrollView(
+                padding: EdgeInsets.symmetric(horizontal: 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SizedBox(height: 20),
+
+                    // Shield icon section
+                    Center(
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: CommonImage(
+                          iconName: 'safe_bg.png',
+                          width: 80,
+                          height: 80,
+                          fit: BoxFit.cover,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 24),
+
+                    // Title
+                    Center(
+                      child: Text(
+                        'Save your Secret Key',
+                        style: GoogleFonts.inter(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 12),
+
+                    // Description
+                    Center(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 20),
+                        child: RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: 14,
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant,
+                              height: 1.5,
+                            ),
+                            children: [
+                              TextSpan(text: 'This key is the '),
+                              TextSpan(
+                                text: 'ONLY',
+                                style: TextStyle(
+                                  color: Colors.black87,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              TextSpan(
+                                text:
+                                    ' way to access your account. If you lose it, your account is gone forever.',
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: 32),
+
+                    // Key information card
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Stack(
+                        children: [
+                          Container(
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(16),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 12,
+                                  offset: Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Public key section
+                                Text(
+                                  'YOUR PUBLIC NAME (NPUB)',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: theme.colorScheme.outline,
+                                  ),
+                                ),
+
+                                SizedBox(height: 8),
+
+                                GestureDetector(
+                                  onTap:
+                                      () =>
+                                          _copyToClipboard(_npub, 'Public key'),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.grey[100],
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Colors.grey[200]!,
+                                        width: 1,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _npub,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[900],
+                                        fontFamily: 'monospace',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                SizedBox(height: 24),
+
+                                // Private key section
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      size: 16,
+                                      color: Colors.red[400],
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'PRIVATE KEY (SECRET)',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                        color: Colors.grey[700],
+                                        letterSpacing: 0.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+
+                                SizedBox(height: 8),
+
+                                GestureDetector(
+                                  onTap:
+                                      () => _copyToClipboard(
+                                        _nsec,
+                                        'Private key',
+                                      ),
+                                  child: Container(
+                                    width: double.infinity,
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                      vertical: 14,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Color(0xFFFFF5F9),
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(
+                                        color: Color(0xFFFFE5F5),
+                                        width: 1.5,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      _nsec,
+                                      style: TextStyle(
+                                        fontSize: 14,
+                                        color: Colors.grey[900],
+                                        fontFamily: 'monospace',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+
+                                SizedBox(height: 12),
+
+                                // Copy instruction
+                                Row(
+                                  children: [
+                                    Icon(
+                                      Icons.info_outline,
+                                      size: 14,
+                                      color: Colors.red[300],
+                                    ),
+                                    SizedBox(width: 6),
+                                    Text(
+                                      'Tap to copy. Write this down in a safe place!',
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.red[300],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                          // Gradient top border
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(16),
+                                topRight: Radius.circular(16),
+                              ),
+                              child: Container(
+                                height: 4,
+                                decoration: BoxDecoration(
+                                  gradient: getBrandGradientHorizontal(),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
           ),
         ),
         
         SizedBox(height: 24),
         
-        // Create button
+                    // Checkbox
+                    Row(
+                      children: [
+                        Checkbox(
+                          value: _hasBackedUp,
+                          onChanged: (value) {
+                            setState(() {
+                              _hasBackedUp = value ?? false;
+                            });
+                          },
+                          shape: CircleBorder(),
+                          activeColor: kPrimary,
+                        ),
+                        Expanded(
+                          child: Text(
+                            'I have securely backed up my secret key',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: theme.colorScheme.onSurface,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    SizedBox(height: 32),
+
+                    // Enter ChuChu button with gradient
         SizedBox(
           width: double.infinity,
           height: 50,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient:
+                              _hasBackedUp
+                                  ? getBrandGradientDiagonal()
+                                  : null,
+                          color: _hasBackedUp ? null : Colors.grey[300],
+                          borderRadius: BorderRadius.circular(25),
+                        ),
           child: ElevatedButton(
-            onPressed: _createAccount,
+                          onPressed: _hasBackedUp ? _createAccount : null,
             style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.transparent,
+                            shadowColor: Colors.transparent,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
+                              borderRadius: BorderRadius.circular(25),
               ),
-              backgroundColor: Theme.of(context).colorScheme.primary,
               elevation: 0,
             ),
             child: Text(
-              'SIGN UP',
-              style: TextStyle(
+                            'Enter ChuChu',
+                            style: GoogleFonts.inter(
                 fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Theme.of(context).colorScheme.onPrimary,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.white,
+                            ),
               ),
             ),
           ),
         ),
         
-        SizedBox(height: 16),
-        
-        // Terms and Privacy Policy text
-        // RichText(
-        //   textAlign: TextAlign.center,
-        //   text: TextSpan(
-        //     style: TextStyle(
-        //       fontSize: 12,
-        //       color: Theme.of(context).colorScheme.onSurfaceVariant,
-        //       height: 1.4,
-        //     ),
-        //     children: [
-        //       TextSpan(text: 'By signing up you agree to our '),
-        //       TextSpan(
-        //         text: 'Terms of Service',
-        //         style: TextStyle(
-        //           color: Theme.of(context).colorScheme.primary,
-        //           fontWeight: FontWeight.w500,
-        //         ),
-        //       ),
-        //       TextSpan(text: ' and '),
-        //       TextSpan(
-        //         text: 'Privacy Policy',
-        //         style: TextStyle(
-        //           color: Theme.of(context).colorScheme.primary,
-        //           fontWeight: FontWeight.w500,
-        //         ),
-        //       ),
-        //       TextSpan(text: ', and confirm that you are at least 18 years old.'),
-        //     ],
-        //   ),
-        // ),
-      ],
+                    SizedBox(height: 40),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+        ),
+      ),
     );
   }
 
@@ -130,7 +488,9 @@ class _RegisterFormState extends State<RegisterForm> {
 
     UserDBISAR userDB = await Account.newAccount(user: _keychain);
 
-    userDB = await Account.sharedInstance.loginWithPriKey(_keychain.private) ?? userDB;
+    userDB =
+        await Account.sharedInstance.loginWithPriKey(_keychain.private) ??
+        userDB;
     await SecureAccountStorage.savePrivateKey(
       _keychain.private,
       pubkey: _keychain.public,
