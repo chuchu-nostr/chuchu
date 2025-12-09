@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
@@ -279,11 +280,13 @@ class _FeedPageState extends State<FeedPage>
         // mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const SizedBox(height: 50),
-          CommonImage(iconName: 'no_feed_ill_icon.png', width: 150),
+          CommonImage(iconName: 'no_list_ill.png', width: 150),
           const SizedBox(height: 24),
           Text(
             'No Content Yet',
-            style: theme.textTheme.titleLarge?.copyWith(
+            style: GoogleFonts.inter(
+              fontSize: 25,
+              color: Colors.black87,
               fontWeight: FontWeight.w600,
             ),
           ),

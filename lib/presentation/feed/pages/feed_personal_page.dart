@@ -302,7 +302,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage>
       padding: const EdgeInsets.only(top: 50),
       child: Column(
         children: [
-          CommonImage(iconName: 'no_feed_ill_icon.png', size: 150),
+          CommonImage(iconName: 'search_ill_icon.png', size: 150),
           const SizedBox(height: 24),
           Text(
             isAuthor ? 'Start Creating' : 'No Posts Yet',

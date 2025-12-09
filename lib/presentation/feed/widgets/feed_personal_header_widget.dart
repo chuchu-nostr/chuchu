@@ -71,7 +71,8 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [kPrimary, kSecondary],
+          colors: kGradientColors,
+          stops: [0.0, 0.5, 1.0],
         ),
       ),
       child: Stack(
@@ -121,7 +122,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
       children: [
         IconButton(
           onPressed: () => ChuChuNavigator.pop(context),
-          icon: const Icon(Icons.arrow_back, color: Colors.white, size: 24),
+          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
         ),
         const SizedBox(width: 8),
         Expanded(
