@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as Path;
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/account/web_file_registry_stub.dart'
     if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
@@ -16,6 +17,7 @@ import '../../../core/account/account+profile.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
+import '../../../core/widgets/common_image.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/services/blossom_uploader.dart';
 import '../../../core/widgets/common_toast.dart';
@@ -23,7 +25,7 @@ import '../../../core/config/storage_key_tool.dart';
 import '../../../core/manager/cache/chuchu_cache_manager.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
-import '../../login/pages/login_page.dart';
+import '../../login/pages/new_login_page.dart';
 import '../../nostrKey/pages/nostr_key_page.dart';
 
 class MyProfilePage extends StatefulWidget {
@@ -72,17 +74,22 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
   Widget buildBody(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Profile'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
+          onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Text(
+          'Settings',
+          style: GoogleFonts.inter(
+            color: Colors.black,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
-        // actions: [
-        //   IconButton(
-        //     onPressed: _refreshProfile,
-        //     icon: const Icon(Icons.refresh),
-        //   ),
-        // ],
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -90,15 +97,49 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           child: Column(
             children: [
               _buildProfileHeader(),
-              const SizedBox(height: 24),
+              const SizedBox(height: 32),
+              _buildSectionTitle('PROFILE INFO'),
+              const SizedBox(height: 4),
               _buildProfileInfoCard(),
+              const SizedBox(height: 24),
+              _buildSectionTitle('SECURITY'),
+              const SizedBox(height: 4),
               _buildOtherInfoCard(),
               const SizedBox(height: 24),
               _buildLogoutButton(),
               const SizedBox(height: 16),
+              _buildVersionInfo(),
+              const SizedBox(height: 16),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSectionTitle(String title) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Padding(
+        padding: EdgeInsets.only(left: 4),
+        child: Text(
+          title,
+          style: GoogleFonts.inter(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: Colors.black87,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildVersionInfo() {
+    return Text(
+      'Version 1.0.0',
+      style: GoogleFonts.inter(
+        fontSize: 14,
+        color: Theme.of(context).colorScheme.outline,
       ),
     );
   }
@@ -109,82 +150,112 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
         children: [
           GestureDetector(
             onTap: _changeProfilePicture,
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
-                  width: 2,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  // Show selected local image, existing picture, or placeholder
-                  ValueListenableBuilder<UserDBISAR>(
-                    valueListenable: Account.sharedInstance.getUserNotifier(
-                      Account.sharedInstance.currentPubkey,
+            child: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  width: 100,
+                  height: 100,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      width: 2,
                     ),
-                    builder: (context, user, child) {
-                      // Always prioritize local image if available
-                      // This ensures smooth experience without any flash of default image
-                      // Local image will be used until user selects a new one or page is refreshed
-                      if (_selectedAvatarBytes != null) {
-                        return ClipOval(
-                          child: Image.memory(
-                            _selectedAvatarBytes!,
-                            fit: BoxFit.cover,
-                            width: 100,
-                            height: 100,
-                          ),
-                        );
-                      } else if (user.picture != null && user.picture!.isNotEmpty) {
-                        return FeedWidgetsUtils.clipImage(
-                          borderRadius: 100,
-                          imageSize: 100,
-                          child: ChuChuCachedNetworkImage(
-                            imageUrl: user.picture!,
-                            fit: BoxFit.cover,
-                            placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
-                            errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-                            width: 100,
-                            height: 100,
-                          ),
-                        );
-                      } else {
-                        return FeedWidgetsUtils.badgePlaceholderImage(size:  100);
-                      }
-                    },
-                  ),
-                  
-                  // Show loading overlay when uploading
-                  if (_isUploadingAvatar)
-                    Container(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.black.withOpacity(0.5),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.05),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
                       ),
-                      child: const Center(
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                    ],
+                  ),
+                  child: ClipOval(
+                    child: Stack(
+                      children: [
+                        // Show selected local image, existing picture, or placeholder
+                        ValueListenableBuilder<UserDBISAR>(
+                          valueListenable: Account.sharedInstance.getUserNotifier(
+                            Account.sharedInstance.currentPubkey,
+                          ),
+                          builder: (context, user, child) {
+                            // Always prioritize local image if available
+                            // This ensures smooth experience without any flash of default image
+                            // Local image will be used until user selects a new one or page is refreshed
+                            if (_selectedAvatarBytes != null) {
+                              return Image.memory(
+                                _selectedAvatarBytes!,
+                                fit: BoxFit.cover,
+                                width: 100,
+                                height: 100,
+                              );
+                            } else if (user.picture != null && user.picture!.isNotEmpty) {
+                              return ChuChuCachedNetworkImage(
+                                imageUrl: user.picture!,
+                                fit: BoxFit.cover,
+                                placeholder: (_, __) => ClipOval(
+                                  child: FeedWidgetsUtils.badgePlaceholderImage(size: 100),
+                                ),
+                                errorWidget: (_, __, ___) => ClipOval(
+                                  child: FeedWidgetsUtils.badgePlaceholderImage(size: 100),
+                                ),
+                                width: 100,
+                                height: 100,
+                              );
+                            } else {
+                              return ClipOval(
+                                child: FeedWidgetsUtils.badgePlaceholderImage(size: 100),
+                              );
+                            }
+                          },
                         ),
+                        // Show loading overlay when uploading
+                        if (_isUploadingAvatar)
+                          Positioned.fill(
+                            child: Container(
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.black.withOpacity(0.5),
+                              ),
+                              child: const Center(
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Camera icon overlay on bottom right (outside ClipOval)
+                Positioned(
+                  bottom: -2,
+                  right: -2,
+                  child: Container(
+                    width: 32,
+                    height: 32,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: Color(0xFF1E3A5F), // Dark blue
+                      border: Border.all(
+                        color: Colors.white,
+                        width: 2,
                       ),
                     ),
-                ],
-              ),
+                    child: Icon(
+                      Icons.camera_alt,
+                      size: 16,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(height: 16),
-          // Show confirm/cancel buttons if avatar is uploaded, otherwise show Edit Photo button
+          const SizedBox(height: 12),
+          // Show confirm/cancel buttons if avatar is uploaded, otherwise show "Tap to change photo" text
           if (_uploadedAvatarUrl != null)
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -199,7 +270,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                     onTap: _cancelAvatarUpdate,
                     child: Text(
                       'Cancel',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -218,7 +289,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                     onTap: _confirmAvatarUpdate,
                     child: Text(
                       'Confirm',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Theme.of(context).colorScheme.onPrimary,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
@@ -229,22 +300,12 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
               ],
             )
           else
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surfaceVariant,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: GestureDetector(
-              onTap: _changeProfilePicture,
-              child: Text(
-                'Edit Photo',
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
+          Text(
+            'Tap to change photo',
+            style: GoogleFonts.inter(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
             ),
           ),
         ],
@@ -255,27 +316,28 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
   Widget _buildProfileInfoCard() {
     return Container(
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withOpacity(0.5),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+            spreadRadius: 0,
           ),
         ],
       ),
       child: Column(
         children: [
           _buildInfoRow(
-            icon: Icons.sentiment_satisfied_alt,
+            iconName: 'user_ill_icon.png',
             label: 'Nickname',
             value: _nameController.text.isNotEmpty ? _nameController.text : '',
             onTap: () => _editField('Nickname', _nameController),
             isShowUnderline: true,
           ),
           _buildInfoRow(
-            icon: Icons.star,
+            iconName: 'bio_icon.png',
             label: 'Bio',
             value: _aboutController.text.isNotEmpty ? _aboutController.text : '',
             onTap: () => _editField('Bio', _aboutController),
@@ -287,26 +349,26 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
 
   Widget _buildOtherInfoCard() {
     return Container(
-      margin: EdgeInsets.only(
-        top: 10,
-      ),
+      height: 80,
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surface,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
-            blurRadius: 10,
-            offset: const Offset(0, 2),
+            color: Colors.grey.withOpacity(0.5),
+            blurRadius: 2,
+            offset: const Offset(0, 1),
+            spreadRadius: 0,
           ),
         ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildInfoRow(
-            icon: Icons.vpn_key,
-            label: 'Nostr key',
-            value: '',
+            iconName: 'keys_icon.png',
+            label: 'Nostr Keys',
+            value: 'Manage your private & public keys',
             onTap: () => _navigateToBackup(),
           ),
         ],
@@ -318,80 +380,61 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
 
 
   Widget _buildInfoRow({
-    required IconData icon,
+    required String iconName,
     required String label,
     required String value,
     required VoidCallback onTap,
     isShowUnderline = false,
   }) {
+    final theme = Theme.of(context);
     return InkWell(
       onTap: onTap,
       child: Container(
-        height: label == 'Bio' ? null : 56,
-        padding:  EdgeInsets.symmetric(horizontal: 16, vertical: label == 'Bio' ? 8 : 0),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+        decoration: isShowUnderline ? BoxDecoration(
+          border: Border(
+            bottom: BorderSide(
+              width: 0.5,
+              color: Theme.of(context).dividerColor.withOpacity(0.15),
+            ),
+          ),
+        ) : null,
         child: Row(
           children: [
-            Container(
+            CommonImage(
+              iconName: iconName,
               width: 40,
               height: 40,
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primary,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                icon,
-                color: Theme.of(context).colorScheme.onPrimary,
-                size: 20,
-              ),
             ),
             const SizedBox(width: 16),
             Expanded(
-              child: Container(
-                height: label == 'Bio' ? null : 56,
-                decoration: isShowUnderline ? BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      width: 0.5,
-                      color: Theme.of(context).dividerColor.withOpacity(0.3),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    label,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: theme.colorScheme.onSurfaceVariant,
                     ),
                   ),
-                ) : null ,
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            label,
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                          if (value.isNotEmpty)
-                            Text(
-                              value,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                              ),
-                            ),
-                        ],
+                  if (value.isNotEmpty)
+                    Text(
+                      value,
+                      style: GoogleFonts.inter(
+                        fontSize:  16,
+                        fontWeight:  FontWeight.w600,
+                        color: Colors.black87,
                       ),
                     ),
-                    Icon(
-                      Icons.arrow_forward_ios,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
-                    ),
-                  ],
-                ),
+                ],
               ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: Colors.grey[400],
             ),
           ],
         ),
@@ -444,7 +487,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                         // Title
                         Text(
                           'Edit $fieldName',
-                          style: TextStyle(
+                          style: GoogleFonts.inter(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
                             color: Colors.grey[800],
@@ -472,7 +515,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                         autofocus: false,
                         maxLines: fieldName == 'Bio' ? 4 : 1,
                         minLines: fieldName == 'Bio' ? 3 : 1,
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.grey[800],
@@ -490,11 +533,11 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                             horizontal: 20,
                             vertical: 16,
                           ),
-                          labelStyle: TextStyle(
+                          labelStyle: GoogleFonts.inter(
                             color: Colors.grey[600],
                             fontWeight: FontWeight.w500,
                           ),
-                          hintStyle: TextStyle(
+                          hintStyle: GoogleFonts.inter(
                             color: Colors.grey[400],
                           ),
                         ),
@@ -508,7 +551,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                       padding: const EdgeInsets.symmetric(vertical: 8),
                       child: Text(
                         'Update your $fieldName to personalize your profile',
-                        style: TextStyle(
+                        style: GoogleFonts.inter(
                           fontSize: 14,
                           color: Colors.grey[600],
                         ),
@@ -536,7 +579,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                               ),
                               child: Text(
                                 'Cancel',
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.grey[600],
@@ -569,7 +612,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                                   const SizedBox(width: 8),
                                   Text(
                                     'Save',
-                                    style: TextStyle(
+                                    style: GoogleFonts.inter(
                                       fontSize: 16,
                                       fontWeight: FontWeight.w600,
                                     ),
@@ -887,27 +930,32 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
   Widget _buildLogoutButton() {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: ElevatedButton.icon(
+      padding: const EdgeInsets.symmetric(vertical: 12),
+      child: ElevatedButton(
         onPressed: () => _handleLogout(),
-        icon: Icon(Icons.logout, size: 20, color: Colors.red[600]),
-        label: Text(
-          'Log Out',
-          style: TextStyle(
-            fontSize: 16,
-            fontWeight: FontWeight.w600,
-            color: Colors.red[600],
-          ),
-        ),
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
+          backgroundColor: Color(0xFFFFE5E5), // Light red background
           foregroundColor: Colors.red[600],
           elevation: 0,
-          side: BorderSide(color: Colors.red[600]!, width: 1.5),
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon( Icons.logout, size: 20, color: Colors.red[600]),
+            const SizedBox(width: 8),
+            Text(
+              'Log Out',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.red[600],
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -929,19 +977,22 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
               size: 28,
             ),
             const SizedBox(width: 12),
-            const Text('Log Out'),
+            Text(
+              'Log Out',
+              style: GoogleFonts.inter(),
+            ),
           ],
         ),
-        content: const Text(
+        content: Text(
           'Are you sure you want to log out?',
-          style: TextStyle(fontSize: 16),
+          style: GoogleFonts.inter(fontSize: 16),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(
+            child: Text(
               'Cancel',
-              style: TextStyle(fontSize: 16),
+              style: GoogleFonts.inter(fontSize: 16),
             ),
           ),
           ElevatedButton(
@@ -954,9 +1005,9 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
               ),
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
             ),
-            child: const Text(
+            child: Text(
               'Log Out',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+              style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -977,7 +1028,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
       if (mounted) {
         ChuChuNavigator.pushReplacement(
           context,
-          const LoginPage(),
+          const NewLoginPage(),
         );
       }
     }
