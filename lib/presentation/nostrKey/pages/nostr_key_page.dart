@@ -1,4 +1,3 @@
-import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../core/account/account.dart';
@@ -7,6 +6,7 @@ import '../../../core/utils/ui_refresh_mixin.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/common_image.dart';
+import '../../../core/theme/app_theme.dart';
 
 class NostrKeyPage extends StatefulWidget {
   const NostrKeyPage({super.key});
@@ -91,10 +91,10 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
     return Container(
       padding: EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Color(0xFFFFFBEB), // Light yellow background
+        color: kWarningBg,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Color(0xFFFEF3C6), // Light orange border
+          color: kWarningBorder,
           width: 1,
         ),
       ),
@@ -103,7 +103,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
         children: [
           Icon(
             Icons.warning_amber_rounded,
-            color: Color(0xFFFF9800), // Orange warning icon
+            color: kWarningIcon,
             size: 24,
           ),
           SizedBox(width: 12),
@@ -116,7 +116,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
                   style: GoogleFonts.inter(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF973C00), // Dark orange/brown
+                    color: kWarningText,
                   ),
                 ),
                 SizedBox(height: 4),
@@ -124,7 +124,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
                   'Never share your private key (nsec) with anyone. If you lose it, you will lose access to your account forever.',
                   style: GoogleFonts.inter(
                     fontSize: 14,
-                    color: Color(0xFF973C00), // Dark orange/brown
+                    color: kWarningText,
                     height: 1.4,
                   ),
                 ),
@@ -182,54 +182,96 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
           ),
         ],
         SizedBox(height: 2),
-        Container(
-          width: double.infinity,
-          padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-          decoration: BoxDecoration(
-            color: isPrivate ? Color(0xFF2C2C2C) : Color(0xFFF8FAFC),
-            borderRadius: BorderRadius.circular(12),
-            border: !isPrivate ? Border.all(
-              color: Colors.grey.withOpacity(0.2),
-              width: 1,
-            ) : null,
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  isPrivate && !_isPrivateKeyVisible
-                      ? '•' * 64
-                      : value,
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    color: isPrivate ? theme.colorScheme.outline : theme.colorScheme.onSurface,
-                    height: 1.4,
-                    letterSpacing: 0.5,
-                  ).copyWith(fontFamily: 'monospace'),
-                  maxLines: null,
+        if (isPrivate && !_isPrivateKeyVisible)
+          // Show reveal button when private key is hidden
+          GestureDetector(
+            onTap: () {
+              setState(() {
+                _isPrivateKeyVisible = true;
+              });
+            },
+            child: Container(
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[200],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    CommonImage(
+                      iconName: 'key_icon.png',
+                      size: 20,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'Reveal Secret Key',
+                      style: GoogleFonts.inter(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(width: 12),
-              GestureDetector(
-                onTap: value.isEmpty ? null : () => _copyToClipboard(value, title),
-                child: CommonImage(
-                  iconName: 'copy_bg_white_icon.png',
-                  size: 50,
+            ),
+          )
+        else
+          // Show key content when visible or for public key
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            decoration: BoxDecoration(
+              color: isPrivate ? kBgDark : kBgLight,
+              borderRadius: BorderRadius.circular(12),
+              border: !isPrivate ? Border.all(
+                color: Colors.grey.withOpacity(0.2),
+                width: 1,
+              ) : null,
+            ),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    value,
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      color: isPrivate ? Colors.white : Colors.black87,
+                      height: 1.4,
+                      letterSpacing: 0.5,
+                    ).copyWith(fontFamily: 'monospace'),
+                    maxLines: null,
+                  ),
                 ),
-              ),
-            ],
+                SizedBox(width: 12),
+                GestureDetector(
+                  onTap: value.isEmpty ? null : () => _copyToClipboard(value, title),
+                  child: CommonImage(
+                    iconName: 'copy_bg_white_icon.png',
+                    size: 50,
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
-        if (isPrivate) ...[
+        if (isPrivate && _isPrivateKeyVisible) ...[
           SizedBox(height: 8),
           GestureDetector(
             onTap: () {
               setState(() {
-                _isPrivateKeyVisible = !_isPrivateKeyVisible;
+                _isPrivateKeyVisible = false;
               });
             },
             child: Text(
-              _isPrivateKeyVisible ? 'Hide key' : 'Show key',
+              'Hide key',
               style: GoogleFonts.inter(
                 fontSize: 13,
                 color: Theme.of(context).colorScheme.outline,
