@@ -189,8 +189,8 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
     switch (_currentTab) {
       case BottomNavItem.home:
         return AppBar(
-          backgroundColor: theme.colorScheme.surface,
-          foregroundColor: theme.colorScheme.primary,
+          backgroundColor: kBgLight,
+          foregroundColor: kBgLight,
           elevation: _isScrolled ? 4 : 0,
           surfaceTintColor: Colors.transparent,
           titleSpacing: 0,

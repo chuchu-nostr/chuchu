@@ -139,10 +139,10 @@ class _FeedWidgetState extends State<FeedWidget> {
           EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
         ),
         _showReplyContactWidget().setPadding(
-          EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+          EdgeInsets.only(left:  12 ,right: widget.horizontalPadding),
         ),
         _showFeedContent().setPadding(
-          EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+          EdgeInsets.only(left: widget.isShowSimpleReplyBtn ? 0 : 12 ,right: widget.horizontalPadding),
         ),
         _showFeedMediaWidget(),
         FeedReplyAbbreviateWidget(
@@ -165,7 +165,7 @@ class _FeedWidgetState extends State<FeedWidget> {
           ),
         if (widget.isShowSimpleReplyBtn)
           showSimpleReplyBtnWidget().setPadding(
-            EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+            EdgeInsets.only(right: widget.horizontalPadding),
           ),
       ],
     );
@@ -181,14 +181,14 @@ class _FeedWidgetState extends State<FeedWidget> {
         children: [
           Text(
             FeedUtils.getUserMomentInfo(user, notedUIModel!.createAtStr)[2],
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.outline,
-              fontSize: 17,
-              fontWeight: FontWeight.w400,
+            style: GoogleFonts.inter(
+                color: Theme.of(context).colorScheme.outline,
+                fontSize: 14,
+                fontWeight: FontWeight.w400
             ),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-          ).setPaddingOnly(right: 18.0),
+          ).setPaddingOnly(right: 14.0),
           GestureDetector(
             onTap: () {
               Navigator.of(context).push(
@@ -224,9 +224,10 @@ class _FeedWidgetState extends State<FeedWidget> {
             },
             child: Text(
               'Reply',
-              style: TextStyle(
+              style: GoogleFonts.inter(
                 color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 18,
+                fontSize: 14,
+                fontWeight: FontWeight.w500
               ),
             ),
           ),

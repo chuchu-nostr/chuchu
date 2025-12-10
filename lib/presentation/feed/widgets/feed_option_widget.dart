@@ -367,18 +367,19 @@ class _ReusableLikeButtonState extends State<ReusableLikeButton> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.only(bottom: widget.showCount ? 8.0 : 0.0),
+            padding: EdgeInsets.only(bottom: widget.showCount ? 2.0 : 0.0),
             child: CommonImage(
-              iconName: isLiked ? 'like_icon.png' : 'like_icon.png',
-              size: widget.iconSize ?? 18,
+              iconName: isLiked ? 'liked_icon.png' : 'like_icon.png',
+              size: widget.iconSize ?? 16,
             ),
           ),
           if (widget.showCount)
             Text(
               likeCount.toString(),
-              style: TextStyle(
-                color: widget.textColor ?? Theme.of(context).colorScheme.outline,
-                fontSize: widget.fontSize ?? 18,
+              style: GoogleFonts.inter(
+                fontSize: widget.fontSize ?? 12,
+                color: isLiked ? kPrimary : Theme.of(context).colorScheme.outline,
+                fontWeight: FontWeight.w500,
               ),
             ),
         ],
@@ -534,7 +535,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
           Padding(
             padding: EdgeInsets.only(bottom: 8.0),
             child: CommonImage(
-              iconName: 'comment_feed_icon.png',
+              iconName: 'reply_icon.png',
               size: widget.iconSize ?? 18,
             ),
           ),
