@@ -1,3 +1,7 @@
+import 'dart:ui';
+
+import '../../core/theme/app_theme.dart';
+
 enum EFeedOptionType {
   reply,
   like,
@@ -5,6 +9,17 @@ enum EFeedOptionType {
 }
 
 extension EFeedOptionTypeEx on EFeedOptionType{
+  Color get selectColor {
+    switch (this) {
+      case EFeedOptionType.reply:
+        return kTextTertiary;
+      case EFeedOptionType.like:
+        return kPrimary;
+      case EFeedOptionType.zaps:
+        return kYellow;
+    }
+  }
+
   String get text {
     switch (this) {
       case EFeedOptionType.reply:
@@ -23,7 +38,7 @@ extension EFeedOptionTypeEx on EFeedOptionType{
       case EFeedOptionType.like:
         return 'liked_icon.png';
       case EFeedOptionType.zaps:
-        return 'zap_icon.png';
+        return 'zaped_icon.png.png';
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
@@ -90,9 +91,9 @@ class _FeedRichTextWidgetState extends State<FeedRichTextWidget>
             onTap: _clearSelectTextToCallback,
             maxLines: widget.maxLines,
             TextSpan(
-              style: TextStyle(
-                color: widget.defaultTextColor ?? Theme.of(context).colorScheme.onSurface,
-                fontSize: widget.textSize ?? 17,
+              style: GoogleFonts.inter(
+                color: widget.defaultTextColor ?? Color(0xFF1D293D),
+                fontSize: widget.textSize ?? 15,
               ),
               children: textSpans,
             ),

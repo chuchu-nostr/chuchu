@@ -2,6 +2,7 @@ import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
@@ -40,7 +41,6 @@ class FeedWidget extends StatefulWidget {
   final EFeedWidgetLayout? feedWidgetLayout;
   final double horizontalPadding;
 
-
   const FeedWidget({
     super.key,
     required this.notedUIModel,
@@ -62,11 +62,11 @@ class FeedWidget extends StatefulWidget {
 }
 
 class _FeedWidgetState extends State<FeedWidget> {
-  static const double _avatarSize = 50.0;
+  static const double _avatarSize = 40.0;
   static const double _borderWidth = 0.5;
   static const double _verticalPadding = 12.0;
   static const double _rightPadding = 8.0;
-  static const double _bottomSpacing = 12.0;
+  static const double _bottomSpacing = 18.0;
 
   NotedUIModel? notedUIModel;
 
@@ -112,21 +112,19 @@ class _FeedWidgetState extends State<FeedWidget> {
       widget.isShowBottomBorder
           ? Border(
             bottom: BorderSide(
-              color: (_cachedTheme ?? Theme.of(context)).dividerColor.withAlpha(
-                80,
-              ),
+              color: (_cachedTheme ?? Theme.of(context)).dividerColor.withAlpha(40),
               width: _borderWidth,
             ),
           )
           : null;
 
-  Widget _buildFeedContainer({required Widget child, EdgeInsets? padding}) {
+  Widget _buildFeedContainer({required Widget child}) {
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTap: () => widget.clickMomentCallback?.call(notedUIModel),
       child: Container(
         width: double.infinity,
-        padding: padding,
+        padding: EdgeInsets.only(bottom: 10),
         decoration: BoxDecoration(border: _bottomBorder),
         child: child,
       ),
@@ -137,25 +135,38 @@ class _FeedWidgetState extends State<FeedWidget> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-
-        _feedUserInfoWidget().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
-        _showReplyContactWidget().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
-        _showFeedContent().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
+        _feedUserInfoWidget().setPadding(
+          EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+        ),
+        _showReplyContactWidget().setPadding(
+          EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+        ),
+        _showFeedContent().setPadding(
+          EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+        ),
         _showFeedMediaWidget(),
-        Container(
-          child: FeedReplyAbbreviateWidget(
-            notedUIModel: notedUIModel,
-            isShowReplyWidget: widget.isShowReplyWidget,
-          ),
-        ).setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
+        FeedReplyAbbreviateWidget(
+          notedUIModel: notedUIModel,
+          isShowReplyWidget: widget.isShowReplyWidget,
+        ).setPadding(
+          EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+        ),
         if (widget.isShowOption)
           Container(
             child: FeedOptionWidget(
-              key: ValueKey(notedUIModel?.noteDB.noteId ?? 'option_${notedUIModel.hashCode}'),
+              key: ValueKey(
+                notedUIModel?.noteDB.noteId ??
+                    'option_${notedUIModel.hashCode}',
+              ),
               notedUIModel: notedUIModel,
             ).setPaddingOnly(bottom: _verticalPadding),
-          ).setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
-        if (widget.isShowSimpleReplyBtn) showSimpleReplyBtnWidget().setPadding(EdgeInsets.symmetric(horizontal: widget.horizontalPadding)),
+          ).setPadding(
+            EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+          ),
+        if (widget.isShowSimpleReplyBtn)
+          showSimpleReplyBtnWidget().setPadding(
+            EdgeInsets.only(left: 12 ,right: widget.horizontalPadding),
+          ),
       ],
     );
   }
@@ -182,14 +193,23 @@ class _FeedWidgetState extends State<FeedWidget> {
             onTap: () {
               Navigator.of(context).push(
                 PageRouteBuilder(
-                  pageBuilder: (context, animation, secondaryAnimation) =>
-                      FeedReplyPage(notedUIModel: notedUIModel!),
-                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                  pageBuilder:
+                      (context, animation, secondaryAnimation) =>
+                          FeedReplyPage(notedUIModel: notedUIModel!),
+                  transitionsBuilder: (
+                    context,
+                    animation,
+                    secondaryAnimation,
+                    child,
+                  ) {
                     const begin = Offset(0.0, 1.0);
                     const end = Offset.zero;
                     const curve = Curves.easeInOut;
 
-                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var tween = Tween(
+                      begin: begin,
+                      end: end,
+                    ).chain(CurveTween(curve: curve));
                     var offsetAnimation = animation.drive(tween);
 
                     return SlideTransition(
@@ -228,10 +248,9 @@ class _FeedWidgetState extends State<FeedWidget> {
           if (relayGroup != null) {
             ChuChuNavigator.pushPage(
               context,
-              (context) =>
-                  FeedPersonalPage(relayGroupDB: relayGroup!),
+              (context) => FeedPersonalPage(relayGroupDB: relayGroup!),
             );
-          }else {
+          } else {
             CommonToast.instance.show(context, "The creator couldn't be found");
           }
         },
@@ -254,30 +273,25 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   Widget _buildAvatarColumn() {
     if (notedUIModel == null) return const SizedBox();
-    return Container(
-      child: Padding(
-        padding: const EdgeInsets.only(right: _rightPadding),
-        child: Column(
-          children: [
-            ValueListenableBuilder<UserDBISAR>(
-              valueListenable: Account.sharedInstance.getUserNotifier(
-                notedUIModel!.noteDB.author,
-              ),
-              builder: (context, user, child) {
-                return _buildAvatarWidget(imageUrl: user.picture);
-              },
-            ),
-            if (widget.isShowAllContent)
-              Expanded(
-                child: Container(
-                  margin: const EdgeInsets.only(top: _rightPadding),
-                  width: 1,
-                  color: Colors.grey.withOpacity(.5),
-                ),
-              ),
-          ],
+    return Column(
+      children: [
+        ValueListenableBuilder<UserDBISAR>(
+          valueListenable: Account.sharedInstance.getUserNotifier(
+            notedUIModel!.noteDB.author,
+          ),
+          builder: (context, user, child) {
+            return _buildAvatarWidget(imageUrl: user.picture);
+          },
         ),
-      ),
+        if (widget.isShowAllContent)
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.only(top: _rightPadding),
+              width: 1,
+              color: Colors.grey.withOpacity(.5),
+            ),
+          ),
+      ],
     );
   }
 
@@ -330,7 +344,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
     final nddrlList = model.getNddrlList;
     final contentList = FeedUtils.momentContentSplit(model.noteDB.content);
-    if(contentList.isEmpty) return const SizedBox();
+    if (contentList.isEmpty) return const SizedBox();
     return Column(
       children:
           contentList
@@ -350,7 +364,7 @@ class _FeedWidgetState extends State<FeedWidget> {
       child:
           isYoutube
               ? FeedWidgetsUtils.youtubeSurfaceMoment(context, videoUrl)
-              : FeedVideoWidget(videoUrl: videoUrl)
+              : FeedVideoWidget(videoUrl: videoUrl),
     );
   }
 
@@ -378,9 +392,7 @@ class _FeedWidgetState extends State<FeedWidget> {
 
   Widget _showReplyContactWidget() {
     if (!widget.isShowReply) return const SizedBox();
-    return Container(
-      child: FeedReplyContactWidget(notedUIModel: notedUIModel),
-    );
+    return FeedReplyContactWidget(notedUIModel: notedUIModel);
   }
 
   Widget _buildUserNameAndTime(RelayGroupDBISAR user, NotedUIModel model) {
@@ -388,67 +400,64 @@ class _FeedWidgetState extends State<FeedWidget> {
       String nupKey = Nip19.encodePubkey(model.noteDB.author);
       return '${nupKey.substring(0, 6)}:${nupKey.substring(nupKey.length - 6)}';
     }
+
     return Flexible(
-      child: Container(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                user.name,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+              Row(
                 children: [
                   Text(
-                    user.name,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w500,
+                    model.createAtStr,
+                    style: GoogleFonts.inter(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w400,
+                      color: Theme.of(context).colorScheme.outline,
                     ),
+                    maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
-                  Row(
-                    children: [
-                      Text(
-                        model.createAtStr,
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.outline,
-                          fontSize: 17,
-                          fontWeight: FontWeight.w400,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      // CommonImage(
-                      //   iconName: 'more_icon.png',
-                      //   size: 24,
-                      // ).setPaddingOnly(left: 13.0),
-                    ],
-                  ),
-
-                  // _checkIsPrivate(),
+                  // CommonImage(
+                  //   iconName: 'more_icon.png',
+                  //   size: 24,
+                  // ).setPaddingOnly(left: 13.0),
                 ],
               ),
+
+              // _checkIsPrivate(),
+            ],
+          ),
+          Text(
+            getUserNupbStr(),
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w400,
+              color: Theme.of(context).colorScheme.outline,
             ),
-            Text(
-              getUserNupbStr(),
-              style: TextStyle(
-                color: Theme.of(context).colorScheme.outline,
-                fontSize: 17,
-                fontWeight: FontWeight.w400,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ],
-        ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
       ),
     );
   }
 
   Widget _buildUserInfoRow() {
     final model = notedUIModel;
-    if(model == null) return const SizedBox();
+    if (model == null) return const SizedBox();
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -456,7 +465,7 @@ class _FeedWidgetState extends State<FeedWidget> {
           GestureDetector(
             onTap: () async {},
             child: ValueListenableBuilder<UserDBISAR>(
-              valueListenable:  Account.sharedInstance.getUserNotifier(
+              valueListenable: Account.sharedInstance.getUserNotifier(
                 model.noteDB.author,
               ),
               builder: (context, user, child) {
@@ -465,14 +474,13 @@ class _FeedWidgetState extends State<FeedWidget> {
             ),
           ).setPaddingOnly(right: _rightPadding),
         ValueListenableBuilder<RelayGroupDBISAR>(
-          valueListenable:  RelayGroup.sharedInstance.getRelayGroupNotifier(
+          valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(
             model.noteDB.author,
           ),
           builder: (context, user, child) {
             return _buildUserNameAndTime(user, model);
           },
         ),
-
       ],
     );
   }
@@ -482,10 +490,8 @@ class _FeedWidgetState extends State<FeedWidget> {
     if (model == null || !widget.isShowUserInfo) return const SizedBox();
 
     return Container(
-      child: Container(
-        padding: EdgeInsets.only(bottom: _bottomSpacing),
-        child: _buildUserInfoRow(),
-      ),
+      padding: EdgeInsets.only(bottom: 6),
+      child: _buildUserInfoRow(),
     );
   }
 
@@ -494,7 +500,7 @@ class _FeedWidgetState extends State<FeedWidget> {
     if (model == null) return;
     notedUIModel = model;
     getRelayGroup();
-  
+
     await _getFeedUserInfo(model);
 
     Future.microtask(() {
@@ -503,11 +509,12 @@ class _FeedWidgetState extends State<FeedWidget> {
   }
 
   void getRelayGroup() {
-    Map<String, ValueNotifier<RelayGroupDBISAR>> groupMap =  RelayGroup.sharedInstance.groups;
-    if(groupMap[widget.notedUIModel?.noteDB.author] != null){
+    Map<String, ValueNotifier<RelayGroupDBISAR>> groupMap =
+        RelayGroup.sharedInstance.groups;
+    if (groupMap[widget.notedUIModel?.noteDB.author] != null) {
       relayGroup = groupMap[widget.notedUIModel?.noteDB.author]!.value;
     }
-    if(mounted){
+    if (mounted) {
       setState(() {});
     }
   }
@@ -516,5 +523,4 @@ class _FeedWidgetState extends State<FeedWidget> {
     final pubKey = model.noteDB.author;
     await Account.sharedInstance.getUserInfo(pubKey);
   }
-
 }

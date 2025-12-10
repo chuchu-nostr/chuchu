@@ -2,6 +2,7 @@ import 'package:chuchu/core/feed/feed+load.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart' show GoogleFonts;
 
 import '../../../core/config/config.dart';
 import '../../../core/feed/feed.dart';
@@ -96,7 +97,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
                 onTap: _onBookmarkTap,
                 child: Padding(
                   padding: const EdgeInsets.only(left: 8.0),
-                  child: CommonImage(iconName: 'bookmark_icon.png',size: 24,),
+                  child: CommonImage(iconName: 'bookmark_icon.png',size: 18,),
                 ),
               ),
             ),
@@ -232,15 +233,15 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Padding(
-            padding: const EdgeInsets.only(right: 4.0),
-            child: CommonImage(iconName: _mapIconData(type, isSelect),  size: 24,),
+            padding: const EdgeInsets.only(right: 7.0),
+            child: CommonImage(iconName: _mapIconData(type, isSelect),  size: 18,),
           ),
           Text(
             content,
-            style: TextStyle(
-              color: kIconState,
-              fontSize: 18,
-              fontWeight: FontWeight.w400,
+            style: GoogleFonts.inter(
+              color: isSelect ? type.selectColor : Theme.of(context).colorScheme.outline,
+              fontSize: 12,
+              fontWeight: FontWeight.w500,
             ),
           ),
         ],
@@ -368,8 +369,8 @@ class _ReusableLikeButtonState extends State<ReusableLikeButton> {
           Padding(
             padding: EdgeInsets.only(bottom: widget.showCount ? 8.0 : 0.0),
             child: CommonImage(
-              iconName: isLiked ? 'liked_icon.png' : 'like_icon.png',
-              size: widget.iconSize ?? 24,
+              iconName: isLiked ? 'like_icon.png' : 'like_icon.png',
+              size: widget.iconSize ?? 18,
             ),
           ),
           if (widget.showCount)
@@ -534,7 +535,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
             padding: EdgeInsets.only(bottom: 8.0),
             child: CommonImage(
               iconName: 'comment_feed_icon.png',
-              size: widget.iconSize ?? 24,
+              size: widget.iconSize ?? 18,
             ),
           ),
           Text(
@@ -559,7 +560,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
             padding: EdgeInsets.only(bottom: 8.0),
             child: CommonImage(
               iconName: 'zap_icon.png',
-              size: widget.iconSize ?? 24,
+              size: widget.iconSize ?? 19,
             ),
           ),
           Text(
@@ -583,7 +584,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
             padding: EdgeInsets.only(bottom: 8.0),
             child: CommonImage(
               iconName: _bookmarkTag ? 'bookmarked_icon.png' : 'bookmark_icon.png',
-              size: widget.iconSize ?? 24,
+              size: widget.iconSize ?? 18,
             ),
           ),
         ],

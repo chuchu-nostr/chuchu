@@ -66,11 +66,11 @@ class _FeedPageState extends State<FeedPage>
   // Track processed note ids to prevent duplicate handling across callbacks
   final Set<String> _seenNoteIds = <String>{};
 
-  double avatarSize = 75;
-  double storyItemWidth = 85;
-  double storyItemHeight = 128;
+  double avatarSize = 65;
+  double storyItemWidth = 65;
+  double storyItemHeight = 108;
 
-  static const double kStoriesSectionHeight = 148.0;
+  static const double kStoriesSectionHeight = 120.0;
   bool _isStoriesVisible = true;
   double _storiesHeight = kStoriesSectionHeight;
 
@@ -245,23 +245,26 @@ class _FeedPageState extends State<FeedPage>
   Widget buildBody(BuildContext context) {
     _cachedTheme ??= Theme.of(context);
 
-    return SafeArea(
-      child: Column(
-        children: [
-          _buildTopStoriesSection(),
-          Expanded(
-            child: ChuChuSmartRefresher(
-              scrollController: widget.scrollController ?? feedScrollController,
-              controller: refreshController,
-              enablePullDown: true,
-              enablePullUp: true,
-              onRefresh: () => updateNotesList(true),
-              onLoading: () => updateNotesList(false),
-              child: _getFeedListWidget(),
+    return Container(
+      color: kBgLight,
+      child: SafeArea(
+        child: Column(
+          children: [
+            _buildTopStoriesSection(),
+            Expanded(
+              child: ChuChuSmartRefresher(
+                scrollController: widget.scrollController ?? feedScrollController,
+                controller: refreshController,
+                enablePullDown: true,
+                enablePullUp: true,
+                onRefresh: () => updateNotesList(true),
+                onLoading: () => updateNotesList(false),
+                child: _getFeedListWidget(),
+              ),
             ),
-          ),
-        ],
-      ).setPaddingOnly(bottom: 100.0),
+          ],
+        ).setPaddingOnly(bottom: 100.0),
+      ),
     );
   }
 
@@ -368,7 +371,7 @@ class _FeedPageState extends State<FeedPage>
         return FeedWidget(
           key: ValueKey(key),
           horizontalPadding: 16,
-          feedWidgetLayout: EFeedWidgetLayout.fullScreen,
+          feedWidgetLayout: EFeedWidgetLayout.halfScreen,
           isShowReplyWidget: true,
           notedUIModel: notedUIModel,
           clickMomentCallback: (NotedUIModel? notedUIModel) async {
@@ -377,7 +380,7 @@ class _FeedPageState extends State<FeedPage>
                   (context) => FeedInfoPage(notedUIModel: notedUIModel),
             );
           },
-        ).setPadding(EdgeInsets.only(bottom: 12.0));
+        ).setPadding(EdgeInsets.only(bottom: 16.0,left: 16));
       },
     );
   }
@@ -390,7 +393,7 @@ class _FeedPageState extends State<FeedPage>
         child: ClipRect(
           child: Container(
             padding: EdgeInsets.only(bottom: 16),
-            margin: EdgeInsets.only(bottom: 10),
+            margin: EdgeInsets.only(bottom: 16),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -421,11 +424,12 @@ class _FeedPageState extends State<FeedPage>
       duration: Duration(milliseconds: 300),
       curve: Curves.easeInOut,
       child: Container(
+        // color: Colors.red,
         height: _storiesHeight,
         child: ClipRect(
           child: Container(
-            padding: EdgeInsets.only(bottom: 16),
-            margin: EdgeInsets.only(bottom: 10),
+            padding: EdgeInsets.only(bottom: 20),
+            // margin: EdgeInsets.only(bottom: 10),
             decoration: BoxDecoration(
               border: Border(
                 bottom: BorderSide(
@@ -451,7 +455,7 @@ class _FeedPageState extends State<FeedPage>
           ),
         ),
       ),
-    );
+    ).setPadding(EdgeInsets.only(bottom: 20));
   }
 
   Widget _buildStoryItemBuilder(BuildContext context, int index) {
@@ -479,7 +483,7 @@ class _FeedPageState extends State<FeedPage>
         relayGroup: relayGroupDB,
         isCurrentUser: false,
         hasUnread: hasNewNotes,
-        marginRight: 12,
+        marginRight: 16,
         storyCount: noteCount,
       ),
     );
@@ -527,20 +531,23 @@ class _FeedPageState extends State<FeedPage>
               relayGroup?.groupId ?? '',
             ),
             builder: (context, user, child) {
-              return StoryCircle(
-                imageUrl: user.picture ?? '',
-                size: avatarSize.toDouble(),
-                segmentCount: noteCount > 0 ? noteCount : 0,
-                gapRatio: 0.1,
+              return Center(
+                  child: StoryCircle(
+                    imageUrl: user.picture ?? '',
+                    size: avatarSize.toDouble(),
+                    segmentCount: noteCount > 0 ? noteCount : 0,
+                    gapRatio: 0.1,
+                  )
               );
             },
           ),
-
+          const SizedBox(height: 6,),
           Text(
             relayGroup?.name ?? 'Add',
-            style: theme.textTheme.bodySmall?.copyWith(
+            style: GoogleFonts.inter(
               color: theme.colorScheme.onSurface,
-              fontSize: 15,
+              fontSize: 12,
+              fontWeight: FontWeight.w500
             ),
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
@@ -553,8 +560,8 @@ class _FeedPageState extends State<FeedPage>
 
   Widget _buildAddButton() {
     return SizedBox(
-      width: avatarSize + avatarSize * 0.2,
-      height: avatarSize + avatarSize * 0.2,
+      width: avatarSize,
+      height: avatarSize,
       child: Center(
         child: CommonImage(
           iconName: 'add_circle_btn.png',
@@ -819,9 +826,10 @@ class StoryCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: size + size * 0.2,
-      height: size + size * 0.2,
+    return Container(
+      // color: Colors.red,
+      width: size,
+      height:size,
       child: Stack(
         alignment: Alignment.center,
         children: [
@@ -831,18 +839,18 @@ class StoryCircle extends StatelessWidget {
               fit: BoxFit.cover,
               placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
               errorWidget: (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
-              width: segmentCount == 0 ? size : size * 0.94,
-              height: segmentCount == 0 ? size : size * 0.94,
+              width: segmentCount == 0 ? size  : size - 8,
+              height: segmentCount == 0 ? size  : size - 8,
             ),
           ),
-          CustomPaint(
-            size: Size(size + size * 0.2, size + size * 0.2),
+          segmentCount > 0 ? CustomPaint(
+            size: Size(size , size),
             painter: _SegmentedBorderPainter(
               segmentCount: segmentCount,
               gapRatio: gapRatio,
               isShowBorder: segmentCount > 0,
             ),
-          ),
+          ): const SizedBox(),
         ],
       ),
     );
@@ -863,7 +871,7 @@ class _SegmentedBorderPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final outerRadius = size.width / 2 - 4;
+    final outerRadius = size.width / 2 - 1;
 
     final gradient = SweepGradient(
       startAngle: 0,
