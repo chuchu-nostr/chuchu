@@ -1,6 +1,11 @@
 import 'dart:async';
+import 'dart:ui';
+import 'package:chuchu/core/theme/app_theme.dart';
+import 'package:chuchu/core/utils/widget_tool_utils.dart';
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../../../core/wallet/wallet.dart';
 import '../../../../core/widgets/common_toast.dart';
@@ -23,6 +28,48 @@ class SubscriptionPaymentDialog extends StatefulWidget {
     this.onPaymentSuccess,
   });
 
+  /// Show the payment dialog with blur effect
+  static Future<T?> show<T>({
+    required BuildContext context,
+    required String invoice,
+    required String bolt11,
+    required int amount,
+    required String description,
+    DateTime? expiresAt,
+    VoidCallback? onPaymentSuccess,
+  }) {
+    return showGeneralDialog<T>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Payment Dialog',
+      barrierColor: Colors.transparent,
+      pageBuilder: (context, anim1, anim2) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(color: Colors.black.withOpacity(0.2)),
+              ),
+            ),
+            Center(
+              child: SafeArea(
+                child: SubscriptionPaymentDialog(
+                  invoice: invoice,
+                  bolt11: bolt11,
+                  amount: amount,
+                  description: description,
+                  expiresAt: expiresAt,
+                  onPaymentSuccess: onPaymentSuccess,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   State<SubscriptionPaymentDialog> createState() =>
       _SubscriptionPaymentDialogState();
@@ -33,18 +80,19 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   String _selectedPaymentMethod = 'wallet';
   int _currentStep = 1; // 1: Show payment info, 2: Select wallet type
   bool _showQRCode = false; // Control QR code display
-  bool _isExternalWalletDialogOpen = false; // Track external wallet dialog state
+  bool _isExternalWalletDialogOpen =
+      false; // Track external wallet dialog state
 
   @override
   Widget build(BuildContext context) {
     return Dialog(
       insetPadding: EdgeInsets.symmetric(horizontal: 20),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
       child: Container(
         width: double.infinity,
         child: SingleChildScrollView(
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(20),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -82,9 +130,11 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
         Expanded(
           child: Text(
             _currentStep == 1 ? 'Payment Information' : 'Select Payment Method',
-            style: Theme.of(
-              context,
-            ).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.w800,
+              fontSize: 20,
+              color: Colors.black87,
+            ),
           ),
         ),
         IconButton(
@@ -100,13 +150,13 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       children: [
         _buildStepItem(1, 'Payment Info', _currentStep >= 1),
         Container(
-          height: 2,
+          height: 1,
           width: 40,
           color:
               _currentStep >= 2
-              ? Theme.of(context).colorScheme.primary
-              : Theme.of(context).colorScheme.outline.withOpacity(0.3),
-        ),
+                  ? Theme.of(context).colorScheme.primary
+                  : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+        ).setPadding(EdgeInsets.symmetric(horizontal: 12)),
         _buildStepItem(2, 'Select Wallet', _currentStep >= 2),
       ],
     );
@@ -121,20 +171,20 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
           decoration: BoxDecoration(
             color:
                 isActive
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.outline.withOpacity(0.3),
             shape: BoxShape.circle,
           ),
           child: Center(
             child: Text(
               '$step',
-              style: TextStyle(
+              style: GoogleFonts.inter(
+                fontWeight: FontWeight.w800,
+                fontSize: 12,
                 color:
                     isActive
-                    ? Theme.of(context).colorScheme.onPrimary
-                    : Theme.of(context).colorScheme.onSurface,
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
+                        ? Theme.of(context).colorScheme.onPrimary
+                        : Theme.of(context).colorScheme.onSurface,
               ),
             ),
           ),
@@ -142,12 +192,13 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
         const SizedBox(width: 8),
         Text(
           label,
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w800,
+            fontSize: 12,
             color:
                 isActive
-                ? Theme.of(context).colorScheme.primary
-                : Theme.of(context).colorScheme.onSurfaceVariant,
-            fontWeight: isActive ? FontWeight.w600 : FontWeight.normal,
+                    ? Theme.of(context).colorScheme.primary
+                    : Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -158,7 +209,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.surfaceVariant,
+        color: kBgLight,
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
@@ -166,9 +217,11 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
         children: [
           Text(
             'Invoice Details',
-            style: Theme.of(
-              context,
-            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.w800,
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
           const SizedBox(height: 12),
           _buildInfoRow('Amount', '${widget.amount} sats'),
@@ -188,19 +241,26 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 80,
+            // width: 80,
             child: Text(
               '$label:',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: GoogleFonts.inter(
                 fontWeight: FontWeight.w500,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 14,
+                color: Theme.of(context).colorScheme.outline,
               ),
             ),
           ),
-          Expanded(
-            child: Text(value, style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            value,
+            style: GoogleFonts.inter(
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -213,8 +273,9 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       children: [
         Text(
           'QR Code',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w500,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
         ),
@@ -238,45 +299,42 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
 
   Widget _buildQRCode() {
     return Container(
-      width: 200,
-      height: 200,
+      width: 250,
+      height: 250,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-        ),
+        // border: Border.all(
+        //   color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+        // ),
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: QrImageView(
-          data: widget.bolt11,
-          version: QrVersions.auto,
-          size: 184.0,
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
-          errorStateBuilder: (context, error) {
-            return Container(
-              width: 184,
-              height: 184,
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(Icons.error_outline, size: 40, color: Colors.grey[600]),
-                  const SizedBox(height: 8),
-                  Text(
-                    'QR Error',
-                    style: TextStyle(color: Colors.grey[600], fontSize: 12),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
+      child: QrImageView(
+        data: widget.bolt11,
+        version: QrVersions.auto,
+        size: 250.0,
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black,
+        errorStateBuilder: (context, error) {
+          return Container(
+            width: 184,
+            height: 184,
+            decoration: BoxDecoration(
+              color: Colors.grey[100],
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.error_outline, size: 40, color: Colors.grey[600]),
+                const SizedBox(height: 8),
+                Text(
+                  'QR Error',
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -287,9 +345,10 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       children: [
         Text(
           'BOLT11 Invoice:',
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          style: GoogleFonts.inter(
             fontWeight: FontWeight.w500,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.outline,
           ),
         ),
         const SizedBox(height: 8),
@@ -297,23 +356,33 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: Theme.of(context).colorScheme.surface,
-            borderRadius: BorderRadius.circular(8),
-            border: Border.all(
-              color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
-            ),
+            borderRadius: BorderRadius.circular(20),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1),
+                blurRadius: 2,
+                offset: Offset(0, 1),
+              ),
+            ],
+            // border: Border.all(
+            //   color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+            // ),
           ),
           child: Row(
             children: [
               Expanded(
                 child: Text(
                   widget.bolt11,
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(fontFamily: 'monospace'),
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
                   maxLines: 3,
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
+
               IconButton(
                 onPressed: () {
                   Clipboard.setData(ClipboardData(text: widget.bolt11));
@@ -322,7 +391,12 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                     'Invoice copied to clipboard',
                   );
                 },
-                icon: const Icon(Icons.copy, size: 20),
+                iconSize: 20,
+                icon: CommonImage(
+                  iconName: 'copy_icon.png',
+                  size: 20,
+                  color: Theme.of(context).colorScheme.outline,
+                ),
                 tooltip: 'Copy invoice',
               ),
               IconButton(
@@ -334,6 +408,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                 icon: Icon(
                   _showQRCode ? Icons.visibility_off : Icons.qr_code,
                   size: 20,
+                  color: Theme.of(context).colorScheme.outline,
                 ),
                 tooltip: _showQRCode ? 'Hide QR code' : 'Show QR code',
               ),
@@ -348,15 +423,15 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   String _formatExpirationTime(DateTime expiresAt) {
     final now = DateTime.now();
     final difference = expiresAt.difference(now);
-    
+
     if (difference.isNegative) {
       return 'Expired';
     }
-    
+
     final minutes = difference.inMinutes;
     final hours = difference.inHours;
     final days = difference.inDays;
-    
+
     if (days > 0) {
       return '${days}d ${hours % 24}h ${minutes % 60}m';
     } else if (hours > 0) {
@@ -372,9 +447,11 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       children: [
         Text(
           'Payment Method',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w800,
+            fontSize: 14,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
         ),
         const SizedBox(height: 12),
         _buildPaymentOption(
@@ -402,16 +479,16 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   ) {
     final isSelected = _selectedPaymentMethod == value;
     final isDisabled = _isPaying; // Disable during payment
-    
+
     return InkWell(
       onTap:
           isDisabled
               ? null
               : () {
-        setState(() {
-          _selectedPaymentMethod = value;
-        });
-      },
+                setState(() {
+                  _selectedPaymentMethod = value;
+                });
+              },
       borderRadius: BorderRadius.circular(12),
       child: Container(
         padding: const EdgeInsets.all(16),
@@ -420,7 +497,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
               isDisabled
                   ? Theme.of(context).colorScheme.surface.withOpacity(0.5)
                   : (isSelected
-              ? Theme.of(context).colorScheme.primaryContainer
+                      ? Theme.of(context).colorScheme.primaryContainer
                       : Theme.of(context).colorScheme.surface),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
@@ -428,7 +505,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                 isDisabled
                     ? Theme.of(context).colorScheme.outline.withOpacity(0.2)
                     : (isSelected
-                ? Theme.of(context).colorScheme.primary
+                        ? Theme.of(context).colorScheme.primary
                         : Theme.of(
                           context,
                         ).colorScheme.outline.withOpacity(0.3)),
@@ -443,7 +520,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                   isDisabled
                       ? Theme.of(context).colorScheme.onSurface.withOpacity(0.4)
                       : (isSelected
-                  ? Theme.of(context).colorScheme.primary
+                          ? Theme.of(context).colorScheme.primary
                           : Theme.of(context).colorScheme.onSurface),
             ),
             const SizedBox(width: 12),
@@ -453,27 +530,32 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                 children: [
                   Text(
                     title,
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w800,
                       color:
                           isDisabled
                               ? Theme.of(
                                 context,
                               ).colorScheme.onSurface.withOpacity(0.4)
                               : (isSelected
-                          ? Theme.of(context).colorScheme.primary
-                                  : Theme.of(context).colorScheme.onSurface),
+                                  ? Color(0xFF861043)
+                                  : Colors.black87),
                     ),
                   ),
                   Text(
                     subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w500,
                       color:
                           isDisabled
                               ? Theme.of(
                                 context,
-                              ).colorScheme.onSurfaceVariant.withOpacity(0.4)
-                              : Theme.of(context).colorScheme.onSurfaceVariant,
+                              ).colorScheme.onSurface.withOpacity(0.4)
+                              : (isSelected
+                                  ? Theme.of(context).colorScheme.primary
+                                  : Theme.of(
+                                    context,
+                                  ).colorScheme.onSurfaceVariant),
                     ),
                   ),
                 ],
@@ -486,10 +568,10 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                   isDisabled
                       ? null
                       : (value) {
-                setState(() {
-                  _selectedPaymentMethod = value!;
-                });
-              },
+                        setState(() {
+                          _selectedPaymentMethod = value!;
+                        });
+                      },
             ),
           ],
         ),
@@ -501,20 +583,69 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
+          child: Container(
+            height: 50,
+            child: OutlinedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                side: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+              ),
+              child: Text(
+                'Cancel',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: ElevatedButton(
-            onPressed: () {
-              setState(() {
-                _currentStep = 2;
-              });
-            },
-            child: const Text('Next'),
+          child: Container(
+            height: 50,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(25),
+              child: InkWell(
+                onTap: () {
+                  setState(() {
+                    _currentStep = 2;
+                  });
+                },
+                borderRadius: BorderRadius.circular(25),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: getBrandGradientHorizontal(),
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Next',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      Icon(
+                        Icons.arrow_forward_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -525,30 +656,91 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
     return Row(
       children: [
         Expanded(
-          child: OutlinedButton(
-            onPressed:
-                _isPaying
-                    ? null
-                    : () {
-              setState(() {
-                _currentStep = 1;
-              });
-            },
-            child: const Text('Back'),
+          child: Container(
+            height: 50,
+            child: OutlinedButton(
+              onPressed:
+                  _isPaying
+                      ? null
+                      : () {
+                        setState(() {
+                          _currentStep = 1;
+                        });
+                      },
+              style: OutlinedButton.styleFrom(
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(25),
+                ),
+                side: BorderSide(color: Color(0xFFE2E8F0), width: 1),
+              ),
+              child: Text(
+                'Back',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Theme.of(context).colorScheme.onSurface,
+                ),
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: ElevatedButton(
-            onPressed: _isPaying ? null : _handlePayment,
-            child:
-                _isPaying
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Pay Now'),
+          child: Container(
+            height: 50,
+            child: Material(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(25),
+              child: InkWell(
+                onTap: _isPaying ? null : _handlePayment,
+                borderRadius: BorderRadius.circular(25),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: _isPaying ? null : getBrandGradientHorizontal(),
+                    color:
+                        _isPaying
+                            ? Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.3)
+                            : null,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      if (_isPaying)
+                        SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              Colors.white,
+                            ),
+                          ),
+                        )
+                      else ...[
+                        Text(
+                          'Pay Now',
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
+                        ),
+                        SizedBox(width: 8),
+                        Icon(
+                          Icons.payment_rounded,
+                          size: 18,
+                          color: Colors.white,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
       ],
@@ -584,7 +776,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
     try {
       // Initialize wallet instance
       final wallet = Wallet();
-      
+
       // Check wallet connection status
       if (!wallet.isConnected) {
         CommonToast.instance.show(context, 'Wallet not connected');
@@ -651,6 +843,8 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
   }
 
   Future<void> _payWithExternalWallet() async {
+    // return _showExternalWalletInstructions();
+
     // Initialize wallet instance
     final wallet = Wallet();
 
@@ -659,13 +853,13 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
       CommonToast.instance.show(context, 'Wallet not connected');
       return;
     }
-    
+
     // Set up payment status callback
     wallet.onPaymentStatusChanged = (paymentHash, isPaid, details) {
       if (isPaid) {
         // Handle payment success - update UI, etc.
         widget.onPaymentSuccess?.call();
-        
+
         // Check if external wallet dialog is still open and close it
         if (_isExternalWalletDialogOpen && mounted) {
           Navigator.of(context).pop();
@@ -673,289 +867,345 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
         }
       }
     };
-    
+
     _showExternalWalletInstructions();
   }
 
   void _showExternalWalletInstructions() {
     // Mark that external wallet dialog is open
     _isExternalWalletDialogOpen = true;
-    
-    showDialog(
+
+    showGeneralDialog(
       context: context,
-      builder:
-          (context) => Dialog(
-            insetPadding: const EdgeInsets.symmetric(horizontal: 20),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Container(
-              width: double.infinity,
-              child: SingleChildScrollView(
-                child: Padding(
-                  padding: const EdgeInsets.all(24),
-                  child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+      barrierDismissible: true,
+      barrierLabel: 'External Wallet Instructions',
+      barrierColor: Colors.transparent,
+      pageBuilder: (context, anim1, anim2) {
+        return Stack(
           children: [
-                      // Header
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.blue[50],
-                              borderRadius: BorderRadius.circular(12),
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(color: Colors.black.withOpacity(0.2)),
+              ),
+            ),
+            Center(
+              child: SafeArea(
+                child: Dialog(
+                  insetPadding: const EdgeInsets.symmetric(horizontal: 20),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Container(
+                    width: double.infinity,
+                    child: SingleChildScrollView(
+                      child: Padding(
+                        padding: const EdgeInsets.all(24),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            // Header
+                            Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(8),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFFDF2F8),
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  child: Icon(
+                                    Icons.payment,
+                                    color:
+                                        Theme.of(context).colorScheme.primary,
+                                    size: 24,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: Text(
+                                    'External Wallet Payment',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.black87,
+                                    ),
+                                  ),
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    Navigator.of(context).pop();
+                                    _isExternalWalletDialogOpen = false;
+                                  },
+                                  icon: const Icon(Icons.close),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: Colors.grey[100],
+                                  ),
+                                ),
+                              ],
                             ),
-                            child: Icon(
-                              Icons.payment,
-                              color: Colors.blue[700],
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Text(
-                              'External Wallet Payment',
-                              style: Theme.of(
-                                context,
-                              ).textTheme.headlineSmall?.copyWith(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[800],
+                            const SizedBox(height: 24),
+
+                            // Instructions
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Color(0xFFFDF2F8),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Color(0xFFFCE7F3)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        Icons.info_outline,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.primary,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Payment Instructions',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 12),
+                                  _buildInstructionStep(
+                                    '1',
+                                    'Open your Lightning wallet app',
+                                  ),
+                                  _buildInstructionStep(
+                                    '2',
+                                    'Look for "Pay Invoice" or "Scan QR" option',
+                                  ),
+                                  _buildInstructionStep(
+                                    '3',
+                                    'Paste the invoice or scan the QR code',
+                                  ),
+                                  _buildInstructionStep(
+                                    '4',
+                                    'Confirm the payment',
+                                  ),
+                                ],
                               ),
                             ),
-                          ),
-                           IconButton(
-                             onPressed: () {
-                               Navigator.of(context).pop();
-                               _isExternalWalletDialogOpen = false;
-                             },
-                             icon: const Icon(Icons.close),
-                             style: IconButton.styleFrom(
-                               backgroundColor: Colors.grey[100],
-                             ),
-                           ),
-                        ],
-                      ),
-                      const SizedBox(height: 24),
+                            const SizedBox(height: 20),
 
-                      // Instructions
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.blue[200]!),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.info_outline,
-                                  color: Colors.blue[700],
-                                  size: 20,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Payment Instructions',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.blue[700],
+                            // Invoice Section
+                            Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Color(0xFFE2E8F0)),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Row(
+                                    children: [
+                                      CommonImage(
+                                        iconName: 'record_icon.png',
+                                        size: 20,
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Invoice',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                          color:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                      const Spacer(),
+                                      ElevatedButton.icon(
+                                        onPressed: () async {
+                                          await Clipboard.setData(
+                                            ClipboardData(text: widget.bolt11),
+                                          );
+                                          CommonToast.instance.show(
+                                            context,
+                                            'Invoice copied to clipboard',
+                                          );
+                                        },
+                                        icon: const Icon(Icons.copy, size: 16),
+                                        label: const Text('Copy'),
+                                        style: ElevatedButton.styleFrom(
+                                          backgroundColor:
+                                              Theme.of(
+                                                context,
+                                              ).colorScheme.primary,
+                                          foregroundColor: Colors.white,
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 12,
+                                            vertical: 8,
+                                          ),
+                                          minimumSize: const Size(0, 32),
+                                          textStyle: GoogleFonts.inter(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.w800,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            _buildInstructionStep(
-                              '1',
-                              'Open your Lightning wallet app',
-                            ),
-                            _buildInstructionStep(
-                              '2',
-                              'Look for "Pay Invoice" or "Scan QR" option',
-                            ),
-                            _buildInstructionStep(
-                              '3',
-                              'Paste the invoice or scan the QR code',
-                            ),
-                            _buildInstructionStep('4', 'Confirm the payment'),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Invoice Section
-                      Container(
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.receipt_long,
-                                  size: 20,
-                                  color: Colors.grey[600],
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Invoice',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[700],
-                                  ),
-                                ),
-                                const Spacer(),
-                                ElevatedButton.icon(
-                                  onPressed: () async {
-                                    await Clipboard.setData(
-                                      ClipboardData(text: widget.bolt11),
-                                    );
-                                    CommonToast.instance.show(
-                                      context,
-                                      'Invoice copied to clipboard',
-                                    );
-                                  },
-                                  icon: const Icon(Icons.copy, size: 16),
-                                  label: const Text('Copy'),
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.blue[600],
-                                    foregroundColor: Colors.white,
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
-                                      vertical: 8,
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    width: double.infinity,
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color: kBgLight,
+                                      borderRadius: BorderRadius.circular(8),
+                                      border: Border.all(
+                                        color: Color(0xFFF1F5F9),
+                                      ),
                                     ),
-                                    minimumSize: const Size(0, 32),
+                                    child: Text(
+                                      widget.bolt11,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.black87,
+                                        letterSpacing: 0.1,
+                                      ),
+                                      maxLines: 3,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 20),
+
+                            // QR Code Section
                             Container(
                               width: double.infinity,
-                              padding: const EdgeInsets.all(12),
+                              padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(8),
-                                border: Border.all(color: Colors.grey[200]!),
+                                // color: Colors.grey[50],
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(color: Color(0xFFE2E8F0)),
                               ),
-                              child: Text(
-                                widget.bolt11,
-                                style: const TextStyle(
-                                  fontFamily: 'monospace',
-                                  fontSize: 12,
-                                  color: Colors.black87,
-                                ),
-                                maxLines: 3,
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                children: [
+                                  Row(
+                                    children: [
+                                      CommonImage(
+                                        iconName: 'qr_code_icon.png',
+                                        color:
+                                            Theme.of(
+                                              context,
+                                            ).colorScheme.onSurfaceVariant,
+                                        size: 20,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'QR Code',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                          color:
+                                          Theme.of(
+                                            context,
+                                          ).colorScheme.onSurfaceVariant,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildExternalQRCode(),
+                                  const SizedBox(height: 12),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: Colors.green[50],
+                                      borderRadius: BorderRadius.circular(20),
+                                      border: Border.all(
+                                        color: Colors.green[200]!,
+                                      ),
+                                    ),
+                                    child: Text(
+                                      'Amount: ${widget.amount} sats',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        color: Colors.green[700],
+                                        fontWeight: FontWeight.w800,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
+                            const SizedBox(height: 24),
 
-                      // QR Code Section
-                      Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.all(16),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[50],
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.grey[300]!),
-                        ),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                Icon(
-                                  Icons.qr_code,
-                                  size: 20,
-                                  color: Colors.grey[600],
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'QR Code',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[700],
+                            // Action Button
+                            SizedBox(
+                              width: double.infinity,
+                              height: 50,
+                              child: Material(
+                                color: Colors.transparent,
+                                borderRadius: BorderRadius.circular(12),
+                                child: InkWell(
+                                  onTap: () {
+                                    Navigator.of(context).pop();
+                                    _isExternalWalletDialogOpen = false;
+                                  },
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Container(
+                                    decoration: BoxDecoration(
+                                      gradient: getBrandGradientHorizontal(),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      'Got it!',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
+                                      ),
+                                    ),
                                   ),
                                 ),
-                              ],
-                            ),
-                            const SizedBox(height: 16),
-                            _buildExternalQRCode(),
-                            const SizedBox(height: 12),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.green[50],
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(color: Colors.green[200]!),
-                              ),
-                              child: Text(
-                                'Amount: ${widget.amount} sats',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.green[700],
-                                  fontWeight: FontWeight.w600,
-                                ),
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 24),
-
-                      // Action Button
-                      SizedBox(
-                        width: double.infinity,
-                         child: ElevatedButton(
-                           onPressed: () {
-                             Navigator.of(context).pop();
-                             _isExternalWalletDialogOpen = false;
-                           },
-                           style: ElevatedButton.styleFrom(
-                             backgroundColor: Colors.blue[600],
-                             foregroundColor: Colors.white,
-                             padding: const EdgeInsets.symmetric(vertical: 16),
-                             shape: RoundedRectangleBorder(
-                               borderRadius: BorderRadius.circular(12),
-                             ),
-                           ),
-                           child: const Text(
-                             'Got it!',
-                             style: TextStyle(
-                               fontSize: 16,
-                               fontWeight: FontWeight.w600,
-                             ),
-                           ),
-                         ),
-                      ),
-                    ],
+                    ),
                   ),
                 ),
               ),
             ),
-          ),
+          ],
+        );
+      },
     );
   }
 
   Widget _buildInstructionStep(String number, String text) {
+    final theme = Theme.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -965,16 +1215,16 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
             width: 20,
             height: 20,
             decoration: BoxDecoration(
-              color: Colors.blue[600],
+              color: Color(0xFFFCCEE8),
               shape: BoxShape.circle,
             ),
             child: Center(
               child: Text(
                 number,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: GoogleFonts.inter(
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w800,
+                  color: Color(0xFFC6005C),
                 ),
               ),
             ),
@@ -983,7 +1233,11 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(fontSize: 14, color: Colors.grey[700]),
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: theme.colorScheme.onSurface,
+              ),
             ),
           ),
         ],
@@ -993,19 +1247,19 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
 
   Widget _buildExternalQRCode() {
     return Container(
-      width: 200,
-      height: 200,
+      width: 250,
+      height: 250,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.grey[300]!),
+        // border: Border.all(color: Color(0xFFE2E8F0)),
       ),
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: QrImageView(
           data: widget.bolt11,
           version: QrVersions.auto,
-          size: 184.0,
+          size: 250.0,
           backgroundColor: Colors.white,
           foregroundColor: Colors.black,
           errorStateBuilder: (context, error) {
