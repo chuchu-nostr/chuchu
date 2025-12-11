@@ -1,5 +1,6 @@
 import 'dart:typed_data';
-import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
+import 'dart:io'
+    if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -37,7 +38,8 @@ class MyProfilePage extends StatefulWidget {
   State<MyProfilePage> createState() => _MyProfilePageState();
 }
 
-class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin {
+class _MyProfilePageState extends State<MyProfilePage>
+    with ChuChuUIRefreshMixin {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _aboutController = TextEditingController();
 
@@ -56,14 +58,18 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
     final userInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
     if (userInfo != null) {
       // Use name field first, fallback to nickName if name is empty
-      _nameController.text = (userInfo.name?.isNotEmpty == true) ? userInfo.name! : (userInfo.nickName ?? '');
+      _nameController.text =
+          (userInfo.name?.isNotEmpty == true)
+              ? userInfo.name!
+              : (userInfo.nickName ?? '');
       _aboutController.text = userInfo.about ?? '';
     }
   }
 
   @override
   void dispose() {
-    if (_selectedAvatarPath != null && _selectedAvatarPath!.startsWith('webfile://')) {
+    if (_selectedAvatarPath != null &&
+        _selectedAvatarPath!.startsWith('webfile://')) {
       web_file_registry.unregisterWebFileData(_selectedAvatarPath!);
     }
     _nameController.dispose();
@@ -71,11 +77,10 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
     super.dispose();
   }
 
-
   @override
   Widget buildBody(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFF8FAFC),
+      backgroundColor: kBgLight,
       appBar: AppBar(
         leading: IconButton(
           icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
@@ -90,7 +95,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           ),
         ),
         elevation: 0,
-        backgroundColor: Color(0xFFF8FAFC),
+        backgroundColor: kBgLight,
         foregroundColor: Colors.black,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
@@ -162,7 +167,9 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Theme.of(context).colorScheme.outline.withOpacity(0.2),
+                      color: Theme.of(
+                        context,
+                      ).colorScheme.outline.withOpacity(0.2),
                       width: 2,
                     ),
                     boxShadow: [
@@ -178,9 +185,10 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                       children: [
                         // Show selected local image, existing picture, or placeholder
                         ValueListenableBuilder<UserDBISAR>(
-                          valueListenable: Account.sharedInstance.getUserNotifier(
-                            Account.sharedInstance.currentPubkey,
-                          ),
+                          valueListenable: Account.sharedInstance
+                              .getUserNotifier(
+                                Account.sharedInstance.currentPubkey,
+                              ),
                           builder: (context, user, child) {
                             // Always prioritize local image if available
                             // This ensures smooth experience without any flash of default image
@@ -192,22 +200,33 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                                 width: 100,
                                 height: 100,
                               );
-                            } else if (user.picture != null && user.picture!.isNotEmpty) {
+                            } else if (user.picture != null &&
+                                user.picture!.isNotEmpty) {
                               return ChuChuCachedNetworkImage(
                                 imageUrl: user.picture!,
                                 fit: BoxFit.cover,
-                                placeholder: (_, __) => ClipOval(
-                                  child: FeedWidgetsUtils.badgePlaceholderImage(size: 100),
-                                ),
-                                errorWidget: (_, __, ___) => ClipOval(
-                                  child: FeedWidgetsUtils.badgePlaceholderImage(size: 100),
-                                ),
+                                placeholder:
+                                    (_, __) => ClipOval(
+                                      child:
+                                          FeedWidgetsUtils.badgePlaceholderImage(
+                                            size: 100,
+                                          ),
+                                    ),
+                                errorWidget:
+                                    (_, __, ___) => ClipOval(
+                                      child:
+                                          FeedWidgetsUtils.badgePlaceholderImage(
+                                            size: 100,
+                                          ),
+                                    ),
                                 width: 100,
                                 height: 100,
                               );
                             } else {
                               return ClipOval(
-                                child: FeedWidgetsUtils.badgePlaceholderImage(size: 100),
+                                child: FeedWidgetsUtils.badgePlaceholderImage(
+                                  size: 100,
+                                ),
                               );
                             }
                           },
@@ -223,7 +242,9 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                               child: const Center(
                                 child: CircularProgressIndicator(
                                   strokeWidth: 2,
-                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
                                 ),
                               ),
                             ),
@@ -242,10 +263,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Color(0xFF1E3A5F), // Dark blue
-                      border: Border.all(
-                        color: Colors.white,
-                        width: 2,
-                      ),
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: Icon(
                       Icons.camera_alt,
@@ -264,7 +282,10 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.surfaceVariant,
                     borderRadius: BorderRadius.circular(20),
@@ -283,7 +304,10 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: Theme.of(context).colorScheme.primary,
                     borderRadius: BorderRadius.circular(20),
@@ -303,14 +327,14 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
               ],
             )
           else
-          Text(
-            'Tap to change photo',
-            style: GoogleFonts.inter(
-              color: Theme.of(context).colorScheme.onSurfaceVariant,
-              fontWeight: FontWeight.w500,
-              fontSize: 14,
+            Text(
+              'Tap to change photo',
+              style: GoogleFonts.inter(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontWeight: FontWeight.w500,
+                fontSize: 14,
+              ),
             ),
-          ),
         ],
       ),
     );
@@ -342,7 +366,8 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           _buildInfoRow(
             iconName: 'bio_icon.png',
             label: 'Bio',
-            value: _aboutController.text.isNotEmpty ? _aboutController.text : '',
+            value:
+                _aboutController.text.isNotEmpty ? _aboutController.text : '',
             onTap: () => _editField('Bio', _aboutController),
           ),
         ],
@@ -379,9 +404,6 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
     );
   }
 
-
-
-
   Widget _buildInfoRow({
     required String iconName,
     required String label,
@@ -394,21 +416,20 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
       onTap: onTap,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-        decoration: isShowUnderline ? BoxDecoration(
-          border: Border(
-            bottom: BorderSide(
-              width: 0.5,
-              color: Theme.of(context).dividerColor.withOpacity(0.15),
-            ),
-          ),
-        ) : null,
+        decoration:
+            isShowUnderline
+                ? BoxDecoration(
+                  border: Border(
+                    bottom: BorderSide(
+                      width: 0.5,
+                      color: Theme.of(context).dividerColor.withOpacity(0.15),
+                    ),
+                  ),
+                )
+                : null,
         child: Row(
           children: [
-            CommonImage(
-              iconName: iconName,
-              width: 40,
-              height: 40,
-            ),
+            CommonImage(iconName: iconName, width: 40, height: 40),
             const SizedBox(width: 16),
             Expanded(
               child: Column(
@@ -426,19 +447,15 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
                     Text(
                       value,
                       style: GoogleFonts.inter(
-                        fontSize:  16,
-                        fontWeight:  FontWeight.w600,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
                         color: Colors.black87,
                       ),
                     ),
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios,
-              size: 16,
-              color: Colors.grey[400],
-            ),
+            Icon(Icons.arrow_forward_ios, size: 16, color: Colors.grey[400]),
           ],
         ),
       ),
@@ -447,22 +464,28 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
 
   void _editField(String fieldName, TextEditingController controller) {
     final isNickname = fieldName == 'Nickname';
-    
+
     CommonEditFieldDialog.show(
       context: context,
       title: 'Edit $fieldName',
       initialValue: controller.text,
       hintText: isNickname ? 'Your display name' : 'Tell us about yourself',
       instructionText: 'Update your $fieldName to personalize your profile',
-      headerIcon: CommonImage(iconName:isNickname ? 'user_ill_icon.png' :  'bio_icon.png',size: 30,),
+      headerIcon: CommonImage(
+        iconName: isNickname ? 'user_ill_icon.png' : 'bio_icon.png',
+        size: 30,
+      ),
 
       maxLines: isNickname ? 1 : 3,
       onSave: (newValue) async {
         try {
           // Get current user info
-          final currentUserInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
+          final currentUserInfo =
+              ChuChuUserInfoManager.sharedInstance.currentUserInfo;
           if (currentUserInfo == null) {
-            _showErrorSnackBar('Unable to update $fieldName. Please try again later.');
+            _showErrorSnackBar(
+              'Unable to update $fieldName. Please try again later.',
+            );
             return false;
           }
 
@@ -474,13 +497,15 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           }
 
           // Update profile through Account
-          final result = await Account.sharedInstance.updateProfile(currentUserInfo);
+          final result = await Account.sharedInstance.updateProfile(
+            currentUserInfo,
+          );
 
           // Check if the update was successful
           if (result == null) {
             throw Exception('Failed to update profile - no data returned');
           }
-          
+
           // Update ChuChuUserInfoManager's currentUserInfo
           ChuChuUserInfoManager.sharedInstance.currentUserInfo = result;
 
@@ -490,7 +515,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           } else {
             _aboutController.text = newValue;
           }
-          
+
           // Show success message
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -510,15 +535,16 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           // Print detailed error for debugging
           debugPrint('Error updating $fieldName: $e');
           debugPrint('Stack trace: $stackTrace');
-          
+
           // Show user-friendly error message
-          _showErrorSnackBar('Failed to update $fieldName. Please check your connection and try again.');
+          _showErrorSnackBar(
+            'Failed to update $fieldName. Please check your connection and try again.',
+          );
           return false;
         }
       },
     );
   }
-
 
   Future<void> _changeProfilePicture() async {
     try {
@@ -527,29 +553,34 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
         source: ImageSource.gallery,
         imageQuality: 80,
       );
-      
+
       if (picked != null) {
         final bytes = await picked.readAsBytes();
         if (kIsWeb) {
-          final virtualPath = web_file_registry.createVirtualFilePath(picked.name);
+          final virtualPath = web_file_registry.createVirtualFilePath(
+            picked.name,
+          );
           web_file_registry.registerWebFileData(virtualPath, bytes);
           // Clean up previous virtual file if exists
-          if (_selectedAvatarPath != null && _selectedAvatarPath!.startsWith('webfile://')) {
+          if (_selectedAvatarPath != null &&
+              _selectedAvatarPath!.startsWith('webfile://')) {
             web_file_registry.unregisterWebFileData(_selectedAvatarPath!);
           }
           setState(() {
             _selectedAvatarPath = virtualPath;
             _selectedAvatarBytes = bytes;
-            _uploadedAvatarUrl = null; // Clear previous uploaded URL when selecting new image
+            _uploadedAvatarUrl =
+                null; // Clear previous uploaded URL when selecting new image
           });
         } else {
           setState(() {
             _selectedAvatarPath = picked.path;
             _selectedAvatarBytes = bytes;
-            _uploadedAvatarUrl = null; // Clear previous uploaded URL when selecting new image
+            _uploadedAvatarUrl =
+                null; // Clear previous uploaded URL when selecting new image
           });
         }
-        
+
         // Wait for the next frame to ensure state is updated before uploading
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _uploadAvatar();
@@ -559,7 +590,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
       // Print detailed error for debugging
       debugPrint('Error picking avatar: $e');
       debugPrint('Stack trace: $stackTrace');
-      
+
       // Show user-friendly error message
       _showErrorSnackBar('Unable to select photo. Please try again.');
     }
@@ -576,7 +607,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
     try {
       String uploadFilePath;
       String fileName;
-      
+
       if (kIsWeb || _selectedAvatarPath!.startsWith('webfile://')) {
         // For web platform, use the virtual path directly
         // BolssomUploader will handle webfile:// paths internally
@@ -589,7 +620,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
         uploadFilePath = (processed ?? imageFile).path;
         fileName = uploadFilePath.split('/').last;
       }
-      
+
       final imageUrl = await BolssomUploader.upload(
         'https://blossom.band',
         uploadFilePath,
@@ -601,7 +632,10 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
         setState(() {
           _uploadedAvatarUrl = imageUrl;
         });
-        CommonToast.instance.show(context, 'Avatar uploaded successfully. Please confirm to update.');
+        CommonToast.instance.show(
+          context,
+          'Avatar uploaded successfully. Please confirm to update.',
+        );
       } else {
         throw Exception('Upload returned empty URL');
       }
@@ -609,10 +643,12 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
       // Print detailed error for debugging
       debugPrint('Error uploading avatar: $e');
       debugPrint('Stack trace: $stackTrace');
-      
+
       if (mounted) {
         // Show user-friendly error message
-        _showErrorSnackBar('Failed to upload photo. Please check your network connection and try again.');
+        _showErrorSnackBar(
+          'Failed to upload photo. Please check your network connection and try again.',
+        );
       }
     } finally {
       if (mounted) {
@@ -644,11 +680,11 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
   // Confirm avatar update - actually update the profile
   Future<void> _confirmAvatarUpdate() async {
     if (_uploadedAvatarUrl == null) return;
-    
+
     try {
       final uploadedUrl = _uploadedAvatarUrl!;
       await _updateUserAvatar(uploadedUrl);
-      
+
       // Clear uploaded URL to hide confirm/cancel buttons
       // But keep local image bytes to continue showing local image
       // This prevents any flash of default image or network loading
@@ -658,13 +694,13 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
           // Keep _selectedAvatarBytes and _selectedAvatarPath to continue using local image
         });
       }
-      
+
       CommonToast.instance.show(context, 'Avatar updated successfully');
     } catch (e, stackTrace) {
       // Print detailed error for debugging
       debugPrint('Error confirming avatar update: $e');
       debugPrint('Stack trace: $stackTrace');
-      
+
       // Show user-friendly error message
       if (mounted) {
         _showErrorSnackBar('Failed to update avatar. Please try again.');
@@ -674,7 +710,8 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
 
   // Cancel avatar update - clear uploaded URL and selected image
   void _cancelAvatarUpdate() {
-    if (_selectedAvatarPath != null && _selectedAvatarPath!.startsWith('webfile://')) {
+    if (_selectedAvatarPath != null &&
+        _selectedAvatarPath!.startsWith('webfile://')) {
       web_file_registry.unregisterWebFileData(_selectedAvatarPath!);
     }
     setState(() {
@@ -688,7 +725,8 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
   Future<void> _updateUserAvatar(String imageUrl) async {
     try {
       // Get current user info
-      final currentUserInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
+      final currentUserInfo =
+          ChuChuUserInfoManager.sharedInstance.currentUserInfo;
       if (currentUserInfo == null) {
         debugPrint('Error: User info not found when updating avatar');
         _showErrorSnackBar('Unable to update avatar. Please try again later.');
@@ -697,10 +735,12 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
 
       // Update picture field
       currentUserInfo.picture = imageUrl;
-      
+
       // Update profile through Account
-      final result = await Account.sharedInstance.updateProfile(currentUserInfo);
-      
+      final result = await Account.sharedInstance.updateProfile(
+        currentUserInfo,
+      );
+
       if (result != null) {
         // Update ChuChuUserInfoManager's currentUserInfo
         ChuChuUserInfoManager.sharedInstance.currentUserInfo = result;
@@ -711,19 +751,19 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
       // Print detailed error for debugging
       debugPrint('Error updating user avatar: $e');
       debugPrint('Stack trace: $stackTrace');
-      
+
       // Show user-friendly error message
-      _showErrorSnackBar('Failed to update avatar. Please check your connection and try again.');
+      _showErrorSnackBar(
+        'Failed to update avatar. Please check your connection and try again.',
+      );
       rethrow; // Re-throw to let caller handle if needed
     }
   }
 
   void _navigateToBackup() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => const NostrKeyPage(),
-      ),
-    );
+    Navigator.of(
+      context,
+    ).push(MaterialPageRoute(builder: (context) => const NostrKeyPage()));
   }
 
   void _showErrorSnackBar(String message) {
@@ -732,9 +772,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
         content: Text(message),
         backgroundColor: Colors.red,
         behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -743,31 +781,41 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 12),
-      child: ElevatedButton(
-        onPressed: () => _handleLogout(),
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFFFFE5E5), // Light red background
-          foregroundColor: Colors.red[600],
-          elevation: 0,
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-          ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon( Icons.logout, size: 20, color: Colors.red[600]),
-            const SizedBox(width: 8),
-            Text(
-              'Log Out',
-              style: GoogleFonts.inter(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Colors.red[600],
-              ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => _handleLogout(),
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Color(0xFFFFE4E6), width: 1),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.05),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
             ),
-          ],
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.logout, size: 20, color: Colors.red[600]),
+                const SizedBox(width: 8),
+                Text(
+                  'Log Out',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.red[600],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -777,53 +825,50 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
     // Show confirmation dialog
     final shouldLogout = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(16),
-        ),
-        title: Row(
-          children: [
-            Icon(
-              Icons.logout,
-              color: Colors.red[600],
-              size: 28,
+      builder:
+          (context) => AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
             ),
-            const SizedBox(width: 12),
-            Text(
-              'Log Out',
-              style: GoogleFonts.inter(),
+            title: Row(
+              children: [
+                Icon(Icons.logout, color: Colors.red[600], size: 28),
+                const SizedBox(width: 12),
+                Text('Log Out', style: GoogleFonts.inter()),
+              ],
             ),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to log out?',
-          style: GoogleFonts.inter(fontSize: 16),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: Text(
-              'Cancel',
+            content: Text(
+              'Are you sure you want to log out?',
               style: GoogleFonts.inter(fontSize: 16),
             ),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red[600],
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(false),
+                child: Text('Cancel', style: GoogleFonts.inter(fontSize: 16)),
               ),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-            child: Text(
-              'Log Out',
-              style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.w600),
-            ),
+              ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red[600],
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                ),
+                child: Text(
+                  'Log Out',
+                  style: GoogleFonts.inter(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
     );
 
     if (shouldLogout == true) {
@@ -838,10 +883,7 @@ class _MyProfilePageState extends State<MyProfilePage> with ChuChuUIRefreshMixin
 
       // Navigate to login page
       if (mounted) {
-        ChuChuNavigator.pushReplacement(
-          context,
-          const NewLoginPage(),
-        );
+        ChuChuNavigator.pushReplacement(context, const NewLoginPage());
       }
     }
   }
