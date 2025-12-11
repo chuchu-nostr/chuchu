@@ -517,21 +517,19 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
           
           // Show payment dialog
           if (mounted) {
-            showDialog(
+            SubscriptionPaymentDialog.show(
               context: context,
-              builder: (context) => SubscriptionPaymentDialog(
-                invoice: paymentHash ?? '',
-                bolt11: bolt11,
-                amount: amount,
-                description: 'Subscription for $months month(s)',
-                expiresAt: expiresAt != null 
-                    ? DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000)
-                    : DateTime.now().add(const Duration(minutes: 15)),
-                onPaymentSuccess: () {
-                  Navigator.of(context).pop();
-                  _handlePaymentSuccess(groupId, months);
-                },
-              ),
+              invoice: paymentHash ?? '',
+              bolt11: bolt11,
+              amount: amount,
+              description: 'Subscription for $months month(s)',
+              expiresAt: expiresAt != null 
+                  ? DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000)
+                  : DateTime.now().add(const Duration(minutes: 15)),
+              onPaymentSuccess: () {
+                Navigator.of(context).pop();
+                _handlePaymentSuccess(groupId, months);
+              },
             );
           }
         } else {
