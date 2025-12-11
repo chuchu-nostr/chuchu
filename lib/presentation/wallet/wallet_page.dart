@@ -1,5 +1,8 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common_image.dart';
@@ -409,10 +412,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  CommonImage(
-                    iconName: 'wallet_history_icon.png',
-                    width: 150,
-                  ),
+                  CommonImage(iconName: 'wallet_history_icon.png', width: 150),
                   SizedBox(height: 24),
                   Text(
                     'No transactions yet',
@@ -449,15 +449,14 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 ],
               ),
               child: Column(
-                children: _allTransactions
-                    .take(5)
-                    .toList()
-                    .asMap()
-                    .entries
-                    .map((entry) {
+                children:
+                    _allTransactions.take(5).toList().asMap().entries.map((
+                      entry,
+                    ) {
                       final index = entry.key;
                       final tx = entry.value;
-                      final transactionsList = _allTransactions.take(5).toList();
+                      final transactionsList =
+                          _allTransactions.take(5).toList();
                       final isLast = index == transactionsList.length - 1;
                       return Column(
                         children: [
@@ -471,8 +470,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                             ),
                         ],
                       );
-                    })
-                    .toList(),
+                    }).toList(),
               ),
             ),
         ],
@@ -544,6 +542,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
       }
       return tx.isIncoming ? Colors.green[100]! : Colors.grey[200]!;
     }
+
     final theme = Theme.of(context);
     return Material(
       color: Colors.transparent,
@@ -609,9 +608,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: tx.isIncoming
-                          ? Colors.green[600]
-                          : Colors.black87,
+                      color: tx.isIncoming ? Colors.green[600] : Colors.black87,
                     ),
                   ),
                   SizedBox(height: 2),
@@ -708,198 +705,217 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
 
   void _showSendDialog() {
     final invoiceController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => Dialog(
-            insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+    final theme = Theme.of(context);
+    _showBlurDialog(
+      barrierLabel: 'Send Payment Dialog',
+      child: Dialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 8,
+        child: SingleChildScrollView(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
-            elevation: 8,
-            child: SingleChildScrollView(
-              child: Container(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
-                ),
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Colors.white, Colors.grey[50]!],
-                  ),
-                ),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () {
-                    FocusScope.of(context).requestFocus(FocusNode());
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Colors.grey[50]!],
+              ),
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with icon
+                  Row(
                     children: [
-                      // Header with icon
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.send_rounded,
-                            size: 24,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          SizedBox(width: 12),
-                          // Title
-                          Text(
-                            'Send Payment',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                        ],
+                      CommonImage(
+                        iconName: 'send_icon.png',
+                        size: 24,
+                        color: theme.colorScheme.primary,
                       ),
-                      SizedBox(height: 20),
+                      SizedBox(width: 12),
+                      // Title
+                      Text(
+                        'Send Payment',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
 
-                      // Input field
-                      Container(
-                        decoration: BoxDecoration(
+                  // Input field
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.grey.withOpacity(0.05),
+                          spreadRadius: 1,
+                          blurRadius: 8,
+                          offset: Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: TextField(
+                      controller: invoiceController,
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        labelText: 'Lightning Invoice (BOLT11)',
+                        hintText: 'lnbc1...',
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 12, right: 4),
+                          child: CommonImage(
+                            iconName: 'record_icon.png',
+                            width: 20,
+                            height: 20,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                          maxWidth: 36,
+                          maxHeight: 36,
+                        ),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.05),
-                              spreadRadius: 1,
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+                          borderSide: BorderSide.none,
                         ),
-                        child: TextField(
-                          controller: invoiceController,
-                          autofocus: false,
-                          decoration: InputDecoration(
-                            labelText: 'Lightning Invoice (BOLT11)',
-                            hintText: 'lnbc1...',
-                            prefixIcon: Icon(
-                              Icons.receipt_long_rounded,
-                              color: Theme.of(context).colorScheme.primary,
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
-                            ),
-                            labelStyle: TextStyle(
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                            hintStyle: TextStyle(
-                              color: Colors.grey[400],
-                              fontFamily: 'monospace',
-                            ),
-                          ),
-                          maxLines: 4,
-                          minLines: 2,
-                          style: TextStyle(
-                            fontFamily: 'monospace',
-                            fontSize: 12,
-                          ),
+                        filled: true,
+                        fillColor: kBgLight,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        labelStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.outline,
+                        ),
+                        hintStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
+                          color: theme.colorScheme.outline,
                         ),
                       ),
-
-                      SizedBox(height: 12),
-
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          'Enter Lightning invoice to send payment',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
+                      maxLines: 4,
+                      minLines: 2,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
                       ),
-                      SizedBox(height: 24),
+                    ),
+                  ),
 
-                      // Action buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 50,
-                              child: OutlinedButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
-                                    color: Colors.grey[300]!,
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
+                  SizedBox(height: 12),
+
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      'Enter Lightning invoice to send payment',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.outline,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 50,
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: theme.colorScheme.onSurface,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: Container(
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed:
-                                    () => _parseInvoiceAndConfirm(
-                                      invoiceController.text,
-                                    ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor:
-                                      Theme.of(context).colorScheme.primary,
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Container(
+                          height: 50,
+                          child: Material(
+                            color: Colors.transparent,
+                            child: InkWell(
+                              onTap:
+                                  () => _parseInvoiceAndConfirm(
+                                    invoiceController.text,
                                   ),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: getBrandGradientHorizontal(),
+                                  borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Text(
                                       'Next',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.white,
                                       ),
                                     ),
                                     SizedBox(width: 8),
-                                    Icon(Icons.arrow_forward_rounded, size: 18),
+                                    Icon(
+                                      Icons.arrow_forward_rounded,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
                                   ],
                                 ),
                               ),
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
             ),
           ),
+        ),
+      ),
     );
   }
 
@@ -917,21 +933,20 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
     Navigator.pop(context); // Close first dialog
 
     // Show loading dialog while parsing
-    showDialog(
-      context: context,
+    _showBlurDialog(
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Parsing Invoice'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Parsing invoice details...'),
-              ],
-            ),
-          ),
+      barrierLabel: 'Parsing Invoice Dialog',
+      child: AlertDialog(
+        title: Text('Parsing Invoice'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Parsing invoice details...'),
+          ],
+        ),
+      ),
     );
 
     try {
@@ -968,280 +983,277 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   ) {
     final amount = invoiceData['amount'] as int;
     final description = invoiceData['description'] as String? ?? '';
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => Dialog(
-            insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+    final theme = Theme.of(context);
+    _showBlurDialog(
+      barrierLabel: 'Confirm Payment Dialog',
+      child: Dialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 8,
+        child: SingleChildScrollView(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
-            elevation: 8,
-            child: SingleChildScrollView(
-              child: Container(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
-                ),
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Colors.white, Colors.grey[50]!],
-                  ),
-                ),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () {
-                    FocusScope.of(context).requestFocus(FocusNode());
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Colors.grey[50]!],
+              ),
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with icon
+                  Row(
                     children: [
-                      // Header with icon
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.payment_rounded,
-                            size: 24,
-                            color: Colors.orange[600],
-                          ),
-                          SizedBox(width: 12),
-                          // Title
-                          Text(
-                            'Confirm Payment',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                        ],
+                      Icon(
+                        Icons.payment_rounded,
+                        size: 24,
+                        color: Colors.orange[600],
                       ),
-                      SizedBox(height: 20),
-
-                      // Payment details card
-                      Container(
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              spreadRadius: 1,
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+                      SizedBox(width: 12),
+                      // Title
+                      Text(
+                        'Confirm Payment',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w800,
                         ),
-                        child: Column(
-                          children: [
-                            // Amount field
-                            Container(
-                              padding: EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                color: Colors.grey[50],
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(
-                                  color: Colors.grey[200]!,
-                                  width: 1,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.bolt_rounded,
-                                    color: Colors.green[600],
-                                    size: 24,
-                                  ),
-                                  SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          'Amount',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            color: Colors.grey[600],
-                                            fontWeight: FontWeight.w500,
-                                          ),
-                                        ),
-                                        SizedBox(height: 4),
-                                        Text(
-                                          '$amount sats',
-                                          style: TextStyle(
-                                            fontSize: 18,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.grey[800],
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  Container(
-                                    padding: EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: Colors.green[100],
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      'Lightning',
-                                      style: TextStyle(
-                                        fontSize: 10,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.green[700],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                            if (description.isNotEmpty) ...[
-                              SizedBox(height: 12),
-                              Container(
-                                padding: EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  color: Colors.grey[50],
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(
-                                    color: Colors.grey[200]!,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.description_rounded,
-                                      color: Colors.blue[600],
-                                      size: 24,
-                                    ),
-                                    SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            'Description',
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey[600],
-                                              fontWeight: FontWeight.w500,
-                                            ),
-                                          ),
-                                          SizedBox(height: 4),
-                                          Text(
-                                            description,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w500,
-                                              color: Colors.grey[800],
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-
-                      SizedBox(height: 12),
-
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          'Review payment details before sending',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
-                      ),
-                      SizedBox(height: 24),
-
-                      // Action buttons
-                      Row(
-                        children: [
-                          Container(
-                            height: 50,
-                            child: OutlinedButton(
-                              onPressed: () => Navigator.pop(context),
-                              style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: Colors.grey[300]!,
-                                  width: 1.5,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: Text(
-                                'Cancel',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[600],
-                                ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: Container(
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed:
-                                    () => _sendPayment(invoice, description),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.orange[600],
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.send_rounded, size: 18),
-                                    SizedBox(width: 8),
-                                    Flexible(
-                                      child: Text(
-                                        'Send Payment',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
-                ),
+                  SizedBox(height: 20),
+
+                  // Payment details card
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Column(
+                      children: [
+                        // Amount field
+                        Container(
+                          padding: EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: kBgLight,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: Color(0xFFF1F5F9),
+                              width: 1,
+                            ),
+                            // border: Border.all(
+                            //   color: Colors.grey[200]!,
+                            //   width: 1,
+                            // ),
+                          ),
+                          child: Row(
+                            children: [
+                              CommonImage(
+                                iconName: 'lightning_icon.png',
+                                size: 20,
+                                color: kYellow,
+                              ),
+                              SizedBox(width: 16),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Amount',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w800,
+                                        color:
+                                            theme.colorScheme.onSurfaceVariant,
+                                      ),
+                                    ),
+                                    SizedBox(height: 4),
+                                    Text(
+                                      '$amount sats',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w800,
+                                        color: Colors.black87,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              Container(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Color(0xFFDCFCE7),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  'LIGHTNING',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w800,
+                                    color: Color(0xFF008236),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+
+                        if (description.isNotEmpty) ...[
+                          SizedBox(height: 12),
+                          Container(
+                            padding: EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              color: kBgLight,
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(
+                                color: Color(0xFFF1F5F9),
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                CommonImage(
+                                  iconName: 'record_icon.png',
+                                  size: 20,
+                                  color: Color(0xFF2B7FFF),
+                                ),
+                                SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        'Description',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                          color:
+                                              theme
+                                                  .colorScheme
+                                                  .onSurfaceVariant,
+                                        ),
+                                      ),
+                                      SizedBox(height: 4),
+                                      Text(
+                                        description,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+
+                  SizedBox(height: 12),
+
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      'Review payment details before sending',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.outline,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Action buttons
+                  Row(
+                    children: [
+                      Container(
+                        height: 50,
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(
+                              color: Color(0xFFE2E8F0),
+                              width: 1,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: Text(
+                            'Cancel',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Container(
+                          height: 50,
+                          child: ElevatedButton(
+                            onPressed: () => _sendPayment(invoice, description),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.orange[600],
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(Icons.send_rounded, size: 18),
+                                SizedBox(width: 8),
+                                Flexible(
+                                  child: Text(
+                                    'Send Payment',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ),
           ),
+        ),
+      ),
     );
   }
 
@@ -1249,21 +1261,20 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
     Navigator.pop(context); // Close confirm dialog
 
     // Show loading dialog
-    showDialog(
-      context: context,
+    _showBlurDialog(
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Sending Payment'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Processing payment...'),
-              ],
-            ),
-          ),
+      barrierLabel: 'Sending Payment Dialog',
+      child: AlertDialog(
+        title: Text('Sending Payment'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Processing payment...'),
+          ],
+        ),
+      ),
     );
 
     try {
@@ -1307,228 +1318,273 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   void _showReceiveDialog() {
     final amountController = TextEditingController();
     final descriptionController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder:
-          (context) => Dialog(
-            insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+    final theme = Theme.of(context);
+    _showBlurDialog(
+      barrierLabel: 'Create Invoice Dialog',
+      child: Dialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        elevation: 8,
+        child: SingleChildScrollView(
+          child: Container(
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.8,
             ),
-            elevation: 8,
-            child: SingleChildScrollView(
-              child: Container(
-                constraints: BoxConstraints(
-                  maxHeight: MediaQuery.of(context).size.height * 0.8,
-                ),
-                padding: EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: [Colors.white, Colors.grey[50]!],
-                  ),
-                ),
-                child: GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onTap: () {
-                    FocusScope.of(context).requestFocus(FocusNode());
-                  },
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
+            padding: EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Colors.white, Colors.grey[50]!],
+              ),
+            ),
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: () {
+                FocusScope.of(context).requestFocus(FocusNode());
+              },
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Header with icon
+                  Row(
                     children: [
-                      // Header with icon
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.qr_code_rounded,
-                            size: 24,
-                            color: Colors.green[600],
-                          ),
-                          SizedBox(width: 12),
-                          // Title
-                          Text(
-                            'Create Invoice',
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey[800],
-                            ),
-                          ),
-                        ],
+                      CommonImage(iconName: 'qr_code_icon.png', size: 24),
+                      SizedBox(width: 12),
+                      // Title
+                      Text(
+                        'Create Invoice',
+                        style: GoogleFonts.inter(
+                          fontSize: 20,
+                          color: Colors.black87,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
-                      SizedBox(height: 20),
+                    ],
+                  ),
+                  SizedBox(height: 20),
 
-                      // Amount input field
-                      Container(
-                        decoration: BoxDecoration(
+                  // Amount input field
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: kBgLight,
+                      // boxShadow: [
+                      //   BoxShadow(
+                      //     color: Colors.grey.withOpacity(0.1),
+                      //     spreadRadius: 1,
+                      //     blurRadius: 8,
+                      //     offset: Offset(0, 2),
+                      //   ),
+                      // ],
+                    ),
+                    child: TextField(
+                      controller: amountController,
+                      autofocus: false,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Amount (sats)',
+                        hintText: '1000',
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 12, right: 4),
+                          child: CommonImage(
+                            iconName: 'lightning_icon.png',
+                            width: 20,
+                            height: 20,
+                            color: kYellow,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                          maxWidth: 36,
+                          maxHeight: 36,
+                        ),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              spreadRadius: 1,
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+                          borderSide: BorderSide.none,
                         ),
-                        child: TextField(
-                          controller: amountController,
-                          autofocus: false,
-                          keyboardType: TextInputType.number,
-                          decoration: InputDecoration(
-                            labelText: 'Amount (sats)',
-                            hintText: '1000',
-                            prefixIcon: Icon(
-                              Icons.bolt_rounded,
-                              color: Colors.green[600],
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
-                            ),
-                            labelStyle: TextStyle(
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                            hintStyle: TextStyle(color: Colors.grey[400]),
-                          ),
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
-                          ),
+                        filled: true,
+                        fillColor: kBgLight,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        labelStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.outline,
+                        ),
+                        hintStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.outline,
                         ),
                       ),
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
+                      ),
+                    ),
+                  ),
 
-                      SizedBox(height: 16),
+                  SizedBox(height: 16),
 
-                      // Description input field
-                      Container(
-                        decoration: BoxDecoration(
+                  // Description input field
+                  Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16),
+                      color: kBgLight,
+                      // boxShadow: [
+                      //   // BoxShadow(
+                      //   //   color: Colors.grey.withOpacity(0.1),
+                      //   //   spreadRadius: 1,
+                      //   //   blurRadius: 8,
+                      //   //   offset: Offset(0, 2),
+                      //   // ),
+                      // ],
+                    ),
+                    child: TextField(
+                      controller: descriptionController,
+                      autofocus: false,
+                      decoration: InputDecoration(
+                        labelText: 'Description (Optional)',
+                        hintText: 'Payment for...',
+                        prefixIcon: Padding(
+                          padding: EdgeInsets.only(left: 12, right: 4),
+                          child: CommonImage(
+                            iconName: 'record_icon.png',
+                            width: 20,
+                            height: 20,
+                            color: theme.colorScheme.outline,
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                        prefixIconConstraints: BoxConstraints(
+                          minWidth: 36,
+                          minHeight: 36,
+                          maxWidth: 36,
+                          maxHeight: 36,
+                        ),
+                        border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(16),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.grey.withOpacity(0.1),
-                              spreadRadius: 1,
-                              blurRadius: 8,
-                              offset: Offset(0, 2),
-                            ),
-                          ],
+                          borderSide: BorderSide.none,
                         ),
-                        child: TextField(
-                          controller: descriptionController,
-                          autofocus: false,
-                          decoration: InputDecoration(
-                            labelText: 'Description (Optional)',
-                            hintText: 'Payment for...',
-                            prefixIcon: Icon(
-                              Icons.description_rounded,
-                              color: Colors.grey[600],
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
-                              borderSide: BorderSide.none,
-                            ),
-                            filled: true,
-                            fillColor: Colors.grey[50],
-                            contentPadding: EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 16,
-                            ),
-                            labelStyle: TextStyle(
-                              color: Colors.grey[600],
-                              fontWeight: FontWeight.w500,
-                            ),
-                            hintStyle: TextStyle(color: Colors.grey[400]),
-                          ),
-                          maxLines: 2,
-                          minLines: 1,
-                          style: TextStyle(fontSize: 16),
+                        filled: true,
+                        fillColor: kBgLight,
+                        contentPadding: EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
+                        labelStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.outline,
+                        ),
+                        hintStyle: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: theme.colorScheme.outline,
                         ),
                       ),
-
-                      SizedBox(height: 12),
-
-                      Container(
-                        width: double.infinity,
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Text(
-                          'Create a Lightning invoice to receive payment',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: Colors.grey[600],
-                          ),
-                          textAlign: TextAlign.left,
-                        ),
+                      maxLines: 2,
+                      minLines: 1,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.black87,
                       ),
-                      SizedBox(height: 24),
+                    ),
+                  ),
 
-                      // Action buttons
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Container(
-                              height: 50,
-                              child: OutlinedButton(
-                                onPressed: () => Navigator.pop(context),
-                                style: OutlinedButton.styleFrom(
-                                  side: BorderSide(
-                                    color: Colors.grey[300]!,
-                                    width: 1.5,
-                                  ),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
+                  SizedBox(height: 12),
+
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: Text(
+                      'Create a Lightning invoice to receive payment',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.outline,
+                      ),
+                      textAlign: TextAlign.left,
+                    ),
+                  ),
+                  SizedBox(height: 24),
+
+                  // Action buttons
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 50,
+                          child: OutlinedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: OutlinedButton.styleFrom(
+                              side: BorderSide(
+                                color: Color(0xFFE2E8F0),
+                                width: 1,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: Text(
+                              'Cancel',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                color: theme.colorScheme.onSurface,
+                                fontWeight: FontWeight.w800,
                               ),
                             ),
                           ),
-                          SizedBox(width: 16),
-                          Expanded(
-                            child: Container(
-                              height: 50,
-                              child: ElevatedButton(
-                                onPressed:
-                                    () => _createInvoice(
-                                      amountController.text,
-                                      descriptionController.text,
-                                    ),
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.green[600],
-                                  foregroundColor: Colors.white,
-                                  elevation: 0,
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Container(
+                          height: 50,
+                          child: Material(
+                            color: Colors.transparent,
+                            borderRadius: BorderRadius.circular(12),
+                            child: InkWell(
+                              onTap:
+                                  () => _createInvoice(
+                                    amountController.text,
+                                    descriptionController.text,
                                   ),
+                              borderRadius: BorderRadius.circular(12),
+                              child: Container(
+                                decoration: BoxDecoration(
+                                  gradient: getBrandGradientHorizontal(),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                  vertical: 16,
                                 ),
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.add_rounded, size: 18),
+                                    Icon(
+                                      Icons.add_rounded,
+                                      size: 18,
+                                      color: Colors.white,
+                                    ),
                                     SizedBox(width: 8),
                                     Flexible(
                                       child: Text(
                                         'Create',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w800,
+                                          color: Colors.white,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -1538,14 +1594,16 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                               ),
                             ),
                           ),
-                        ],
+                        ),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
             ),
           ),
+        ),
+      ),
     );
   }
 
@@ -1564,21 +1622,20 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
     Navigator.pop(context); // Close dialog
 
     // Show loading dialog
-    showDialog(
-      context: context,
+    _showBlurDialog(
       barrierDismissible: false,
-      builder:
-          (context) => AlertDialog(
-            title: Text('Creating Invoice'),
-            content: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                CircularProgressIndicator(),
-                SizedBox(height: 16),
-                Text('Generating invoice...'),
-              ],
-            ),
-          ),
+      barrierLabel: 'Creating Invoice Dialog',
+      child: AlertDialog(
+        title: Text('Creating Invoice'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 16),
+            Text('Generating invoice...'),
+          ],
+        ),
+      ),
     );
 
     try {
@@ -1612,253 +1669,319 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   }
 
   void _showInvoiceDialog(invoice) {
-    showDialog(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-            title: Text('Invoice Created'),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          Theme.of(
-                            context,
-                          ).colorScheme.primary.withOpacity(0.08),
-                          Theme.of(
-                            context,
-                          ).colorScheme.secondary.withOpacity(0.08),
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 10,
-                                offset: Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Icon(
-                            Icons.bolt_rounded,
-                            color: Theme.of(context).colorScheme.primary,
-                            size: 28,
-                          ),
-                        ),
-                        SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Amount',
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                              SizedBox(height: 4),
-                              Text(
-                                '${invoice.amount} sats',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.grey[900],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+    final theme = Theme.of(context);
+    _showBlurDialog(
+      barrierLabel: 'Invoice Created Dialog',
+      child: AlertDialog(
+        insetPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+        title: Text(
+          'Invoice Created',
+          style: GoogleFonts.inter(
+            fontSize: 20,
+            color: Colors.black87,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Theme.of(context).colorScheme.primary.withOpacity(0.08),
+                      Theme.of(context).colorScheme.secondary.withOpacity(0.08),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  if (invoice.description.isNotEmpty) ...[
-                    SizedBox(height: 16),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  children: [
                     Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.all(14),
+                      padding: EdgeInsets.all(10),
                       decoration: BoxDecoration(
-                        color: Colors.grey[50],
+                        color: Colors.white,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.grey[300]!),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(10),
+                            blurRadius: 2,
+                            offset: Offset(0, 1),
+                          ),
+                        ],
                       ),
-                      child: Row(
+                      child: CommonImage(iconName: 'lightning_icon.png',color: kYellow, size: 20,)
+                    ),
+                    SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.description_outlined,
-                            color: Colors.grey[600],
+                          Text(
+                            'Amount',
+                            style: GoogleFonts.inter(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: theme.colorScheme.outline,
+                            ),
                           ),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'Description',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                SizedBox(height: 4),
-                                Text(
-                                  invoice.description,
-                                  style: TextStyle(fontSize: 14),
-                                ),
-                              ],
+                          SizedBox(height: 4),
+                          Text(
+                            '${invoice.amount} sats',
+                            style: GoogleFonts.inter(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
                             ),
                           ),
                         ],
                       ),
                     ),
                   ],
-                  SizedBox(height: 20),
-                  Text(
-                    'BOLT11 Invoice',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey[800],
+                ),
+              ),
+              if (invoice.description.isNotEmpty) ...[
+                SizedBox(height: 16),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(14),
+                  decoration: BoxDecoration(
+                    color: kBgLight,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(
+                      color: Color(0xFFF1F5F9),
+                      width: 1,
                     ),
                   ),
-                  SizedBox(height: 8),
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.grey[200]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SelectableText(
-                          invoice.bolt11,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontFamily: 'monospace',
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                          padding: EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withAlpha(10),
+                                blurRadius: 2,
+                                offset: Offset(0, 1),
+                              ),
+                            ],
                           ),
-                        ),
-                        SizedBox(height: 8),
-                        Row(
+                          child:    CommonImage(iconName: 'record_icon.png',size: 20,color: theme.colorScheme.outline,),
+                      ),
+
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              Icons.info_outline,
-                              size: 14,
-                              color: Colors.grey[600],
+                            Text(
+                              'Description',
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: theme.colorScheme.outline,
+                              ),
                             ),
-                            SizedBox(width: 6),
-                            Expanded(
-                              child: Text(
-                                'Share or copy this invoice to receive Lightning payments.',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey[600],
-                                ),
+                            SizedBox(height: 4),
+                            Text(
+                              invoice.description,
+                              style: GoogleFonts.inter(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.black87,
                               ),
                             ),
                           ],
                         ),
-                      ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+              SizedBox(height: 20),
+              Text(
+                'BOLT11 Invoice',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.black87,
+                ),
+              ),
+              SizedBox(height: 8),
+              Container(
+                padding: EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Color(0xFFF1F5F9),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Color(0xFFF1F5F9),
+                    width: 1,
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    SelectableText(
+                      invoice.bolt11,
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w400,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                  ],
+                ),
+              ),
+              SizedBox(height: 20),
+              Row(
+                children: [
+                  Icon(Icons.info_outline, size: 14, color: Colors.grey[600]),
+                  SizedBox(width: 6),
+                  Expanded(
+                    child: Text(
+                      'Share or copy this invoice to receive Lightning payments.',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Theme.of(context).colorScheme.onSurface,
+                      ),
                     ),
                   ),
-                  SizedBox(height: 20),
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: Colors.grey[200]!),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                          offset: Offset(0, 6),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: 220,
-                          height: 220,
-                          child: QrImageView(
-                            data: invoice.bolt11,
-                            version: QrVersions.auto,
-                            backgroundColor: Colors.white,
-                            errorStateBuilder: (context, error) {
-                              return Container(
-                                alignment: Alignment.center,
-                                child: Column(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      Icons.error_outline,
-                                      color: Colors.red[400],
-                                    ),
-                                    SizedBox(height: 8),
-                                    Text(
-                                      'QR unavailable',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: Colors.grey[600],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                        SizedBox(height: 12),
-                        Text(
-                          'Scan this QR code with any Lightning wallet',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                      ],
-                    ),
-                  ),
-                  SizedBox(height: 16),
                 ],
               ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: Text('Close'),
+              SizedBox(height: 20),
+              Container(
+                width: double.infinity,
+                padding: EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: Color(0xFFF1F5F9),
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.05),
+                      blurRadius: 10,
+                      offset: Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      width: 220,
+                      height: 220,
+                      child: QrImageView(
+                        data: invoice.bolt11,
+                        version: QrVersions.auto,
+                        backgroundColor: Colors.white,
+                        errorStateBuilder: (context, error) {
+                          return Container(
+                            alignment: Alignment.center,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red[400],
+                                ),
+                                SizedBox(height: 8),
+                                Text(
+                                  'QR unavailable',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      'Scan this QR code with any Lightning wallet',
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w400,
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  _copyToClipboard(invoice.bolt11);
-                },
-                child: Text('Copy'),
-              ),
+              SizedBox(height: 16),
             ],
           ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(
+              'Close',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              _copyToClipboard(invoice.bolt11);
+            },
+            child: Text(
+              'Copy',
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<T?> _showBlurDialog<T>({
+    required Widget child,
+    bool barrierDismissible = true,
+    String barrierLabel = 'Dialog',
+  }) {
+    return showGeneralDialog<T>(
+      context: context,
+      barrierDismissible: barrierDismissible,
+      barrierLabel: barrierLabel,
+      barrierColor: Colors.transparent,
+      pageBuilder: (context, anim1, anim2) {
+        return Stack(
+          children: [
+            Positioned.fill(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: Container(color: Colors.black.withOpacity(0.2)),
+              ),
+            ),
+            Center(child: SafeArea(child: child)),
+          ],
+        );
+      },
     );
   }
 

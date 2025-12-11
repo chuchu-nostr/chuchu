@@ -2,6 +2,7 @@ import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/config/subscription_config.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart' show GoogleFonts;
 
 import '../../../core/wallet/wallet.dart';
 import '../../../core/widgets/common_toast.dart';
@@ -24,7 +25,8 @@ enum ESubscriptionStatus {
 class SubscribedOptionWidget extends StatefulWidget {
   final RelayGroupDBISAR relayGroup;
   final ESubscriptionStatus subscriptionStatus;
-  final VoidCallback? onSubscriptionSuccess; // Callback for subscription success
+  final VoidCallback?
+  onSubscriptionSuccess; // Callback for subscription success
 
   const SubscribedOptionWidget({
     super.key,
@@ -69,10 +71,10 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
         children: [
           Text(
             'SUBSCRIPTION',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+            style: GoogleFonts.inter(
               color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontSize: 12,
+              fontWeight: FontWeight.w800,
             ),
           ),
           const SizedBox(height: 16),
@@ -81,7 +83,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
           _buildSubscriptionInfo(context, monthlyPrice),
           if (widget.subscriptionStatus ==
               ESubscriptionStatus.unsubscribed) ...[
-            const SizedBox(height: 24),
+            const SizedBox(height: 8),
             _buildSubscriptionBundles(context, monthlyPrice),
           ],
         ],
@@ -91,21 +93,31 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
 
   /// Build subscription button based on status
   Widget _buildSubscriptionButton(BuildContext context, int monthlyPrice) {
+    final theme = Theme.of(context);
     switch (widget.subscriptionStatus) {
       case ESubscriptionStatus.unsubscribed:
         return Container(
           width: double.infinity,
           height: 56,
           decoration: BoxDecoration(
-            color: _isCreatingInvoice ? Colors.grey : Theme.of(context).colorScheme.primary,
+            color:
+                _isCreatingInvoice
+                    ? Colors.grey
+                    : Theme.of(context).colorScheme.primary,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: _isCreatingInvoice ? null : () async{
-                  await _updateSubscriptionSettings(1, buttonId: 'monthly');
-              },
+              onTap:
+                  _isCreatingInvoice
+                      ? null
+                      : () async {
+                        await _updateSubscriptionSettings(
+                          1,
+                          buttonId: 'monthly',
+                        );
+                      },
               borderRadius: BorderRadius.circular(8),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -131,18 +143,18 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
                   ] else ...[
                     Text(
                       'SUBSCRIBE',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 16,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                     Text(
                       '$monthlyPrice ${SubscriptionConfig.currencyUnit} per month',
-                      style: TextStyle(
+                      style: GoogleFonts.inter(
                         color: Colors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -192,7 +204,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
           width: double.infinity,
           height: 56,
           decoration: BoxDecoration(
-            color: Colors.blue,
+            color: Theme.of(context).colorScheme.primary,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Material(
@@ -202,18 +214,18 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
               children: [
                 Text(
                   'SUBSCRIBE',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 Text(
                   'FOR FREE',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     color: Colors.white,
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -226,18 +238,27 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
   }
 
   Widget _buildSubscriptionInfo(BuildContext context, int monthlyPrice) {
+    final theme = Theme.of(context);
     switch (widget.subscriptionStatus) {
       case ESubscriptionStatus.unsubscribed:
         return Row(
           children: [
             Text(
               'Renews for $monthlyPrice ${SubscriptionConfig.currencyUnit} / month',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: GoogleFonts.inter(
+                color: theme.colorScheme.outline,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
             ),
             const Spacer(),
             Text(
               _getNextMonthDate(),
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: GoogleFonts.inter(
+                color: theme.colorScheme.outline,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
             ),
           ],
         );
@@ -246,12 +267,20 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
           children: [
             Text(
               'Renews for $monthlyPrice ${SubscriptionConfig.currencyUnit} / month',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: GoogleFonts.inter(
+                color: theme.colorScheme.outline,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
             ),
             const Spacer(),
             Text(
               _getNextMonthDate(),
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: GoogleFonts.inter(
+                color: theme.colorScheme.outline,
+                fontWeight: FontWeight.w500,
+                fontSize: 12,
+              ),
             ),
           ],
         );
@@ -274,12 +303,12 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
           },
           child: Row(
             children: [
-              const Text(
+              Text(
                 'SUBSCRIPTION BUNDLES',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
+                style: GoogleFonts.inter(
                   color: Colors.black87,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 12,
                 ),
               ),
               const Spacer(),
@@ -314,10 +343,14 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
                     price:
                         '$totalPrice ${SubscriptionConfig.currencyUnit} total',
                     buttonId: duration.name, // Use duration name as button ID
-                    onTap: () async{
-                      int? moths = SubscriptionConfig.durationMultipliers[duration];
-                      if(moths != null){
-                        await _updateSubscriptionSettings(moths, buttonId: duration.name);
+                    onTap: () async {
+                      int? moths =
+                          SubscriptionConfig.durationMultipliers[duration];
+                      if (moths != null) {
+                        await _updateSubscriptionSettings(
+                          moths,
+                          buttonId: duration.name,
+                        );
                       }
                     },
                   ),
@@ -334,13 +367,14 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
     required String buttonId,
     required VoidCallback onTap,
   }) {
-    final isThisButtonLoading = _isCreatingInvoice && _loadingButtonId == buttonId;
-    
+    final isThisButtonLoading =
+        _isCreatingInvoice && _loadingButtonId == buttonId;
+
     return Container(
       width: double.infinity,
       height: 56,
       decoration: BoxDecoration(
-        color: _isCreatingInvoice ? Colors.grey : Colors.blue,
+        color: _isCreatingInvoice ? Colors.grey : Theme.of(context).colorScheme.tertiary,
         borderRadius: BorderRadius.circular(8),
       ),
       child: Material(
@@ -353,36 +387,39 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
               Expanded(
                 child: Padding(
                   padding: const EdgeInsets.only(left: 16),
-                  child: isThisButtonLoading
-                      ? Row(
-                          children: [
-                            SizedBox(
-                              width: 16,
-                              height: 16,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2,
-                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  child:
+                      isThisButtonLoading
+                          ? Row(
+                            children: [
+                              SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(
+                                    Colors.white,
+                                  ),
+                                ),
                               ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Creating Invoice...',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
+                              const SizedBox(width: 8),
+                              Text(
+                                'Creating Invoice...',
+                                style: GoogleFonts.inter(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.w600,
+                                ),
                               ),
+                            ],
+                          )
+                          : Text(
+                            title,
+                            style: GoogleFonts.inter(
+                              color: Colors.white,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w600,
                             ),
-                          ],
-                        )
-                      : Text(
-                          title,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
                           ),
-                        ),
                 ),
               ),
               if (!_isCreatingInvoice)
@@ -393,10 +430,10 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
                   ),
                   child: Text(
                     price,
-                    style: const TextStyle(
+                    style: GoogleFonts.inter(
                       color: Colors.white,
                       fontSize: 14,
-                      fontWeight: FontWeight.w500,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 ),
@@ -423,19 +460,21 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
   String _getNextMonthDate() {
     // Get current user's pubkey
     final currentPubkey = Account.sharedInstance.currentPubkey;
-    
+
     // Get subscription expiry from memberSubscriptionExpiry
     final memberSubscriptionExpiry = widget.relayGroup.memberSubscriptionExpiry;
-    
-    if (memberSubscriptionExpiry != null && 
+
+    if (memberSubscriptionExpiry != null &&
         memberSubscriptionExpiry.containsKey(currentPubkey)) {
       // Get timestamp for current user
       final timestamp = memberSubscriptionExpiry[currentPubkey];
-      
+
       if (timestamp != null) {
         // Convert timestamp to DateTime
-        final expiryDate = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
-        
+        final expiryDate = DateTime.fromMillisecondsSinceEpoch(
+          timestamp * 1000,
+        );
+
         const months = [
           'Jan',
           'Feb',
@@ -450,11 +489,11 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
           'Nov',
           'Dec',
         ];
-        
+
         return '${months[expiryDate.month - 1]} ${expiryDate.day}, ${expiryDate.year}';
       }
     }
-    
+
     // Fallback to next month calculation if no expiry data found
     final now = DateTime.now();
     final nextMonth = DateTime(now.year, now.month + 1, now.day);
@@ -483,10 +522,11 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
     return '${months[adjustedNextMonth.month - 1]} ${adjustedNextMonth.day}, ${adjustedNextMonth.year}';
   }
 
-
-  Future<void> _updateSubscriptionSettings(int months, {String? buttonId}) async {
+  Future<void> _updateSubscriptionSettings(
+    int months, {
+    String? buttonId,
+  }) async {
     try {
-
       String groupId = widget.relayGroup.groupId;
 
       if (groupId.isEmpty) {
@@ -500,9 +540,11 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
       });
 
       await _createSubscriptionInvoice(groupId, months);
-
     } catch (e) {
-      CommonToast.instance.show(context, 'Error updating subscription: ${e.toString()}');
+      CommonToast.instance.show(
+        context,
+        'Error updating subscription: ${e.toString()}',
+      );
     } finally {
       // Clear loading state
       if (mounted) {
@@ -515,6 +557,18 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
   }
 
   Future<void> _createSubscriptionInvoice(String groupId, int months) async {
+
+    // return      SubscriptionPaymentDialog.show(
+    //   context: context,
+    //   invoice: '123' ?? '',
+    //   bolt11: '123123123',
+    //   amount: 1232,
+    //   description: 'Subscription for $months month(s)',
+    //   expiresAt:DateTime.now().add(const Duration(minutes: 15)),
+    //   onPaymentSuccess: () {
+    //     _handlePaymentSuccess(groupId, months);
+    //   },
+    // );
     try {
       final wallet = Wallet();
 
@@ -523,10 +577,12 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
       }
 
       if (!wallet.isConnected) {
-        CommonToast.instance.show(context, 'Wallet not connected. Please try again.');
+        CommonToast.instance.show(
+          context,
+          'Wallet not connected. Please try again.',
+        );
         return;
       }
-
 
       final relayPubkey = SubscriptionConfig.relayPubkey;
 
@@ -537,46 +593,51 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
       );
 
       if (result != null && !result.containsKey('error')) {
-        final bolt11 = result['invoice'] as String?;  // NIP-47 uses 'invoice' field
+        final bolt11 =
+            result['invoice'] as String?; // NIP-47 uses 'invoice' field
         final amount = result['amount'] as int?;
         final paymentHash = result['payment_hash'] as String?;
         final expiresAt = result['expires_at'] as int?;
 
         if (bolt11 != null && amount != null) {
-
           // Show payment dialog
           if (mounted) {
             // Clear loading state before showing dialog
             setState(() {
               _isCreatingInvoice = false;
             });
-            
-            showDialog(
+
+            SubscriptionPaymentDialog.show(
               context: context,
-              builder: (context) => SubscriptionPaymentDialog(
-                invoice: paymentHash ?? '',
-                bolt11: bolt11,
-                amount: amount,
-                description: 'Subscription for $months month(s)',
-                expiresAt: expiresAt != null
-                    ? DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000)
-                    : DateTime.now().add(const Duration(minutes: 15)),
-                onPaymentSuccess:(){
-                  _handlePaymentSuccess(groupId, months);
-                }
-              ),
+              invoice: paymentHash ?? '',
+              bolt11: bolt11,
+              amount: amount,
+              description: 'Subscription for $months month(s)',
+              expiresAt:
+                  expiresAt != null
+                      ? DateTime.fromMillisecondsSinceEpoch(
+                        expiresAt * 1000,
+                      )
+                      : DateTime.now().add(const Duration(minutes: 15)),
+              onPaymentSuccess: () {
+                _handlePaymentSuccess(groupId, months);
+              },
             );
           }
         } else {
           CommonToast.instance.show(context, 'Invalid invoice data received');
         }
       } else {
-        final errorMessage = result?['message'] ?? 'Failed to create subscription invoice';
+        final errorMessage =
+            result?['message'] ?? 'Failed to create subscription invoice';
         CommonToast.instance.show(context, errorMessage);
       }
     } catch (e) {
       print('Error creating subscription invoice: $e');
-      CommonToast.instance.show(context, 'Error creating subscription invoice: ${e.toString()}');
+      CommonToast.instance.show(
+        context,
+        'Error creating subscription invoice: ${e.toString()}',
+      );
     }
   }
 
@@ -584,20 +645,23 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
   void _handlePaymentSuccess(String groupId, int months) async {
     try {
       print('Payment successful for group $groupId, months: $months');
-      
+
       // Sync my groups from relays to get the latest data
       await _syncMyGroupsFromRelays();
-      
+
       CommonToast.instance.show(context, 'Subscription payment successful!');
-      
+
       if (widget.onSubscriptionSuccess != null) {
         widget.onSubscriptionSuccess!();
       }
-      
+
       Navigator.pop(context);
     } catch (e) {
       print('Error handling payment success: $e');
-      CommonToast.instance.show(context, 'Payment successful but failed to sync groups');
+      CommonToast.instance.show(
+        context,
+        'Payment successful but failed to sync groups',
+      );
       Navigator.pop(context);
     }
   }
@@ -607,16 +671,14 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
     try {
       // Get the recommend group relays
       final relays = Config.sharedInstance.recommendGroupRelays;
-      
+
       if (relays.isNotEmpty) {
         // Call searchMyGroupsMetadataFromRelays to sync my groups
         // This method will automatically sync myGroups
-        final groups = await RelayGroup.sharedInstance.searchMyGroupsMetadataFromRelays(
-          relays,
-          (groups) {
-            print('Synced ${groups.length} groups from relays');
-          },
-        );
+        final groups = await RelayGroup.sharedInstance
+            .searchMyGroupsMetadataFromRelays(relays, (groups) {
+              print('Synced ${groups.length} groups from relays');
+            });
         print('Successfully synced ${groups.length} groups from relays');
       }
     } catch (e) {
