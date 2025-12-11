@@ -134,8 +134,8 @@ class _FeedReplyPageState extends State<FeedReplyPage>
                       _momentItemWidget(),
                       Padding(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 8,
+                          horizontal: 18,
+                          // vertical: 6,
                         ),
                         child: Row(
                           crossAxisAlignment: CrossAxisAlignment.start,

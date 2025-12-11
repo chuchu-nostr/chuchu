@@ -1626,13 +1626,26 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
       barrierDismissible: false,
       barrierLabel: 'Creating Invoice Dialog',
       child: AlertDialog(
-        title: Text('Creating Invoice'),
+        title: Text(
+          'Creating Invoice',
+          style: GoogleFonts.inter(
+            color: Colors.black87,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
         content: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
             CircularProgressIndicator(),
             SizedBox(height: 16),
-            Text('Generating invoice...'),
+            Text(
+              'Generating invoice...',
+              style: GoogleFonts.inter(
+                color: Theme.of(context).colorScheme.outline,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
           ],
         ),
       ),
@@ -1716,7 +1729,11 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                           ),
                         ],
                       ),
-                      child: CommonImage(iconName: 'lightning_icon.png',color: kYellow, size: 20,)
+                      child: CommonImage(
+                        iconName: 'lightning_icon.png',
+                        color: kYellow,
+                        size: 20,
+                      ),
                     ),
                     SizedBox(width: 16),
                     Expanded(
@@ -1754,28 +1771,29 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                   decoration: BoxDecoration(
                     color: kBgLight,
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Color(0xFFF1F5F9),
-                      width: 1,
-                    ),
+                    border: Border.all(color: Color(0xFFF1F5F9), width: 1),
                   ),
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Container(
-                          padding: EdgeInsets.all(10),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withAlpha(10),
-                                blurRadius: 2,
-                                offset: Offset(0, 1),
-                              ),
-                            ],
-                          ),
-                          child:    CommonImage(iconName: 'record_icon.png',size: 20,color: theme.colorScheme.outline,),
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withAlpha(10),
+                              blurRadius: 2,
+                              offset: Offset(0, 1),
+                            ),
+                          ],
+                        ),
+                        child: CommonImage(
+                          iconName: 'record_icon.png',
+                          size: 20,
+                          color: theme.colorScheme.outline,
+                        ),
                       ),
 
                       SizedBox(width: 12),
@@ -1823,10 +1841,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 decoration: BoxDecoration(
                   color: Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Color(0xFFF1F5F9),
-                    width: 1,
-                  ),
+                  border: Border.all(color: Color(0xFFF1F5F9), width: 1),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -1867,10 +1882,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Color(0xFFF1F5F9),
-                    width: 1,
-                  ),
+                  border: Border.all(color: Color(0xFFF1F5F9), width: 1),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.05),

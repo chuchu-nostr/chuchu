@@ -127,6 +127,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
       children: [
         // Carousel content
         Container(
+          margin: EdgeInsets.only(left: 8,right: 12),
           height: 300,
           child: Stack(
             children: [

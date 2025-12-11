@@ -28,6 +28,7 @@ import '../../../core/config/storage_key_tool.dart';
 import '../../../core/manager/cache/chuchu_cache_manager.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
+import '../../../core/widgets/logout_confirm_dialog.dart';
 import '../../login/pages/new_login_page.dart';
 import '../../nostrKey/pages/nostr_key_page.dart';
 
@@ -82,14 +83,20 @@ class _MyProfilePageState extends State<MyProfilePage>
     return Scaffold(
       backgroundColor: kBgLight,
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Center(
+            child: CommonImage(
+              iconName: 'back_arrow_icon.png',
+              size: 24,
+              color: Colors.black,
+            ),
+          ),
         ),
         title: Text(
           'Settings',
           style: GoogleFonts.inter(
-            color: Colors.black,
+            color: Colors.black87,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -735,6 +742,7 @@ class _MyProfilePageState extends State<MyProfilePage>
 
       // Update picture field
       currentUserInfo.picture = imageUrl;
+      debugPrint('📸 Updating avatar with URL: $imageUrl');
 
       // Update profile through Account
       final result = await Account.sharedInstance.updateProfile(
@@ -742,9 +750,11 @@ class _MyProfilePageState extends State<MyProfilePage>
       );
 
       if (result != null) {
+        debugPrint('✅ Avatar updated successfully. Picture URL: ${result.picture}');
         // Update ChuChuUserInfoManager's currentUserInfo
         ChuChuUserInfoManager.sharedInstance.currentUserInfo = result;
       } else {
+        debugPrint('❌ Failed to update profile - updateProfile returned null');
         throw Exception('Failed to update profile');
       }
     } catch (e, stackTrace) {
@@ -784,7 +794,7 @@ class _MyProfilePageState extends State<MyProfilePage>
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => _handleLogout(),
+          onTap: () => LogoutConfirmDialog.show(context, closeDrawer: false),
           borderRadius: BorderRadius.circular(12),
           child: Container(
             decoration: BoxDecoration(
@@ -819,72 +829,5 @@ class _MyProfilePageState extends State<MyProfilePage>
         ),
       ),
     );
-  }
-
-  Future<void> _handleLogout() async {
-    // Show confirmation dialog
-    final shouldLogout = await showDialog<bool>(
-      context: context,
-      builder:
-          (context) => AlertDialog(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            title: Row(
-              children: [
-                Icon(Icons.logout, color: Colors.red[600], size: 28),
-                const SizedBox(width: 12),
-                Text('Log Out', style: GoogleFonts.inter()),
-              ],
-            ),
-            content: Text(
-              'Are you sure you want to log out?',
-              style: GoogleFonts.inter(fontSize: 16),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: Text('Cancel', style: GoogleFonts.inter(fontSize: 16)),
-              ),
-              ElevatedButton(
-                onPressed: () => Navigator.of(context).pop(true),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.red[600],
-                  foregroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 24,
-                    vertical: 12,
-                  ),
-                ),
-                child: Text(
-                  'Log Out',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-            ],
-          ),
-    );
-
-    if (shouldLogout == true) {
-      // Clear saved user pubkey
-      await ChuChuCacheManager.defaultOXCacheManager.saveForeverData(
-        StorageKeyTool.CHUCHU_USER_PUBKEY,
-        '',
-      );
-
-      // Logout
-      await ChuChuUserInfoManager.sharedInstance.logout(needObserver: true);
-
-      // Navigate to login page
-      if (mounted) {
-        ChuChuNavigator.pushReplacement(context, const NewLoginPage());
-      }
-    }
   }
 }

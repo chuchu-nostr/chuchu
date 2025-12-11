@@ -142,29 +142,24 @@ class _RegisterFormState extends State<RegisterForm> {
               backgroundColor: Colors.transparent,
               appBar: AppBar(
                 backgroundColor: Colors.transparent,
+                surfaceTintColor: Colors.transparent,
                 elevation: 0,
-                leading: IconButton(
-                  icon: Container(
-                    width: 40,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Colors.grey[100],
-                    ),
-                    child: Icon(
-                      Icons.arrow_back_ios_new,
-                      size: 18,
-                      color: Colors.grey[800],
+                leading:  GestureDetector(
+                  onTap: () => Navigator.of(context).pop(),
+                  child: Center(
+                    child: CommonImage(
+                      iconName: 'back_arrow_icon.png',
+                      size: 24,
+                      color: Colors.black87,
                     ),
                   ),
-                  onPressed: () => Navigator.of(context).pop(),
                 ),
                 title: Text(
-                  'NEW ACCOUNT',
+                  'New Account',
                   style: TextStyle(
                     fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.grey[900],
+                    fontWeight: FontWeight.w800,
+                    color: Colors.black87,
                     letterSpacing: 0.5,
                   ),
                 ),

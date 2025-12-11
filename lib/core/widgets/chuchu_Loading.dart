@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:chuchu/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 
@@ -27,7 +28,7 @@ class ChuChuLoading extends State<StatefulWidget> with TickerProviderStateMixin 
     bool dismissOnTap = false,
   }) async {
     EasyLoading.instance.loadingStyle = EasyLoadingStyle.custom;
-    EasyLoading.instance.indicatorColor = Color(0xFF4EACE9);
+    EasyLoading.instance.indicatorColor = kPrimary;
     EasyLoading.instance.indicatorType = EasyLoadingIndicatorType.ring;
     EasyLoading.instance.indicatorSize = Adapt.px(20);
     EasyLoading.instance.contentPadding = EdgeInsets.only(left: Adapt.px(20), top: Adapt.px(16), right: Adapt.px(20), bottom: Adapt.px(16));

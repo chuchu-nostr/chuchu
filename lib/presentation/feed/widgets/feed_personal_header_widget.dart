@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
@@ -29,15 +31,16 @@ class FeedPersonalHeaderWidget extends StatefulWidget {
 }
 
 class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
-
   @override
   void initState() {
     super.initState();
     updateUserInfo();
   }
 
-  void updateUserInfo()async {
-    UserDBISAR? user = await Account.sharedInstance.getUserInfo(widget.relayGroupDB.groupId);
+  void updateUserInfo() async {
+    UserDBISAR? user = await Account.sharedInstance.getUserInfo(
+      widget.relayGroupDB.groupId,
+    );
   }
 
   String _formatCount(int count) {
@@ -106,24 +109,26 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
                 fit: BoxFit.cover,
                 width: double.infinity,
                 height: widget.isShowAppBar ? 150 : 220,
-                placeholder: (_, __) => Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [kPrimary, kSecondary],
+                placeholder:
+                    (_, __) => Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [kPrimary, kSecondary],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                errorWidget: (_, __, ___) => Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [kPrimary, kSecondary],
+                errorWidget:
+                    (_, __, ___) => Container(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [kPrimary, kSecondary],
+                        ),
+                      ),
                     ),
-                  ),
-                ),
               ),
             ),
           SafeArea(
@@ -142,9 +147,38 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
   Widget _buildNavigationBar(RelayGroupDBISAR user) {
     return Row(
       children: [
-        IconButton(
-          onPressed: () => ChuChuNavigator.pop(context),
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white, size: 20),
+        GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Container(
+            width: 40,
+            height: 40,
+            margin: EdgeInsets.only(left: 16,right: 16),
+            decoration: BoxDecoration(shape: BoxShape.circle),
+            child: ClipOval(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Color(
+                      0xFFFFE5F5,
+                    ).withOpacity(0.3), // Light pink with transparency
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: Colors.white.withOpacity(0.2),
+                      width: 1,
+                    ),
+                  ),
+                  child: Center(
+                    child: CommonImage(
+                      iconName: 'back_arrow_icon.png',
+                      size: 24,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
         const SizedBox(width: 8),
         Expanded(
@@ -226,9 +260,10 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
 
   Widget _buildProfileImage(RelayGroupDBISAR relayGroup) {
     // Define placeholder and error widget functions
-    final placeholderWidget = (_, __) => FeedWidgetsUtils.badgePlaceholderImage(size: 100);
-    final errorWidgetBuilder = (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(size: 100);
-
+    final placeholderWidget =
+        (_, __) => FeedWidgetsUtils.badgePlaceholderImage(size: 100);
+    final errorWidgetBuilder =
+        (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(size: 100);
 
     return ValueListenableBuilder<UserDBISAR>(
       valueListenable: Account.sharedInstance.getUserNotifier(
@@ -236,7 +271,6 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
       ),
       builder: (context, userInfo, child) {
         final imageUrl = userInfo.picture ?? '';
-
         return Positioned(
           top: -35,
           left: 18,
@@ -259,16 +293,17 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
               child: FeedWidgetsUtils.clipImage(
                 borderRadius: 100,
                 imageSize: 100,
-                child: imageUrl.isNotEmpty
-                    ? ChuChuCachedNetworkImage(
-                  imageUrl: imageUrl,
-                  fit: BoxFit.cover,
-                  placeholder: placeholderWidget,
-                  errorWidget: errorWidgetBuilder,
-                  width: 100,
-                  height: 100,
-                )
-                    : FeedWidgetsUtils.badgePlaceholderImage(size: 100),
+                child:
+                    imageUrl.isNotEmpty
+                        ? ChuChuCachedNetworkImage(
+                          imageUrl: imageUrl,
+                          fit: BoxFit.cover,
+                          placeholder: placeholderWidget,
+                          errorWidget: errorWidgetBuilder,
+                          width: 100,
+                          height: 100,
+                        )
+                        : FeedWidgetsUtils.badgePlaceholderImage(size: 100),
               ),
             ),
           ),
@@ -347,9 +382,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
         ),
         // Following and Followers stats
         ValueListenableBuilder<UserDBISAR>(
-          valueListenable: Account.sharedInstance.getUserNotifier(
-            user.groupId,
-          ),
+          valueListenable: Account.sharedInstance.getUserNotifier(user.groupId),
           builder: (context, userInfo, child) {
             final followingCount = userInfo.followingList?.length ?? 0;
             final followersCount = userInfo.followersList?.length ?? 0;

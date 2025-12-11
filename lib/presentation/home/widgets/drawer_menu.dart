@@ -1,20 +1,18 @@
 import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
-import 'package:chuchu/presentation/login/pages/new_login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
-import '../../../core/config/storage_key_tool.dart';
-import '../../../core/manager/cache/chuchu_cache_manager.dart';
-import '../../../core/manager/chuchu_user_info_manager.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
+import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/common_image.dart';
+import '../../../core/widgets/logout_confirm_dialog.dart';
 import '../../creator/pages/create_creator_page.dart';
 import '../../feed/pages/feed_personal_page.dart';
 import '../../profile/pages/my_profile_page.dart';
@@ -324,8 +322,11 @@ class _DrawerMenuState extends State<DrawerMenu>
                       "Settings",
                       onTap: () {
                         // TODO: Navigate to settings page
-                            Navigator.of(context).pop(); // Close drawer first
-                            ChuChuNavigator.pushPage(context, (context) => const MyProfilePage());
+                        Navigator.of(context).pop(); // Close drawer first
+                        ChuChuNavigator.pushPage(
+                          context,
+                          (context) => const MyProfilePage(),
+                        );
                       },
                     ),
                     // _menuItem(
@@ -356,7 +357,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                       iconColor: theme.colorScheme.onSurfaceVariant,
                       trailing: const SizedBox.shrink(),
                       onTap: () {
-                        _showLogoutConfirmDialog(context);
+                        LogoutConfirmDialog.show(context, closeDrawer: true);
                       },
                     ),
                     const SizedBox(height: 12),
@@ -370,140 +371,6 @@ class _DrawerMenuState extends State<DrawerMenu>
     );
   }
 
-  void _showLogoutConfirmDialog(BuildContext context) {
-    final theme = Theme.of(context);
-    final colorScheme = theme.colorScheme;
-
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          insetPadding: EdgeInsets.symmetric(horizontal: 18.0),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          backgroundColor:
-              theme.dialogTheme.backgroundColor ?? theme.colorScheme.surface,
-          title: Row(
-            children: [
-              Icon(
-                Icons.warning_amber_rounded,
-                color: colorScheme.error,
-                size: 28,
-              ),
-              const SizedBox(width: 12),
-              Text(
-                'Confirm Logout',
-                style:
-                    theme.dialogTheme.titleTextStyle ??
-                    theme.textTheme.titleLarge?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-              ),
-            ],
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Are you sure you want to logout?',
-                style:
-                    theme.dialogTheme.contentTextStyle ??
-                    theme.textTheme.bodyLarge,
-              ),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: colorScheme.errorContainer.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: colorScheme.error.withOpacity(0.2),
-                    width: 1,
-                  ),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Icon(
-                      Icons.info_outline,
-                      size: 20,
-                      color: colorScheme.error,
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Text(
-                        'Please make sure you have backed up your private key before logging out. You will need it to access your account again.',
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: colorScheme.onSurface,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              style: TextButton.styleFrom(
-                foregroundColor: colorScheme.onSurface,
-              ),
-              child: Text('Cancel', style: theme.textTheme.labelLarge),
-            ),
-            FilledButton.tonal(
-              onPressed: () async {
-                // Close dialog first
-                Navigator.of(context).pop();
-
-                // Wait a frame to ensure dialog is closed
-                await Future.delayed(const Duration(milliseconds: 100));
-
-                // Close drawer if still open
-                if (Navigator.of(context).canPop()) {
-                  Navigator.of(context).pop();
-                }
-
-                // Wait another frame to ensure drawer is closed
-                await Future.delayed(const Duration(milliseconds: 100));
-
-                // Save user pubkey (clear it)
-                await ChuChuCacheManager.defaultOXCacheManager.saveForeverData(
-                  StorageKeyTool.CHUCHU_USER_PUBKEY,
-                  '',
-                );
-
-                // Perform logout
-                await ChuChuUserInfoManager.sharedInstance.logout(
-                  needObserver: true,
-                );
-
-                // Navigate to login page and clear entire navigation stack
-                // Use global navigator key to ensure we navigate from root context
-                final navigatorContext =
-                    ChuChuNavigator.navigatorKey.currentContext ?? context;
-                Navigator.of(navigatorContext).pushAndRemoveUntil(
-                  MaterialPageRoute(builder: (context) => const NewLoginPage()),
-                  (route) => false, // Remove all previous routes
-                );
-              },
-              child: Text(
-                'Logout',
-                style: theme.textTheme.labelLarge?.copyWith(
-                  color: Colors.black,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   Widget _menuItem(
     BuildContext context,

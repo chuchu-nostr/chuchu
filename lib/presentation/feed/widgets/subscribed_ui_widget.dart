@@ -170,7 +170,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: Theme.of(context).dividerColor.withAlpha(30),
+              color: Color(0xFFE2E8F0),
               width: 1,
             ),
           ),
@@ -181,18 +181,18 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
               children: [
                 Text(
                   'SUBSCRIBED',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
+                  style: GoogleFonts.inter(
+                    color: Colors.black87,
                     fontSize: 16,
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w800,
                   ),
                 ),
                 Text(
                   '$monthlyPrice ${SubscriptionConfig.currencyUnit} per month',
-                  style: TextStyle(
-                    color: Theme.of(context).colorScheme.primary,
+                  style: GoogleFonts.inter(
+                    color: Colors.black87,
                     fontSize: 14,
-                    fontWeight: FontWeight.w500,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],

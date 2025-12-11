@@ -193,6 +193,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
           foregroundColor: kBgLight,
           elevation: _isScrolled ? 4 : 0,
           surfaceTintColor: Colors.transparent,
+          automaticallyImplyLeading: false,
           titleSpacing: 0,
           centerTitle: false,
           title: Align(
@@ -201,7 +202,7 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
               onTap: toggle,
               child: CommonImage(
                 iconName: 'logo_text_primary.png',
-                width: 140,
+                height: 40,
               ),
             ).setPaddingOnly(left: 12.0),
           ),

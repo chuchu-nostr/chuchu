@@ -39,16 +39,22 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
     
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios_new, color: Colors.black),
-          onPressed: () => Navigator.of(context).pop(),
+        leading: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Center(
+            child: CommonImage(
+              iconName: 'back_arrow_icon.png',
+              size: 24,
+              color: Colors.black87,
+            ),
+          ),
         ),
         title: Text(
           'Nostr Keys',
           style: GoogleFonts.inter(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
             fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: Colors.black,
           ),
         ),
         backgroundColor: Colors.white,

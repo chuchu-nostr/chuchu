@@ -1,3 +1,4 @@
+import 'package:chuchu/core/theme/app_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
 
@@ -11,7 +12,7 @@ class FeedSkeletonWidget extends StatelessWidget {
       padding: EdgeInsets.only(bottom: 12),
       // padding: const EdgeInsets.all(16.0),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: kBgLight,
       ),
       child: Shimmer.fromColors(
         baseColor: Colors.grey.shade300,

@@ -7,6 +7,7 @@ const Color kSecondary = Color(0xFFE12AFB); // Secondary brand color
 const Color kTertiary = Color(0xFF9810FA); // Tertiary brand color
 const Color kYellow = Color(0xFFFFB900); // Yellow accent color
 const Color kBgWhite = Color(0xFFFFFFFF);
+const Color kBgLight = Color(0xFFF8FAFC); // Light background color
 
 /// 🌈 Gradient colors
 const List<Color> kGradientColors = [
@@ -53,6 +54,13 @@ const Color kTextTertiary = Color(0xFF90A1B9); // Tertiary text (light gray)
 const Color kIconState = Color(0xFF8A96A3); // Icon default state color
  
 const Color KBorderColor = Color(0xFFF0F0F0); //
+
+/// 🎨 Additional colors
+const Color kBgDark = Color(0xFF2C2C2C); // Dark background color (for private key display)
+const Color kWarningBg = Color(0xFFFFFBEB); // Warning background color
+const Color kWarningBorder = Color(0xFFFEF3C6); // Warning border color
+const Color kWarningIcon = Color(0xFFFF9800); // Warning icon color
+const Color kWarningText = Color(0xFF973C00); // Warning text color
 
 final ColorScheme lightScheme = ColorScheme(
   brightness: Brightness.light,

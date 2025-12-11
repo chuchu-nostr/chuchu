@@ -99,12 +99,12 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     List<AggregatedNotification> aggregatedNotifications =
         _getAggregatedNotifications(notificationList);
     _aggregatedNotifications.addAll(aggregatedNotifications);
-    
+
     // Only update _lastTimestamp if we have notifications
     if (notificationList.isNotEmpty) {
       _lastTimestamp = notificationList.last.createAt;
     }
-    
+
     // notificationList.length < _limit ? _refreshController.loadNoData() : _refreshController.loadComplete();
     _isLoading = false;
     setState(() {});
@@ -162,10 +162,23 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
-        title: Text('Notifications', style: theme.textTheme.titleLarge),
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_ios, size: 20),
-          onPressed: () => Navigator.pop(context),
+        title: Text(
+          'Notifications',
+          style: GoogleFonts.inter(
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
+          ),
+        ),
+        leading: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Center(
+            child: CommonImage(
+              iconName: 'back_arrow_icon.png',
+              size: 24,
+              color: Colors.black87,
+            ),
+          ),
         ),
       ),
       body: _buildBody(),
@@ -188,7 +201,9 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             Text(
               'Loading notifications...',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.6),
+                color: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: 0.6),
               ),
             ),
           ],
@@ -217,10 +232,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
         padding: const EdgeInsets.only(top: 100),
         child: Column(
           children: [
-            CommonImage(
-              iconName: 'notifications_ill_icon.png',
-              width: 220,
-            ),
+            CommonImage(iconName: 'notifications_ill_icon.png', width: 220),
             const SizedBox(height: 24),
             Text(
               'No Notifications',
@@ -234,9 +246,9 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             Text(
               'You\'ll see notifications here when someone\ninteracts with your posts',
               textAlign: TextAlign.center,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withValues(alpha: 0.6),
-                height: 1.4,
+              style: GoogleFonts.inter(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 16,
               ),
             ),
           ],
@@ -250,7 +262,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
 
     return GestureDetector(
       onTap: () {
-        if(notification.kind == 7) return;
+        if (notification.kind == 7) return;
         _handleNotificationTap(notification);
       },
       child: Container(
@@ -297,13 +309,14 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
         return GestureDetector(
           onTap: () {
             if (user?.pubKey != null) {
-              if(widget.relayGroupDB == null){
+              if (widget.relayGroupDB == null) {
                 CommonToast.instance.show(context, 'Creator not enabled');
                 return;
               }
               ChuChuNavigator.pushPage(
                 context,
-                (context) => FeedPersonalPage(relayGroupDB: widget.relayGroupDB!),
+                (context) =>
+                    FeedPersonalPage(relayGroupDB: widget.relayGroupDB!),
               );
             }
           },
@@ -311,7 +324,9 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             decoration: BoxDecoration(
               shape: BoxShape.circle,
               border: Border.all(
-                color: Theme.of(context).colorScheme.outline.withValues(alpha: 0.1),
+                color: Theme.of(
+                  context,
+                ).colorScheme.outline.withValues(alpha: 0.1),
                 width: 2,
               ),
             ),
@@ -321,7 +336,8 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
               child: ChuChuCachedNetworkImage(
                 imageUrl: user?.picture ?? '',
                 fit: BoxFit.cover,
-                placeholder: (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                placeholder:
+                    (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
                 errorWidget:
                     (_, __, ___) => FeedWidgetsUtils.badgePlaceholderImage(),
                 width: 48,
@@ -364,7 +380,9 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
                       text: ' $actionText',
                       style: theme.textTheme.bodyMedium?.copyWith(
                         fontSize: 14,
-                        color: theme.colorScheme.onSurface.withValues(alpha: 0.7),
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.7,
+                        ),
                       ),
                     ),
                   ],
@@ -412,9 +430,9 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     );
   }
 
-  void _handleNotificationTap(AggregatedNotification notification)async {
+  void _handleNotificationTap(AggregatedNotification notification) async {
     String noteId;
-    if(notification.kind == 1 || notification.kind == 2) {
+    if (notification.kind == 1 || notification.kind == 2) {
       noteId = notification.notificationId;
     } else {
       noteId = notification.associatedNoteId;
@@ -425,35 +443,43 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
       isUpdateCache: true,
     );
 
-    if(noteNotifier != null){
-      ChuChuNavigator.pushPage(context, (context) => FeedInfoPage(isShowReply: true, notedUIModel: noteNotifier));
+    if (noteNotifier != null) {
+      ChuChuNavigator.pushPage(
+        context,
+        (context) =>
+            FeedInfoPage(isShowReply: true, notedUIModel: noteNotifier),
+      );
     }
   }
 
   static Future<NotedUIModel?> getValueNotifierNoted(
-      String noteId,
-      {
-        bool isUpdateCache = false,
-        String? rootRelay,
-        String? replyRelay,
-        List<String>? setRelay,
-        NotedUIModel? notedUIModel,
-      }) async {
+    String noteId, {
+    bool isUpdateCache = false,
+    String? rootRelay,
+    String? replyRelay,
+    List<String>? setRelay,
+    NotedUIModel? notedUIModel,
+  }) async {
     Map<String, NoteDBISAR> notesCache = Feed.sharedInstance.notesCache;
     NoteDBISAR? noteNotifier = notesCache[noteId];
 
-    if(!isUpdateCache && noteNotifier != null){
+    if (!isUpdateCache && noteNotifier != null) {
       return NotedUIModel(noteDB: noteNotifier);
     }
 
     List<String>? relaysList = setRelay;
-    if(relaysList == null){
-      String? relayStr = (notedUIModel?.noteDB.replyRelay ?? replyRelay) ?? (notedUIModel?.noteDB.rootRelay ?? rootRelay);
+    if (relaysList == null) {
+      String? relayStr =
+          (notedUIModel?.noteDB.replyRelay ?? replyRelay) ??
+          (notedUIModel?.noteDB.rootRelay ?? rootRelay);
       relaysList = relayStr != null ? [relayStr] : null;
     }
 
-    NoteDBISAR? note = await Feed.sharedInstance.loadNoteWithNoteId(noteId, relays: relaysList);
-    if(note == null) return null;
+    NoteDBISAR? note = await Feed.sharedInstance.loadNoteWithNoteId(
+      noteId,
+      relays: relaysList,
+    );
+    if (note == null) return null;
 
     return NotedUIModel(noteDB: note);
   }
@@ -495,10 +521,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         shape: BoxShape.circle,
-        border: Border.all(
-          color: color.withValues(alpha: 0.2),
-          width: 1,
-        ),
+        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
       ),
       child: Icon(icon, size: 12, color: color),
     );
@@ -520,7 +543,6 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
         return 'interacted with your post';
     }
   }
-
 
   Future<UserDBISAR?> _getUserInfo(String pubkey) async {
     try {

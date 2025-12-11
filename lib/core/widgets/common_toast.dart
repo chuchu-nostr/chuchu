@@ -2,6 +2,7 @@
 import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../utils/adapt.dart';
 import 'common_image.dart';
@@ -30,10 +31,10 @@ class CommonToast {
     EasyLoading.instance.backgroundColor = Theme.of(ChuChuNavigator.navigatorKey.currentContext!).colorScheme.primary;
     EasyLoading.instance.indicatorColor = Colors.transparent;
     EasyLoading.instance.textColor =  Colors.white;
-    EasyLoading.instance.textStyle = TextStyle(
+    EasyLoading.instance.textStyle = GoogleFonts.inter(
       color: Colors.white,
       fontSize: Adapt.px(12),
-      fontWeight: FontWeight.w500,
+      fontWeight: FontWeight.w600,
     );
     if (toastType == ToastType.normal) {
       await EasyLoading.showToast(
