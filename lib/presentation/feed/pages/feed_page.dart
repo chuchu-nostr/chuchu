@@ -9,7 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:chuchu/data/models/feed_extension_model.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:google_fonts/google_fonts.dart' show GoogleFonts;
 
 import '../../../core/account/account.dart';
 import '../../../core/feed/model/noteDB_isar.dart';
@@ -298,8 +298,9 @@ class _FeedPageState extends State<FeedPage>
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               'Subscribe to your favorite creators to see their exclusive content and updates.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              style: GoogleFonts.inter(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 16,
               ),
               textAlign: TextAlign.center,
             ),

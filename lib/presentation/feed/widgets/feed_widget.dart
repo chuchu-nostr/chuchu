@@ -35,6 +35,7 @@ class FeedWidget extends StatefulWidget {
   final bool isShowBottomBorder;
   final bool isShowOption;
   final bool isShowSimpleReplyBtn;
+  final bool isShowContentLeftPadding;
 
   final Function(NotedUIModel? notedUIModel)? clickMomentCallback;
   final NotedUIModel? notedUIModel;
@@ -55,6 +56,7 @@ class FeedWidget extends StatefulWidget {
     this.feedWidgetLayout = EFeedWidgetLayout.halfScreen,
     this.isShowSimpleReplyBtn = false,
     this.horizontalPadding = 0,
+    this.isShowContentLeftPadding = true,
   });
 
   @override
@@ -124,7 +126,7 @@ class _FeedWidgetState extends State<FeedWidget> {
       onTap: () => widget.clickMomentCallback?.call(notedUIModel),
       child: Container(
         width: double.infinity,
-        padding: EdgeInsets.only(bottom: 10),
+        padding: EdgeInsets.only(bottom: 4),
         decoration: BoxDecoration(border: _bottomBorder),
         child: child,
       ),
@@ -142,7 +144,7 @@ class _FeedWidgetState extends State<FeedWidget> {
           EdgeInsets.only(left:  12 ,right: widget.horizontalPadding),
         ),
         _showFeedContent().setPadding(
-          EdgeInsets.only(left: widget.isShowSimpleReplyBtn ? 0 : 12 ,right: widget.horizontalPadding),
+          EdgeInsets.only(left: widget.isShowContentLeftPadding ? 12 : 0 ,right: widget.horizontalPadding),
         ),
         _showFeedMediaWidget(),
         FeedReplyAbbreviateWidget(

@@ -5,6 +5,7 @@ import 'package:chuchu/presentation/feed/widgets/locked_content_section.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/foundation.dart';
+import 'package:google_fonts/google_fonts.dart' show GoogleFonts;
 
 import '../../../core/account/account.dart';
 import '../../../core/config/config.dart';
@@ -174,10 +175,10 @@ class _FeedPersonalPageState extends State<FeedPersonalPage>
             Expanded(
               child: Text(
                 name ?? '--',
-                style: const TextStyle(
+                style: GoogleFonts.inter(
                   color: Colors.white,
+                  fontWeight: FontWeight.w800,
                   fontSize: 18,
-                  fontWeight: FontWeight.w600,
                 ),
               ),
             ),
@@ -274,7 +275,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage>
 
     if (index == 2) {
       if (subscriptionStatus == ESubscriptionStatus.unsubscribed) {
-        return LockedContentSection();
+        return LockedContentSection(creatorName:widget.relayGroupDB.name);
       }
       if (notesList.isEmpty) {
         return _buildEmptyState();
@@ -306,7 +307,9 @@ class _FeedPersonalPageState extends State<FeedPersonalPage>
           const SizedBox(height: 24),
           Text(
             isAuthor ? 'Start Creating' : 'No Posts Yet',
-            style: theme.textTheme.titleLarge?.copyWith(
+            style: GoogleFonts.inter(
+              fontSize: 25,
+              color: Colors.black87,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -317,8 +320,9 @@ class _FeedPersonalPageState extends State<FeedPersonalPage>
               isAuthor
                   ? 'Share your first post and connect with your audience'
                   : 'This creator hasn\'t shared any content yet',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              style: GoogleFonts.inter(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 16,
               ),
               textAlign: TextAlign.center,
             ),
@@ -350,7 +354,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage>
     return Container(
       width: double.infinity,
       height: 6,
-      color: Theme.of(context).dividerColor.withAlpha(30),
+      color: Theme.of(context).dividerColor.withAlpha(20),
     );
   }
 

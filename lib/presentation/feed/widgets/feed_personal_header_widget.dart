@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
@@ -28,6 +29,7 @@ class FeedPersonalHeaderWidget extends StatefulWidget {
 }
 
 class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
+
   @override
   void initState() {
     super.initState();
@@ -36,6 +38,26 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
 
   void updateUserInfo()async {
     UserDBISAR? user = await Account.sharedInstance.getUserInfo(widget.relayGroupDB.groupId);
+  }
+
+  String _formatCount(int count) {
+    if (count < 1000) {
+      return count.toString();
+    } else if (count < 1000000) {
+      double k = count / 1000;
+      if (k % 1 == 0) {
+        return '${k.toInt()}K';
+      } else {
+        return '${k.toStringAsFixed(1)}K';
+      }
+    } else {
+      double m = count / 1000000;
+      if (m % 1 == 0) {
+        return '${m.toInt()}M';
+      } else {
+        return '${m.toStringAsFixed(1)}M';
+      }
+    }
   }
 
   @override
@@ -55,7 +77,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
             personalPageHeader(user),
             personalOption(user),
             personalInfo(user),
-            const SizedBox(height: 20),
+            const SizedBox(height: 10),
           ],
         );
       },
@@ -130,10 +152,10 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
             children: [
               Text(
                 user.name,
-                style: const TextStyle(
+                style: GoogleFonts.inter(
+                  fontSize: 20,
                   color: Colors.white,
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
+                  fontWeight: FontWeight.w800,
                 ),
               ),
               const SizedBox(width: 4),
@@ -222,33 +244,31 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
             width: 100,
             height: 100,
             decoration: BoxDecoration(
-              borderRadius: const BorderRadius.all(Radius.circular(100)),
-              border: Border.all(color: Colors.white, width: 0.5),
+              shape: BoxShape.circle,
+              border: Border.all(color: Colors.white, width: 4),
+              // boxShadow: [
+              //   BoxShadow(
+              //     color: Colors.black.withOpacity(0.2),
+              //     blurRadius: 2,
+              //     offset: Offset(0, 1),
+              //   ),
+              // ],
             ),
-            child: Container(
-              width: 100,
-              height: 100,
-              decoration: BoxDecoration(
-                color: Colors.pink.withValues(alpha: 0.3),
-                shape: BoxShape.circle,
-                border: Border.all(color: Colors.white, width: 4),
-              ),
-              child: GestureDetector(
-                onTap: () {},
-                child: FeedWidgetsUtils.clipImage(
-                  borderRadius: 100,
-                  imageSize: 100,
-                  child: imageUrl.isNotEmpty
-                      ? ChuChuCachedNetworkImage(
-                    imageUrl: imageUrl,
-                    fit: BoxFit.cover,
-                    placeholder: placeholderWidget,
-                    errorWidget: errorWidgetBuilder,
-                    width: 100,
-                    height: 100,
-                  )
-                      : FeedWidgetsUtils.badgePlaceholderImage(size: 100),
-                ),
+            child: GestureDetector(
+              onTap: () {},
+              child: FeedWidgetsUtils.clipImage(
+                borderRadius: 100,
+                imageSize: 100,
+                child: imageUrl.isNotEmpty
+                    ? ChuChuCachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.cover,
+                  placeholder: placeholderWidget,
+                  errorWidget: errorWidgetBuilder,
+                  width: 100,
+                  height: 100,
+                )
+                    : FeedWidgetsUtils.badgePlaceholderImage(size: 100),
               ),
             ),
           ),
@@ -297,6 +317,8 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
   }
 
   Widget personalInfo(RelayGroupDBISAR user) {
+    final theme = Theme.of(context);
+
     return Column(
       children: [
         Container(
@@ -304,10 +326,10 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
           margin: const EdgeInsets.only(left: 18, top: 8),
           child: Text(
             user.name,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.onSurface,
+            style: GoogleFonts.inter(
               fontSize: 20,
-              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+              fontWeight: FontWeight.w800,
             ),
           ),
         ),
@@ -316,8 +338,101 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
           margin: const EdgeInsets.only(left: 18),
           child: Text(
             user.about,
-            style: const TextStyle(color: kIconState, fontSize: 16),
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              color: Theme.of(context).colorScheme.onSurface,
+              fontWeight: FontWeight.w500,
+            ),
           ),
+        ),
+        // Following and Followers stats
+        ValueListenableBuilder<UserDBISAR>(
+          valueListenable: Account.sharedInstance.getUserNotifier(
+            user.groupId,
+          ),
+          builder: (context, userInfo, child) {
+            final followingCount = userInfo.followingList?.length ?? 0;
+            final followersCount = userInfo.followersList?.length ?? 0;
+
+            return Container(
+              margin: const EdgeInsets.only(left: 6),
+
+              width: double.infinity,
+              child: Row(
+                children: [
+                  // Following
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _formatCount(followingCount),
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Following',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 24),
+                  // Followers
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 8,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              _formatCount(followersCount),
+                              style: GoogleFonts.inter(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.black87,
+                              ),
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'Followers',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: theme.colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ],
     );

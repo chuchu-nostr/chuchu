@@ -1,9 +1,12 @@
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class LockedContentSection extends StatefulWidget {
+  String creatorName;
   final VoidCallback? onSubscribeToSeeContent;
 
-  const LockedContentSection({super.key, this.onSubscribeToSeeContent});
+  LockedContentSection({super.key, required this.creatorName ,this.onSubscribeToSeeContent});
 
   @override
   State<LockedContentSection> createState() => _LockedContentSectionState();
@@ -49,9 +52,27 @@ class _LockedContentSectionState extends State<LockedContentSection> {
           // ),
 
           const SizedBox(height: 40),
-
-          Icon(Icons.lock_outline, size: 80, color: Colors.grey[400]),
-
+          CommonImage(iconName: 'unsubscribe_icon.png',size: 220,),
+          Text(
+            'Not Subscribed Yet',
+            style: GoogleFonts.inter(
+              fontSize: 25,
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: Text(
+              "Subscribe to ${widget.creatorName} to view their exclusive content and posts.",
+              style: GoogleFonts.inter(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 16,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ),
           const SizedBox(height: 24),
 
           // Row(

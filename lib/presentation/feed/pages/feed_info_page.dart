@@ -297,7 +297,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
         FocusScope.of(context).requestFocus(FocusNode());
       },
       child: Scaffold(
-        backgroundColor: theme.colorScheme.surface,
+        backgroundColor: kBgLight,
         appBar: AppBar(
           leadingWidth: 30,
           title: Row(
@@ -351,7 +351,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
               ),
             ],
           ),
-          backgroundColor: theme.colorScheme.surface,
+          backgroundColor: kBgLight,
           foregroundColor: theme.colorScheme.onSurface,
           elevation: 0,
           centerTitle: false,
@@ -1097,7 +1097,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                                 notedUIModel: widget.notedUIModel,
                                 isShowUserInfo: false,
                                 isShowOption: false,
-                                isShowSimpleReplyBtn: true,
+                                isShowContentLeftPadding:false,
                                 clickMomentCallback: (
                                   NotedUIModel? notedUIModel,
                                 ) async {
