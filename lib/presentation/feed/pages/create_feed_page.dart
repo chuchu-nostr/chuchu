@@ -1,6 +1,9 @@
 import 'dart:typed_data';
 // Conditional import for File class
-import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
+import 'dart:io'
+    if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
+import 'package:chuchu/core/widgets/common_image.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:nostr_core_dart/nostr.dart';
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/services/blossom_uploader.dart';
@@ -19,10 +22,13 @@ import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/services/file_type.dart';
 import '../../../core/services/upload_utils.dart';
 import '../../../core/utils/feed_utils.dart';
+import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
+import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:chuchu/core/account/web_file_registry_stub.dart'
     if (dart.library.html) 'package:chuchu/core/account/web_file_registry.dart'
     as web_file_registry;
@@ -31,25 +37,28 @@ import 'package:path/path.dart' as Path;
 
 class CreateFeedPage extends StatefulWidget {
   final NotedUIModel? notedUIModel;
-  const CreateFeedPage({super.key,this.notedUIModel});
+  const CreateFeedPage({super.key, this.notedUIModel});
 
   @override
   State createState() => _CreateFeedPageState();
 }
 
-class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver, ChuChuUIRefreshMixin {
+class _CreateFeedPageState extends State<CreateFeedPage>
+    with ChuChuFeedObserver, ChuChuUIRefreshMixin {
   final TextEditingController _controller = TextEditingController();
   final List<File> _selectedImages = [];
   final List<String> _uploadedImageUrls = []; // Store uploaded image URLs
-  final Map<int, bool> _uploadingStatus = {}; // Track upload status for each image
-  
+  final Map<int, bool> _uploadingStatus =
+      {}; // Track upload status for each image
+
   // Video related state
   final List<File> _selectedVideos = [];
   final List<String> _uploadedVideoUrls = []; // Store uploaded video URLs
-  final Map<int, bool> _videoUploadingStatus = {}; // Track upload status for each video
+  final Map<int, bool> _videoUploadingStatus =
+      {}; // Track upload status for each video
   final Map<int, Uint8List?> _videoThumbnails = {}; // Store video thumbnails
-  
-  Map<String,UserDBISAR> draftCueUserMap = {};
+
+  Map<String, UserDBISAR> draftCueUserMap = {};
 
   bool _postFeedTag = false;
   bool _isUploading = false; // Track overall upload status
@@ -97,21 +106,19 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     }
   }
 
-  Widget _buildPlatformImage(
-    File image, {
-    BoxFit fit = BoxFit.cover,
-  }) {
+  Widget _buildPlatformImage(File image, {BoxFit fit = BoxFit.cover}) {
     if (kIsWeb) {
       final data = web_file_registry.getWebFileData(image.path);
       if (data != null) {
         return Image.memory(
           data,
           fit: fit,
-          errorBuilder: (context, error, stackTrace) => Container(
-            color: Colors.black12,
-            alignment: Alignment.center,
-            child: const Icon(Icons.broken_image),
-          ),
+          errorBuilder:
+              (context, error, stackTrace) => Container(
+                color: Colors.black12,
+                alignment: Alignment.center,
+                child: const Icon(Icons.broken_image),
+              ),
         );
       }
       return Container(
@@ -120,10 +127,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         child: const Icon(Icons.image_not_supported),
       );
     }
-    return Image.file(
-      image as dynamic,
-      fit: fit,
-    );
+    return Image.file(image as dynamic, fit: fit);
   }
 
   Future<void> _pickImages() async {
@@ -134,7 +138,9 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       for (final image in picked) {
         if (kIsWeb) {
           final bytes = await image.readAsBytes();
-          final virtualPath = web_file_registry.createVirtualFilePath(image.name);
+          final virtualPath = web_file_registry.createVirtualFilePath(
+            image.name,
+          );
           web_file_registry.registerWebFileData(virtualPath, bytes);
           filesToAdd.add(File(virtualPath));
         } else {
@@ -144,13 +150,17 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       setState(() {
         _selectedImages.addAll(filesToAdd);
         // Initialize upload status for new images only (don't override existing upload status)
-        for (int i = _uploadedImageUrls.length; i < _selectedImages.length; i++) {
+        for (
+          int i = _uploadedImageUrls.length;
+          i < _selectedImages.length;
+          i++
+        ) {
           if (!_uploadingStatus.containsKey(i)) {
             _uploadingStatus[i] = false;
           }
         }
       });
-      
+
       // Wait for the next frame to ensure state is updated before uploading
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _uploadNewImages();
@@ -163,7 +173,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     // Note: ImagePicker doesn't support multi-video selection, so we'll allow multiple single selections
     // or use pickVideo() for single selection. For better UX, let's allow selecting multiple videos one by one
     // by calling pickVideo() in a loop until user cancels, or show a dialog
-    
+
     // For now, we'll use pickVideo() for single video selection
     // In a production app, you might want to implement a custom multi-video picker
     final picked = await picker.pickVideo(source: ImageSource.gallery);
@@ -171,7 +181,9 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       File videoFile;
       if (kIsWeb) {
         final bytes = await picked.readAsBytes();
-        final virtualPath = web_file_registry.createVirtualFilePath(picked.name);
+        final virtualPath = web_file_registry.createVirtualFilePath(
+          picked.name,
+        );
         web_file_registry.registerWebFileData(virtualPath, bytes);
         videoFile = File(virtualPath);
       } else {
@@ -187,14 +199,13 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         // Generate thumbnail
         _generateVideoThumbnail(videoFile, index);
       });
-      
+
       // Wait for the next frame to ensure state is updated before uploading
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _uploadNewVideos();
       });
     }
   }
-
 
   void _removeImage(int index) {
     setState(() {
@@ -276,7 +287,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         maxWidth: 200,
         quality: 75,
       );
-      
+
       if (thumbnail != null && mounted) {
         setState(() {
           _videoThumbnails[index] = thumbnail;
@@ -290,7 +301,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   /// Upload newly selected images
   Future<void> _uploadNewImages() async {
     if (_isUploading) return;
-    
+
     setState(() {
       _isUploading = true;
     });
@@ -301,37 +312,40 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       for (int i = _uploadedImageUrls.length; i < _selectedImages.length; i++) {
         indicesToUpload.add(i);
       }
-      
+
       // Upload images that haven't been uploaded yet
       final failedIndices = <int>[];
       for (int i in indicesToUpload) {
         if (!mounted) return;
-        
+
         final imageFile = _selectedImages[i];
-        
+
         try {
           // Check file size before uploading
           final exceedsSize = await _checkFileSize(imageFile);
           if (exceedsSize) {
             if (mounted) {
-              CommonToast.instance.show(context, 'File size exceeds the maximum allowed size of 20 MiB');
+              CommonToast.instance.show(
+                context,
+                'File size exceeds the maximum allowed size of 20 MiB',
+              );
               // Mark for removal
               failedIndices.add(i);
             }
             continue; // Skip this file, don't upload
           }
-          
+
           // Set upload status to true
           if (mounted) {
             setState(() {
               _uploadingStatus[i] = true;
             });
           }
-          
+
           // Handle upload path based on platform
           String uploadFilePath;
           String fileName;
-          
+
           if (kIsWeb || imageFile.path.startsWith('webfile://')) {
             // For web platform, use the virtual path directly
             // BolssomUploader will handle webfile:// paths internally
@@ -346,7 +360,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             uploadFilePath = processedImageFile.path;
             fileName = uploadFilePath.split('/').last;
           }
-          
+
           final imageUrl = await BolssomUploader.upload(
             'https://blossom.band',
             uploadFilePath,
@@ -367,13 +381,13 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             final errorMessage = e.toString();
             // Show error message
             CommonToast.instance.show(context, errorMessage);
-            
+
             // Mark as failed, will remove after loop
             failedIndices.add(i);
           }
         }
       }
-      
+
       // Remove failed images from back to front to avoid index issues
       if (mounted && failedIndices.isNotEmpty) {
         failedIndices.sort((a, b) => b.compareTo(a)); // Sort descending
@@ -404,7 +418,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       for (int i = _uploadedVideoUrls.length; i < _selectedVideos.length; i++) {
         indicesToUpload.add(i);
       }
-      
+
       // Upload videos that haven't been uploaded yet
       final failedIndices = <int>[];
       for (int i in indicesToUpload) {
@@ -417,13 +431,16 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           final exceedsSize = await _checkFileSize(file);
           if (exceedsSize) {
             if (mounted) {
-              CommonToast.instance.show(context, 'File size exceeds the maximum allowed size of 20 MiB');
+              CommonToast.instance.show(
+                context,
+                'File size exceeds the maximum allowed size of 20 MiB',
+              );
               // Mark for removal
               failedIndices.add(i);
             }
             continue; // Skip this file, don't upload
           }
-          
+
           // Set upload status to true
           if (mounted) {
             setState(() {
@@ -432,15 +449,16 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           }
 
           final currentTime = DateTime.now().microsecondsSinceEpoch.toString();
-          String fileName = '$currentTime${Path.basenameWithoutExtension(file.path)}.mp4';
-          
+          String fileName =
+              '$currentTime${Path.basenameWithoutExtension(file.path)}.mp4';
+
           UploadResult result = await UploadUtils.uploadFile(
-              context: context,
-              fileType: FileType.video,
-              file: file,
-              filename: fileName,
+            context: context,
+            fileType: FileType.video,
+            file: file,
+            filename: fileName,
           );
-          
+
           if (result.isSuccess && result.url.isNotEmpty) {
             if (mounted) {
               setState(() {
@@ -456,13 +474,13 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             final errorMessage = e.toString();
             // Show error message
             CommonToast.instance.show(context, errorMessage);
-            
+
             // Mark as failed, will remove after loop
             failedIndices.add(i);
           }
         }
       }
-      
+
       // Remove failed videos from back to front to avoid index issues
       if (mounted && failedIndices.isNotEmpty) {
         failedIndices.sort((a, b) => b.compareTo(a)); // Sort descending
@@ -482,7 +500,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   @override
   Widget buildBody(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return Scaffold(
       resizeToAvoidBottomInset: true,
       appBar: AppBar(
@@ -494,9 +512,9 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         leading: TextButton(
           onPressed: () => Navigator.pop(context),
           child: Text(
-            'Cancel', 
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
+            'Cancel',
+            style: GoogleFonts.inter(
+              color: theme.colorScheme.onSurfaceVariant,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -505,24 +523,36 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: ElevatedButton(
-              onPressed: _isAnyUploading() ? null : _postMoment,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _isAnyUploading()
-                    ? theme.colorScheme.outline.withOpacity(0.3)
-                    : theme.colorScheme.primary,
-                foregroundColor: _isAnyUploading()
-                    ? theme.colorScheme.onSurface.withOpacity(0.5)
-                    : Colors.white,
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Publish', 
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _isAnyUploading() ? null : _postMoment,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient:
+                        _isAnyUploading() ? null : getBrandGradientHorizontal(),
+                    color:
+                        _isAnyUploading()
+                            ? theme.colorScheme.outline.withOpacity(0.3)
+                            : null,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    'Publish',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color:
+                          _isAnyUploading()
+                              ? theme.colorScheme.onSurface.withOpacity(0.5)
+                              : Colors.white,
+                    ),
+                  ),
                 ),
               ),
             ),
@@ -560,37 +590,52 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   Widget _buildTextInputArea() {
     final theme = Theme.of(context);
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18.0, vertical: 16.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CircleAvatar(
-            radius: 24,
-            backgroundColor: theme.colorScheme.primary.withOpacity(0.1),
-            child: Icon(
-              Icons.person, 
-              color: theme.colorScheme.primary,
-              size: 24,
+          ValueListenableBuilder<UserDBISAR>(
+            valueListenable: Account.sharedInstance.getUserNotifier(
+              Account.sharedInstance.currentPubkey,
             ),
+            builder: (context, user, child) {
+              return Container(
+                child: FeedWidgetsUtils.clipImage(
+                  borderRadius: 40,
+                  imageSize: 40,
+                  child: ChuChuCachedNetworkImage(
+                    imageUrl: user.picture ?? '',
+                    fit: BoxFit.cover,
+                    placeholder:
+                        (_, __) => FeedWidgetsUtils.badgePlaceholderImage(),
+                    errorWidget:
+                        (_, __, ___) =>
+                            FeedWidgetsUtils.badgePlaceholderImage(),
+                    width: 40,
+                    height: 40,
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(width: 16),
           Expanded(
             child: TextField(
               controller: _controller,
               maxLines: null,
-              style: TextStyle(
-                fontSize: 18,
+              style: GoogleFonts.inter(
                 color: theme.colorScheme.onSurface,
-                fontWeight: FontWeight.w400,
+                fontSize: 18,
+                fontWeight: FontWeight.w500,
               ),
               decoration: InputDecoration(
                 hintText: "What's new?",
-                hintStyle: TextStyle(
-                  color: theme.colorScheme.onSurface.withOpacity(0.6),
+                hintStyle: GoogleFonts.inter(
+                  color: theme.colorScheme.onSurface.withOpacity(0.5),
                   fontSize: 18,
-                  fontWeight: FontWeight.w400,
+                  fontWeight: FontWeight.w500,
                 ),
                 border: InputBorder.none,
               ),
@@ -606,15 +651,13 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     if (_selectedVideos.isNotEmpty) {
       return const SizedBox();
     }
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       child: Row(
         children: [
           // const SizedBox(width: 40), // Align with text input
-          Expanded(
-            child: _buildMediaButtons(),
-          ),
+          Expanded(child: _buildMediaButtons()),
         ],
       ),
     );
@@ -622,10 +665,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   Widget _buildMediaButtons() {
     final theme = Theme.of(context);
-    
+
     // Hide video button if images are selected
     final bool hideVideoButton = _selectedImages.isNotEmpty;
-    
+
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
@@ -634,7 +677,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: theme.colorScheme.outline.withOpacity(0.2),
+              color: theme.colorScheme.outline.withOpacity(0.1),
               width: 1,
             ),
           ),
@@ -644,23 +687,12 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Container(
-                  padding: const EdgeInsets.all(6),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(6),
-                  ),
-                  child: Icon(
-                    Icons.image,
-                    color: theme.colorScheme.primary,
-                    size: 18,
-                  ),
-                ),
+                CommonImage(iconName: 'image_bg_icon.png', size: 24),
                 const SizedBox(width: 8),
                 Text(
                   'Add images',
-                  style: TextStyle(
-                    color: theme.colorScheme.onSurface.withOpacity(0.7),
+                  style: GoogleFonts.inter(
+                    color: theme.colorScheme.onSurfaceVariant,
                     fontSize: 14,
                     fontWeight: FontWeight.w500,
                   ),
@@ -676,7 +708,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(8),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.2),
+                color: theme.colorScheme.outline.withOpacity(0.1),
                 width: 1,
               ),
             ),
@@ -686,23 +718,12 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(6),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(
-                      Icons.videocam,
-                      color: theme.colorScheme.primary,
-                      size: 18,
-                    ),
-                  ),
+                  CommonImage(iconName: 'video_bg_icon.png', size: 24),
                   const SizedBox(width: 8),
                   Text(
                     'Add video',
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    style: GoogleFonts.inter(
+                      color: theme.colorScheme.onSurfaceVariant,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -717,7 +738,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   Widget _buildImageDisplayArea() {
     if (_selectedImages.isEmpty) return const SizedBox();
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       child: Container(
@@ -747,13 +768,11 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
 
   Widget _buildVideoDisplayArea() {
     if (_selectedVideos.isEmpty) return const SizedBox();
-    
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
       child: Container(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(12),
           child: AnimatedSwitcher(
@@ -781,7 +800,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   Widget _buildSingleImage(File image, int index, {required Key key}) {
     final isUploaded = index < _uploadedImageUrls.length;
     final isUploading = _uploadingStatus[index] ?? false;
-    
+
     return Stack(
       key: key,
       children: [
@@ -791,10 +810,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           clipBehavior: Clip.hardEdge,
           child: Stack(
             children: [
-              _buildPlatformImage(
-                image,
-                fit: BoxFit.cover,
-              ),
+              _buildPlatformImage(image, fit: BoxFit.cover),
               if (isUploading)
                 Positioned.fill(
                   child: Container(
@@ -863,7 +879,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           final image = _selectedImages[index];
           final isUploaded = index < _uploadedImageUrls.length;
           final isUploading = _uploadingStatus[index] ?? false;
-          
+
           return Stack(
             children: [
               Container(
@@ -878,10 +894,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                 child: Stack(
                   children: [
                     SizedBox.expand(
-                      child: _buildPlatformImage(
-                        image,
-                        fit: BoxFit.cover,
-                      ),
+                      child: _buildPlatformImage(image, fit: BoxFit.cover),
                     ),
                     if (isUploading)
                       Positioned.fill(
@@ -892,7 +905,9 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                           ),
                           child: const Center(
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                               strokeWidth: 2,
                             ),
                           ),
@@ -903,7 +918,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                         bottom: 8,
                         left: 8,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(8),
@@ -915,7 +933,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                               SizedBox(width: 2),
                               Text(
                                 'Done',
-                                style: TextStyle(color: Colors.white, fontSize: 8),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                ),
                               ),
                             ],
                           ),
@@ -948,7 +969,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
     final isUploaded = index < _uploadedVideoUrls.length;
     final isUploading = _videoUploadingStatus[index] ?? false;
     final thumbnail = _videoThumbnails[index];
-    
+
     return Stack(
       key: key,
       children: [
@@ -960,14 +981,23 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
             children: [
               // Show thumbnail if available, otherwise show play icon
               if (thumbnail != null)
-                Image.memory(thumbnail, fit: BoxFit.cover, width: double.infinity, height: 200)
+                Image.memory(
+                  thumbnail,
+                  fit: BoxFit.cover,
+                  width: double.infinity,
+                  height: 200,
+                )
               else
                 Container(
                   width: double.infinity,
                   height: 200,
                   color: Colors.black12,
                   child: const Center(
-                    child: Icon(Icons.play_circle_outline, size: 50, color: Colors.grey),
+                    child: Icon(
+                      Icons.play_circle_outline,
+                      size: 50,
+                      color: Colors.grey,
+                    ),
                   ),
                 ),
               if (isUploading)
@@ -1038,7 +1068,7 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
           final isUploaded = index < _uploadedVideoUrls.length;
           final isUploading = _videoUploadingStatus[index] ?? false;
           final thumbnail = _videoThumbnails[index];
-          
+
           return Stack(
             children: [
               Container(
@@ -1054,14 +1084,23 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                   children: [
                     // Show thumbnail if available, otherwise show play icon
                     if (thumbnail != null)
-                      Image.memory(thumbnail, fit: BoxFit.cover, width: 120, height: 120)
+                      Image.memory(
+                        thumbnail,
+                        fit: BoxFit.cover,
+                        width: 120,
+                        height: 120,
+                      )
                     else
                       Container(
                         width: 120,
                         height: 120,
                         color: Colors.black12,
                         child: const Center(
-                          child: Icon(Icons.play_circle_outline, size: 30, color: Colors.grey),
+                          child: Icon(
+                            Icons.play_circle_outline,
+                            size: 30,
+                            color: Colors.grey,
+                          ),
                         ),
                       ),
                     if (isUploading)
@@ -1073,7 +1112,9 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                           ),
                           child: const Center(
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.white,
+                              ),
                               strokeWidth: 2,
                             ),
                           ),
@@ -1084,7 +1125,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                         bottom: 8,
                         left: 8,
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(8),
@@ -1096,7 +1140,10 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
                               SizedBox(width: 2),
                               Text(
                                 'Done',
-                                style: TextStyle(color: Colors.white, fontSize: 8),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 8,
+                                ),
                               ),
                             ],
                           ),
@@ -1128,22 +1175,24 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   void _postMoment() async {
     if (_postFeedTag) return;
     _postFeedTag = true;
-    
+
     ChuChuLoading.show();
-    
+
     try {
       // Wait for all images to complete upload
-      if (_selectedImages.isNotEmpty && _uploadedImageUrls.length < _selectedImages.length) {
+      if (_selectedImages.isNotEmpty &&
+          _uploadedImageUrls.length < _selectedImages.length) {
         await _uploadNewImages();
       }
-      
+
       // Wait for all videos to complete upload
-      if (_selectedVideos.isNotEmpty && _uploadedVideoUrls.length < _selectedVideos.length) {
+      if (_selectedVideos.isNotEmpty &&
+          _uploadedVideoUrls.length < _selectedVideos.length) {
         await _uploadNewVideos();
       }
-      
+
       final inputText = _controller.text;
-      
+
       // Build content with image and video URLs
       String mediaContent = '';
       if (_uploadedImageUrls.isNotEmpty) {
@@ -1152,14 +1201,21 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       if (_uploadedVideoUrls.isNotEmpty) {
         mediaContent += ' ${_uploadedVideoUrls.join(' ')}';
       }
-      
-      String content = '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)}$mediaContent';
+
+      String content =
+          '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)}$mediaContent';
       if (content.trim().isEmpty) {
         CommonToast.instance.show(context, 'Content empty tips');
         return;
       }
-      List<String> previous = Nip29.getPrevious([[Account.sharedInstance.currentPubkey]]);
-      OKEvent? eventStatus  = await RelayGroup.sharedInstance.sendGroupNotes(Account.sharedInstance.currentPubkey,content,previous);
+      List<String> previous = Nip29.getPrevious([
+        [Account.sharedInstance.currentPubkey],
+      ]);
+      OKEvent? eventStatus = await RelayGroup.sharedInstance.sendGroupNotes(
+        Account.sharedInstance.currentPubkey,
+        content,
+        previous,
+      );
 
       if (eventStatus.status) {
         CommonToast.instance.show(context, 'Sent successfully');
@@ -1174,7 +1230,6 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
       _postFeedTag = false;
     }
   }
-
 
   Future<File?> removeExifWithCompress(File file) async {
     if (kIsWeb) {
@@ -1196,6 +1251,5 @@ class _CreateFeedPageState extends State<CreateFeedPage> with ChuChuFeedObserver
   }
 
   @override
-  didNewNotesCallBackCallBack(List<NoteDBISAR> notes) {
-  }
+  didNewNotesCallBackCallBack(List<NoteDBISAR> notes) {}
 }

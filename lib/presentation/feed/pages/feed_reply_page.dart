@@ -1,11 +1,13 @@
 import 'dart:async';
 // Conditional import for File class
-import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
+import 'dart:io'
+    if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
 import 'package:chuchu/core/relayGroups/relayGroup+note.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter_image_compress/flutter_image_compress.dart';
 import 'package:path/path.dart' as Path;
@@ -21,12 +23,14 @@ import '../../../core/feed/model/noteDB_isar.dart';
 import 'package:nostr_core_dart/src/nips/nip_029.dart';
 import 'package:nostr_core_dart/src/ok.dart';
 import '../../../core/relayGroups/relayGroup.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/feed_content_analyze_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
+import '../../../core/widgets/common_image.dart';
 import '../../../core/widgets/common_toast.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../widgets/feed_widget.dart';
@@ -40,7 +44,8 @@ class FeedReplyPage extends StatefulWidget {
   State<FeedReplyPage> createState() => _FeedReplyPageState();
 }
 
-class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin {
+class _FeedReplyPageState extends State<FeedReplyPage>
+    with ChuChuUIRefreshMixin {
   final TextEditingController _textController = TextEditingController();
   // Align with create_feed_page: store selected images as File and support removal
   final List<File> _selectedImages = [];
@@ -53,7 +58,8 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
   // Video related state
   final List<File> _selectedVideos = [];
   final List<String> _uploadedVideoUrls = []; // Store uploaded video URLs
-  final Map<int, bool> _videoUploadingStatus = {}; // Track upload status for each video
+  final Map<int, bool> _videoUploadingStatus =
+      {}; // Track upload status for each video
   final Map<int, Uint8List?> _videoThumbnails = {}; // Store video thumbnails
   bool _isUploading = false; // Track overall upload status
 
@@ -73,8 +79,8 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
           onPressed: () => Navigator.pop(context),
           child: Text(
             'Cancel',
-            style: TextStyle(
-              color: theme.colorScheme.onSurface,
+            style: GoogleFonts.inter(
+              color: theme.colorScheme.onSurfaceVariant,
               fontSize: 16,
               fontWeight: FontWeight.w500,
             ),
@@ -83,21 +89,29 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: ElevatedButton(
-              onPressed: _postMoment,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: theme.colorScheme.primary,
-                foregroundColor: Colors.white,
-                shape: const StadiumBorder(),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 8,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                onTap: _postMoment,
+                borderRadius: BorderRadius.circular(20),
+                child: Container(
+                  decoration: BoxDecoration(
+                    gradient: getBrandGradientHorizontal(),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
+                  child: Text(
+                    'Publish',
+                    style: GoogleFonts.inter(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-                elevation: 0,
-              ),
-              child: const Text(
-                'Publish',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
               ),
             ),
           ),
@@ -127,9 +141,10 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             ValueListenableBuilder<UserDBISAR>(
-                              valueListenable: Account.sharedInstance.getUserNotifier(
-                                Account.sharedInstance.currentPubkey,
-                              ),
+                              valueListenable: Account.sharedInstance
+                                  .getUserNotifier(
+                                    Account.sharedInstance.currentPubkey,
+                                  ),
                               builder: (context, value, child) {
                                 return FeedWidgetsUtils.clipImage(
                                   borderRadius: 32,
@@ -137,10 +152,16 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
                                   child: ChuChuCachedNetworkImage(
                                     imageUrl: value.picture ?? '',
                                     fit: BoxFit.cover,
-                                    placeholder: (context, url) =>
-                                        FeedWidgetsUtils.badgePlaceholderImage(size: 32),
-                                    errorWidget: (context, url, error) =>
-                                        FeedWidgetsUtils.badgePlaceholderImage(size: 32),
+                                    placeholder:
+                                        (context, url) =>
+                                            FeedWidgetsUtils.badgePlaceholderImage(
+                                              size: 32,
+                                            ),
+                                    errorWidget:
+                                        (context, url, error) =>
+                                            FeedWidgetsUtils.badgePlaceholderImage(
+                                              size: 32,
+                                            ),
                                     width: 32,
                                     height: 32,
                                   ),
@@ -153,16 +174,15 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
                                 controller: _textController,
                                 maxLines: null,
                                 minLines: 2,
-                                style: TextStyle(
-                                  fontSize: 16,
+                                style: GoogleFonts.inter(
                                   color: theme.colorScheme.onSurface,
-                                  fontWeight: FontWeight.w400,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w500,
                                 ),
                                 decoration: InputDecoration(
                                   hintText: 'Post your reply',
-                                  hintStyle: TextStyle(
-                                    color: theme.colorScheme.onSurface
-                                        .withOpacity(0.6),
+                                  hintStyle: GoogleFonts.inter(
+                                    color: theme.colorScheme.outline,
                                     fontSize: 16,
                                     fontWeight: FontWeight.w400,
                                   ),
@@ -275,7 +295,9 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       _momentUserInfoWidget(),
+                      const SizedBox(height: 8),
                       FeedWidget(
+                        isShowContentLeftPadding:false,
                         isShowOption: false,
                         feedWidgetLayout: EFeedWidgetLayout.fullScreen,
                         isShowAllContent: false,
@@ -299,10 +321,10 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
                         children: [
                           Text(
                             'Reply ',
-                            style: TextStyle(
-                              color: Colors.black,
+                            style: GoogleFonts.inter(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
                               fontSize: 16,
-                              fontWeight: FontWeight.w400,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                           _momentReplyName(),
@@ -372,18 +394,18 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
                 children: [
                   Text(
                     value.name,
-                    style: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurface,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
+                    style: GoogleFonts.inter(
+                      color: Colors.black87,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
                     ),
                   ),
                 ],
               ),
               Text(
                 widget.notedUIModel.createAtStr,
-                style: TextStyle(
-                  color: Theme.of(context).colorScheme.onSurface,
+                style: GoogleFonts.inter(
+                  color: Theme.of(context).colorScheme.outline,
                   fontSize: 14,
                   fontWeight: FontWeight.w400,
                 ),
@@ -592,7 +614,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
               color: theme.colorScheme.surface,
               borderRadius: BorderRadius.circular(12),
               border: Border.all(
-                color: theme.colorScheme.outline.withOpacity(0.2),
+                color: theme.colorScheme.outline.withOpacity(0.1),
                 width: 1,
               ),
             ),
@@ -600,24 +622,14 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
             child: GestureDetector(
               onTap: _pickImages,
               child: Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Icon(
-                      Icons.image,
-                      color: theme.colorScheme.primary,
-                      size: 20,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
+                  CommonImage(iconName: 'image_bg_icon.png', size: 24),
+                  const SizedBox(width: 8),
                   Text(
                     'Add images',
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.7),
+                    style: GoogleFonts.inter(
+                      color: theme.colorScheme.onSurfaceVariant,
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
                     ),
@@ -635,7 +647,7 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
                 color: theme.colorScheme.surface,
                 borderRadius: BorderRadius.circular(12),
                 border: Border.all(
-                  color: theme.colorScheme.outline.withOpacity(0.2),
+                  color: theme.colorScheme.outline.withOpacity(0.1),
                   width: 1,
                 ),
               ),
@@ -643,24 +655,14 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
               child: GestureDetector(
                 onTap: _pickVideos,
                 child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.primary.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Icon(
-                        Icons.videocam,
-                        color: theme.colorScheme.primary,
-                        size: 20,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
+                    CommonImage(iconName: 'video_bg_icon.png', size: 24),
+                    const SizedBox(width: 8),
                     Text(
                       'Add video',
-                      style: TextStyle(
-                        color: theme.colorScheme.onSurface.withOpacity(0.7),
+                      style: GoogleFonts.inter(
+                        color: theme.colorScheme.onSurfaceVariant,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -785,7 +787,9 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
           UploadResult result = await UploadUtils.uploadFile(
             context: context,
             fileType: FileType.video,
-            file: file as dynamic, // Type cast for conditional import compatibility
+            file:
+                file
+                    as dynamic, // Type cast for conditional import compatibility
             filename: fileName,
           );
 
@@ -847,7 +851,10 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
           Positioned.fill(
             child: ClipRRect(
               borderRadius: BorderRadius.circular(12),
-              child: Image.file(image as dynamic, fit: BoxFit.cover), // Type cast for conditional import compatibility
+              child: Image.file(
+                image as dynamic,
+                fit: BoxFit.cover,
+              ), // Type cast for conditional import compatibility
             ),
           ),
           if ((_uploadingStatus[0] ?? false))
@@ -928,7 +935,10 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: Image.file(image as dynamic, fit: BoxFit.cover), // Type cast for conditional import compatibility
+                      child: Image.file(
+                        image as dynamic,
+                        fit: BoxFit.cover,
+                      ), // Type cast for conditional import compatibility
                     ),
                     if (_uploadingStatus[index] ?? false)
                       Positioned.fill(
@@ -1225,7 +1235,9 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
 
   Future<double> _computeAspectRatio(File file) async {
     try {
-      final bytes = await (file as dynamic).readAsBytes() as Uint8List; // Type cast for conditional import compatibility
+      final bytes =
+          await (file as dynamic).readAsBytes()
+              as Uint8List; // Type cast for conditional import compatibility
       final completer = Completer<ui.Image>();
       ui.decodeImageFromList(bytes, (ui.Image img) => completer.complete(img));
       final img = await completer.future;
@@ -1276,7 +1288,9 @@ class _FeedReplyPageState extends State<FeedReplyPage> with ChuChuUIRefreshMixin
         '${Path.basenameWithoutExtension(file.path)}_noexif.jpg',
       );
       final result = await FlutterImageCompress.compressAndGetFile(
-        (file as dynamic).absolute.path, // Type cast for conditional import compatibility
+        (file as dynamic)
+            .absolute
+            .path, // Type cast for conditional import compatibility
         targetPath,
         quality: 95,
       );
