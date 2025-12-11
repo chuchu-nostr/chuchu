@@ -1,5 +1,8 @@
 import 'package:chuchu/core/utils/adapt.dart';
-import 'package:flutter/material.dart' hide RefreshIndicator, RefreshIndicatorState;
+import 'package:chuchu/core/widgets/common_image.dart';
+import 'package:flutter/material.dart'
+    hide RefreshIndicator, RefreshIndicatorState;
+import 'package:google_fonts/google_fonts.dart';
 
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
@@ -9,7 +12,6 @@ import '../utils/feed_utils.dart';
 export 'package:pull_to_refresh/src/smart_refresher.dart';
 
 class ChuChuSmartRefresher extends StatelessWidget {
-
   ChuChuSmartRefresher({
     Key? key,
     required this.controller,
@@ -40,17 +42,17 @@ class ChuChuSmartRefresher extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SmartRefresher(
-        scrollController:scrollController,
-        controller: controller,
-        header: header ?? refresherHeader,
-        footer: footer ?? refresherFooter,
-        enablePullDown: enablePullDown ?? true,
-        enablePullUp: enablePullUp ?? false,
-        enableTwoLevel: enableTwoLevel ?? false,
-        onRefresh: onRefresh,
-        onLoading: onLoading,
-        onTwoLevel: onTwoLevel,
-        child: child
+      scrollController: scrollController,
+      controller: controller,
+      header: header ?? refresherHeader,
+      footer: footer ?? refresherFooter,
+      enablePullDown: enablePullDown ?? true,
+      enablePullUp: enablePullUp ?? false,
+      enableTwoLevel: enableTwoLevel ?? false,
+      onRefresh: onRefresh,
+      onLoading: onLoading,
+      onTwoLevel: onTwoLevel,
+      child: child,
     );
   }
 
@@ -63,7 +65,7 @@ class ChuChuSmartRefresher extends StatelessWidget {
       builder: (BuildContext context, LoadStatus? mode) {
         final theme = Theme.of(context);
         Widget body;
-        
+
         if (mode == LoadStatus.idle) {
           body = Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -155,17 +157,10 @@ class ChuChuSmartRefresher extends StatelessWidget {
               SizedBox(width: 8),
               Text(
                 "Load failed, tap to retry",
-                style: TextStyle(
-                  color: theme.colorScheme.error,
-                  fontSize: 14,
-                ),
+                style: TextStyle(color: theme.colorScheme.error, fontSize: 14),
               ),
               SizedBox(width: 8),
-              Icon(
-                Icons.refresh,
-                color: theme.colorScheme.error,
-                size: 16,
-              ),
+              Icon(Icons.refresh, color: theme.colorScheme.error, size: 16),
             ],
           );
         } else if (mode == LoadStatus.canLoading) {
@@ -212,60 +207,70 @@ class ChuChuSmartRefresher extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(
-                  Icons.star,
-                  color: theme.colorScheme.onSurface.withOpacity(0.3),
-                  size: 12,
-                ),
                 SizedBox(width: 8),
                 Container(
-                  width: 20,
+                  width: 50,
                   height: 1,
-                  color: theme.dividerColor,
-                ),
-                SizedBox(width: 8),
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 12),
-                  child: Text(
-                    "No more data",
-                    style: TextStyle(
-                      color: theme.colorScheme.onSurface.withOpacity(0.5),
-                      fontSize: 12,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.white,
+                        Colors.grey.withOpacity(0.3),
+                      ],
                     ),
                   ),
                 ),
                 SizedBox(width: 8),
-                Container(
-                  width: 20,
-                  height: 1,
-                  color: theme.dividerColor,
+                CommonImage(
+                  iconName: 'start_ill_icon.png',
+                  size: 12,
+                  color: Theme.of(context).primaryColor,
+                ),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: Text(
+                    "No more data",
+                    style: GoogleFonts.inter(
+                      color: Theme.of(context).colorScheme.outline,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                ),
+                CommonImage(
+                  iconName: 'start_ill_icon.png',
+                  size: 12,
+                  color: Theme.of(context).primaryColor,
                 ),
                 SizedBox(width: 8),
-                Icon(
-                  Icons.star,
-                  color: theme.colorScheme.onSurface.withOpacity(0.3),
-                  size: 12,
+                Container(
+                  width: 50,
+                  height: 1,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        Colors.grey.withOpacity(0.3),
+                        Colors.white,
+                      ],
+                    ),
+                  ),
                 ),
+                SizedBox(width: 8),
               ],
             ),
           );
         }
-        
-        return Container(
-          height: 55.0,
-          child: Center(child: body),
-        );
+
+        return Container(height: 55.0, child: Center(child: body));
       },
     );
   }
-
 }
 
 class LoadingHeader extends RefreshIndicator {
-
   @override
   State<StatefulWidget> createState() {
-
     // TODO: implement createState
     return LoadingHeaderState();
   }
@@ -273,7 +278,6 @@ class LoadingHeader extends RefreshIndicator {
 
 class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
     with SingleTickerProviderStateMixin {
-
   late final AnimationController _controller;
 
   int? refreshTime;
@@ -283,9 +287,11 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
     // TODO: implement initState
     // init frame is 2
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(milliseconds: 1500));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
     _getUpdateTime();
-
   }
 
   @override
@@ -304,7 +310,10 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
       _controller.repeat();
     } else if (mode == RefreshStatus.completed) {
       _controller.stop();
-      ChuChuCacheManager.defaultOXCacheManager.saveData("pull_refresh_time", DateTime.now().millisecondsSinceEpoch);
+      ChuChuCacheManager.defaultOXCacheManager.saveData(
+        "pull_refresh_time",
+        DateTime.now().millisecondsSinceEpoch,
+      );
       setState(() {
         refreshTime = DateTime.now().millisecondsSinceEpoch;
       });
@@ -314,20 +323,17 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
     super.onModeChange(mode);
   }
 
-  _getUpdateTime(){
-
-    ChuChuCacheManager.defaultOXCacheManager.getData("pull_refresh_time",defaultValue: null).then((value){
-
-      if(value != null){
-
-        setState(() {
-          refreshTime = value;
+  _getUpdateTime() {
+    ChuChuCacheManager.defaultOXCacheManager
+        .getData("pull_refresh_time", defaultValue: null)
+        .then((value) {
+          if (value != null) {
+            setState(() {
+              refreshTime = value;
+            });
+          }
         });
-      }
-    });
-
   }
-
 
   @override
   void resetValue() {
@@ -338,7 +344,7 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
   @override
   Widget buildContent(BuildContext context, RefreshStatus mode) {
     final theme = Theme.of(context);
-    
+
     return Column(
       children: [
         SizedBox(
@@ -405,25 +411,24 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
               fontSize: 12.px,
             ),
           ),
-        )
+        ),
       ],
     );
   }
 
-
-  _getRefreshTimeString(){
-
-    if(refreshTime != null){
-      if(DateUtils.isSameDay(DateTime.fromMillisecondsSinceEpoch(refreshTime!), DateTime.now())){
+  _getRefreshTimeString() {
+    if (refreshTime != null) {
+      if (DateUtils.isSameDay(
+        DateTime.fromMillisecondsSinceEpoch(refreshTime!),
+        DateTime.now(),
+      )) {
         return 'Last updated: Today ${FeedUtils.formatTimestamp(refreshTime!)}';
-      }else{
+      } else {
         return 'Last updated: ${FeedUtils.formatTimestamp(refreshTime!)}';
       }
     }
 
-
     return "";
-
   }
 
   @override
