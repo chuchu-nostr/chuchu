@@ -151,7 +151,7 @@ class _MyProfilePageState extends State<MyProfilePage>
 
   Widget _buildVersionInfo() {
     return Text(
-      'Version 1.0.0',
+      'Version 0.0.3',
       style: GoogleFonts.inter(
         fontSize: 14,
         color: Theme.of(context).colorScheme.outline,
@@ -194,8 +194,8 @@ class _MyProfilePageState extends State<MyProfilePage>
                         ValueListenableBuilder<UserDBISAR>(
                           valueListenable: Account.sharedInstance
                               .getUserNotifier(
-                                Account.sharedInstance.currentPubkey,
-                              ),
+                            Account.sharedInstance.currentPubkey,
+                          ),
                           builder: (context, user, child) {
                             // Always prioritize local image if available
                             // This ensures smooth experience without any flash of default image
@@ -225,7 +225,7 @@ class _MyProfilePageState extends State<MyProfilePage>
                                           FeedWidgetsUtils.badgePlaceholderImage(
                                             size: 100,
                                           ),
-                                    ),
+                                ),
                                 width: 100,
                                 height: 100,
                               );
@@ -304,29 +304,35 @@ class _MyProfilePageState extends State<MyProfilePage>
                       style: GoogleFonts.inter(
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
                 ),
                 const SizedBox(width: 12),
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 20,
-                    vertical: 8,
-                  ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.primary,
+                    gradient: getBrandGradientHorizontal(),
                     borderRadius: BorderRadius.circular(20),
                   ),
-                  child: GestureDetector(
+                  child: Material(
+                    color: Colors.transparent,
+                    child: InkWell(
                     onTap: _confirmAvatarUpdate,
+                      borderRadius: BorderRadius.circular(20),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 8,
+                        ),
                     child: Text(
                       'Confirm',
                       style: GoogleFonts.inter(
-                        color: Theme.of(context).colorScheme.onPrimary,
+                            color: Colors.white,
                         fontSize: 14,
-                        fontWeight: FontWeight.w500,
+                        fontWeight: FontWeight.w800,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -334,14 +340,14 @@ class _MyProfilePageState extends State<MyProfilePage>
               ],
             )
           else
-            Text(
-              'Tap to change photo',
-              style: GoogleFonts.inter(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontWeight: FontWeight.w500,
-                fontSize: 14,
-              ),
+          Text(
+            'Tap to change photo',
+            style: GoogleFonts.inter(
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
             ),
+          ),
         ],
       ),
     );
@@ -384,7 +390,6 @@ class _MyProfilePageState extends State<MyProfilePage>
 
   Widget _buildOtherInfoCard() {
     return Container(
-      height: 80,
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
@@ -398,7 +403,6 @@ class _MyProfilePageState extends State<MyProfilePage>
         ],
       ),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _buildInfoRow(
             iconName: 'keys_icon.png',
@@ -426,12 +430,12 @@ class _MyProfilePageState extends State<MyProfilePage>
         decoration:
             isShowUnderline
                 ? BoxDecoration(
-                  border: Border(
-                    bottom: BorderSide(
-                      width: 0.5,
-                      color: Theme.of(context).dividerColor.withOpacity(0.15),
-                    ),
-                  ),
+          border: Border(
+            bottom: BorderSide(
+              width: 0.5,
+              color: Theme.of(context).dividerColor.withOpacity(0.15),
+            ),
+          ),
                 )
                 : null,
         child: Row(
@@ -529,11 +533,11 @@ class _MyProfilePageState extends State<MyProfilePage>
               content: Text('$fieldName updated successfully!'),
               backgroundColor: Colors.green,
               behavior: SnackBarBehavior.floating,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
             ),
-          );
+          ),
+        );
 
           // Refresh UI
           setState(() {});
@@ -560,7 +564,7 @@ class _MyProfilePageState extends State<MyProfilePage>
         source: ImageSource.gallery,
         imageQuality: 80,
       );
-
+      
       if (picked != null) {
         final bytes = await picked.readAsBytes();
         if (kIsWeb) {
@@ -587,7 +591,7 @@ class _MyProfilePageState extends State<MyProfilePage>
                 null; // Clear previous uploaded URL when selecting new image
           });
         }
-
+        
         // Wait for the next frame to ensure state is updated before uploading
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _uploadAvatar();
@@ -597,7 +601,7 @@ class _MyProfilePageState extends State<MyProfilePage>
       // Print detailed error for debugging
       debugPrint('Error picking avatar: $e');
       debugPrint('Stack trace: $stackTrace');
-
+      
       // Show user-friendly error message
       _showErrorSnackBar('Unable to select photo. Please try again.');
     }
@@ -614,7 +618,7 @@ class _MyProfilePageState extends State<MyProfilePage>
     try {
       String uploadFilePath;
       String fileName;
-
+      
       if (kIsWeb || _selectedAvatarPath!.startsWith('webfile://')) {
         // For web platform, use the virtual path directly
         // BolssomUploader will handle webfile:// paths internally
@@ -627,7 +631,7 @@ class _MyProfilePageState extends State<MyProfilePage>
         uploadFilePath = (processed ?? imageFile).path;
         fileName = uploadFilePath.split('/').last;
       }
-
+      
       final imageUrl = await BolssomUploader.upload(
         'https://blossom.band',
         uploadFilePath,
@@ -650,7 +654,7 @@ class _MyProfilePageState extends State<MyProfilePage>
       // Print detailed error for debugging
       debugPrint('Error uploading avatar: $e');
       debugPrint('Stack trace: $stackTrace');
-
+      
       if (mounted) {
         // Show user-friendly error message
         _showErrorSnackBar(
@@ -687,11 +691,11 @@ class _MyProfilePageState extends State<MyProfilePage>
   // Confirm avatar update - actually update the profile
   Future<void> _confirmAvatarUpdate() async {
     if (_uploadedAvatarUrl == null) return;
-
+    
     try {
       final uploadedUrl = _uploadedAvatarUrl!;
       await _updateUserAvatar(uploadedUrl);
-
+      
       // Clear uploaded URL to hide confirm/cancel buttons
       // But keep local image bytes to continue showing local image
       // This prevents any flash of default image or network loading
@@ -701,13 +705,13 @@ class _MyProfilePageState extends State<MyProfilePage>
           // Keep _selectedAvatarBytes and _selectedAvatarPath to continue using local image
         });
       }
-
+      
       CommonToast.instance.show(context, 'Avatar updated successfully');
     } catch (e, stackTrace) {
       // Print detailed error for debugging
       debugPrint('Error confirming avatar update: $e');
       debugPrint('Stack trace: $stackTrace');
-
+      
       // Show user-friendly error message
       if (mounted) {
         _showErrorSnackBar('Failed to update avatar. Please try again.');
@@ -743,12 +747,12 @@ class _MyProfilePageState extends State<MyProfilePage>
       // Update picture field
       currentUserInfo.picture = imageUrl;
       debugPrint('📸 Updating avatar with URL: $imageUrl');
-
+      
       // Update profile through Account
       final result = await Account.sharedInstance.updateProfile(
         currentUserInfo,
       );
-
+      
       if (result != null) {
         debugPrint('✅ Avatar updated successfully. Picture URL: ${result.picture}');
         // Update ChuChuUserInfoManager's currentUserInfo
@@ -761,7 +765,7 @@ class _MyProfilePageState extends State<MyProfilePage>
       // Print detailed error for debugging
       debugPrint('Error updating user avatar: $e');
       debugPrint('Stack trace: $stackTrace');
-
+      
       // Show user-friendly error message
       _showErrorSnackBar(
         'Failed to update avatar. Please check your connection and try again.',
@@ -795,7 +799,7 @@ class _MyProfilePageState extends State<MyProfilePage>
         color: Colors.transparent,
         child: InkWell(
           onTap: () => LogoutConfirmDialog.show(context, closeDrawer: false),
-          borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(12),
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
@@ -810,22 +814,22 @@ class _MyProfilePageState extends State<MyProfilePage>
               ],
             ),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
                 Icon(Icons.logout, size: 20, color: Colors.red[600]),
-                const SizedBox(width: 8),
-                Text(
-                  'Log Out',
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.red[600],
-                  ),
-                ),
-              ],
+            const SizedBox(width: 8),
+            Text(
+              'Log Out',
+              style: GoogleFonts.inter(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.red[600],
+              ),
             ),
-          ),
+          ],
+        ),
+      ),
         ),
       ),
     );
