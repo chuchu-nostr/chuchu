@@ -172,6 +172,8 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             ),
           ),
         ),
+        actions: [SizedBox(width: 46,)],
+        leadingWidth: 46,
         leading: GestureDetector(
           onTap: () => Navigator.of(context).pop(),
           child: Center(
