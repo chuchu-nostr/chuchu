@@ -246,9 +246,6 @@ extension EInfo on RelayGroup {
     relay ??= simpleGroups.relay;
     if (groups.containsKey(groupId) && groups[groupId]!.value.lastUpdatedTime > 0) {
       return groups[groupId]!.value;
-    } else {
-      RelayGroupDBISAR groupDB = RelayGroupDBISAR(groupId: groupId, relay: relay);
-      syncGroupToDB(groupDB);
     }
     await Connect.sharedInstance.connectRelays([relay], relayKind: RelayKind.temp);
     Completer<RelayGroupDBISAR?> completer = Completer<RelayGroupDBISAR?>();
@@ -271,14 +268,25 @@ extension EInfo on RelayGroup {
   Future<List<RelayGroupDBISAR>> searchMyGroupsMetadataFromRelays(
       List<String> relays, GroupSearchCallBack? groupCallback) async {
     if (relays.isEmpty) return [];
+   
     Map<String, RelayGroupDBISAR> result = {};
-    List<RelayGroupDBISAR> resultFromDB = await searchGroupsFromDB(relays);
-    for (var db in resultFromDB) {
-      result[db.groupId] = db;
+   
+    UserDBISAR? me = Account.sharedInstance.me;
+    if (me != null && me.relayGroupsList != null && me.relayGroupsList!.isNotEmpty) {
+      for (String id in me.relayGroupsList!) {
+        SimpleGroups simpleGroups = getHostAndGroupId(id);
+        String groupId = simpleGroups.groupId;
+        if (groupId.isEmpty) continue;
+        RelayGroupDBISAR? groupDB = groups[groupId]?.value;
+        if (groupDB != null) {
+          result[groupId] = groupDB;
+        }
+      }
     }
-    groupCallback?.call(resultFromDB);
+    groupCallback?.call(result.values.toList());
     await Connect.sharedInstance.connectRelays(relays, relayKind: RelayKind.temp);
     Completer<List<RelayGroupDBISAR>> completer = Completer<List<RelayGroupDBISAR>>();
+   
     Filter f = Filter(kinds: [39002], p: [pubkey]);
     Connect.sharedInstance.addSubscription([f], relays: relays,
         eventCallBack: (event, relay) async {
@@ -287,23 +295,31 @@ extension EInfo on RelayGroup {
         groupDB = handleGroupMetadata(event, relay);
       } else if (event.kind == 39002) {
         groupDB = handleGroupMembers(event, relay);
-      }
-      if (groupDB != null) {
-        result[groupDB.groupId] = groupDB;
+
+        if (groupDB != null) {
+          List<String>? members = groupDB.members;
+          if (members != null && members.isNotEmpty && members.contains(pubkey)) {
+            result[groupDB.groupId] = groupDB;
+          }
+        }
       }
     }, eoseCallBack: (requestId, ok, relay, unCompletedRelays) async {
-      // for (var groupDB in List.from(result.values.toList())) {
-      //   groupDB = await searchGroupMembersFromRelays(groupDB);
-      //   result[groupDB.groupId] = groupDB;
-      // }
-      
-      // Reset myGroups with the result groups
       if (unCompletedRelays.isEmpty) {
-        myGroups.clear();
-        for (var groupDB in result.values) {
-          myGroups[groupDB.groupId] = ValueNotifier<RelayGroupDBISAR>(groupDB);
+        UserDBISAR? me = Account.sharedInstance.me;
+        if (me != null && me.relayGroupsList != null && me.relayGroupsList!.isNotEmpty) {
+          Map<String, ValueNotifier<RelayGroupDBISAR>> newMyGroups = {};
+          for (String id in me.relayGroupsList!) {
+            SimpleGroups simpleGroups = getHostAndGroupId(id);
+            String groupId = simpleGroups.groupId;
+            if (groupId.isEmpty) continue;
+            if (groups.containsKey(groupId)) {
+              newMyGroups[groupId] = groups[groupId]!;
+            }
+          }
+          myGroups = newMyGroups;
+        } else {
+          myGroups = {};
         }
-        // Sync to database
         await syncMyGroupListToRelay();
       }
       
