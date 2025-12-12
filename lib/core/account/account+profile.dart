@@ -96,7 +96,11 @@ extension AccountProfile on Account {
       }
     }, eoseCallBack: (requestId, ok, relay, unRelays) async {
       if (unRelays.isEmpty) {
-        userCache[pubkey] = ValueNotifier<UserDBISAR>(db!);
+        if (userCache.containsKey(pubkey)) {
+          userCache[pubkey]!.value = db!;
+        } else {
+          userCache[pubkey] = ValueNotifier<UserDBISAR>(db!);
+        }
         if (pubkey == currentPubkey) me = db;
         Account.saveUserToDB(db!);
         if (!completer.isCompleted) completer.complete(db);
@@ -150,8 +154,11 @@ extension AccountProfile on Account {
       if (event.kind == 30008) {
         users[p] = _handleKind30008Event(db, event)!;
       }
-      userCache[p]?.value = users[p]!;
-      userCache[p]?.notifyListeners();
+      if (userCache.containsKey(p)) {
+        userCache[p]!.value = users[p]!;
+      } else {
+        userCache[p] = ValueNotifier<UserDBISAR>(users[p]!);
+      }
       pQueue.remove(p);
       Account.saveUserToDB(users[p]!);
     }, eoseCallBack: (requestId, ok, relay, unRelays) async {
@@ -191,7 +198,12 @@ extension AccountProfile on Account {
     };
     Map additionMap = jsonDecode(db.otherField ?? '{}');
     map.addAll(additionMap);
-    Event event = await Nip1.setMetadata(jsonEncode(map), currentPubkey, currentPrivkey);
+    
+    // Print the content that will be sent to relay
+    final contentJson = jsonEncode(map);
+
+    Event event = await Nip1.setMetadata(contentJson, currentPubkey, currentPrivkey);
+
     Connect.sharedInstance.sendEvent(event, sendCallBack: (ok, relay) {
       if (ok.status) {
         completer.complete(db);
@@ -203,9 +215,17 @@ extension AccountProfile on Account {
   }
 
   UserDBISAR? _handleKind0Event(UserDBISAR? db, Event event) {
-    if (event.content.isEmpty) return db;
+    if (event.content.isEmpty) {
+      return db;
+    }
     Map map = jsonDecode(event.content);
-    if (db != null && db.lastUpdatedTime < event.createdAt) {
+    // For new users (db is null) or when event is newer, update the user info
+    bool shouldUpdate = db == null || db.lastUpdatedTime < event.createdAt;
+    
+    if (shouldUpdate) {
+      // Create new UserDBISAR if it doesn't exist
+      db ??= UserDBISAR(pubKey: event.pubkey);
+      
       db.name = map['name']?.toString();
       db.gender = map['gender']?.toString();
       db.area = map['area']?.toString();
@@ -246,11 +266,13 @@ extension AccountProfile on Account {
       Map filteredMap = Map.from(map)..removeWhere((key, value) => keysToRemove.contains(key));
       db.otherField = jsonEncode(filteredMap);
     } else {
-      if (db?.lnurl == null || db?.lnurl == 'null' || db!.lnurl!.isEmpty) {
-        db?.lnurl = null;
+      // Only update lnurl if event is older but lnurl is missing
+      // In this branch, db is guaranteed to be non-null (otherwise shouldUpdate would be true)
+      if (db.lnurl == null || db.lnurl == 'null' || (db.lnurl?.isEmpty ?? true)) {
+        db.lnurl = null;
       }
-      db?.lnurl ??= map['lud16'];
-      db?.lnurl ??= map['lud06'];
+      db.lnurl ??= map['lud16'];
+      db.lnurl ??= map['lud06'];
     }
     return db;
   }
