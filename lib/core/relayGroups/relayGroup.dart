@@ -417,13 +417,20 @@ class RelayGroup {
 
   void _setGroup(RelayGroupDBISAR groupDB){
     if (groups.containsKey(groupDB.groupId)) {
-      groups[groupDB.groupId]?.value = groupDB;
+      final notifier = groups[groupDB.groupId]!;
+      // Create a new object copy to ensure ValueNotifier triggers notifyListeners
+      // This is necessary when object properties are modified directly (e.g., in editMetadata)
+      final newGroup = groupDB.copy();
+      notifier.value = newGroup;
     } else {
       groups[groupDB.groupId] = ValueNotifier(groupDB);
     }
     if (myGroups.containsKey(groupDB.groupId)) {
-      myGroups[groupDB.groupId]?.value = groupDB;
-    }
+      final notifier = myGroups[groupDB.groupId]!;
+      // Create a new object copy to ensure ValueNotifier triggers notifyListeners
+      final newGroup = groupDB.copy();
+      notifier.value = newGroup;
+    } 
     Account.sharedInstance.syncUserFromGroupMetadata(groupDB);
   }
 

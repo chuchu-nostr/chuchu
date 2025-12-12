@@ -12,6 +12,35 @@ extension RelayGroupDBISARExtensions on RelayGroupDBISAR {
   RelayGroupDBISAR withGrowableLevels() => this
     ..pinned = pinned?.toList()
     ..members = members?.toList();
+
+  /// Create a copy of this RelayGroupDBISAR with all properties copied
+  /// Note: id is not copied as it's managed by Isar and should be auto-assigned
+  RelayGroupDBISAR copy() {
+    return RelayGroupDBISAR(
+      groupId: groupId,
+      author: author,
+      relay: relay,
+      relayPubkey: relayPubkey,
+      private: private,
+      closed: closed,
+      lastUpdatedTime: lastUpdatedTime,
+      lastMembersUpdatedTime: lastMembersUpdatedTime,
+      lastAdminsUpdatedTime: lastAdminsUpdatedTime,
+      mute: mute,
+      adminsString: adminsString,
+      name: name,
+      about: about,
+      picture: picture,
+      pinned: pinned?.toList(),
+      members: members?.toList(),
+      memberSubscriptionExpiryJson: memberSubscriptionExpiryJson,
+      memberSubscriptionExpiry: memberSubscriptionExpiry,
+      level: level,
+      point: point,
+      subscriptionAmount: subscriptionAmount,
+      groupWalletId: groupWalletId,
+    );
+  }
 }
 
 @collection
