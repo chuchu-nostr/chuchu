@@ -381,11 +381,11 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
           ),
         ),
         // Following and Followers stats
-        ValueListenableBuilder<UserDBISAR>(
-          valueListenable: Account.sharedInstance.getUserNotifier(user.groupId),
-          builder: (context, userInfo, child) {
-            final followingCount = userInfo.followingList?.length ?? 0;
-            final followersCount = userInfo.followersList?.length ?? 0;
+        ValueListenableBuilder<RelayGroupDBISAR>(
+          valueListenable: RelayGroup.sharedInstance.getRelayGroupNotifier(user.groupId),
+          builder: (context, groups, child) {
+            final followingCount = 0;
+            final followersCount = groups.members?.length ?? 0;
 
             return Container(
               margin: const EdgeInsets.only(left: 6),
