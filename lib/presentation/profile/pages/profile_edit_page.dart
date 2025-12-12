@@ -42,8 +42,8 @@ class _ProfileEditPageState extends State<ProfileEditPage>
   Uint8List?
   _selectedCoverPhotoBytes; // In-memory image for preview (web compatible)
   String? _uploadedCoverPhotoUrl; // Network URL after upload (used when saving)
-  bool _isLoading = false;
   bool _isUploadingCoverPhoto = false;
+  bool _isSavingCoverPhoto = false; // Track if cover photo is being saved to relay
 
   late RelayGroupDBISAR groupInfo;
 
@@ -192,25 +192,67 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                 ),
               ),
             ),
-          // Change Cover button positioned at bottom right
+          // Change Cover button or Cancel/Confirm buttons positioned at bottom right
           Positioned(
             bottom: 16,
             right: 20,
-            child: GestureDetector(
-              onTap: _setImages,
+            child: _buildCoverPhotoActionButtons(),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Build cover photo action buttons (Change Cover or Cancel/Confirm)
+  Widget _buildCoverPhotoActionButtons() {
+    // If cover photo is uploaded but not confirmed, show Cancel and Confirm buttons
+    if (_uploadedCoverPhotoUrl != null && !_isSavingCoverPhoto) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Cancel button
+          GestureDetector(
+            onTap: _cancelCoverPhotoUpload,
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Color(0xFF1E3A5F), // Dark blue
+                color: Colors.white.withOpacity(0.9),
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.camera_alt, size: 18, color: Colors.white),
+                  Icon(Icons.close, size: 18, color: Colors.black87),
+                  SizedBox(width: 8),
+                  Text(
+                    'Cancel',
+                    style: GoogleFonts.inter(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          SizedBox(width: 12),
+          // Confirm button
+          GestureDetector(
+            onTap: _confirmCoverPhotoUpload,
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: getBrandGradient(),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.check, size: 18, color: Colors.white),
                     SizedBox(width: 8),
                     Text(
-                      'Change Cover',
+                    'Confirm',
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -220,9 +262,48 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                   ],
                 ),
               ),
+          ),
+        ],
+      );
+    }
+    
+    // Default: Show Change Cover button
+    return GestureDetector(
+      onTap: _isSavingCoverPhoto ? null : _setImages,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: _isSavingCoverPhoto 
+              ? Colors.grey.withOpacity(0.7)
+              : Color(0xFF1E3A5F), // Dark blue
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (_isSavingCoverPhoto)
+              SizedBox(
+                width: 18,
+                height: 18,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                ),
+              )
+            else
+              Icon(Icons.camera_alt, size: 18, color: Colors.white),
+            if (!_isSavingCoverPhoto) SizedBox(width: 8),
+            if (!_isSavingCoverPhoto)
+              Text(
+                'Change Cover',
+                style: GoogleFonts.inter(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white,
             ),
           ),
         ],
+        ),
       ),
     );
   }
@@ -956,11 +1037,14 @@ class _ProfileEditPageState extends State<ProfileEditPage>
         uploadFilePath,
         fileName: fileName,
       );
+      print('🖼️ [_uploadCoverPhoto] Upload result: $imageUrl');
       if (imageUrl != null && mounted) {
         // Save uploaded URL separately, keep local path for display
         _uploadedCoverPhotoUrl = imageUrl;
+        print('🖼️ [_uploadCoverPhoto] Saved uploaded URL: $_uploadedCoverPhotoUrl');
         _hasChangesNotifier.value = _hasChanges();
-        CommonToast.instance.show(context, 'Cover photo uploaded successfully');
+        setState(() {});
+        CommonToast.instance.show(context, 'Cover photo uploaded successfully. Please confirm to save.');
       } else {
         throw Exception('Upload returned empty URL');
       }
@@ -989,11 +1073,19 @@ class _ProfileEditPageState extends State<ProfileEditPage>
         RelayGroup.sharedInstance.groups[widget.relayGroup.groupId]?.value ??
         widget.relayGroup;
 
+    print('🖼️ [_submitGroupMetadata] Starting metadata update');
+    print('🖼️ [_submitGroupMetadata] GroupId: ${relayGroup.groupId}');
+    print('🖼️ [_submitGroupMetadata] Current picture: ${relayGroup.picture}');
+    print('🖼️ [_submitGroupMetadata] Uploaded cover photo URL: $_uploadedCoverPhotoUrl');
+
         final updatedName = _usernameController.text.trim();
         final updatedAbout = _aboutController.text.trim();
         final updatedPicture = _uploadedCoverPhotoUrl ?? relayGroup.picture;
     final updatedSubscriptionAmount =
         subscriptionAmountOverride ?? subscriptionPrice;
+
+    print('🖼️ [_submitGroupMetadata] Updated picture to send: $updatedPicture');
+    print('🖼️ [_submitGroupMetadata] Calling editMetadata...');
 
         OKEvent event = await RelayGroup.sharedInstance.editMetadata(
           relayGroup.groupId,
@@ -1007,6 +1099,8 @@ class _ProfileEditPageState extends State<ProfileEditPage>
           groupWalletId: relayGroup.groupWalletId,
         );
 
+    print('🖼️ [_submitGroupMetadata] editMetadata result: status=${event.status}, message=${event.message}');
+
         if (event.status) {
       // Sync local state so _hasChanges() returns correct value
       relayGroup.name = updatedName;
@@ -1014,9 +1108,78 @@ class _ProfileEditPageState extends State<ProfileEditPage>
       relayGroup.picture = updatedPicture;
       relayGroup.subscriptionAmount = updatedSubscriptionAmount;
       subscriptionPrice = updatedSubscriptionAmount;
+      print('🖼️ [_submitGroupMetadata] Local state synced. Picture: ${relayGroup.picture}');
+        } else {
+      print('🖼️ [_submitGroupMetadata] Failed to update metadata: ${event.message}');
     }
 
     return event;
+  }
+
+  /// Cancel cover photo upload - clear uploaded URL and reset state
+  void _cancelCoverPhotoUpload() {
+    print('🖼️ [_cancelCoverPhotoUpload] Canceling cover photo upload');
+    setState(() {
+      _uploadedCoverPhotoUrl = null;
+      _selectedCoverPhotoPath = null;
+      _selectedCoverPhotoBytes = null;
+    });
+    _hasChangesNotifier.value = _hasChanges();
+    CommonToast.instance.show(context, 'Cover photo upload canceled');
+  }
+
+  /// Confirm cover photo upload - save to relay
+  Future<void> _confirmCoverPhotoUpload() async {
+    if (_uploadedCoverPhotoUrl == null) return;
+    
+    print('🖼️ [_confirmCoverPhotoUpload] Confirming cover photo upload');
+    setState(() {
+      _isSavingCoverPhoto = true;
+    });
+
+    try {
+      OKEvent event = await _submitGroupMetadata(reason: 'Cover photo updated');
+      if (event.status) {
+        print('🖼️ [_confirmCoverPhotoUpload] Cover photo saved to relay successfully');
+        getGroupInfo();
+        setState(() {
+          _isSavingCoverPhoto = false;
+          // Clear uploaded URL after successful save - it's now in relayGroup.picture
+          _uploadedCoverPhotoUrl = null;
+        });
+        if (mounted) {
+          FeedWidgetsUtils.showMessage(
+            context,
+            'Cover photo saved successfully',
+            isError: false,
+          );
+        }
+      } else {
+        print('🖼️ [_confirmCoverPhotoUpload] Failed to save cover photo to relay: ${event.message}');
+        setState(() {
+          _isSavingCoverPhoto = false;
+        });
+        if (mounted) {
+          FeedWidgetsUtils.showMessage(
+            context,
+            event.message.isNotEmpty ? event.message : 'Failed to save cover photo',
+            isError: true,
+          );
+        }
+      }
+    } catch (e) {
+      print('🖼️ [_confirmCoverPhotoUpload] Error saving cover photo to relay: $e');
+      setState(() {
+        _isSavingCoverPhoto = false;
+      });
+      if (mounted) {
+        FeedWidgetsUtils.showMessage(
+          context,
+          'Error saving cover photo: $e',
+          isError: true,
+        );
+      }
+    }
   }
 
   /// Handle saving subscription price inside bottom sheet

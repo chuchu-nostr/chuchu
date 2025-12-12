@@ -258,56 +258,66 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
 
   Widget _authorCard(RelayGroupDBISAR relayGroup) {
     final theme = Theme.of(context);
-    return ValueListenableBuilder<UserDBISAR>(
-      valueListenable: Account.sharedInstance.getUserNotifier(
-        relayGroup.groupId,
+    Widget pictureView = Container(
+      height: 100,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(16),
+          topRight: Radius.circular(16),
+        ),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Color(0xFF00CED1), // Blue-teal
+            Color(0xFFFFB900), // Golden yellow
+            Color(0xFFFF4444), // Red
+          ],
+          stops: [0.0, 0.5, 1.0],
+        ),
       ),
-      builder: (context, userInfo, child) {
-        return GestureDetector(
-          onTap: () {
-            ChuChuNavigator.pushPage(
-              context,
-              (context) => FeedPersonalPage(relayGroupDB: relayGroup),
-            );
-          },
-          child: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withOpacity(0.2),
-                  blurRadius: 2,
-                  offset: Offset(0, 1),
-                ),
-              ],
+    );
+    return GestureDetector(
+      onTap: () {
+        ChuChuNavigator.pushPage(
+          context,
+          (context) => FeedPersonalPage(relayGroupDB: relayGroup),
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2),
+              blurRadius: 2,
+              offset: Offset(0, 1),
             ),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                // Gradient banner at top
-                Container(
+          ],
+        ),
+        child: Stack(
+          clipBehavior: Clip.none,
+          children: [
+            // Gradient banner at top
+            relayGroup.picture.isEmpty
+                ? pictureView
+                : ChuChuCachedNetworkImage(
+                  imageUrl: relayGroup.picture,
+                  fit: BoxFit.cover,
+                  placeholder: (context, url) => pictureView,
+                  errorWidget: (context, url, error) => pictureView,
                   height: 100,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
-                      topLeft: Radius.circular(16),
-                      topRight: Radius.circular(16),
-                    ),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Color(0xFF00CED1), // Blue-teal
-                        Color(0xFFFFB900), // Golden yellow
-                        Color(0xFFFF4444), // Red
-                      ],
-                      stops: [0.0, 0.5, 1.0],
-                    ),
-                  ),
+                  width: double.infinity,
                 ),
-                // Profile picture overlapping banner
-                Positioned(
+            // Profile picture overlapping banner
+            ValueListenableBuilder<UserDBISAR>(
+              valueListenable: Account.sharedInstance.getUserNotifier(
+                relayGroup.groupId,
+              ),
+              builder: (context, userInfo, child) {
+                return Positioned(
                   left: 16,
                   top: 50, // Half of banner height (100/2) to center overlap
                   child: Container(
@@ -346,145 +356,144 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
                               ),
                     ),
                   ),
-                ),
-                // Content section - starts from banner bottom, accounting for avatar overlap
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    16,
-                    100 + 30,
-                    16,
-                    16,
-                  ), // banner height + half avatar height
-                  child: Column(
+                );
+              },
+            ),
+
+            // Content section - starts from banner bottom, accounting for avatar overlap
+            Padding(
+              padding: EdgeInsets.fromLTRB(
+                16,
+                100 + 30,
+                16,
+                16,
+              ), // banner height + half avatar height
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Display name and Follow button row
+                  Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Display name and Follow button row
-                      Row(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  relayGroup.name,
-                                  style: GoogleFonts.inter(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.black87,
-                                  ),
-                                ),
-                                SizedBox(height: 2),
-                                // Username (npub short format)
-                                Text(
-                                  '@${_getShortNpub(userInfo.encodedPubkey)}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500,
-                                    color: kPrimary,
-                                  ),
-                                ),
-                              ],
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              relayGroup.name,
+                              style: GoogleFonts.inter(
+                                fontSize: 20,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                              ),
                             ),
-                          ),
-                          SizedBox(width: 12),
-                          // Follow button
-                          Container(
-                            decoration: BoxDecoration(
-                              color: Colors.black87,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: kPrimary.withOpacity(0.3),
-                                  blurRadius: 8,
-                                  spreadRadius: 0,
-                                ),
-                              ],
+                            SizedBox(height: 2),
+                            // Username (npub short format)
+                            Text(
+                              '@${_getShortNpub(relayGroup.groupId)}',
+                              style: GoogleFonts.inter(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w500,
+                                color: kPrimary,
+                              ),
                             ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                onTap: () {
-                                  // Handle follow action
-                                },
-                                borderRadius: BorderRadius.circular(20),
-                                child: Padding(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
+                          ],
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      // Follow button
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.black87,
+                          borderRadius: BorderRadius.circular(20),
+                          boxShadow: [
+                            BoxShadow(
+                              color: kPrimary.withOpacity(0.3),
+                              blurRadius: 8,
+                              spreadRadius: 0,
+                            ),
+                          ],
+                        ),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              // Handle follow action
+                            },
+                            borderRadius: BorderRadius.circular(20),
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.favorite,
+                                    size: 16,
+                                    color: Colors.white,
                                   ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Icon(
-                                        Icons.favorite,
-                                        size: 16,
-                                        color: Colors.white,
-                                      ),
-                                      SizedBox(width: 6),
-                                      Text(
-                                        'Collect',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'Collect',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
                             ),
                           ),
-                        ],
-                      ),
-                      SizedBox(height: 4),
-                      // Bio
-                      if (relayGroup.about.isNotEmpty)
-                        Text(
-                          relayGroup.about,
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: theme.colorScheme.onSurfaceVariant,
-                            height: 1.4,
-                          ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
-                      SizedBox(height: 8),
-                      // Followers and mutual connections
-                      Row(
-                        children: [
-                          Text(
-                            _formatFollowersCount(
-                              userInfo.followersList?.length ?? 0,
-                            ),
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Followers',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
-                              color: theme.colorScheme.outline,
-                            ),
-                          ),
-                        ],
                       ),
                     ],
                   ),
-                ),
-              ],
+                  SizedBox(height: 4),
+                  // Bio
+                  if (relayGroup.about.isNotEmpty)
+                    Text(
+                      relayGroup.about,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                        color: theme.colorScheme.onSurfaceVariant,
+                        height: 1.4,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  SizedBox(height: 8),
+                  // Followers and mutual connections
+                  Row(
+                    children: [
+                      Text(
+                        _formatFollowersCount(relayGroup.members?.length ?? 0),
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'Followers',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                          color: theme.colorScheme.outline,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-        );
-      },
+          ],
+        ),
+      ),
     );
   }
 
@@ -596,17 +605,20 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
         // Always reload profile from relay to get the latest user info (including avatar)
         // This ensures we always show the most up-to-date information, even if user updated their avatar
         print('🔍Reloading user profile from relay to get latest info...');
-        Account.sharedInstance.reloadProfileFromRelay(pubkey).then((updatedUser) {
-          print('🔍User Info (from relay):');
-          print('  - pubkey: ${updatedUser.pubKey}');
-          print('  - name: ${updatedUser.name}');
-          print('  - picture: ${updatedUser.picture ?? "null"}');
-          print('  - about: ${updatedUser.about ?? "null"}');
-          print('  - lastUpdatedTime: ${updatedUser.lastUpdatedTime}');
-        }).catchError((e) {
-          print('🔍Error reloading profile from relay: $e');
-        });
-        
+        Account.sharedInstance
+            .reloadProfileFromRelay(pubkey)
+            .then((updatedUser) {
+              print('🔍User Info (from relay):');
+              print('  - pubkey: ${updatedUser.pubKey}');
+              print('  - name: ${updatedUser.name}');
+              print('  - picture: ${updatedUser.picture ?? "null"}');
+              print('  - about: ${updatedUser.about ?? "null"}');
+              print('  - lastUpdatedTime: ${updatedUser.lastUpdatedTime}');
+            })
+            .catchError((e) {
+              print('🔍Error reloading profile from relay: $e');
+            });
+
         // getUserNotifier in _authorCard will return the user info from cache
         // reloadProfileFromRelay will update the ValueNotifier when user info is loaded from relay
         // This ensures the UI updates automatically when the latest info is available
