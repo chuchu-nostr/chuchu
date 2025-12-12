@@ -13,6 +13,7 @@ import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
+import '../../../core/theme/app_theme.dart';
 
 class SearchPage extends StatefulWidget {
   const SearchPage({super.key});
@@ -53,22 +54,22 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
         foregroundColor: theme.colorScheme.onSurface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_ios,
-            color: theme.colorScheme.onSurface,
-            size: 20,
+        leading: GestureDetector(
+          onTap: () => Navigator.of(context).pop(),
+          child: Center(
+            child: CommonImage(
+              iconName: 'back_arrow_icon.png',
+              size: 24,
+              color: Colors.black87,
+            ),
           ),
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
         ),
         title: Text(
           'Search',
-          style: TextStyle(
-            color: theme.colorScheme.onSurface,
-            fontSize: 20,
+          style: GoogleFonts.inter(
+            color: Colors.black87,
             fontWeight: FontWeight.w600,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
@@ -116,11 +117,8 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Icon(
-                    Icons.search,
-                    color: theme.colorScheme.onSurface.withOpacity(0.6),
-                    size: 20,
-                  ),
+                  CommonImage(iconName: 'search_icon.png',size: 20,),
+
                   const SizedBox(width: 12),
                   Expanded(
                     child: TextField(
@@ -128,18 +126,18 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
                       focusNode: _searchFocusNode,
                       decoration: InputDecoration(
                         hintText: 'Search npub...',
-                        hintStyle: TextStyle(
-                          color: theme.colorScheme.onSurface.withOpacity(0.6),
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                        hintStyle: GoogleFonts.inter(
+                          color: theme.colorScheme.outline,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w500,
                         ),
                         border: InputBorder.none,
                         isDense: true,
                       ),
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: theme.colorScheme.onSurface,
-                        fontWeight: FontWeight.w400,
+                      style: GoogleFonts.inter(
+                        color: Colors.black87,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
                       ),
                       onChanged: (value) {
                         // Handle search input changes
@@ -189,10 +187,9 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
           const SizedBox(height: 8),
           Text(
             'Enter a npub address to discover\nand subscribe to creators',
-            style: TextStyle(
+            style: GoogleFonts.inter(
+              color: theme.colorScheme.onSurfaceVariant,
               fontSize: 16,
-              color: theme.colorScheme.onSurface.withOpacity(0.7),
-              fontWeight: FontWeight.w400,
             ),
             textAlign: TextAlign.center,
           ),
@@ -260,6 +257,11 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
 
   Widget _authorCard(RelayGroupDBISAR relayGroup) {
     final theme = Theme.of(context);
+    return ValueListenableBuilder<UserDBISAR>(
+      valueListenable: Account.sharedInstance.getUserNotifier(
+        relayGroup.groupId,
+      ),
+      builder: (context, userInfo, child) {
     return GestureDetector(
       onTap: () {
         ChuChuNavigator.pushPage(
@@ -269,116 +271,201 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
       },
       child: Container(
         margin: const EdgeInsets.symmetric(horizontal: 18, vertical: 8),
-        height: 140,
-        width: double.infinity,
         decoration: BoxDecoration(
+              color: Colors.white,
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 8,
-              offset: Offset(0, 2),
+                  color: Colors.black.withOpacity(0.2),
+                  blurRadius: 2,
+                  offset: Offset(0, 1),
             ),
           ],
         ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(16),
           child: Stack(
+              clipBehavior: Clip.none,
             children: [
-              Positioned.fill(
-                child:
-                    relayGroup.picture.isNotEmpty
-                        ? ChuChuCachedNetworkImage(
-                          imageUrl: relayGroup.picture,
-                          fit: BoxFit.cover,
-                          placeholder:
-                              (context, url) => Container(
+                // Gradient banner at top
+                Container(
+                  height: 100,
                                 decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(16),
+                      topRight: Radius.circular(16),
+                    ),
                                   gradient: LinearGradient(
                                     begin: Alignment.topLeft,
                                     end: Alignment.bottomRight,
                                     colors: [
-                                      theme.colorScheme.primary,
-                                      theme.colorScheme.primaryContainer,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                          errorWidget:
-                              (context, url, error) => Container(
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                    colors: [
-                                      theme.colorScheme.primary,
-                                      theme.colorScheme.primaryContainer,
-                                    ],
-                                  ),
-                                ),
-                              ),
-                        )
-                        : Container(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                theme.colorScheme.primary,
-                                theme.colorScheme.primaryContainer,
-                              ],
-                            ),
-                          ),
-                        ),
-              ),
-              Positioned.fill(
-                child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        Colors.transparent,
-                        Colors.black.withOpacity(0.5),
+                        Color(0xFF00CED1), // Blue-teal
+                        Color(0xFFFFB900), // Golden yellow
+                        Color(0xFFFF4444), // Red
                       ],
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
+                      stops: [0.0, 0.5, 1.0],
                     ),
                   ),
                 ),
-              ),
-              Positioned(
-                left: 16,
-                bottom: 16,
-                right: 16,
-                child: Row(
-                  children: [
-                    _followsUserPicWidget(relayGroup),
-                    SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
+                // Profile picture overlapping banner
+                Positioned(
+                  left: 16,
+                  top: 50, // Half of banner height (100/2) to center overlap
+                  child:  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 3),
+                    ),
+                    child: ClipOval(
+                      child: userInfo.picture != null &&
+                          userInfo.picture!.isNotEmpty
+                          ? ChuChuCachedNetworkImage(
+                        imageUrl: userInfo.picture!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) => CommonImage(
+                          iconName: 'icon_user_default.png',
+                          width: 80,
+                          height: 80,
+                        ),
+                        errorWidget: (context, url, error) =>
+                            CommonImage(
+                              iconName: 'icon_user_default.png',
+                              width: 80,
+                              height: 80,
+                            ),
+                        width: 80,
+                        height: 80,
+                      )
+                          : CommonImage(
+                        iconName: 'icon_user_default.png',
+                        width: 80,
+                        height: 80,
+                      ),
+                    ),
+                  ),
+                ),
+                // Content section - starts from banner bottom, accounting for avatar overlap
+                Padding(
+                  padding: EdgeInsets.fromLTRB(16, 100 + 30, 16, 16), // banner height + half avatar height
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Display name and Follow button row
+                      Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            relayGroup.name,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w700,
-                              fontSize: 18,
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  relayGroup.name,
+                                  style: GoogleFonts.inter(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.black87,
+                                  ),
+                                ),
+                                SizedBox(height: 2),
+                                // Username (npub short format)
+                                Text(
+                                  '@${_getShortNpub(userInfo.encodedPubkey)}',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w500,
+                                    color: kPrimary,
+                                  ),
+                                ),
+                              ],
                             ),
-                            overflow: TextOverflow.ellipsis,
                           ),
-                          const SizedBox(height: 4),
-                          Text(
-                            relayGroup.about,
-                            style: TextStyle(
-                              color: Colors.white.withOpacity(0.9),
-                              fontSize: 14,
-                              fontWeight: FontWeight.w400,
+                          SizedBox(width: 12),
+                          // Follow button
+                          Container(
+                                decoration: BoxDecoration(
+                              color: Colors.black87,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: kPrimary.withOpacity(0.3),
+                                  blurRadius: 8,
+                                  spreadRadius: 0,
+                                ),
+                              ],
                             ),
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () {
+                                  // Handle follow action
+                                },
+                                borderRadius: BorderRadius.circular(20),
+                                child: Padding(
+                                  padding: EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.favorite,
+                                        size: 16,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(width: 6),
+                                      Text(
+                                        'Collect',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 14,
+                                          fontWeight: FontWeight.w600,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ),
                         ],
                       ),
+                      SizedBox(height: 4),
+                      // Bio
+                      if (relayGroup.about.isNotEmpty)
+                        Text(
+                          relayGroup.about,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: theme.colorScheme.onSurfaceVariant,
+                            height: 1.4,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      SizedBox(height: 8),
+                      // Followers and mutual connections
+                      Row(
+                        children: [
+                          Text(
+                            _formatFollowersCount(userInfo.followersList?.length ?? 0),
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              color: Colors.black87,
+                            ),
+                          ),
+                          const SizedBox(width: 6,),
+                          Text(
+                            'Followers',
+                            style: GoogleFonts.inter(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w400,
+                              color: theme.colorScheme.outline,
+                            ),
+                          ),
+                        ],
                     ),
                   ],
                 ),
@@ -386,53 +473,34 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
             ],
           ),
         ),
-      ),
+        );
+      },
     );
   }
 
-  Widget _followsUserPicWidget(RelayGroupDBISAR relayGroup) {
-    Widget picWidget;
-    final defaultImage = CommonImage(
-      iconName: 'icon_user_default.png',
-      width: 60,
-      height: 60,
-    );
+  String _getShortNpub(String npub) {
+    if (npub.length < 12) return npub;
+    return '${npub.substring(0, 6)}...${npub.substring(npub.length - 6)}';
+  }
 
-    if (relayGroup.picture.isNotEmpty) {
-      picWidget = ValueListenableBuilder<UserDBISAR>(
-        valueListenable: Account.sharedInstance.getUserNotifier(
-          relayGroup.groupId,
-        ),
-        builder: (context, userInfo, child) {
-          return ChuChuCachedNetworkImage(
-            imageUrl: userInfo.picture ?? '',
-            fit: BoxFit.contain,
-            placeholder: (context, url) => defaultImage,
-            errorWidget: (context, url, error) => defaultImage,
-            width: 60,
-            height: 60,
-          );
-        },
-      );
+  String _formatFollowersCount(int count) {
+    if (count < 1000) {
+      return count.toString();
+    } else if (count < 1000000) {
+      double k = count / 1000;
+      if (k % 1 == 0) {
+        return '${k.toInt()}k';
+      } else {
+        return '${k.toStringAsFixed(1)}k';
+      }
     } else {
-      picWidget = defaultImage;
+      double m = count / 1000000;
+      if (m % 1 == 0) {
+        return '${m.toInt()}M';
+      } else {
+        return '${m.toStringAsFixed(1)}M';
+      }
     }
-
-    return GestureDetector(
-      onTap: () {},
-      child: Container(
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          border: Border.all(color: Colors.white, width: 2),
-        ),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(30),
-          child: picWidget,
-        ),
-      ),
-    );
   }
 
   /// Validate npub1 format
@@ -512,6 +580,32 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
       print('🔍relayGroupId: ${relayGroup?.groupId}');
       print('🔍name: ${relayGroup?.name}');
       print('🔍subscriptionAmount: ${relayGroup?.subscriptionAmount}');
+      
+      // Trigger user info loading (including avatar) after getting relayGroup
+      if (relayGroup != null) {
+        // Load user info from DB first, and if not found or incomplete,
+        // it will be added to pQueue for async loading from relay
+        // Await to ensure user info is loaded into cache before building UI
+        UserDBISAR? userInfo = await Account.sharedInstance.getUserInfo(pubkey);
+        
+        // Print user info including avatar
+        if (userInfo != null) {
+          print('🔍User Info:');
+          print('  - pubkey: ${userInfo.pubKey}');
+          print('  - name: ${userInfo.name}');
+          print('  - picture: ${userInfo.picture ?? "null"}');
+          print('  - about: ${userInfo.about ?? "null"}');
+          print('  - lastUpdatedTime: ${userInfo.lastUpdatedTime}');
+        } else {
+          print('🔍User Info: null (will be loaded from relay)');
+        }
+        
+        // getUserNotifier in _authorCard will now return the loaded user info
+        // If user info is not in DB, getUserNotifier will create an empty UserDBISAR
+        // and add it to pQueue, which will be loaded asynchronously by syncProfilesFromRelay
+        // The ValueNotifier will be updated when user info is loaded from relay
+      }
+      
       if (mounted) {
         setState(() {
           _isSearching = false;
