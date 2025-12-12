@@ -608,7 +608,7 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
 
                                         // App name
                                         CommonImage(
-                                          iconName: 'chuchu_pink.png',
+                                          iconName: 'ChuChu_pink.png',
                                           width: 150,
                                         ),
                                         const SizedBox(height: 20),
