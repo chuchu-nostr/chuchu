@@ -162,12 +162,14 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
     return Scaffold(
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
-        title: Text(
-          'Notifications',
-          style: GoogleFonts.inter(
-            color: Colors.black87,
-            fontWeight: FontWeight.w600,
-            fontSize: 18,
+        title: Center(
+          child: Text(
+            'Notifications',
+            style: GoogleFonts.inter(
+              color: Colors.black87,
+              fontWeight: FontWeight.w600,
+              fontSize: 18,
+            ),
           ),
         ),
         leading: GestureDetector(
@@ -200,7 +202,8 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             const SizedBox(height: 16),
             Text(
               'Loading notifications...',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              style: GoogleFonts.inter(
+                fontSize: 14,
                 color: Theme.of(
                   context,
                 ).colorScheme.onSurface.withValues(alpha: 0.6),
@@ -273,9 +276,9 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: theme.shadowColor.withValues(alpha: 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: theme.shadowColor.withValues(alpha: 0.1),
+              blurRadius: 2,
+              offset: const Offset(0, 1),
             ),
           ],
         ),
@@ -370,19 +373,20 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
                   children: [
                     TextSpan(
                       text: userName,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: theme.colorScheme.onSurface,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w800,
+                        color: Colors.black87,
                       ),
                     ),
+                    WidgetSpan(
+                      child: SizedBox(width: 6),
+                    ),
                     TextSpan(
-                      text: ' $actionText',
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontSize: 14,
-                        color: theme.colorScheme.onSurface.withValues(
-                          alpha: 0.7,
-                        ),
+                      text: actionText,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        color: theme.colorScheme.outline,
                       ),
                     ),
                   ],
@@ -408,7 +412,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
         Expanded(
           child: Text(
             content,
-            style: theme.textTheme.bodySmall?.copyWith(
+            style: GoogleFonts.inter(
               fontSize: 14,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               height: 1.3,
@@ -420,9 +424,9 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
         const SizedBox(width: 12),
         Text(
           FeedUtils.formatTimeAgo(notification.createAt),
-          style: theme.textTheme.bodySmall?.copyWith(
+          style: GoogleFonts.inter(
             fontSize: 12,
-            color: theme.colorScheme.onSurface.withValues(alpha: 0.5),
+            color: Color(0xFFCAD5E2),
             fontWeight: FontWeight.w500,
           ),
         ),
@@ -486,45 +490,28 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
 
   Widget _buildNotificationTypeIcon(AggregatedNotification notification) {
     final theme = Theme.of(context);
-    IconData icon;
+    String iconName;
     Color color;
 
     switch (notification.kind) {
       case 7: // reaction/like
-        icon = Icons.favorite;
+        iconName = 'liked_icon.png';
         color = Colors.red;
         break;
       case 1: // reply
-        icon = Icons.chat_bubble;
+        iconName = 'replyed_icon.png';
         color = theme.colorScheme.primary;
         break;
       case 9735: // zap
-        icon = Icons.bolt;
+        iconName = 'lightninged_icon.png';
         color = Colors.orange;
         break;
-      case 6: // repost
-        icon = Icons.repeat;
-        color = Colors.green;
-        break;
-      case 2: // quote repost
-        icon = Icons.format_quote;
-        color = theme.colorScheme.secondary;
-        break;
       default:
-        icon = Icons.notifications;
+        iconName = 'notification.png';
         color = theme.colorScheme.onSurface;
     }
 
-    return Container(
-      width: 26,
-      height: 26,
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        shape: BoxShape.circle,
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
-      ),
-      child: Icon(icon, size: 12, color: color),
-    );
+    return CommonImage(size: 18, iconName: iconName);
   }
 
   String _getActionText(int kind) {
