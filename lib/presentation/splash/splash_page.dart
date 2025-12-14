@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../home/pages/home_page.dart';
-import '../login/pages/new_login_page.dart';
+import '../onboarding/onboarding_page.dart';
 import '../../core/manager/chuchu_user_info_manager.dart';
 
 class SplashPage extends StatefulWidget {
@@ -39,7 +39,9 @@ class _SplashPageState extends State<SplashPage>
         Future.delayed(const Duration(milliseconds: 600), () {
           if (mounted) {
             final bool isLogin = ChuChuUserInfoManager.sharedInstance.isLogin;
-            final Widget targetPage = isLogin ? const HomePage() : const NewLoginPage();
+            final Widget targetPage = isLogin 
+                ? const HomePage() 
+                : const OnboardingPage();
             
             Navigator.of(context).pushReplacement(
               PageRouteBuilder(
