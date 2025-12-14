@@ -2,6 +2,7 @@ import 'package:chuchu/core/relayGroups/model/relayGroupDB_isar.dart';
 import 'package:chuchu/core/utils/navigator/navigator.dart';
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/account/account.dart';
@@ -40,6 +41,27 @@ class _DrawerMenuState extends State<DrawerMenu>
     return number.toString().replaceAllMapped(
       RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
       (Match m) => '${m[1]},',
+    );
+  }
+
+  String _getFullNpub() {
+    UserDBISAR? userInfo = ChuChuUserInfoManager.sharedInstance.currentUserInfo;
+    if (userInfo == null) return '';
+    String pubkey = userInfo.pubKey;
+    return Nip19.encodePubkey(pubkey);
+  }
+
+  void _copyNpub() {
+    final npub = _getFullNpub();
+    if (npub.isEmpty) return;
+    
+    Clipboard.setData(ClipboardData(text: npub));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Copied to clipboard'),
+        backgroundColor: Colors.green,
+        duration: Duration(seconds: 2),
+      ),
     );
   }
 
@@ -183,13 +205,27 @@ class _DrawerMenuState extends State<DrawerMenu>
                             ],
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            _getUserNupbStr,
-                            style: TextStyle(
-                              fontWeight: FontWeight.normal,
-                              fontSize: 14,
-                              color: theme.colorScheme.onSurfaceVariant,
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _getUserNupbStr,
+                                style: GoogleFonts.inter(
+                                  fontWeight: FontWeight.normal,
+                                  fontSize: 14,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () => _copyNpub(),
+                                child: CommonImage(
+                                  iconName: 'copy_icon.png',
+                                  size: 16,
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 12),
                           Row(
