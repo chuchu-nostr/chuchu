@@ -49,9 +49,9 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
         title: Text(
           'Create Poster',
           style: GoogleFonts.inter(
-              color: Colors.black87,
-              fontWeight: FontWeight.w600,
-              fontSize: 18
+            color: Colors.black87,
+            fontWeight: FontWeight.w600,
+            fontSize: 18,
           ),
         ),
         centerTitle: true,
@@ -104,11 +104,12 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
                           ),
                           decoration: InputDecoration(
                             hintText: 'Enter your Poster name',
-                            hintStyle: TextStyle(
+                            hintStyle: GoogleFonts.inter(
                               color:
                                   Theme.of(
                                     context,
                                   ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -166,11 +167,12 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
                           ),
                           decoration: InputDecoration(
                             hintText: 'Tell us about your content...',
-                            hintStyle: TextStyle(
+                            hintStyle: GoogleFonts.inter(
                               color:
-                                  Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
+                              Theme.of(
+                                context,
+                              ).colorScheme.onSurfaceVariant,
+                              fontWeight: FontWeight.w500,
                             ),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(16),
@@ -302,12 +304,9 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
   Future<void> _createSettings() async {
     try {
       if (_isPaidSubscription) {
-        String cleanPriceText = subscriptionPrice.toString().replaceAll(
-          RegExp(r'[^\d.]'),
-          '',
-        );
-        if (cleanPriceText.isEmpty) {
-          CommonToast.instance.show(context, 'Please enter a valid price');
+        // Validate price: must be a positive integer
+        if (subscriptionPrice <= 0) {
+          CommonToast.instance.show(context, 'Please enter a valid price greater than 0');
           return;
         }
       }

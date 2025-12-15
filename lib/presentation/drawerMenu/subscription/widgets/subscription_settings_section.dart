@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:chuchu/core/config/subscription_config.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/theme/app_theme.dart';
 
 class SubscriptionTier {
   final String name;
@@ -159,9 +158,13 @@ class _SubscriptionSettingsSectionState
                     fontWeight: FontWeight.w600,
                   ),
                   decoration: InputDecoration(
-                    hintText: '1',
-                    hintStyle: TextStyle(
-                      color: Theme.of(context).colorScheme.onSurfaceVariant,
+                    hintText: 'Enter price (SATS)',
+                    hintStyle: GoogleFonts.inter(
+                      color:
+                      Theme.of(
+                        context,
+                      ).colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
                     ),
                     suffixText: 'SATS',
                     suffixStyle: TextStyle(
