@@ -192,12 +192,16 @@ class _DrawerMenuState extends State<DrawerMenu>
                           Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Text(
-                                nikName ?? '--',
-                                style: GoogleFonts.inter(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                  color: Colors.black87,
+                              Flexible(
+                                child: Text(
+                                  nikName ?? '--',
+                                  style: GoogleFonts.inter(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                    color: Colors.black87,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                  maxLines: 1,
                                 ),
                               ),
                               const SizedBox(width: 6),
