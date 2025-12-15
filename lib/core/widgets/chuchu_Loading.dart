@@ -27,14 +27,26 @@ class ChuChuLoading extends State<StatefulWidget> with TickerProviderStateMixin 
     EasyLoadingMaskType? maskType,
     bool dismissOnTap = false,
   }) async {
+    // fadingGrid
     EasyLoading.instance.loadingStyle = EasyLoadingStyle.custom;
     EasyLoading.instance.indicatorColor = kPrimary;
-    EasyLoading.instance.indicatorType = EasyLoadingIndicatorType.ring;
-    EasyLoading.instance.indicatorSize = Adapt.px(20);
+    EasyLoading.instance.indicatorType = EasyLoadingIndicatorType.chasingDots;
+    EasyLoading.instance.indicatorSize = Adapt.px(50);
     EasyLoading.instance.contentPadding = EdgeInsets.only(left: Adapt.px(20), top: Adapt.px(16), right: Adapt.px(20), bottom: Adapt.px(16));
     EasyLoading.instance.textColor = Colors.grey;
     EasyLoading.instance.lineWidth = Adapt.px(2);
-    EasyLoading.instance.backgroundColor = Color(0xFFEAECEF);
+    EasyLoading.instance.backgroundColor = Colors.white;
+    EasyLoading.instance.radius = 20;
+
+    EasyLoading.instance.boxShadow = [
+      BoxShadow(
+        color: Colors.black.withOpacity(0.2),
+        blurRadius: 2,
+        offset: Offset(0, 1),
+      ),
+    ];
+
+
     await EasyLoading.show(status: status, indicator: null, maskType: maskType, dismissOnTap: dismissOnTap);
   }
 
