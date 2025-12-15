@@ -49,6 +49,9 @@ class RelayGroup {
   factory RelayGroup() => sharedInstance;
   static final RelayGroup sharedInstance = RelayGroup._internal();
 
+  /// Ready flag for initialization
+  final ValueNotifier<bool> isReady = ValueNotifier<bool>(false);
+
   String groupMessageSubscription = '';
 
   // memory storage
@@ -69,6 +72,8 @@ class RelayGroup {
   OfflineGroupMessageFinishCallBack? offlineGroupMessageFinishCallBack;
 
   Future<void> init({GroupsUpdatedCallBack? callBack}) async {
+    // Reset ready flag before initializing
+    isReady.value = false;
     privkey = Account.sharedInstance.currentPrivkey;
     pubkey = Account.sharedInstance.currentPubkey;
     myGroupsUpdatedCallBack = callBack;
@@ -89,6 +94,8 @@ class RelayGroup {
     await _loadAllGroupsFromDB();
     await searchMyGroupsMetadataFromRelays(groupRelays, null);
     updateGroupSubscription();
+    // Mark as ready after initialization steps
+    isReady.value = true;
   }
 
   /// 0, not in the group, 1, in the group & not joined, 2. joined
