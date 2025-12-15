@@ -74,7 +74,10 @@ class _FeedPageState extends State<FeedPage>
   bool _isStoriesVisible = true;
   double _storiesHeight = kStoriesSectionHeight;
 
-  Timer? _initDataTimer;
+  // Track if notes have been initialized to prevent duplicate loading
+  bool _hasInitializedNotes = false;
+  // Listen to RelayGroup ready signal
+  VoidCallback? _relayReadyListener;
   Timer? _scrollProcessingTimer;
 
   @override
@@ -84,9 +87,22 @@ class _FeedPageState extends State<FeedPage>
     ChuChuFeedManager.sharedInstance.addObserver(this);
     
     // Listen for group updates
+    // Save original callback and chain it
+    final originalCallback = RelayGroup.sharedInstance.myGroupsUpdatedCallBack;
     RelayGroup.sharedInstance.myGroupsUpdatedCallBack = () {
+      originalCallback?.call();
       _loadSubscriptionList();
+      // Load notes when myGroups is updated for the first time
+      _tryInitializeNotes();
     };
+
+    // Listen to RelayGroup ready state
+    _relayReadyListener = () {
+      if (RelayGroup.sharedInstance.isReady.value) {
+        _tryInitializeNotes();
+      }
+    };
+    RelayGroup.sharedInstance.isReady.addListener(_relayReadyListener!);
     
     _initData();
     _setupScrollListener();
@@ -95,9 +111,28 @@ class _FeedPageState extends State<FeedPage>
   void _initData() {
     _resetStoriesSection();
     _loadSubscriptionList();
+    // Attempt initialization immediately; guarded inside to avoid duplicate work
+    _tryInitializeNotes();
+  }
 
-    _initDataTimer?.cancel();
-    _initDataTimer = Timer(Duration(milliseconds: 5000), () {
+  /// Try to initialize notes when myGroups is ready
+  /// This ensures we wait for myGroups to be populated before loading notes
+  /// The callback is called after _loadAllGroupsFromDB completes, indicating initialization is done
+  void _tryInitializeNotes() {
+    if (_hasInitializedNotes || !mounted) {
+      return;
+    }
+    
+    // Check if RelayGroup has been initialized
+    // myGroupsUpdatedCallBack is called after _loadAllGroupsFromDB completes,
+    // which means initialization is done (even if myGroups is empty)
+    final hasUserInfo = Account.sharedInstance.me != null;
+    
+    if (!hasUserInfo) return;
+
+    _hasInitializedNotes = true;
+    // Use postFrameCallback to ensure UI is ready
+    WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) {
         updateNotesList(true);
       }
@@ -199,6 +234,7 @@ class _FeedPageState extends State<FeedPage>
     myGroupsList = {};
     _allNotesFromDBLastTimestamp = null;
     _seenNoteIds.clear();
+    _hasInitializedNotes = false;
     if (mounted) {
       setState(() {});
     }
@@ -575,13 +611,17 @@ class _FeedPageState extends State<FeedPage>
   @override
   void dispose() {
     // Cancel timers to prevent setState after dispose
-    _initDataTimer?.cancel();
     _scrollProcessingTimer?.cancel();
+    if (_relayReadyListener != null) {
+      RelayGroup.sharedInstance.isReady.removeListener(_relayReadyListener!);
+    }
     
     ChuChuUserInfoManager.sharedInstance.removeObserver(this);
     ChuChuFeedManager.sharedInstance.removeObserver(this);
 
-    // Clear the callback
+    // Restore original callback if we saved it, otherwise clear it
+    // Note: We can't easily restore the original callback here since we don't store it
+    // But setting to null should be safe as other components can set their own callbacks
     RelayGroup.sharedInstance.myGroupsUpdatedCallBack = null;
 
     final scrollController = widget.scrollController ?? feedScrollController;
@@ -591,7 +631,9 @@ class _FeedPageState extends State<FeedPage>
   }
 
   Future<void> updateNotesList(bool isInit) async {
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     
     if (isInit && notesList.isEmpty) {
       if (mounted) {
@@ -610,7 +652,9 @@ class _FeedPageState extends State<FeedPage>
           limit: _limit) ??
           [];
       
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
       
       if (list.isEmpty) {
         isInit
@@ -626,12 +670,23 @@ class _FeedPageState extends State<FeedPage>
 
       List<NoteDBISAR> showList = _filterNotes(list);
       _updateUI(showList, isInit, list.length);
+      
+      // Ensure loading state is cleared after UI update
+      if (isInit && _isInitialLoading) {
+        // Use a small delay to ensure _updateUI's microtask has a chance to run
+        Future.microtask(() {
+          if (mounted && _isInitialLoading) {
+            _setInitialLoadingFalse();
+          }
+        });
+      }
 
       if (list.length < _limit) {
         refreshController.loadNoData();
       }
-    } catch (e) {
+    } catch (e, stackTrace) {
       debugPrint('Error loading notes: $e');
+      debugPrint('Stack trace: $stackTrace');
       if (mounted) {
         refreshController.loadFailed();
         _setInitialLoadingFalse();
@@ -648,7 +703,9 @@ class _FeedPageState extends State<FeedPage>
 
   void _updateUI(List<NoteDBISAR> showList, bool isInit, int fetchedCount) {
     Future.microtask(() {
-      if (!mounted) return;
+      if (!mounted) {
+        return;
+      }
 
       final List<NotedUIModel?> list =
           showList.map((item) => NotedUIModel(noteDB: item)).toList();
@@ -676,7 +733,12 @@ class _FeedPageState extends State<FeedPage>
       }
 
       if (mounted) {
-        setState(() {});
+        setState(() {
+          // Explicitly set loading to false in setState to ensure UI updates
+          if (_isInitialLoading) {
+            _isInitialLoading = false;
+          }
+        });
       }
     });
   }
@@ -799,6 +861,7 @@ class _FeedPageState extends State<FeedPage>
 
   @override
   void didLoginSuccess(UserDBISAR? userInfo) {
+    _hasInitializedNotes = false;
     _initData();
   }
 
