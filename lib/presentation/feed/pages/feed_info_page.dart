@@ -342,7 +342,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                   return Text(
                     value.name,
                     style: GoogleFonts.inter(
-                      color: Colors.black87,
+                      color: kTitleColor,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),
@@ -518,7 +518,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
               'No comments yet',
               style: GoogleFonts.inter(
                 fontSize: 25,
-                color: Colors.black87,
+                color: kTitleColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -1146,7 +1146,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
             Text(
               userDB.name ?? '--',
               style: GoogleFonts.inter(
-                color: Colors.black87,
+                color: kTitleColor,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
               ),

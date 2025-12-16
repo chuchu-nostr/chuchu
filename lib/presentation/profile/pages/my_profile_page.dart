@@ -96,7 +96,7 @@ class _MyProfilePageState extends State<MyProfilePage>
         title: Text(
           'Settings',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -142,7 +142,7 @@ class _MyProfilePageState extends State<MyProfilePage>
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: kTitleColor,
           ),
         ),
       ),
@@ -460,7 +460,7 @@ class _MyProfilePageState extends State<MyProfilePage>
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                     ),
                 ],

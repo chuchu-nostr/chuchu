@@ -150,7 +150,7 @@ class _RegisterFormState extends State<RegisterForm> {
                     child: CommonImage(
                       iconName: 'back_arrow_icon.png',
                       size: 24,
-                      color: Colors.black87,
+                      color: kTitleColor,
                     ),
                   ),
                 ),
@@ -159,7 +159,7 @@ class _RegisterFormState extends State<RegisterForm> {
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
-                    color: Colors.black87,
+                    color: kTitleColor,
                     letterSpacing: 0.5,
                   ),
                 ),
@@ -194,7 +194,7 @@ class _RegisterFormState extends State<RegisterForm> {
                         style: GoogleFonts.inter(
                           fontSize: 24,
                           fontWeight: FontWeight.w800,
-                          color: Colors.black87,
+                          color: kTitleColor,
                         ),
                       ),
                     ),
@@ -221,7 +221,7 @@ class _RegisterFormState extends State<RegisterForm> {
                               TextSpan(
                                 text: 'ONLY',
                                 style: TextStyle(
-                                  color: Colors.black87,
+                                  color: kTitleColor,
                                   fontWeight: FontWeight.bold,
                                 ),
                               ),

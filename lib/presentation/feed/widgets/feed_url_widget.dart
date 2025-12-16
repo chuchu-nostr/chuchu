@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/web_url_helper_utils.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../data/models/feed_extension_model.dart';
 
@@ -92,7 +93,7 @@ class FeedUrlWidgetState extends State<FeedUrlWidget> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: 15.px,
-                      color: Colors.black87,
+                      color: kTitleColor,
                     ),
                   ).setPaddingOnly(bottom: 20.px),
                 ),

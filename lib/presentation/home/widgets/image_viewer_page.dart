@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/adapt.dart';
 import 'package:chuchu/core/utils/ui_refresh_mixin.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 class ImageViewerPage extends StatefulWidget {
@@ -232,7 +233,7 @@ class _ImageViewerPageState extends State<ImageViewerPage> with ChuChuUIRefreshM
             ),
             child: Icon(
               icon,
-              color: Colors.black87,
+              color: kTitleColor,
               size: 28.px,
             ),
           ),

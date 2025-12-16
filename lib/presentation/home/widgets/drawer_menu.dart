@@ -10,6 +10,7 @@ import '../../../core/account/model/userDB_isar.dart';
 import 'package:nostr_core_dart/src/nips/nip_019.dart';
 import '../../../core/manager/chuchu_user_info_manager.dart';
 import '../../../core/relayGroups/relayGroup.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/common_image.dart';
@@ -198,7 +199,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                                   style: GoogleFonts.inter(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
-                                    color: Colors.black87,
+                                    color: kTitleColor,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                   maxLines: 1,
@@ -239,7 +240,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: Colors.black87,
+                                  color: kTitleColor,
                                 ),
                               ),
                               Text(
@@ -256,7 +257,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 14,
-                                  color: Colors.black87,
+                                  color: kTitleColor,
                                 ),
                               ),
                               Text(
@@ -300,6 +301,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                       'post_bg_icon.png',
                       "My Posts",
                       onTap: () {
+                        Navigator.of(context).pop();
                         RelayGroupDBISAR? myRelayGroup =
                             RelayGroup
                                 .sharedInstance

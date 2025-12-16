@@ -64,7 +64,7 @@ class CommonToast {
       ),
     ];
     EasyLoading.instance.textStyle = GoogleFonts.inter(
-      color: Colors.black87,
+      color: kTitleColor,
       fontSize: Adapt.px(16),
       fontWeight: FontWeight.w800,
     );

@@ -279,7 +279,7 @@ class _TransactionsPageState extends State<TransactionsPage>
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -307,7 +307,7 @@ class _TransactionsPageState extends State<TransactionsPage>
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: tx.isIncoming ? Colors.green[600] : Colors.black87,
+                      color: tx.isIncoming ? Colors.green[600] : kTitleColor,
                     ),
                   ),
                   SizedBox(height: 2),
@@ -369,13 +369,13 @@ class _TransactionsPageState extends State<TransactionsPage>
         leading: GestureDetector(
           onTap: () => Navigator.of(context).pop(),
           child: Center(
-            child: Icon(Icons.arrow_back, color: Colors.black87, size: 24),
+            child: Icon(Icons.arrow_back, color: kTitleColor, size: 24),
           ),
         ),
         title: Text(
           'Transaction History',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -383,7 +383,7 @@ class _TransactionsPageState extends State<TransactionsPage>
         centerTitle: true,
         backgroundColor: kBgLight,
         elevation: 0,
-        foregroundColor: Colors.black87,
+        foregroundColor: kTitleColor,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       body:

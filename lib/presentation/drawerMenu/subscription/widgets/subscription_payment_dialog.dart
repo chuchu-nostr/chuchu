@@ -133,7 +133,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
             style: GoogleFonts.inter(
               fontWeight: FontWeight.w800,
               fontSize: 20,
-              color: Colors.black87,
+              color: kTitleColor,
             ),
           ),
         ),
@@ -540,7 +540,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                               ).colorScheme.onSurface.withOpacity(0.4)
                               : (isSelected
                                   ? Color(0xFF861043)
-                                  : Colors.black87),
+                                  : kTitleColor),
                     ),
                   ),
                   Text(
@@ -929,7 +929,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                                     style: GoogleFonts.inter(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w800,
-                                      color: Colors.black87,
+                                      color: kTitleColor,
                                     ),
                                   ),
                                 ),
@@ -1085,7 +1085,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                                       style: GoogleFonts.inter(
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.black87,
+                                        color: kTitleColor,
                                         letterSpacing: 0.1,
                                       ),
                                       maxLines: 3,

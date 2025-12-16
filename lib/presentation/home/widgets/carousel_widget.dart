@@ -1,6 +1,7 @@
 import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:flutter/material.dart';
 import 'package:chuchu/core/utils/adapt.dart';
+import '../../../core/theme/app_theme.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'image_viewer_page.dart';
 
@@ -273,7 +274,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                         ),
                         child: Icon(
                           Icons.chevron_left,
-                          color: Colors.black87,
+                          color: kTitleColor,
                           size: 24,
                         ),
                       ),
@@ -318,7 +319,7 @@ class _CarouselWidgetState extends State<CarouselWidget> {
                         ),
                         child: Icon(
                           Icons.chevron_right,
-                          color: Colors.black87,
+                          color: kTitleColor,
                           size: 24,
                         ),
                       ),

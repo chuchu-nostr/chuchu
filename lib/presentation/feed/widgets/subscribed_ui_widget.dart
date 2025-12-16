@@ -10,6 +10,7 @@ import '../../../core/account/account.dart';
 import '../../../core/config/config.dart';
 import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/relayGroups/relayGroup+info.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../drawerMenu/subscription/widgets/subscription_payment_dialog.dart';
 
 enum ESubscriptionStatus {
@@ -182,7 +183,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
                 Text(
                   'SUBSCRIBED',
                   style: GoogleFonts.inter(
-                    color: Colors.black87,
+                    color: kTitleColor,
                     fontSize: 16,
                     fontWeight: FontWeight.w800,
                   ),
@@ -190,7 +191,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
                 Text(
                   '$monthlyPrice ${SubscriptionConfig.currencyUnit} per month',
                   style: GoogleFonts.inter(
-                    color: Colors.black87,
+                    color: kTitleColor,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                   ),
@@ -306,7 +307,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
               Text(
                 'SUBSCRIPTION BUNDLES',
                 style: GoogleFonts.inter(
-                  color: Colors.black87,
+                  color: kTitleColor,
                   fontWeight: FontWeight.w800,
                   fontSize: 12,
                 ),

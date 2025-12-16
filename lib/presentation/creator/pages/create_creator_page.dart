@@ -40,7 +40,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
           icon: Container(
             width: 40,
             height: 40,
-            child: Icon(Icons.close, size: 20, color: Colors.black87),
+            child: Icon(Icons.close, size: 20, color: kTitleColor),
           ),
           onPressed: () {
             Navigator.of(context).pop();
@@ -49,7 +49,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
         title: Text(
           'Create Poster',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -73,7 +73,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
                       Text(
                         'Poster Name',
                         style: GoogleFonts.inter(
-                          color: Colors.black87,
+                          color: kTitleColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -135,7 +135,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
                       Text(
                         'Introduction',
                         style: GoogleFonts.inter(
-                          color: Colors.black87,
+                          color: kTitleColor,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -224,7 +224,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
                                       : 'Free Subscription',
                                   style: GoogleFonts.inter(
                                     fontSize: 16,
-                                    color: Colors.black87,
+                                    color: kTitleColor,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),

@@ -52,7 +52,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           child: Center(
             child: Icon(
               Icons.arrow_back,
-              color: Colors.black87,
+              color: kTitleColor,
               size: 24,
             ),
           ),
@@ -60,7 +60,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         title: Text(
           'Transaction Details',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -68,7 +68,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
         centerTitle: true,
         backgroundColor: Colors.white,
         elevation: 0,
-        foregroundColor: Colors.black87,
+        foregroundColor: kTitleColor,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       body: FutureBuilder<WalletInvoice?>(
@@ -258,7 +258,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: kTitleColor,
                     ),
                   ),
                 ))
@@ -268,7 +268,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
               style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.w600,
-                color: Colors.black87,
+                color: kTitleColor,
               ),
             ),
         ],
@@ -322,7 +322,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
-                  color: Colors.black87,
+                  color: kTitleColor,
                 ),
               ),
             ],

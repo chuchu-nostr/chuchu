@@ -164,7 +164,7 @@ class _CommonEditFieldDialogState extends State<CommonEditFieldDialog> {
                           style: GoogleFonts.inter(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
+                            color: kTitleColor,
                           ),
                         ),
                       ),
@@ -183,7 +183,7 @@ class _CommonEditFieldDialogState extends State<CommonEditFieldDialog> {
                       maxLines: widget.maxLines,
                       style: GoogleFonts.inter(
                         fontSize: 16,
-                        color: Colors.black87,
+                        color: kTitleColor,
                         fontWeight: FontWeight.w600,
                       ),
                       decoration: InputDecoration(
@@ -224,7 +224,7 @@ class _CommonEditFieldDialogState extends State<CommonEditFieldDialog> {
                           onPressed: _isSaving ? null : _handleCancel,
                           style: OutlinedButton.styleFrom(
                             backgroundColor: Colors.white,
-                            foregroundColor: Colors.black87,
+                            foregroundColor: kTitleColor,
                             side: BorderSide(color: Colors.grey[200]!),
                             padding: EdgeInsets.symmetric(vertical: 16),
                             shape: RoundedRectangleBorder(
@@ -235,7 +235,7 @@ class _CommonEditFieldDialogState extends State<CommonEditFieldDialog> {
                             'Cancel',
                             style: GoogleFonts.inter(
                               fontSize: 16,
-                              color: Colors.black87,
+                              color: kTitleColor,
                               fontWeight: FontWeight.w700,
                             ),
                           ),

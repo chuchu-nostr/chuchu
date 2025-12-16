@@ -15,6 +15,7 @@ import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/common_image.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/account/account.dart';
 import '../../../core/account/model/userDB_isar.dart';
 import '../../../data/models/noted_ui_model.dart';
@@ -166,7 +167,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           child: Text(
             'Notifications',
             style: GoogleFonts.inter(
-              color: Colors.black87,
+              color: kTitleColor,
               fontWeight: FontWeight.w600,
               fontSize: 18,
             ),
@@ -180,7 +181,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
             child: CommonImage(
               iconName: 'back_arrow_icon.png',
               size: 24,
-              color: Colors.black87,
+              color: kTitleColor,
             ),
           ),
         ),
@@ -243,7 +244,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
               'No Notifications',
               style: GoogleFonts.inter(
                 fontSize: 25,
-                color: Colors.black87,
+                color: kTitleColor,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -378,7 +379,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w800,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                     ),
                     WidgetSpan(

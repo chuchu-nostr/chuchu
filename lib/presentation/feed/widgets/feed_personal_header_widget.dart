@@ -363,7 +363,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
             user.name,
             style: GoogleFonts.inter(
               fontSize: 20,
-              color: Colors.black87,
+              color: kTitleColor,
               fontWeight: FontWeight.w800,
             ),
           ),
@@ -410,7 +410,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.black87,
+                                color: kTitleColor,
                               ),
                             ),
                             SizedBox(width: 4),
@@ -445,7 +445,7 @@ class FeedPersonalHeaderWidgetState extends State<FeedPersonalHeaderWidget> {
                               style: GoogleFonts.inter(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w800,
-                                color: Colors.black87,
+                                color: kTitleColor,
                               ),
                             ),
                             SizedBox(width: 4),

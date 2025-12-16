@@ -326,7 +326,7 @@ class _FeedPageState extends State<FeedPage>
             'No Content Yet',
             style: GoogleFonts.inter(
               fontSize: 25,
-              color: Colors.black87,
+              color: kTitleColor,
               fontWeight: FontWeight.w600,
             ),
           ),

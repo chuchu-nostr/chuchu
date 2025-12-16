@@ -61,7 +61,7 @@ class LogoutConfirmDialog {
                       Text(
                         'Confirm Logout',
                         style: GoogleFonts.inter(
-                          color: Colors.black87,
+                          color: kTitleColor,
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
                         ),

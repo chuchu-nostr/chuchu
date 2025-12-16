@@ -15,6 +15,7 @@ import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/navigator/navigator.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
 import '../../../core/widgets/chuchu_smart_refresher.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/common_image.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../../profile/pages/profile_edit_page.dart';
@@ -309,7 +310,7 @@ class _FeedPersonalPageState extends State<FeedPersonalPage>
             isAuthor ? 'Start Creating' : 'No Posts Yet',
             style: GoogleFonts.inter(
               fontSize: 25,
-              color: Colors.black87,
+              color: kTitleColor,
               fontWeight: FontWeight.w600,
             ),
           ),

@@ -395,7 +395,7 @@ class _FeedReplyPageState extends State<FeedReplyPage>
                   Text(
                     value.name,
                     style: GoogleFonts.inter(
-                      color: Colors.black87,
+                      color: kTitleColor,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                     ),

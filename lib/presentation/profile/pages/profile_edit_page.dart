@@ -222,14 +222,14 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                  Icon(Icons.close, size: 18, color: Colors.black87),
+                  Icon(Icons.close, size: 18, color: kTitleColor),
                   SizedBox(width: 8),
                   Text(
                     'Cancel',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: Colors.black87,
+                      color: kTitleColor,
                     ),
                   ),
                 ],
@@ -359,7 +359,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: kTitleColor,
           ),
         ),
         const SizedBox(height: 2),
@@ -428,7 +428,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
           style: GoogleFonts.inter(
             fontSize: 14,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: kTitleColor,
           ),
         ),
         const SizedBox(height: 2),
@@ -494,7 +494,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                     ),
                 ],
@@ -553,7 +553,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
-                      color: Colors.black87,
+                      color: kTitleColor,
                     ),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
@@ -573,7 +573,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
-                    color: Colors.black87,
+                    color: kTitleColor,
                   ),
                 ),
               ),
@@ -699,7 +699,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
                               style: GoogleFonts.inter(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: kTitleColor,
                               ),
                             ),
                             if (!isSaving)

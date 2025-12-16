@@ -1,6 +1,7 @@
 import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_theme.dart';
 
 class LockedContentSection extends StatefulWidget {
   String creatorName;
@@ -57,7 +58,7 @@ class _LockedContentSectionState extends State<LockedContentSection> {
             'Not Subscribed Yet',
             style: GoogleFonts.inter(
               fontSize: 25,
-              color: Colors.black87,
+              color: kTitleColor,
               fontWeight: FontWeight.w600,
             ),
           ),

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:chuchu/core/config/subscription_config.dart';
 import 'package:google_fonts/google_fonts.dart';
+import '../../../core/theme/app_theme.dart';
 
 class SubscriptionTier {
   final String name;
@@ -119,7 +120,7 @@ class _SubscriptionSettingsSectionState
         Text(
           'Set Monthly Subscription Price',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -193,7 +194,7 @@ class _SubscriptionSettingsSectionState
         Text(
           'Subscription Options',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -273,7 +274,7 @@ class _SubscriptionSettingsSectionState
                     color:
                         isMonthlyTier
                             ? Colors.white
-                            : Colors.black87,
+                            : kTitleColor,
                     fontSize: 16,
                   ),
                 ),
@@ -298,7 +299,7 @@ class _SubscriptionSettingsSectionState
               color:
                   isMonthlyTier
                       ? Colors.white
-                      : Colors.black87,
+                      : kTitleColor,
               fontSize: 16,
             ),
           ),

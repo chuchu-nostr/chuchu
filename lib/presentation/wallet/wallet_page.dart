@@ -103,24 +103,24 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
     return Scaffold(
       appBar: AppBar(
         leading: IconButton(
-          icon: Icon(Icons.arrow_back, color: Colors.black87),
+          icon: Icon(Icons.arrow_back, color: kTitleColor),
           onPressed: () => Navigator.of(context).pop(),
         ),
         title: Text(
           'Wallet',
           style: TextStyle(
-            color: Colors.black87,
+            color: kTitleColor,
             fontSize: 18,
             fontWeight: FontWeight.w600,
           ),
         ),
-        foregroundColor: Colors.black87,
+        foregroundColor: kTitleColor,
         actions: [
           IconButton(
             icon: CommonImage(
               iconName: 'refresh_icon.png',
               size: 24,
-              color: Colors.black87,
+              color: kTitleColor,
             ),
             onPressed: _isLoading ? null : _refreshData,
           ),
@@ -375,7 +375,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w600,
-                  color: Colors.black87,
+                  color: kTitleColor,
                 ),
               ),
               Spacer(),
@@ -580,7 +580,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                       style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
@@ -608,7 +608,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: tx.isIncoming ? Colors.green[600] : Colors.black87,
+                      color: tx.isIncoming ? Colors.green[600] : kTitleColor,
                     ),
                   ),
                   SizedBox(height: 2),
@@ -749,7 +749,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                         'Send Payment',
                         style: GoogleFonts.inter(
                           fontSize: 20,
-                          color: Colors.black87,
+                          color: kTitleColor,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -817,7 +817,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                     ),
                   ),
@@ -1026,7 +1026,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                         'Confirm Payment',
                         style: GoogleFonts.inter(
                           fontSize: 20,
-                          color: Colors.black87,
+                          color: kTitleColor,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -1083,7 +1083,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                                       style: GoogleFonts.inter(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800,
-                                        color: Colors.black87,
+                                        color: kTitleColor,
                                       ),
                                     ),
                                   ],
@@ -1153,7 +1153,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                                         style: GoogleFonts.inter(
                                           fontSize: 16,
                                           fontWeight: FontWeight.w800,
-                                          color: Colors.black87,
+                                          color: kTitleColor,
                                         ),
                                       ),
                                     ],
@@ -1357,7 +1357,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                         'Create Invoice',
                         style: GoogleFonts.inter(
                           fontSize: 20,
-                          color: Colors.black87,
+                          color: kTitleColor,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -1426,7 +1426,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                     ),
                   ),
@@ -1495,7 +1495,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                       style: GoogleFonts.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                     ),
                   ),
@@ -1629,7 +1629,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
         title: Text(
           'Creating Invoice',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1691,7 +1691,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
           'Invoice Created',
           style: GoogleFonts.inter(
             fontSize: 20,
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1754,7 +1754,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                             style: GoogleFonts.inter(
                               fontSize: 20,
                               fontWeight: FontWeight.w800,
-                              color: Colors.black87,
+                              color: kTitleColor,
                             ),
                           ),
                         ],
@@ -1816,7 +1816,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                               style: GoogleFonts.inter(
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
-                                color: Colors.black87,
+                                color: kTitleColor,
                               ),
                             ),
                           ],
@@ -1832,7 +1832,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w800,
-                  color: Colors.black87,
+                  color: kTitleColor,
                 ),
               ),
               SizedBox(height: 8),

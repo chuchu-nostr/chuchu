@@ -183,7 +183,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
             style: GoogleFonts.inter(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: Colors.black87,
+              color: kTitleColor,
             ),
             textAlign: TextAlign.center,
           ),

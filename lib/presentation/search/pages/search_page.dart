@@ -61,14 +61,14 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
             child: CommonImage(
               iconName: 'back_arrow_icon.png',
               size: 24,
-              color: Colors.black87,
+              color: kTitleColor,
             ),
           ),
         ),
         title: Text(
           'Search',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -136,7 +136,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
                         isDense: true,
                       ),
                       style: GoogleFonts.inter(
-                        color: Colors.black87,
+                        color: kTitleColor,
                         fontSize: 14,
                         fontWeight: FontWeight.w500,
                       ),
@@ -181,7 +181,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
             'Search by npub',
             style: GoogleFonts.inter(
               fontSize: 25,
-              color: Colors.black87,
+              color: kTitleColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -229,7 +229,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
             'No creators found',
             style: GoogleFonts.inter(
               fontSize: 25,
-              color: Colors.black87,
+              color: kTitleColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -390,7 +390,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
                               style: GoogleFonts.inter(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
-                                color: Colors.black87,
+                                color: kTitleColor,
                               ),
                             ),
                             SizedBox(height: 2),
@@ -410,7 +410,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
                       // Follow button
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.black87,
+                          color: kTitleColor,
                           borderRadius: BorderRadius.circular(20),
                           boxShadow: [
                             BoxShadow(
@@ -480,7 +480,7 @@ class _SearchPageState extends State<SearchPage> with ChuChuUIRefreshMixin {
                         style: GoogleFonts.inter(
                           fontSize: 14,
                           fontWeight: FontWeight.w800,
-                          color: Colors.black87,
+                          color: kTitleColor,
                         ),
                       ),
                       const SizedBox(width: 6),

@@ -10,6 +10,7 @@ import '../../../core/relayGroups/relayGroup.dart';
 import '../../../core/utils/feed_utils.dart';
 import '../../../core/utils/feed_widgets_utils.dart';
 import '../../../core/utils/navigator/navigator.dart';
+import '../../../core/theme/app_theme.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../../home/widgets/carousel_widget.dart';
@@ -417,7 +418,7 @@ class _FeedWidgetState extends State<FeedWidget> {
                 style: GoogleFonts.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
-                  color: Colors.black87,
+                  color: kTitleColor,
                 ),
                 overflow: TextOverflow.ellipsis,
               ),

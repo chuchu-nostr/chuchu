@@ -242,7 +242,7 @@ class FeedWidgetsUtils {
                       Text(
                         'Become a Creator',
                         style: GoogleFonts.inter(
-                          color: Colors.black87,
+                          color: kTitleColor,
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
                         ),

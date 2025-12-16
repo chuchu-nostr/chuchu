@@ -45,14 +45,14 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
             child: CommonImage(
               iconName: 'back_arrow_icon.png',
               size: 24,
-              color: Colors.black87,
+              color: kTitleColor,
             ),
           ),
         ),
         title: Text(
           'Nostr Keys',
           style: GoogleFonts.inter(
-            color: Colors.black87,
+            color: kTitleColor,
             fontWeight: FontWeight.w600,
             fontSize: 18,
           ),
@@ -169,7 +169,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
               style: GoogleFonts.inter(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
-                color: Colors.black87,
+                color: kTitleColor,
               ),
             ),
           ],
@@ -222,7 +222,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
                       style: GoogleFonts.inter(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
-                        color: Colors.black87,
+                        color: kTitleColor,
                       ),
                     ),
                   ],
@@ -250,7 +250,7 @@ class _NostrKeyPageState extends State<NostrKeyPage> with ChuChuUIRefreshMixin {
                     value,
                     style: GoogleFonts.inter(
                       fontSize: 14,
-                      color: isPrivate ? Colors.white : Colors.black87,
+                      color: isPrivate ? Colors.white : kTitleColor,
                       height: 1.4,
                       letterSpacing: 0.5,
                     ).copyWith(fontFamily: 'monospace'),
