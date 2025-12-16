@@ -1,3 +1,4 @@
+import 'package:chuchu/core/widgets/common_image.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../core/theme/app_theme.dart';
@@ -242,11 +243,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                         ),
                       ),
                       SizedBox(width: 8),
-                      Icon(
-                        Icons.arrow_forward,
-                        size: 20,
-                        color: Colors.white,
-                      ),
+                      CommonImage(iconName: 'arrow_right_icon.png', size: 20, color: Colors.white,),
                     ],
                   ),
                 ),

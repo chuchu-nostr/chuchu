@@ -9,12 +9,15 @@ import 'package:chuchu/presentation/login/pages/register_form.dart';
 import 'package:chuchu/core/account/account.dart';
 import 'package:chuchu/core/account/account+nip46.dart';
 import 'package:chuchu/core/manager/chuchu_user_info_manager.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/widgets/chuchu_Loading.dart';
 import 'package:chuchu/core/account/model/userDB_isar.dart';
 import 'package:chuchu/core/account/secure_account_storage.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
 // Conditional import for Platform class
-import 'dart:io' if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart' show Platform;
+import 'dart:io'
+    if (dart.library.html) 'package:chuchu/core/account/platform_stub.dart'
+    show Platform;
 import 'package:nostr_core_dart/nostr.dart';
 import 'package:nostr_core_dart/src/signer/signer_config.dart';
 import 'package:nostr_core_dart/src/channel/core_method_channel.dart';
@@ -78,19 +81,19 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
   bool get _canLogin {
     final text = _privateKeyController.text.trim();
     if (text.isEmpty) return false;
-    
+
     // Check if it's a bunker URI
     if (text.startsWith('bunker://') || text.startsWith('nostrconnect://')) {
       return true;
     }
-    
+
     // Otherwise treat as nsec
     return true;
   }
 
   Future<void> _handleLogin() async {
     final text = _privateKeyController.text.trim();
-    
+
     // Check if it's a bunker URI
     if (text.startsWith('bunker://') || text.startsWith('nostrconnect://')) {
       await _bunkerLogin(text);
@@ -101,7 +104,7 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
 
   Future<void> _nescLogin() async {
     final input = _privateKeyController.text.trim();
-    
+
     // Validate input
     if (input.isEmpty) {
       setState(() {
@@ -124,22 +127,17 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
       }
 
       final pubKey = Account.getPublicKey(privKey);
-      final ChuChuUserInfoManager instance = ChuChuUserInfoManager.sharedInstance;
+      final ChuChuUserInfoManager instance =
+          ChuChuUserInfoManager.sharedInstance;
       final currentUserPubKey = instance.currentUserInfo?.pubKey ?? '';
 
       await instance.initDB(pubKey);
 
       var userDB = await Account.sharedInstance.loginWithPriKey(privKey);
       if (userDB != null) {
-        await SecureAccountStorage.savePrivateKey(
-          privKey,
-          pubkey: pubKey,
-        );
+        await SecureAccountStorage.savePrivateKey(privKey, pubkey: pubKey);
       }
-      userDB = await instance.handleSwitchFailures(
-        userDB,
-        currentUserPubKey,
-      );
+      userDB = await instance.handleSwitchFailures(userDB, currentUserPubKey);
 
       if (userDB == null) {
         setState(() {
@@ -153,7 +151,6 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
       ChuChuUserInfoManager.sharedInstance.loginSuccess(userDB);
       ChuChuLoading.dismiss();
       ChuChuNavigator.pushReplacement(context, const HomePage());
-      
     } catch (e) {
       ChuChuLoading.dismiss();
       setState(() {
@@ -176,7 +173,8 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
     if (!uri.startsWith('bunker://') && !uri.startsWith('nostrconnect://')) {
       setState(() {
         _hasError = true;
-        _errorMessage = 'Invalid URI format. Must start with bunker:// or nostrconnect://';
+        _errorMessage =
+            'Invalid URI format. Must start with bunker:// or nostrconnect://';
       });
       return;
     }
@@ -198,14 +196,16 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
         setState(() {
           _isConnecting = false;
           _hasError = true;
-          _errorMessage = 'Failed to connect to remote signer. Please check your URI and try again.';
+          _errorMessage =
+              'Failed to connect to remote signer. Please check your URI and try again.';
         });
         ChuChuLoading.dismiss();
         return;
       }
 
       // Initialize user info manager
-      final ChuChuUserInfoManager instance = ChuChuUserInfoManager.sharedInstance;
+      final ChuChuUserInfoManager instance =
+          ChuChuUserInfoManager.sharedInstance;
       final currentUserPubKey = instance.currentUserInfo?.pubKey ?? '';
       await instance.initDB(userDB.pubKey);
 
@@ -227,7 +227,6 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
       ChuChuUserInfoManager.sharedInstance.loginSuccess(finalUserDB);
       ChuChuLoading.dismiss();
       ChuChuNavigator.pushReplacement(context, const HomePage());
-      
     } catch (e) {
       ChuChuLoading.dismiss();
       setState(() {
@@ -263,7 +262,7 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
 
       // Initialize external signer tool
       await ExternalSignerTool.initialize();
-      
+
       // Set selected signer
       await ExternalSignerTool.setSigner(selectedSignerKey);
 
@@ -295,19 +294,17 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
       }
 
       // Login with the public key using androidSigner
-      final ChuChuUserInfoManager instance = ChuChuUserInfoManager.sharedInstance;
+      final ChuChuUserInfoManager instance =
+          ChuChuUserInfoManager.sharedInstance;
       final currentUserPubKey = instance.currentUserInfo?.pubKey ?? '';
       await instance.initDB(hexPubkey);
 
       var userDB = await Account.sharedInstance.loginWithPubKey(
-        hexPubkey, 
+        hexPubkey,
         SignerApplication.androidSigner,
         androidSignerKey: selectedSignerKey,
       );
-      userDB = await instance.handleSwitchFailures(
-        userDB,
-        currentUserPubKey,
-      );
+      userDB = await instance.handleSwitchFailures(userDB, currentUserPubKey);
 
       if (userDB == null) {
         setState(() {
@@ -322,7 +319,6 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
       if (mounted) {
         ChuChuNavigator.pushReplacement(context, const HomePage());
       }
-      
     } catch (e) {
       if (mounted) {
         setState(() {
@@ -338,12 +334,15 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
     // Get all available signer configurations
     Map<String, SignerConfig> allConfigs = SignerConfigs.getAllConfigs();
     List<MapEntry<String, SignerConfig>> verifiedSigners = [];
-    List<MapEntry<String, SignerConfig>> allSigners = allConfigs.entries.toList();
+    List<MapEntry<String, SignerConfig>> allSigners =
+        allConfigs.entries.toList();
 
     // Try to check which signers are installed (but don't rely on it 100%)
     for (var entry in allConfigs.entries) {
       try {
-        bool isInstalled = await CoreMethodChannel.isAppInstalled(entry.value.packageName);
+        bool isInstalled = await CoreMethodChannel.isAppInstalled(
+          entry.value.packageName,
+        );
         if (isInstalled) {
           verifiedSigners.add(entry);
         }
@@ -354,9 +353,8 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
 
     // If we found verified signers, use them; otherwise show all signers
     // (Android Intent will handle the actual selection if app is not installed)
-    List<MapEntry<String, SignerConfig>> signersToShow = verifiedSigners.isNotEmpty 
-        ? verifiedSigners 
-        : allSigners;
+    List<MapEntry<String, SignerConfig>> signersToShow =
+        verifiedSigners.isNotEmpty ? verifiedSigners : allSigners;
 
     // If only one signer to show, use it directly
     if (signersToShow.length == 1) {
@@ -449,22 +447,13 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
       children: [
         Icon(statusIcon, size: 16, color: statusColor),
         SizedBox(width: 8),
-        Text(
-          statusText,
-          style: TextStyle(
-            fontSize: 12,
-            color: statusColor,
-          ),
-        ),
+        Text(statusText, style: TextStyle(fontSize: 12, color: statusColor)),
       ],
     );
   }
 
   void _handleCreateAccount() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => const RegisterForm()),
-    );
+    ChuChuNavigator.pushPage(context, (context) => RegisterForm());
   }
 
   void _handleGuestMode() {
@@ -482,225 +471,231 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
         body: SizedBox.expand(
-        child: Stack(
-          children: [
-            // Base gradient background (light purple to white)
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFF5F0FF), // Very light lavender
-                    Color(0xFFFAF5FF), // Lighter purple
-                    Colors.white,
-                  ],
-                  stops: [0.0, 0.5, 1.0],
-                ),
-              ),
-            ),
-            // Top-left purple blur block
-            Positioned(
-              top: -screenSize.height * 0.3,
-              left: -screenSize.width * 0.2,
-              child: Container(
-                width: screenSize.width * 1.2,
-                height: screenSize.height * 0.8,
+          child: Stack(
+            children: [
+              // Base gradient background (light purple to white)
+              Container(
                 decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment.topLeft,
-                    radius: 1.5,
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
                     colors: [
-                      kTertiary.withOpacity(0.3),
-                      kTertiary.withOpacity(0.18),
-                      kTertiary.withOpacity(0.08),
-                      Colors.transparent,
+                      Color(0xFFF5F0FF), // Very light lavender
+                      Color(0xFFFAF5FF), // Lighter purple
+                      Colors.white,
                     ],
-                    stops: [0.0, 0.2, 0.5, 1.0],
-                  ),
-                ),
-                child: ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
-                    child: Container(color: Colors.transparent),
+                    stops: [0.0, 0.5, 1.0],
                   ),
                 ),
               ),
-            ),
-            // Bottom-right pink blur block
-            Positioned(
-              bottom: -screenSize.height * 0.3,
-              right: -screenSize.width * 0.2,
-              child: Container(
-                width: screenSize.width * 1.2,
-                height: screenSize.height * 0.8,
-                decoration: BoxDecoration(
-                  gradient: RadialGradient(
-                    center: Alignment.bottomRight,
-                    radius: 1.5,
-                    colors: [
-                      kPrimary.withOpacity(0.3),
-                      kPrimary.withOpacity(0.18),
-                      kPrimary.withOpacity(0.08),
-                      Colors.transparent,
-                    ],
-                    stops: [0.0, 0.2, 0.5, 1.0],
+              // Top-left purple blur block
+              Positioned(
+                top: -screenSize.height * 0.3,
+                left: -screenSize.width * 0.2,
+                child: Container(
+                  width: screenSize.width * 1.2,
+                  height: screenSize.height * 0.8,
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment.topLeft,
+                      radius: 1.5,
+                      colors: [
+                        kTertiary.withOpacity(0.3),
+                        kTertiary.withOpacity(0.18),
+                        kTertiary.withOpacity(0.08),
+                        Colors.transparent,
+                      ],
+                      stops: [0.0, 0.2, 0.5, 1.0],
+                    ),
                   ),
-                ),
-                child: ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
-                    child: Container(color: Colors.transparent),
+                  child: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
+                      child: Container(color: Colors.transparent),
+                    ),
                   ),
                 ),
               ),
-            ),
-            // Content on top
-            SafeArea(
-              child: LayoutBuilder(
-                builder: (context, constraints) {
-                  return SingleChildScrollView(
-                    child: ConstrainedBox(
-                      constraints: BoxConstraints(
-                        minHeight: constraints.maxHeight,
-                      ),
-                      child: Center(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              const SizedBox(height: 40),
+              // Bottom-right pink blur block
+              Positioned(
+                bottom: -screenSize.height * 0.3,
+                right: -screenSize.width * 0.2,
+                child: Container(
+                  width: screenSize.width * 1.2,
+                  height: screenSize.height * 0.8,
+                  decoration: BoxDecoration(
+                    gradient: RadialGradient(
+                      center: Alignment.bottomRight,
+                      radius: 1.5,
+                      colors: [
+                        kPrimary.withOpacity(0.3),
+                        kPrimary.withOpacity(0.18),
+                        kPrimary.withOpacity(0.08),
+                        Colors.transparent,
+                      ],
+                      stops: [0.0, 0.2, 0.5, 1.0],
+                    ),
+                  ),
+                  child: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 120, sigmaY: 120),
+                      child: Container(color: Colors.transparent),
+                    ),
+                  ),
+                ),
+              ),
+              // Content on top
+              SafeArea(
+                child: LayoutBuilder(
+                  builder: (context, constraints) {
+                    return SingleChildScrollView(
+                      child: ConstrainedBox(
+                        constraints: BoxConstraints(
+                          minHeight: constraints.maxHeight,
+                        ),
+                        child: Center(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24.0,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const SizedBox(height: 40),
 
-                              // NOSTR RELAY CONNECTED status indicator
-                              // _buildStatusIndicator(),
+                                // NOSTR RELAY CONNECTED status indicator
+                                // _buildStatusIndicator(),
 
-                              // const SizedBox(height: 40),
+                                // const SizedBox(height: 40),
 
-                              // Container wrapping logo, input, and create account
-                              Container(
-                                padding: const EdgeInsets.only(
-                                  left: 24,
-                                  right: 24,
-                                  top: 50,
-                                  bottom: 20,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(24),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.grey.withOpacity(0.15),
-                                      blurRadius: 20,
-                                      offset: const Offset(0, 8),
-                                      spreadRadius: 0,
-                                    ),
-                                  ],
-                                ),
-                                child: Column(
-                                  children: [
-                                    Column(
-                                      children: [
-                                        // App icon with gradient background
-                                        _buildAppIcon(),
+                                // Container wrapping logo, input, and create account
+                                Container(
+                                  padding: const EdgeInsets.only(
+                                    left: 24,
+                                    right: 24,
+                                    top: 50,
+                                    bottom: 20,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(24),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.grey.withOpacity(0.15),
+                                        blurRadius: 20,
+                                        offset: const Offset(0, 8),
+                                        spreadRadius: 0,
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Column(
+                                        children: [
+                                          // App icon with gradient background
+                                          _buildAppIcon(),
 
-                                        const SizedBox(height: 8),
+                                          const SizedBox(height: 8),
 
-                                        // App name
-                                        CommonImage(
-                                          iconName: 'ChuChu_pink.png',
-                                          width: 150,
-                                        ),
-                                        const SizedBox(height: 20),
-
-                                        // Tagline
-                                        Text(
-                                          'Support creativity. Pay lightning-fast.',
-                                          style: TextStyle(
-                                            fontSize: 14,
-                                            color: theme.colorScheme.onSurfaceVariant,
-                                            fontWeight: FontWeight.w600,
+                                          // App name
+                                          CommonImage(
+                                            iconName: 'ChuChu_pink.png',
+                                            width: 150,
                                           ),
-                                        ),
+                                          const SizedBox(height: 20),
 
-                                        const SizedBox(height: 32),
-
-                                        // Tagline with decorative lines
-                                        _buildTagline(),
-
-                                        const SizedBox(height: 32),
-
-                                        // Input field
-                                        _buildInputField(),
-
-                                        if (_hasError) ...[
-                                          const SizedBox(height: 12),
+                                          // Tagline
                                           Text(
-                                            _errorMessage,
-                                            style: TextStyle(
-                                              color: Colors.red[300],
-                                              fontSize: 12,
+                                            'Support creativity. Pay lightning-fast.',
+                                            style: GoogleFonts.inter(
+                                              fontSize: 14,
+                                              color:
+                                                  theme
+                                                      .colorScheme
+                                                      .onSurfaceVariant,
+                                              fontWeight: FontWeight.w600,
                                             ),
                                           ),
+
+                                          const SizedBox(height: 32),
+
+                                          // Tagline with decorative lines
+                                          _buildTagline(),
+
+                                          const SizedBox(height: 32),
+
+                                          // Input field
+                                          _buildInputField(),
+
+                                          if (_hasError) ...[
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              _errorMessage,
+                                              style: GoogleFonts.inter(
+                                                fontSize: 12,
+                                                fontWeight: FontWeight.w600,
+                                                color: Colors.redAccent,
+                                              ),
+                                            ),
+                                          ],
+
+                                          const SizedBox(height: 24),
+
+                                          // Create Account button
+                                          _buildCreateAccountButton(),
+
+                                          const SizedBox(height: 50),
                                         ],
-
-                                        const SizedBox(height: 24),
-
-                                        // Create Account button
-                                        _buildCreateAccountButton(),
-
-                                        const SizedBox(height: 50),
-                                      ],
-                                    ),
-                                    // Disclaimer text
-                                    Text(
-                                      'By connecting, you agree to the Protocol Standards\nYour keys are encrypted locally.',
-                                      style: TextStyle(
-                                        fontSize: 12,
-                                        color: theme.colorScheme.outline,
-                                        height: 1.5,
                                       ),
-                                      textAlign: TextAlign.center,
+                                      // Disclaimer text
+                                      Text(
+                                        'By connecting, you agree to the Protocol Standards\nYour keys are encrypted locally.',
+                                        style: GoogleFonts.inter(
+                                          fontSize: 12,
+                                          color: theme.colorScheme.outline,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+
+                                const SizedBox(height: 24),
+
+                                // Powered by Nostr
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    CommonImage(
+                                      iconName: 'lighting_icon.png',
+                                      color: Colors.black.withAlpha(50),
+                                      size: 12,
+                                    ),
+                                    const SizedBox(width: 6),
+                                    Text(
+                                      'Powered by Nostr',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 12,
+                                        color: Colors.black.withAlpha(50),
+                                        fontWeight: FontWeight.w600,
+                                      ),
                                     ),
                                   ],
                                 ),
-                              ),
 
-                              const SizedBox(height: 24),
-
-                              // Powered by Nostr
-                              Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CommonImage(
-                                    iconName: 'lighting_icon.png',
-                                    color: theme.colorScheme.outline.withAlpha(100),
-                                    size: 12,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'Powered by Nostr',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: theme.colorScheme.outline.withAlpha(100),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-
-                              const SizedBox(height: 40),
-                            ],
+                                const SizedBox(height: 40),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
         ),
       ),
     );
@@ -752,55 +747,88 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Expanded(child: Container(height: 1, color: Colors.grey[300])),
+        Expanded(
+          child: Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.white, Colors.grey.withOpacity(0.3)],
+              ),
+            ),
+          ),
+        ),
+
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
             'SOCIAL + WALLET',
-            style: TextStyle(
-              fontSize: 14,
+            style: GoogleFonts.inter(
+              fontSize: 10,
               fontWeight: FontWeight.w600,
               color: Theme.of(context).colorScheme.outline,
               letterSpacing: 2,
             ),
           ),
         ),
-        Expanded(child: Container(height: 1, color: Colors.grey[300])),
+        Expanded(
+          child: Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [Colors.grey.withOpacity(0.3), Colors.white],
+              ),
+            ),
+          ),
+        ),
       ],
     );
   }
 
   Widget _buildInputField() {
     final theme = Theme.of(context);
-    final isBunkerUri = _privateKeyController.text.trim().startsWith('bunker://') || 
-                        _privateKeyController.text.trim().startsWith('nostrconnect://');
-    
+    final isBunkerUri =
+        _privateKeyController.text.trim().startsWith('bunker://') ||
+        _privateKeyController.text.trim().startsWith('nostrconnect://');
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           height: 56,
           decoration: BoxDecoration(
-            color: Colors.grey[100],
+            color: kBgLight,
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: _hasError ? Colors.red[400]! : Colors.grey[200]!,
-              width: 1,
+              color: _hasError ? Colors.red[400]! : Color(0xFFE2E8F0),
+              width: 0.5,
             ),
           ),
           child: Row(
             children: [
               const SizedBox(width: 16),
-              Icon(Icons.vpn_key_rounded, color: Colors.grey[500], size: 20),
+              CommonImage(
+                iconName: 'key_icon.png',
+                size: 20,
+                color: theme.colorScheme.outline,
+              ),
               const SizedBox(width: 12),
               Expanded(
                 child: TextField(
                   controller: _privateKeyController,
                   obscureText: !isBunkerUri && _isObscured,
-                  style: TextStyle(color: Colors.grey[900], fontSize: 15),
+
+                  style: GoogleFonts.inter(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w500,
+                    color: kTitleColor,
+                  ),
                   decoration: InputDecoration(
                     hintText: 'nsec1... or bunker://',
-                    hintStyle: TextStyle(color: Colors.grey[400]),
+                    hintStyle: GoogleFonts.inter(
+                      color: theme.colorScheme.outline,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                    ),
                     border: InputBorder.none,
                     contentPadding: EdgeInsets.zero,
                   ),
@@ -818,16 +846,12 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
                   child: Container(
                     width: 20,
                     height: 20,
-                    margin: const EdgeInsets.only(right: 8),
+                    margin: const EdgeInsets.only(left: 8),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       color: Colors.grey[400],
                     ),
-                    child: Icon(
-                      Icons.close,
-                      size: 12,
-                      color: Colors.white,
-                    ),
+                    child: Icon(Icons.close, size: 12, color: Colors.white),
                   ),
                 ),
               ],
@@ -847,33 +871,35 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
                   },
                 ),
               ],
-              const SizedBox(width: 8),
               Container(
                 margin: const EdgeInsets.only(right: 8),
                 width: 36,
                 height: 36,
                 decoration: BoxDecoration(
                   gradient: _canLogin ? getBrandGradientHorizontal() : null,
-                  color: _canLogin ? null : Colors.grey[300],
+                  color: _canLogin ? null : Color(0xFFF1F5F9),
                   shape: BoxShape.circle,
                 ),
-                child: IconButton(
-                  padding: EdgeInsets.zero,
-                  icon: Icon(
-                    Icons.arrow_forward_rounded,
-                    color: _canLogin ? Colors.white : Colors.grey[600],
-                    size: 18,
+                child: GestureDetector(
+                  onTap: _canLogin && !_isConnecting ? _handleLogin : null,
+                  child: Center(
+                    child: CommonImage(
+                      iconName: 'arrow_right_icon.png',
+                      size: 20,
+                      color: _canLogin ? Colors.white : null,
+                    ),
                   ),
-                  onPressed: _canLogin && !_isConnecting ? _handleLogin : null,
                 ),
               ),
             ],
           ),
         ),
         // Connection status indicator (show when input is bunker URI)
-        if (_connectionStatus != null && 
-            (_privateKeyController.text.trim().startsWith('bunker://') || 
-             _privateKeyController.text.trim().startsWith('nostrconnect://'))) ...[
+        if (_connectionStatus != null &&
+            (_privateKeyController.text.trim().startsWith('bunker://') ||
+                _privateKeyController.text.trim().startsWith(
+                  'nostrconnect://',
+                ))) ...[
           SizedBox(height: 12),
           _buildConnectionStatus(),
         ],
@@ -882,13 +908,24 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
   }
 
   Widget _buildCreateAccountButton() {
-    return SizedBox(
+    return Container(
       width: double.infinity,
       height: 50,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(25),
+        boxShadow: [
+          BoxShadow(
+            color: kPrimary.withOpacity(0.2),
+            blurRadius: 4,
+            offset: Offset(0, 1),
+            spreadRadius: 0,
+          ),
+        ],
+      ),
       child: ElevatedButton(
         onPressed: _handleCreateAccount,
         style: ElevatedButton.styleFrom(
-          backgroundColor: Color(0xFFFFE5F5), // Light pink background
+          backgroundColor: Color(0xFFFDF2F8), // Light pink background
           foregroundColor: kPrimary, // Pink text color
           elevation: 0,
           shape: RoundedRectangleBorder(
@@ -897,7 +934,11 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
         ),
         child: Text(
           'Create Account',
-          style: TextStyle(fontSize: 16,color: Theme.of(context).colorScheme.primary, fontWeight: FontWeight.w600),
+          style: GoogleFonts.inter(
+            fontSize: 16,
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          ),
         ),
       ),
     );

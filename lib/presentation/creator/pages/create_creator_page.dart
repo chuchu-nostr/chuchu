@@ -99,8 +99,10 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
                         ),
                         child: TextField(
                           controller: _nameController,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            color: kTitleColor,
+                            fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             hintText: 'Enter your Poster name',
@@ -162,8 +164,10 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
                         child: TextField(
                           controller: _aboutController,
                           maxLines: 4,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.onSurface,
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            color: kTitleColor,
+                            fontWeight: FontWeight.w600,
                           ),
                           decoration: InputDecoration(
                             hintText: 'Tell us about your content...',

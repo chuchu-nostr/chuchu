@@ -63,9 +63,9 @@ class _RegisterFormState extends State<RegisterForm> {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
-        body: SizedBox.expand(
+      body: SizedBox.expand(
         child: Stack(
-      children: [
+          children: [
             // Base gradient background (light purple to white)
             Container(
               decoration: BoxDecoration(
@@ -144,7 +144,8 @@ class _RegisterFormState extends State<RegisterForm> {
                 backgroundColor: Colors.transparent,
                 surfaceTintColor: Colors.transparent,
                 elevation: 0,
-                leading:  GestureDetector(
+                systemOverlayStyle: SystemUiOverlayStyle.dark,
+                leading: GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
                   child: Center(
                     child: CommonImage(
@@ -156,7 +157,7 @@ class _RegisterFormState extends State<RegisterForm> {
                 ),
                 title: Text(
                   'New Account',
-                  style: TextStyle(
+                  style: GoogleFonts.inter(
                     fontSize: 18,
                     fontWeight: FontWeight.w800,
                     color: kTitleColor,
@@ -208,7 +209,7 @@ class _RegisterFormState extends State<RegisterForm> {
                         child: RichText(
                           textAlign: TextAlign.center,
                           text: TextSpan(
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 14,
                               color:
                                   Theme.of(
@@ -220,7 +221,7 @@ class _RegisterFormState extends State<RegisterForm> {
                               TextSpan(text: 'This key is the '),
                               TextSpan(
                                 text: 'ONLY',
-                                style: TextStyle(
+                                style: GoogleFonts.inter(
                                   color: kTitleColor,
                                   fontWeight: FontWeight.bold,
                                 ),
@@ -272,8 +273,10 @@ class _RegisterFormState extends State<RegisterForm> {
 
                                 GestureDetector(
                                   onTap:
-                                      () =>
-                                          _copyToClipboard(_npub, 'Public key'),
+                                      () => _copyToClipboard(
+                                        _npub,
+                                        'Public key',
+                                      ),
                                   child: Container(
                                     width: double.infinity,
                                     padding: EdgeInsets.symmetric(
@@ -281,19 +284,18 @@ class _RegisterFormState extends State<RegisterForm> {
                                       vertical: 14,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: Colors.grey[100],
+                                      color: kBgLight,
                                       borderRadius: BorderRadius.circular(12),
                                       border: Border.all(
-                                        color: Colors.grey[200]!,
+                                        color: Color(0xFFF1F5F9),
                                         width: 1,
                                       ),
                                     ),
                                     child: Text(
                                       _npub,
-                                      style: TextStyle(
+                                      style: GoogleFonts.inter(
                                         fontSize: 14,
-                                        color: Colors.grey[900],
-                                        fontFamily: 'monospace',
+                                        color: Theme.of(context).colorScheme.onSurfaceVariant,
                                       ),
                                     ),
                                   ),
@@ -312,10 +314,10 @@ class _RegisterFormState extends State<RegisterForm> {
                                     SizedBox(width: 6),
                                     Text(
                                       'PRIVATE KEY (SECRET)',
-                                      style: TextStyle(
+                                      style: GoogleFonts.inter(
                                         fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: Colors.grey[700],
+                                        fontWeight: FontWeight.w800,
+                                        color: Color(0xFFFB2C36),
                                         letterSpacing: 0.5,
                                       ),
                                     ),
@@ -346,10 +348,9 @@ class _RegisterFormState extends State<RegisterForm> {
                                     ),
                                     child: Text(
                                       _nsec,
-                                      style: TextStyle(
+                                      style: GoogleFonts.inter(
                                         fontSize: 14,
                                         color: Colors.grey[900],
-                                        fontFamily: 'monospace',
                                       ),
                                     ),
                                   ),
@@ -368,7 +369,7 @@ class _RegisterFormState extends State<RegisterForm> {
                                     SizedBox(width: 6),
                                     Text(
                                       'Tap to copy. Write this down in a safe place!',
-                                      style: TextStyle(
+                                      style: GoogleFonts.inter(
                                         fontSize: 12,
                                         color: Colors.red[300],
                                       ),
@@ -397,11 +398,11 @@ class _RegisterFormState extends State<RegisterForm> {
                             ),
                           ),
                         ],
-          ),
-        ),
-        
-        SizedBox(height: 24),
-        
+                      ),
+                    ),
+
+                    SizedBox(height: 24),
+
                     // Checkbox
                     Row(
                       children: [
@@ -418,9 +419,10 @@ class _RegisterFormState extends State<RegisterForm> {
                         Expanded(
                           child: Text(
                             'I have securely backed up my secret key',
-                            style: TextStyle(
+                            style: GoogleFonts.inter(
                               fontSize: 14,
                               color: theme.colorScheme.onSurface,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -430,40 +432,40 @@ class _RegisterFormState extends State<RegisterForm> {
                     SizedBox(height: 32),
 
                     // Enter ChuChu button with gradient
-        SizedBox(
-          width: double.infinity,
-          height: 50,
+                    SizedBox(
+                      width: double.infinity,
+                      height: 50,
                       child: Container(
                         decoration: BoxDecoration(
                           gradient:
                               _hasBackedUp
                                   ? getBrandGradientDiagonal()
                                   : null,
-                          color: _hasBackedUp ? null : Colors.grey[300],
+                          color: _hasBackedUp ? null : Color(0xFFE2E8F0),
                           borderRadius: BorderRadius.circular(25),
                         ),
-          child: ElevatedButton(
+                        child: ElevatedButton(
                           onPressed: _hasBackedUp ? _createAccount : null,
-            style: ElevatedButton.styleFrom(
+                          style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.transparent,
                             shadowColor: Colors.transparent,
-              shape: RoundedRectangleBorder(
+                            shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(25),
-              ),
-              elevation: 0,
-            ),
-            child: Text(
+                            ),
+                            elevation: 0,
+                          ),
+                          child: Text(
                             'Enter ChuChu',
                             style: GoogleFonts.inter(
-                fontSize: 16,
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
                               color: Colors.white,
                             ),
-              ),
-            ),
-          ),
-        ),
-        
+                          ),
+                        ),
+                      ),
+                    ),
+
                     SizedBox(height: 40),
                   ],
                 ),
@@ -471,7 +473,7 @@ class _RegisterFormState extends State<RegisterForm> {
             ),
           ],
         ),
-        ),
+      ),
       ),
     );
   }
@@ -496,4 +498,4 @@ class _RegisterFormState extends State<RegisterForm> {
     ChuChuLoading.dismiss();
     ChuChuNavigator.pushReplacement(context, const HomePage());
   }
-} 
+}

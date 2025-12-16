@@ -333,15 +333,17 @@ class _TransactionsPageState extends State<TransactionsPage>
     final theme = Theme.of(context);
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 32),
+      padding: EdgeInsets.only(top: 100),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          CommonImage(iconName: 'wallet_history_icon.png', width: 150),
+          CommonImage(iconName: 'wallet_history_icon.png', width: 220),
           SizedBox(height: 24),
           Text(
             'No transactions yet',
-            style: theme.textTheme.titleLarge?.copyWith(
+            style: GoogleFonts.inter(
+              fontSize: 25,
+              color: kTitleColor,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -350,8 +352,9 @@ class _TransactionsPageState extends State<TransactionsPage>
             padding: const EdgeInsets.symmetric(horizontal: 40),
             child: Text(
               'Your transaction history will appear here once you start using your wallet.',
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurface.withOpacity(0.7),
+              style: GoogleFonts.inter(
+                color: theme.colorScheme.onSurfaceVariant,
+                fontSize: 16,
               ),
               textAlign: TextAlign.center,
             ),
