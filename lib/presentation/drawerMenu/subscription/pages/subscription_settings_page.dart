@@ -95,7 +95,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
 
   Future<void> _createSettings() async {
     if (_isPaidSubscription && _priceController.text.isEmpty) {
-      CommonToast.instance.show(context, 'Please set a subscription price');
+      CommonToast.instance.show(context, 'Please set a subscription price', toastType:ToastType.failed);
       return;
     }
 
@@ -106,7 +106,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
       if (_isPaidSubscription) {
         String cleanPriceText = _priceController.text.replaceAll(RegExp(r'[^\d.]'), '');
         if (cleanPriceText.isEmpty) {
-          CommonToast.instance.show(context, 'Please enter a valid price');
+          CommonToast.instance.show(context, 'Please enter a valid price',toastType:ToastType.failed);
           return;
         }
         
@@ -139,14 +139,14 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
           String message = _isPaidSubscription 
               ? 'Premium subscription created successfully at $priceText'
               : 'Free subscription created successfully';
-          CommonToast.instance.show(context, message);
+          CommonToast.instance.show(context, message,toastType:ToastType.success);
           Navigator.pop(context);
         } else {
-          CommonToast.instance.show(context, 'Failed to create subscription');
+          CommonToast.instance.show(context, 'Failed to create subscription',toastType:ToastType.failed);
         }
       }
     } catch (e) {
-      CommonToast.instance.show(context, 'Error ${_hasExistingGroup ? 'updating' : 'creating'} subscription: ${e.toString()}');
+      CommonToast.instance.show(context, 'Error ${_hasExistingGroup ? 'updating' : 'creating'} subscription: ${e.toString()}',toastType:ToastType.failed);
     }
   }
 
@@ -482,7 +482,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
       }
       
       if (!wallet.isConnected) {
-        CommonToast.instance.show(context, 'Wallet not connected. Please try again.');
+        CommonToast.instance.show(context, 'Wallet not connected. Please try again.',toastType:ToastType.failed);
         return;
       }
 
@@ -509,7 +509,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
           // Set up payment status callback
           wallet.onPaymentStatusChanged = (paymentHash, isPaid, details) {
             if (isPaid) {
-              CommonToast.instance.show(context, 'Payment completed successfully!');
+              CommonToast.instance.show(context, 'Payment completed successfully!',toastType:ToastType.success);
               // Handle payment success - update UI, etc.
               _handlePaymentSuccess(groupId, months);
             }
@@ -533,15 +533,15 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
             );
           }
         } else {
-          CommonToast.instance.show(context, 'Invalid invoice data received');
+          CommonToast.instance.show(context, 'Invalid invoice data received',toastType:ToastType.failed);
         }
       } else {
         final errorMessage = result?['message'] ?? 'Failed to create subscription invoice';
-        CommonToast.instance.show(context, errorMessage);
+        CommonToast.instance.show(context, errorMessage,toastType:ToastType.failed);
       }
     } catch (e) {
       print('Error creating subscription invoice: $e');
-      CommonToast.instance.show(context, 'Error creating subscription invoice: ${e.toString()}');
+      CommonToast.instance.show(context, 'Error creating subscription invoice: ${e.toString()}',toastType:ToastType.failed);
     }
   }
 
@@ -554,7 +554,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
       String groupId = _getCurrentGroupId();
       
       if (groupId.isEmpty) {
-        CommonToast.instance.show(context, 'No active subscription found');
+        CommonToast.instance.show(context, 'No active subscription found',toastType:ToastType.failed);
         return;
       }
 
@@ -564,11 +564,11 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
       } else {
         // For free subscription updates, just show success message
         String message = 'Subscription settings updated to free';
-        CommonToast.instance.show(context, message);
+        CommonToast.instance.show(context, message,toastType:ToastType.info);
         Navigator.pop(context);
       }
     } catch (e) {
-      CommonToast.instance.show(context, 'Error updating subscription: ${e.toString()}');
+      CommonToast.instance.show(context, 'Error updating subscription: ${e.toString()}',toastType:ToastType.failed);
     }
   }
 
@@ -600,7 +600,7 @@ class _SubscriptionSettingsPageState extends State<SubscriptionSettingsPage> {
     // TODO: Update subscription status in database
     // TODO: Refresh UI to show active subscription
     print('Payment successful for group $groupId, months: $months');
-    CommonToast.instance.show(context, 'Subscription payment successful!');
+    CommonToast.instance.show(context, 'Subscription payment successful!',toastType:ToastType.success);
   }
 
   /// Get relay pubkey for the selected subscription relay

@@ -389,6 +389,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                   CommonToast.instance.show(
                     context,
                     'Invoice copied to clipboard',
+                      toastType:ToastType.success
                   );
                 },
                 iconSize: 20,
@@ -762,7 +763,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
           break;
       }
     } catch (e) {
-      CommonToast.instance.show(context, 'Payment failed: ${e.toString()}');
+      CommonToast.instance.show(context, 'Payment failed: ${e.toString()}',toastType:ToastType.failed);
     } finally {
       if (mounted) {
         setState(() {
@@ -779,7 +780,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
 
       // Check wallet connection status
       if (!wallet.isConnected) {
-        CommonToast.instance.show(context, 'Wallet not connected');
+        CommonToast.instance.show(context, 'Wallet not connected',toastType:ToastType.failed);
         return;
       }
 
@@ -795,11 +796,11 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
         await _waitForPaymentStatusCallback();
       } else {
         // Payment failed - show error message
-        CommonToast.instance.show(context, 'Payment failed');
+        CommonToast.instance.show(context, 'Payment failed',toastType:ToastType.failed);
       }
     } catch (e) {
       // Handle any unexpected errors during payment
-      CommonToast.instance.show(context, 'Payment error: ${e.toString()}');
+      CommonToast.instance.show(context, 'Payment error: ${e.toString()}',toastType:ToastType.failed);
     }
   }
 
@@ -809,7 +810,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
 
     // Check wallet connection status
     if (!wallet.isConnected) {
-      CommonToast.instance.show(context, 'Wallet not connected');
+      CommonToast.instance.show(context, 'Wallet not connected',toastType:ToastType.failed);
       return;
     }
     final completer = Completer<void>();
@@ -850,7 +851,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
 
     // Check wallet connection status
     if (!wallet.isConnected) {
-      CommonToast.instance.show(context, 'Wallet not connected');
+      CommonToast.instance.show(context, 'Wallet not connected',toastType:ToastType.failed);
       return;
     }
 
@@ -1044,6 +1045,7 @@ class _SubscriptionPaymentDialogState extends State<SubscriptionPaymentDialog> {
                                           CommonToast.instance.show(
                                             context,
                                             'Invoice copied to clipboard',
+                                              toastType:ToastType.success
                                           );
                                         },
                                         icon: const Icon(Icons.copy, size: 16),

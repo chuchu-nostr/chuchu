@@ -455,7 +455,7 @@ class _FeedReplyPageState extends State<FeedReplyPage>
     if (_textController.text.isEmpty &&
         _selectedImages.isEmpty &&
         _selectedVideos.isEmpty) {
-      CommonToast.instance.show(context, 'content_empty_tips');
+      CommonToast.instance.show(context, 'Please enter your reply or add media', toastType: ToastType.failed);
       return;
     }
     if (_postMomentTag) return;
@@ -497,10 +497,10 @@ class _FeedReplyPageState extends State<FeedReplyPage>
       );
 
       if (event != null && event.status) {
-        CommonToast.instance.show(context, 'Sent successfully');
+        CommonToast.instance.show(context, 'Sent successfully',toastType:ToastType.success);
         ChuChuNavigator.pop(context, true);
       } else {
-        CommonToast.instance.show(context, 'Failed to send');
+        CommonToast.instance.show(context, 'Failed to send',toastType:ToastType.failed);
       }
     } finally {
       await ChuChuLoading.dismiss();
@@ -811,6 +811,7 @@ class _FeedReplyPageState extends State<FeedReplyPage>
             CommonToast.instance.show(
               context,
               'Video ${i + 1} upload failed: $e',
+                toastType:ToastType.failed
             );
           }
         }

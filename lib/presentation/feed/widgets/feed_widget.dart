@@ -254,7 +254,7 @@ class _FeedWidgetState extends State<FeedWidget> {
               (context) => FeedPersonalPage(relayGroupDB: relayGroup!),
             );
           } else {
-            CommonToast.instance.show(context, "The creator couldn't be found");
+            CommonToast.instance.show(context, "The creator couldn't be found" ,toastType:ToastType.failed);
           }
         },
         child: FeedWidgetsUtils.clipImage(

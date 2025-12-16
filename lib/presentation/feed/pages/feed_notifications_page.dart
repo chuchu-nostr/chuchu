@@ -315,7 +315,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           onTap: () {
             if (user?.pubKey != null) {
               if (widget.relayGroupDB == null) {
-                CommonToast.instance.show(context, 'Creator not enabled');
+                CommonToast.instance.show(context, 'Creator not enabled',toastType:ToastType.failed);
                 return;
               }
               ChuChuNavigator.pushPage(

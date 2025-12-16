@@ -646,6 +646,7 @@ class _MyProfilePageState extends State<MyProfilePage>
         CommonToast.instance.show(
           context,
           'Avatar uploaded successfully. Please confirm to update.',
+            toastType:ToastType.success
         );
       } else {
         throw Exception('Upload returned empty URL');
@@ -706,7 +707,7 @@ class _MyProfilePageState extends State<MyProfilePage>
         });
       }
       
-      CommonToast.instance.show(context, 'Avatar updated successfully');
+      CommonToast.instance.show(context, 'Avatar updated successfully',toastType:ToastType.success);
     } catch (e, stackTrace) {
       // Print detailed error for debugging
       debugPrint('Error confirming avatar update: $e');

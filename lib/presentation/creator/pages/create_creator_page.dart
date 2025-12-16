@@ -306,7 +306,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
       if (_isPaidSubscription) {
         // Validate price: must be a positive integer
         if (subscriptionPrice <= 0) {
-          CommonToast.instance.show(context, 'Please enter a valid price greater than 0');
+          CommonToast.instance.show(context, 'Please enter a valid price greater than 0',toastType:ToastType.failed);
           return;
         }
       }
@@ -324,6 +324,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
         CommonToast.instance.show(
           context,
           'Wallet not connected. Please try again.',
+            toastType:ToastType.failed
         );
         ChuChuLoading.dismiss();
 
@@ -331,7 +332,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
       }
 
       if (wallet.walletInfo?.walletId == null) {
-        CommonToast.instance.show(context, 'Wallet id is not fund.');
+        CommonToast.instance.show(context, 'Wallet id is not fund.',toastType:ToastType.failed);
         ChuChuLoading.dismiss();
 
         return;
@@ -351,7 +352,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
       //
       print('=====>relayGroupDB==$relayGroupDB');
       if (relayGroupDB != null) {
-        CommonToast.instance.show(context, 'Create Successfully !');
+        CommonToast.instance.show(context, 'Create Successfully !',toastType:ToastType.success);
         ChuChuLoading.dismiss();
 
         Navigator.of(context).pop(true);
@@ -360,6 +361,7 @@ class CreateCreatorPageState extends State<CreateCreatorPage>
       CommonToast.instance.show(
         context,
         'Error creating subscription: ${e.toString()}',
+          toastType:ToastType.failed
       );
       ChuChuLoading.dismiss();
     }

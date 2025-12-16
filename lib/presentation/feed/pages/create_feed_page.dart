@@ -328,6 +328,7 @@ class _CreateFeedPageState extends State<CreateFeedPage>
               CommonToast.instance.show(
                 context,
                 'File size exceeds the maximum allowed size of 20 MiB',
+                  toastType:ToastType.success
               );
               // Mark for removal
               failedIndices.add(i);
@@ -380,7 +381,7 @@ class _CreateFeedPageState extends State<CreateFeedPage>
           if (mounted) {
             final errorMessage = e.toString();
             // Show error message
-            CommonToast.instance.show(context, errorMessage);
+            CommonToast.instance.show(context, errorMessage, toastType:ToastType.failed);
 
             // Mark as failed, will remove after loop
             failedIndices.add(i);
@@ -434,6 +435,7 @@ class _CreateFeedPageState extends State<CreateFeedPage>
               CommonToast.instance.show(
                 context,
                 'File size exceeds the maximum allowed size of 20 MiB',
+                  toastType:ToastType.failed
               );
               // Mark for removal
               failedIndices.add(i);
@@ -473,7 +475,7 @@ class _CreateFeedPageState extends State<CreateFeedPage>
           if (mounted) {
             final errorMessage = e.toString();
             // Show error message
-            CommonToast.instance.show(context, errorMessage);
+            CommonToast.instance.show(context, errorMessage,toastType:ToastType.failed);
 
             // Mark as failed, will remove after loop
             failedIndices.add(i);
@@ -1205,7 +1207,7 @@ class _CreateFeedPageState extends State<CreateFeedPage>
       String content =
           '${FeedUtils.changeAtUserToNpub(draftCueUserMap, inputText)}$mediaContent';
       if (content.trim().isEmpty) {
-        CommonToast.instance.show(context, 'Content empty tips');
+        CommonToast.instance.show(context, 'Content empty tips',toastType:ToastType.failed);
         return;
       }
       List<String> previous = Nip29.getPrevious([
@@ -1218,13 +1220,13 @@ class _CreateFeedPageState extends State<CreateFeedPage>
       );
 
       if (eventStatus.status) {
-        CommonToast.instance.show(context, 'Sent successfully');
+        CommonToast.instance.show(context, 'Sent successfully',toastType:ToastType.success);
         Navigator.pop(context);
       } else {
-        CommonToast.instance.show(context, 'Failed to send');
+        CommonToast.instance.show(context, 'Failed to send',toastType:ToastType.failed);
       }
     } catch (e) {
-      CommonToast.instance.show(context, 'Post failed: $e');
+      CommonToast.instance.show(context, 'Post failed: $e',toastType:ToastType.failed);
     } finally {
       ChuChuLoading.dismiss();
       _postFeedTag = false;

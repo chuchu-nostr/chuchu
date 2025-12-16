@@ -166,7 +166,7 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
         };
       case EFeedOptionType.zaps:
         return (){
-          CommonToast.instance.show(context, 'Zap coming soon');
+          CommonToast.instance.show(context, 'Zap coming soon',toastType:ToastType.info);
 
         };
     }
@@ -177,14 +177,14 @@ class _FeedOptionWidgetState extends State<FeedOptionWidget> {
       _reactionTag = true;
       setState(() {});
       _updateNoteDB();
-      CommonToast.instance.show(context, 'Like success tips');
+      CommonToast.instance.show(context, 'Like success tips',toastType:ToastType.success);
     }else{
-      CommonToast.instance.show(context, 'Like fail tips');
+      CommonToast.instance.show(context, 'Like fail tips',toastType:ToastType.failed);
     }
   }
 
   void _onBookmarkTap() {
-    CommonToast.instance.show(context, 'Bookmarks coming soon');
+    CommonToast.instance.show(context, 'Bookmarks coming soon',toastType:ToastType.info);
     // setState(() {
     //   _bookmarkTag = !_bookmarkTag;
     // });
@@ -423,9 +423,9 @@ class _ReusableLikeButtonState extends State<ReusableLikeButton> {
         _reactionTag = true;
       });
       _updateNoteDB();
-      CommonToast.instance.show(context, 'Like success tips');
+      CommonToast.instance.show(context, 'Like success tips',toastType:ToastType.success);
     } else {
-      CommonToast.instance.show(context, 'Like fail tips');
+      CommonToast.instance.show(context, 'Like fail tips',toastType:ToastType.failed);
     }
   }
 
@@ -624,7 +624,7 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
 
   void _handleZapTap() {
     // Handle zap functionality
-    CommonToast.instance.show(context, 'Zap functionality coming soon');
+    CommonToast.instance.show(context, 'Zap functionality coming soon',toastType:ToastType.info);
   }
 
   void _handleBookmarkTap() {
@@ -633,9 +633,9 @@ class _ReusableInteractionButtonsState extends State<ReusableInteractionButtons>
     });
 
     if (_bookmarkTag) {
-      CommonToast.instance.show(context, 'Bookmarked');
+      CommonToast.instance.show(context, 'Bookmarked',toastType:ToastType.success);
     } else {
-      CommonToast.instance.show(context, 'Bookmark removed');
+      CommonToast.instance.show(context, 'Bookmark removed',toastType:ToastType.success);
     }
   }
 }

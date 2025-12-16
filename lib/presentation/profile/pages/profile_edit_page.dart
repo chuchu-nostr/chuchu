@@ -1044,7 +1044,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
         print('🖼️ [_uploadCoverPhoto] Saved uploaded URL: $_uploadedCoverPhotoUrl');
         _hasChangesNotifier.value = _hasChanges();
         setState(() {});
-        CommonToast.instance.show(context, 'Cover photo uploaded successfully. Please confirm to save.');
+        CommonToast.instance.show(context, 'Cover photo uploaded successfully. Please confirm to save.',toastType:ToastType.success);
       } else {
         throw Exception('Upload returned empty URL');
       }
@@ -1052,7 +1052,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
       debugPrint('Error uploading cover photo: $e');
       debugPrint('Stack trace: $stackTrace');
       if (mounted) {
-        CommonToast.instance.show(context, 'Cover photo upload failed: $e');
+        CommonToast.instance.show(context, 'Cover photo upload failed: $e',      toastType:ToastType.failed);
       }
     } finally {
       if (mounted) {
@@ -1125,7 +1125,7 @@ class _ProfileEditPageState extends State<ProfileEditPage>
       _selectedCoverPhotoBytes = null;
     });
     _hasChangesNotifier.value = _hasChanges();
-    CommonToast.instance.show(context, 'Cover photo upload canceled');
+    CommonToast.instance.show(context, 'Cover photo upload canceled',      toastType:ToastType.failed);
   }
 
   /// Confirm cover photo upload - save to relay

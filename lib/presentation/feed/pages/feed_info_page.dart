@@ -124,9 +124,9 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   void _dealWithReaction(bool isSuccess) {
     if (isSuccess) {
       _updateNoteDB();
-      CommonToast.instance.show(context, 'Like success tips');
+      CommonToast.instance.show(context, 'Like success tips',toastType:ToastType.success);
     } else {
-      CommonToast.instance.show(context, 'Like fail tips');
+      CommonToast.instance.show(context, 'Like fail tips',toastType:ToastType.failed);
     }
   }
 
@@ -197,6 +197,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                 CommonToast.instance.show(
                   context,
                   'Zap functionality coming soon',
+                    toastType:ToastType.info
                 );
                 // You can implement zap functionality here
               },
@@ -616,7 +617,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                         value: '0',
                         isMonetary: true,
                         onTap: () {
-                          CommonToast.instance.show(context, 'Zap coming soon');
+                          CommonToast.instance.show(context, 'Zap coming soon',toastType:ToastType.info);
                         },
                         // _handleZapTap,
                       ),

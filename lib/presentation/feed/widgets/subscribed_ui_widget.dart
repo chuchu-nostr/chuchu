@@ -530,7 +530,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
       String groupId = widget.relayGroup.groupId;
 
       if (groupId.isEmpty) {
-        CommonToast.instance.show(context, 'No active subscription found');
+        CommonToast.instance.show(context, 'No active subscription found',toastType:ToastType.failed);
         return;
       }
 
@@ -544,6 +544,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
       CommonToast.instance.show(
         context,
         'Error updating subscription: ${e.toString()}',
+          toastType:ToastType.failed
       );
     } finally {
       // Clear loading state
@@ -580,6 +581,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
         CommonToast.instance.show(
           context,
           'Wallet not connected. Please try again.',
+            toastType:ToastType.failed
         );
         return;
       }
@@ -625,18 +627,19 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
             );
           }
         } else {
-          CommonToast.instance.show(context, 'Invalid invoice data received');
+          CommonToast.instance.show(context, 'Invalid invoice data received', toastType:ToastType.failed);
         }
       } else {
         final errorMessage =
             result?['message'] ?? 'Failed to create subscription invoice';
-        CommonToast.instance.show(context, errorMessage);
+        CommonToast.instance.show(context, errorMessage,toastType:ToastType.failed);
       }
     } catch (e) {
       print('Error creating subscription invoice: $e');
       CommonToast.instance.show(
         context,
         'Error creating subscription invoice: ${e.toString()}',
+          toastType:ToastType.failed
       );
     }
   }
@@ -649,7 +652,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
       // Sync my groups from relays to get the latest data
       await _syncMyGroupsFromRelays();
 
-      CommonToast.instance.show(context, 'Subscription payment successful!');
+      CommonToast.instance.show(context, 'Subscription payment successful!',toastType:ToastType.success);
 
       if (widget.onSubscriptionSuccess != null) {
         widget.onSubscriptionSuccess!();
@@ -661,6 +664,7 @@ class SubscribedOptionWidgetState extends State<SubscribedOptionWidget> {
       CommonToast.instance.show(
         context,
         'Payment successful but failed to sync groups',
+          toastType:ToastType.failed
       );
       Navigator.pop(context);
     }
