@@ -293,7 +293,7 @@ class FeedWidgetsUtils {
                             style: GoogleFonts.inter(
                               color: Colors.white,
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),

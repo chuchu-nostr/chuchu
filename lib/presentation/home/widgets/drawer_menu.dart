@@ -55,7 +55,7 @@ class _DrawerMenuState extends State<DrawerMenu>
   void _copyNpub() {
     final npub = _getFullNpub();
     if (npub.isEmpty) return;
-    
+
     Clipboard.setData(ClipboardData(text: npub));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -101,6 +101,9 @@ class _DrawerMenuState extends State<DrawerMenu>
                     right: 16,
                   ),
                   decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(20),
+                    ),
                     gradient: LinearGradient(
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
@@ -206,7 +209,7 @@ class _DrawerMenuState extends State<DrawerMenu>
                                 ),
                               ),
                               const SizedBox(width: 6),
-                              Icon(Icons.bolt, size: 20, color: Colors.orange),
+                              CommonImage(iconName: 'lighting_icon.png',size: 16, color: kYellow,)
                             ],
                           ),
                           const SizedBox(height: 2),
@@ -391,7 +394,8 @@ class _DrawerMenuState extends State<DrawerMenu>
                     // ),
                     const Spacer(),
                     // Creator Pro upgrade box
-                    Divider(color: theme.dividerColor.withOpacity(0.2)),
+                    _buildCreatorProBox(context),
+                    Divider(color: theme.dividerColor.withOpacity(0.1)),
                     _menuItem(
                       context,
                       Icons.logout,
@@ -413,6 +417,131 @@ class _DrawerMenuState extends State<DrawerMenu>
     );
   }
 
+  Widget _buildCreatorProBox(BuildContext context) {
+    final currentPubkey = Account.sharedInstance.currentPubkey;
+    final myRelayGroup =
+        RelayGroup.sharedInstance.myGroups[currentPubkey]?.value;
+    final isCreator = myRelayGroup != null;
+    final hasPaidSubscription =
+        myRelayGroup?.subscriptionAmount != null &&
+        myRelayGroup!.subscriptionAmount > 0;
+
+    // Don't show anything if user is creator but has no paid subscription
+    if (isCreator && !hasPaidSubscription) {
+      return const SizedBox.shrink();
+    }
+
+    // Determine content based on user status
+    final String title;
+    final String iconName;
+    final String description;
+    final String buttonText;
+    final VoidCallback? onButtonTap;
+
+    if (isCreator && hasPaidSubscription) {
+      final formattedAmount = _formatNumber(myRelayGroup.subscriptionAmount);
+      title = 'Creator';
+      iconName = 'start_ill_icon.png';
+      description =
+          'Subscribers will pay $formattedAmount sats per month to access your content.';
+      buttonText = '$formattedAmount sats/mo';
+      onButtonTap = null; // Not clickable
+    } else {
+      title = 'Become a Creator';
+      iconName = 'red_star_icon.png';
+      description =
+          'Become a creator to publish content and earn subscription revenue.';
+      buttonText = 'Become Creator';
+      onButtonTap = () {
+        Navigator.of(context).pop();
+        Navigator.of(context).push(
+          FeedWidgetsUtils.createSlideTransition(
+            pageBuilder:
+                (context, animation, secondaryAnimation) => CreateCreatorPage(),
+          ),
+        );
+      };
+    }
+
+    return _buildCreatorBox(
+      title: title,
+      iconName: iconName,
+      description: description,
+      buttonText: buttonText,
+      onButtonTap: onButtonTap,
+    );
+  }
+
+  Widget _buildCreatorBox({
+    required String title,
+    required String iconName,
+    required String description,
+    required String buttonText,
+    VoidCallback? onButtonTap,
+  }) {
+    final buttonWidget = Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+      decoration: BoxDecoration(
+        color: Color(0xFF334155), // Dark grey button
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Text(
+        buttonText,
+        style: GoogleFonts.inter(
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+          color: Colors.white,
+        ),
+        textAlign: TextAlign.center,
+      ),
+    );
+
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Color(0xFF1E293B), // Dark blue background
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CommonImage(
+                iconName: iconName,
+                size: 14,
+                color: Colors.white,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                title,
+                style: GoogleFonts.inter(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            description,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              color: Colors.white.withOpacity(0.8),
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          onButtonTap != null
+              ? GestureDetector(onTap: onButtonTap, child: buttonWidget)
+              : buttonWidget,
+        ],
+      ),
+    );
+  }
 
   Widget _menuItem(
     BuildContext context,
@@ -427,7 +556,7 @@ class _DrawerMenuState extends State<DrawerMenu>
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
         child: Row(
           children: [
             icon is String
