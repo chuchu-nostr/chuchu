@@ -1,12 +1,14 @@
-import 'package:chuchu/core/utils/adapt.dart';
+import 'dart:math' as math;
+
+import 'package:chuchu/core/utils/widget_tool_utils.dart';
 import 'package:chuchu/core/widgets/common_image.dart';
-import 'package:flutter/material.dart'
-    hide RefreshIndicator, RefreshIndicatorState;
+import 'package:flutter/material.dart' hide RefreshIndicator, RefreshIndicatorState;
 import 'package:google_fonts/google_fonts.dart';
 
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 import '../manager/cache/chuchu_cache_manager.dart';
+import '../theme/app_theme.dart';
 import '../utils/feed_utils.dart';
 
 export 'package:pull_to_refresh/src/smart_refresher.dart';
@@ -104,41 +106,7 @@ class ChuChuSmartRefresher extends StatelessWidget {
             ],
           );
         } else if (mode == LoadStatus.loading) {
-          body = Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.download,
-                color: theme.colorScheme.primary.withOpacity(0.7),
-                size: 16,
-              ),
-              SizedBox(width: 8),
-              SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    theme.colorScheme.primary,
-                  ),
-                ),
-              ),
-              SizedBox(width: 12),
-              Text(
-                "Loading...",
-                style: TextStyle(
-                  color: theme.colorScheme.onSurface.withOpacity(0.8),
-                  fontSize: 14,
-                ),
-              ),
-              SizedBox(width: 12),
-              Icon(
-                Icons.cloud_download,
-                color: theme.colorScheme.primary.withOpacity(0.5),
-                size: 16,
-              ),
-            ],
-          );
+          body = _LoadingDotsWidget(text: 'Discovering...');
         } else if (mode == LoadStatus.failed) {
           body = Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -213,10 +181,7 @@ class ChuChuSmartRefresher extends StatelessWidget {
                   height: 1,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        Colors.white,
-                        Colors.grey.withOpacity(0.3),
-                      ],
+                      colors: [Colors.white, Colors.grey.withOpacity(0.3)],
                     ),
                   ),
                 ),
@@ -249,10 +214,7 @@ class ChuChuSmartRefresher extends StatelessWidget {
                   height: 1,
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        Colors.grey.withOpacity(0.3),
-                        Colors.white,
-                      ],
+                      colors: [Colors.grey.withOpacity(0.3), Colors.white],
                     ),
                   ),
                 ),
@@ -346,73 +308,7 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
     final theme = Theme.of(context);
 
     return Column(
-      children: [
-        SizedBox(
-          width: 72.px,
-          height: 72.px,
-          child: Stack(
-            alignment: Alignment.center,
-            children: [
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Transform.rotate(
-                    angle: _controller.value * 2 * 3.14159,
-                    child: Container(
-                      width: 72.px,
-                      height: 72.px,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.colorScheme.primary.withOpacity(0.3),
-                          width: 3,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              AnimatedBuilder(
-                animation: _controller,
-                builder: (context, child) {
-                  return Transform.rotate(
-                    angle: -_controller.value * 2 * 3.14159,
-                    child: Container(
-                      width: 48.px,
-                      height: 48.px,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: theme.colorScheme.primary,
-                          width: 3,
-                        ),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              Container(
-                width: 8.px,
-                height: 8.px,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: theme.colorScheme.primary,
-                ),
-              ),
-            ],
-          ),
-        ),
-        Container(
-          margin: EdgeInsets.only(top: 4.px),
-          child: Text(
-            _getRefreshTimeString(),
-            style: TextStyle(
-              color: theme.colorScheme.onSurface.withOpacity(0.6),
-              fontSize: 12.px,
-            ),
-          ),
-        ),
-      ],
+      children: [_LoadingDotsWidget(text: _getRefreshTimeString())],
     );
   }
 
@@ -435,5 +331,136 @@ class LoadingHeaderState extends RefreshIndicatorState<LoadingHeader>
   void dispose() {
     // TODO: implement dispose
     super.dispose();
+  }
+}
+
+/// Loading dots widget with bouncing animation
+class _LoadingDotsWidget extends StatefulWidget {
+  final String text;
+
+  const _LoadingDotsWidget({required this.text});
+
+  @override
+  State<_LoadingDotsWidget> createState() => _LoadingDotsWidgetState();
+}
+
+class _LoadingDotsWidgetState extends State<_LoadingDotsWidget>
+    with TickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _BouncingDot(
+              controller: _controller,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  kGradientColors[0], // Pink
+                  kGradientColors[1], // Magenta
+                ],
+              ),
+              delay: 0.0,
+            ),
+            SizedBox(width: 6),
+            _BouncingDot(
+              controller: _controller,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  kGradientColors[1], // Magenta
+                  kGradientColors[2], // Purple
+                ],
+              ),
+              delay: 0.15,
+            ),
+            SizedBox(width: 6),
+            _BouncingDot(
+              controller: _controller,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  kGradientColors[2], // Purple
+                  kGradientColors[0], // Pink (cycle back)
+                ],
+              ),
+              delay: 0.3,
+            ),
+          ],
+        ),
+        SizedBox(height: 12),
+        Text(
+          widget.text,
+          style: GoogleFonts.inter(
+            color: kTitleColor,
+            fontSize: 11,
+            fontWeight: FontWeight.w800,
+            letterSpacing: 1.2,
+          ),
+        ),
+      ],
+    ).setPaddingOnly(bottom: 20);
+  }
+}
+
+class _BouncingDot extends StatelessWidget {
+  final AnimationController controller;
+  final Gradient gradient;
+  final double delay;
+
+  const _BouncingDot({
+    required this.controller,
+    required this.gradient,
+    required this.delay,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) {
+        double t = (controller.value + delay) % 1.0;
+
+        double bounceValue = (math.sin(t * 2 * math.pi) + 1) / 2;
+
+        double yOffset = -8 * bounceValue;
+
+        return Transform.translate(
+          offset: Offset(0, yOffset),
+          child: Container(
+            width: 10,
+            height: 10,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: gradient,
+            ),
+          ),
+        );
+      },
+    );
   }
 }
