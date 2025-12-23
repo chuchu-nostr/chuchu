@@ -17,18 +17,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   final List<OnboardingItem> _pages = [
     OnboardingItem(
-      title: 'Decentralized Content Subscriptions',
-      description: 'Creators publish paid content, and users subscribe to unlock exclusive posts, built on the Nostr protocol.',
+      title: 'Reshaping Creator Economy',
+      description: 'Open protocol. Own your content. Control your income. Payments instant.',
       illustration: 'introduction_01.png',
     ),
     OnboardingItem(
-      title: 'Built-in Lightning Wallet',
-      description: 'Includes a custodial Lightning wallet for fast, low-fee payments. Subscriptions are billed seamlessly via the Lightning Network with transaction history support.',
+      title: 'Custody wallet',
+      description: 'Integrated custody wallet for easy sats collection. Instant payments via Lightning Network',
       illustration: 'introduction_02.png',
     ),
     OnboardingItem(
-      title: 'Data Security & User Control',
-      description: 'Built on a decentralized architecture where users own their keys and data. End-to-end encryption and local storage ensure privacy and security.',
+      title: 'Privacy protection',
+      description: 'No ad tracking, no big data collection. Browse content freely without algorithm manipulation.',
       illustration: 'introduction_03.png',
     ),
   ];
