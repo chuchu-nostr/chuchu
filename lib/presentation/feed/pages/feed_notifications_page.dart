@@ -390,6 +390,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         color: theme.colorScheme.outline,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ],
@@ -419,6 +420,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
               fontSize: 14,
               color: theme.colorScheme.onSurface.withValues(alpha: 0.8),
               height: 1.3,
+              fontWeight: FontWeight.w600,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -430,7 +432,7 @@ class _FeedNotificationsPageState extends State<FeedNotificationsPage>
           style: GoogleFonts.inter(
             fontSize: 12,
             color: Color(0xFFCAD5E2),
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
         ),
       ],
