@@ -334,22 +334,25 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                   },
                 ),
               ).setPaddingOnly(right: 12.0),
-              ValueListenableBuilder<RelayGroupDBISAR>(
-                valueListenable: RelayGroup.sharedInstance
-                    .getRelayGroupNotifier(
-                      widget.notedUIModel!.noteDB.author,
-                    ),
-                builder: (context, value, child) {
-                  return Text(
-                    value.name,
-                    style: GoogleFonts.inter(
-                      color: kTitleColor,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                    ),
-                    overflow: TextOverflow.ellipsis,
-                  );
-                },
+              Expanded(
+                child: ValueListenableBuilder<RelayGroupDBISAR>(
+                  valueListenable: RelayGroup.sharedInstance
+                      .getRelayGroupNotifier(
+                        widget.notedUIModel!.noteDB.author,
+                      ),
+                  builder: (context, value, child) {
+                    return Text(
+                      value.name,
+                      style: GoogleFonts.inter(
+                        color: kTitleColor,
+                        fontSize: 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
               ),
             ],
           ),
