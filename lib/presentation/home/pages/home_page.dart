@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/services.dart';
 import 'dart:ui';
+import 'dart:io' show Platform;
 import '../../../core/account/account.dart';
 import '../../../core/relayGroups/model/relayGroupDB_isar.dart';
 import '../../../core/relayGroups/relayGroup.dart';
@@ -333,18 +334,35 @@ class _HomePageState extends State<HomePage> with SingleTickerProviderStateMixin
   }
 
   Widget _buildBottomNavigationBar(BuildContext context) {
-    final theme       = Theme.of(context);
-    final bottomInset = MediaQuery.of(context).padding.bottom;
+    final theme = Theme.of(context);
+    final mediaQuery = MediaQuery.of(context);
+    
+    // Use viewPadding.bottom for system navigation bar height (doesn't change with keyboard)
+    final double systemBottomInset = mediaQuery.viewPadding.bottom;
+    // Also check padding.bottom as fallback (may be 0 on some Android devices with gesture nav)
+    final double bottomInset = mediaQuery.padding.bottom;
+    
+    // Use the larger value to ensure we have enough space
+    final double effectiveBottomInset = systemBottomInset > bottomInset 
+        ? systemBottomInset 
+        : bottomInset;
 
     const double barHeight  = 90;
     const double floatGap   = 24;
     const double sideMargin = 0;
+    
+    // For Android: ensure minimum spacing to avoid being blocked by navigation bar
+    final double minBottomPadding = Platform.isAndroid ? 32.0 : floatGap;
+    final double totalBottomPadding = effectiveBottomInset + floatGap;
+    final double finalBottomPadding = totalBottomPadding > minBottomPadding 
+        ? totalBottomPadding 
+        : minBottomPadding;
 
     return Padding(
       padding: EdgeInsets.only(
         left   : sideMargin,
         right  : sideMargin,
-        bottom : bottomInset + floatGap,
+        bottom : finalBottomPadding,
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(22),
