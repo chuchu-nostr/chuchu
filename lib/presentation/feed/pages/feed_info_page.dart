@@ -20,6 +20,7 @@ import '../../../core/utils/navigator/navigator_observer_mixin.dart';
 import '../../../core/widgets/chuchu_cached_network_Image.dart';
 import '../../../core/widgets/common_image.dart';
 import '../../../core/widgets/common_toast.dart';
+import '../../../data/enum/feed_enum.dart';
 import '../../../data/models/feed_extension_model.dart';
 import '../../../data/models/noted_ui_model.dart';
 import '../../../core/utils/ui_refresh_mixin.dart';
@@ -548,6 +549,8 @@ class _FeedInfoPageState extends State<FeedInfoPage>
     final mediaQuery = MediaQuery.of(context);
     final bottomInset = mediaQuery.padding.bottom;
     bool isLikeByMe = widget.notedUIModel!.noteDB.reactionCountByMe > 0;
+    bool isReplyByMe = widget.notedUIModel!.noteDB.replyCountByMe > 0;
+
     return Positioned(
       bottom: 0,
       left: 0,
@@ -599,6 +602,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       _buildEngagementItem(
+                        type: EFeedOptionType.like,
                         isSelect: isLikeByMe,
                         iconName:
                             isLikeByMe ? 'liked_icon.png' : 'like_icon.png',
@@ -607,12 +611,15 @@ class _FeedInfoPageState extends State<FeedInfoPage>
                       ),
                       SizedBox(width: 16),
                       _buildEngagementItem(
-                        iconName: 'reply_icon.png',
+                        type: EFeedOptionType.reply,
+                        isSelect: isLikeByMe,
+                        iconName: isReplyByMe ? 'replyed_icon.png' : 'reply_icon.png',
                         value: commentCount.toString(),
                         onTap: _handleCommentTap,
                       ),
                       SizedBox(width: 16),
                       _buildEngagementItem(
+                        type: EFeedOptionType.zaps,
                         iconName: 'zap_icon.png',
                         value: '0',
                         isMonetary: true,
@@ -633,6 +640,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
   }
 
   Widget _buildEngagementItem({
+    required EFeedOptionType type,
     required String iconName,
     required String value,
     bool isSelect = false,
@@ -652,7 +660,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
           value,
           style: GoogleFonts.inter(
             color:
-                isSelect ? kPrimary : Theme.of(context).colorScheme.onSurface,
+                isSelect ? type.selectColor : Theme.of(context).colorScheme.onSurface,
             fontSize: 14,
             fontWeight: FontWeight.w500,
           ),
@@ -1143,12 +1151,16 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
       children: [
         Row(
           children: [
-            Text(
-              userDB.name ?? '--',
-              style: GoogleFonts.inter(
-                color: kTitleColor,
-                fontSize: 16,
-                fontWeight: FontWeight.w800,
+            Expanded(
+              child: Text(
+                userDB.name ?? '--',
+                style: GoogleFonts.inter(
+                  color: kTitleColor,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w800,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],
@@ -1163,6 +1175,8 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
             fontSize: 12,
             fontWeight: FontWeight.w400,
           ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );
