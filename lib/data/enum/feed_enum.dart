@@ -12,7 +12,7 @@ extension EFeedOptionTypeEx on EFeedOptionType{
   Color get selectColor {
     switch (this) {
       case EFeedOptionType.reply:
-        return kTextTertiary;
+        return kBlue;
       case EFeedOptionType.like:
         return kPrimary;
       case EFeedOptionType.zaps:
@@ -34,7 +34,7 @@ extension EFeedOptionTypeEx on EFeedOptionType{
   String get getSelectIconName {
     switch (this) {
       case EFeedOptionType.reply:
-        return 'reply_icon.png';
+        return 'replyed_icon.png';
       case EFeedOptionType.like:
         return 'liked_icon.png';
       case EFeedOptionType.zaps:

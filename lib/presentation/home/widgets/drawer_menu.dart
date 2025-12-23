@@ -498,7 +498,7 @@ class _DrawerMenuState extends State<DrawerMenu>
     );
 
     return Container(
-      margin: const EdgeInsets.symmetric(vertical: 16),
+      margin: const EdgeInsets.symmetric(vertical: 16,horizontal: 4),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Color(0xFF1E293B), // Dark blue background

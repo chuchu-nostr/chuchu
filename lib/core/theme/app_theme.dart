@@ -6,6 +6,7 @@ const Color kPrimary = Color(0xFFF6339A); // Main brand color
 const Color kSecondary = Color(0xFFE12AFB); // Secondary brand color
 const Color kTertiary = Color(0xFF9810FA); // Tertiary brand color
 const Color kYellow = Color(0xFFFFB900); // Yellow accent color
+const Color kBlue = Color(0xFF006C9E); // Blue color
 const Color kBgWhite = Color(0xFFFFFFFF);
 const Color kBgLight = Color(0xFFF8FAFC); // Light background color
 const Color kTitleColor = Color(0xFF0F172B); // Light background color
