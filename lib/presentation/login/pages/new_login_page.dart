@@ -644,12 +644,12 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
                                           // Create Account button
                                           _buildCreateAccountButton(),
 
-                                          const SizedBox(height: 50),
+                                          const SizedBox(height: 20),
                                         ],
                                       ),
                                       // Disclaimer text
                                       Text(
-                                        'By connecting, you agree to the Protocol Standards\nYour keys are encrypted locally.',
+                                        'By connecting, you agree to the terms of service',
                                         style: GoogleFonts.inter(
                                           fontSize: 12,
                                           color: theme.colorScheme.outline,
@@ -761,7 +761,7 @@ class _NewLoginPageState extends State<NewLoginPage> with ChuChuUIRefreshMixin {
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
           child: Text(
-            'SOCIAL + WALLET',
+            'OPEN PROTOCOL',
             style: GoogleFonts.inter(
               fontSize: 10,
               fontWeight: FontWeight.w600,
