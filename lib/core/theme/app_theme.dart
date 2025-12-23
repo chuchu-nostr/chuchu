@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// 🎨 Brand colors
 const Color kPrimary = Color(0xFFF6339A); // Main brand color
@@ -97,24 +96,23 @@ final ColorScheme lightScheme = ColorScheme(
 final ThemeData lightTheme = ThemeData(
   useMaterial3: true,
   colorScheme: lightScheme,
-  textTheme: GoogleFonts.interTextTheme(
-    TextTheme(
-      displayLarge: TextStyle(color: kTextPrimary),
-      displayMedium: TextStyle(color: kTextPrimary),
-      displaySmall: TextStyle(color: kTextPrimary),
-      headlineLarge: TextStyle(color: kTextPrimary),
-      headlineMedium: TextStyle(color: kTextPrimary),
-      headlineSmall: TextStyle(color: kTextPrimary),
-      titleLarge: TextStyle(color: kTextPrimary),
-      titleMedium: TextStyle(color: kTextPrimary),
-      titleSmall: TextStyle(color: kTextPrimary),
-      bodyLarge: TextStyle(color: kTextSecondary),
-      bodyMedium: TextStyle(color: kTextSecondary),
-      bodySmall: TextStyle(color: kTextTertiary),
-      labelLarge: TextStyle(color: kTextSecondary),
-      labelMedium: TextStyle(color: kTextTertiary),
-      labelSmall: TextStyle(color: kTextTertiary),
-    ),
+  fontFamily: 'Inter',
+  textTheme: TextTheme(
+    displayLarge: TextStyle(color: kTextPrimary),
+    displayMedium: TextStyle(color: kTextPrimary),
+    displaySmall: TextStyle(color: kTextPrimary),
+    headlineLarge: TextStyle(color: kTextPrimary),
+    headlineMedium: TextStyle(color: kTextPrimary),
+    headlineSmall: TextStyle(color: kTextPrimary),
+    titleLarge: TextStyle(color: kTextPrimary),
+    titleMedium: TextStyle(color: kTextPrimary),
+    titleSmall: TextStyle(color: kTextPrimary),
+    bodyLarge: TextStyle(color: kTextSecondary),
+    bodyMedium: TextStyle(color: kTextSecondary),
+    bodySmall: TextStyle(color: kTextTertiary),
+    labelLarge: TextStyle(color: kTextSecondary),
+    labelMedium: TextStyle(color: kTextTertiary),
+    labelSmall: TextStyle(color: kTextTertiary),
   ),
   scaffoldBackgroundColor: kBgWhite,
   appBarTheme: const AppBarTheme(

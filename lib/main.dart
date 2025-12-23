@@ -9,9 +9,12 @@ import 'core/utils/initialization_manager.dart';
 import 'core/utils/navigator/navigator.dart';
 import 'core/theme/app_theme.dart';
 import 'core/widgets/chuchu_Loading.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  // Prevent runtime font fetching (e.g., fonts.gstatic.com) to avoid network errors.
+  GoogleFonts.config.allowRuntimeFetching = false;
   
   try {
     await InitializationManager.instance.initialize();
