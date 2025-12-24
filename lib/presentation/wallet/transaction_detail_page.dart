@@ -6,6 +6,7 @@ import '../../core/wallet/model/wallet_invoice.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common_image.dart';
+import '../../core/widgets/common_toast.dart';
 
 class TransactionDetailPage extends StatefulWidget {
   final WalletTransaction transaction;
@@ -90,7 +91,10 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                 ],
                 _buildTimestampsCard(),
                 SizedBox(height: 16),
-                _buildTransactionIdCard(),
+                if (invoice != null) ...[
+                  _buildInvoiceCard(invoice),
+                  SizedBox(height: 16),
+                ],
               ],
             ),
           );
@@ -103,8 +107,40 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     try {
       final wallet = Wallet.sharedInstance;
       final invoices = await wallet.getInvoices();
-      return invoices.where((invoice) => invoice.invoiceId == widget.transaction.transactionId).firstOrNull;
+      
+      // Only look for invoices if this is an incoming transaction
+      // Outgoing transactions (sending payments) don't have invoices
+      if (!widget.transaction.isIncoming) {
+        return null;
+      }
+      
+      // Try to find invoice by transactionId (invoiceId) or paymentHash
+      // This works for both pending invoices and paid invoices
+      for (final invoice in invoices) {
+        // Match by invoiceId
+        if (invoice.invoiceId == widget.transaction.transactionId) {
+          return invoice;
+        }
+        // Match by paymentHash (transactionId might be paymentHash for paid transactions)
+        if (invoice.paymentHash == widget.transaction.transactionId) {
+          return invoice;
+        }
+        // Match by transaction's paymentHash
+        if (widget.transaction.paymentHash != null && 
+            invoice.paymentHash == widget.transaction.paymentHash) {
+          return invoice;
+        }
+        // Also try matching by invoice's bolt11 if transaction has invoice field
+        if (widget.transaction.invoice != null && 
+            widget.transaction.invoice!.isNotEmpty &&
+            invoice.bolt11 == widget.transaction.invoice) {
+          return invoice;
+        }
+      }
+      
+      return null;
     } catch (e) {
+      // If no invoice found, return null
       return null;
     }
   }
@@ -260,7 +296,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
   Widget _buildDescriptionCard(String description) {
     // Split description by semicolon and filter out empty strings
     final parts = description.split(';').where((part) => part.trim().isNotEmpty).toList();
-    final hasMultipleParts = parts.length > 1;
 
     return Container(
       padding: EdgeInsets.all(20),
@@ -287,11 +322,11 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
             ),
           ),
           SizedBox(height: 8),
-          if (hasMultipleParts)
-            ...parts.map((part) => Padding(
-                  padding: EdgeInsets.only(bottom: parts.indexOf(part) < parts.length - 1 ? 4 : 0),
+          if (parts.length > 1)
+            ...parts.asMap().entries.map((entry) => Padding(
+                  padding: EdgeInsets.only(bottom: entry.key < parts.length - 1 ? 4 : 0),
                   child: Text(
-                    part.trim(),
+                    entry.value.trim(),
                     style: GoogleFonts.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -369,8 +404,39 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     );
   }
 
-  Widget _buildTransactionIdCard() {
-    final transactionId = widget.transaction.transactionId;
+  Widget _buildInvoiceCard(WalletInvoice invoice) {
+    String _formatInvoiceStatus(InvoiceStatus status) {
+      switch (status) {
+        case InvoiceStatus.pending:
+          return 'Pending';
+        case InvoiceStatus.paid:
+          return 'Paid';
+        case InvoiceStatus.expired:
+          return 'Expired';
+        case InvoiceStatus.cancelled:
+          return 'Cancelled';
+      }
+    }
+
+    Color _getInvoiceStatusColor(InvoiceStatus status) {
+      switch (status) {
+        case InvoiceStatus.pending:
+          return Colors.orange[700]!;
+        case InvoiceStatus.paid:
+          return Colors.green[700]!;
+        case InvoiceStatus.expired:
+          return Colors.deepOrange[700]!;
+        case InvoiceStatus.cancelled:
+          return Colors.red[700]!;
+      }
+    }
+
+    String _formatExpiryTime(int expiresAt) {
+      final expiryDate = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
+      final formattedDate = '${expiryDate.year}-${expiryDate.month.toString().padLeft(2, '0')}-${expiryDate.day.toString().padLeft(2, '0')}';
+      final formattedTime = '${expiryDate.hour.toString().padLeft(2, '0')}:${expiryDate.minute.toString().padLeft(2, '0')}:${expiryDate.second.toString().padLeft(2, '0')}';
+      return '$formattedDate $formattedTime';
+    }
 
     return Container(
       padding: EdgeInsets.all(20),
@@ -391,7 +457,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           Row(
             children: [
               Text(
-                'Transaction ID',
+                'Invoice Information',
                 style: GoogleFonts.inter(
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
@@ -399,26 +465,146 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
                 ),
               ),
               Spacer(),
-              GestureDetector(
-                onTap: () => _copyToClipboard(transactionId),
-                child: CommonImage(
-                  iconName: 'copy_icon.png',
-                  size: 20,
-                  color: Theme.of(context).colorScheme.outline,
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: _getInvoiceStatusColor(invoice.status).withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Text(
+                  _formatInvoiceStatus(invoice.status),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: _getInvoiceStatusColor(invoice.status),
+                  ),
                 ),
               ),
             ],
           ),
-          SizedBox(height: 8),
-          SelectableText(
-            transactionId,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              fontWeight: FontWeight.w400,
-              color: Colors.grey[700],
-              letterSpacing: 0.5,
+          SizedBox(height: 16),
+          if (invoice.bolt11.isNotEmpty) ...[
+            Row(
+              children: [
+                Text(
+                  'BOLT11 Invoice',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Spacer(),
+                GestureDetector(
+                  onTap: () => _copyToClipboard(invoice.bolt11),
+                  child: CommonImage(
+                    iconName: 'copy_icon.png',
+                    size: 16,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ],
             ),
+            SizedBox(height: 8),
+            Container(
+              padding: EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: SelectableText(
+                invoice.bolt11,
+                style: GoogleFonts.inter(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w400,
+                  color: Colors.grey[700],
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ),
+            SizedBox(height: 16),
+          ],
+          if (invoice.paymentHash.isNotEmpty) ...[
+            Row(
+              children: [
+                Text(
+                  'Payment Hash',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Spacer(),
+                GestureDetector(
+                  onTap: () => _copyToClipboard(invoice.paymentHash),
+                  child: CommonImage(
+                    iconName: 'copy_icon.png',
+                    size: 16,
+                    color: Theme.of(context).colorScheme.outline,
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 4),
+            SelectableText(
+              invoice.paymentHash,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w400,
+                color: Colors.grey[700],
+                letterSpacing: 0.5,
+              ),
+            ),
+            SizedBox(height: 16),
+          ],
+          Row(
+            children: [
+              Text(
+                'Expires At',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              Spacer(),
+              Text(
+                _formatExpiryTime(invoice.expiresAt),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: invoice.status == InvoiceStatus.expired 
+                      ? Colors.deepOrange[700] 
+                      : kTitleColor,
+                ),
+              ),
+            ],
           ),
+          if (invoice.paidAt != null) ...[
+            SizedBox(height: 12),
+            Row(
+              children: [
+                Text(
+                  'Paid At',
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                Spacer(),
+                Text(
+                  _formatExpiryTime(invoice.paidAt!),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: kTitleColor,
+                  ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
@@ -426,13 +612,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
 
   void _copyToClipboard(String text) {
     Clipboard.setData(ClipboardData(text: text));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Copied to clipboard'),
-        backgroundColor: Colors.green,
-        duration: Duration(seconds: 2),
-      ),
-    );
+    CommonToast.instance.show(context, 'Copied to clipboard', toastType: ToastType.success);
   }
 
 }
