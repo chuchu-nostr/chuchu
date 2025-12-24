@@ -6,6 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common_image.dart';
+import '../../core/widgets/common_toast.dart';
 import '../../core/wallet/wallet.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
 import '../../core/utils/ui_refresh_mixin.dart';
@@ -928,12 +929,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
 
   Future<void> _parseInvoiceAndConfirm(String invoice) async {
     if (invoice.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a valid Lightning invoice'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      CommonToast.instance.show(context, 'Please enter a valid Lightning invoice', toastType: ToastType.failed);
       return;
     }
 
@@ -963,24 +959,19 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
       Navigator.pop(context); // Close loading dialog
 
       if (invoiceData != null) {
-        _showConfirmPaymentDialog(invoice, invoiceData);
+        // Check if invoice is expired
+        if (invoiceData['expired'] == true) {
+          CommonToast.instance.show(context, 'Invoice has expired', toastType: ToastType.failed);
+        } else {
+          _showConfirmPaymentDialog(invoice, invoiceData);
+        }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to parse invoice'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        CommonToast.instance.show(context, 'Failed to parse invoice', toastType: ToastType.failed);
       }
     } catch (e) {
       Navigator.pop(context); // Close loading dialog
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error parsing invoice: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      CommonToast.instance.show(context, 'Error parsing invoice: $e', toastType: ToastType.failed);
     }
   }
 
@@ -1293,32 +1284,17 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
       Navigator.pop(context); // Close loading dialog
 
       if (transaction != null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment sent successfully!'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        CommonToast.instance.show(context, 'Payment sent successfully!', toastType: ToastType.success);
         if (mounted) {
           setState(() {}); // Refresh UI
         }
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment failed'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        CommonToast.instance.show(context, 'Payment failed', toastType: ToastType.failed);
       }
     } catch (e) {
       Navigator.pop(context); // Close loading dialog
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Payment error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      CommonToast.instance.show(context, 'Payment error: $e', toastType: ToastType.failed);
     }
   }
 
@@ -1617,12 +1593,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   Future<void> _createInvoice(String amountText, String description) async {
     final amount = int.tryParse(amountText);
     if (amount == null || amount <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Please enter a valid amount'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      CommonToast.instance.show(context, 'Please enter a valid amount', toastType: ToastType.failed);
       return;
     }
 
@@ -1669,22 +1640,12 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
       if (invoice != null) {
         _showInvoiceDialog(invoice);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to create invoice'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        CommonToast.instance.show(context, 'Failed to create invoice', toastType: ToastType.failed);
       }
     } catch (e) {
       Navigator.pop(context); // Close loading dialog
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Invoice creation error: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      CommonToast.instance.show(context, 'Invoice creation error: $e', toastType: ToastType.failed);
     }
   }
 
@@ -2021,21 +1982,9 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   Future<void> _copyToClipboard(String text) async {
     try {
       await Clipboard.setData(ClipboardData(text: text));
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Copied to clipboard'),
-          backgroundColor: Colors.green,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      CommonToast.instance.show(context, 'Copied to clipboard', toastType: ToastType.success);
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to copy to clipboard'),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      CommonToast.instance.show(context, 'Failed to copy to clipboard', toastType: ToastType.failed);
     }
   }
 
