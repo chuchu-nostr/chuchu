@@ -47,19 +47,68 @@ class Wallet {
   List<WalletTransaction> _transactions = [];
   List<WalletTransaction> get transactions => List.unmodifiable(_transactions);
 
-  /// Get all transactions (only actual transactions from LNbits API, not invoices)
-  /// Invoices should be shown separately in invoice list
-  /// Filters out transactions with empty transactionId
+  /// Get all transactions including invoices converted to transactions
+  /// - Returns actual transactions from LNbits API
+  /// - Also includes pending/paid invoices as transactions (to show pending state)
+  /// - Filters out transactions with empty transactionId
+  /// - Avoids duplicates when invoice is paid and becomes a real transaction
   Future<List<WalletTransaction>> getAllTransactions() async {
+    final all = <WalletTransaction>[];
+    
     // Filter out transactions with empty transactionId
     final validTransactions = _transactions.where((tx) => 
       tx.transactionId.isNotEmpty
     ).toList();
+    all.addAll(validTransactions);
+    
+    // Add all invoices as transactions (pending and paid)
+    try {
+      final invoices = await _loadInvoicesFromDB();
+      
+      for (final invoice in invoices) {
+        // Skip if this invoice already has a corresponding transaction
+        // (to avoid duplicates when invoice is paid and becomes a real transaction)
+        final hasTransaction = all.any((tx) => 
+          tx.transactionId == invoice.invoiceId || 
+          tx.paymentHash == invoice.paymentHash
+        );
+        
+        if (hasTransaction) continue;
+        
+        // Determine transaction status
+        TransactionStatus status;
+        if (invoice.status == InvoiceStatus.paid) {
+          status = TransactionStatus.confirmed;
+        } else if (invoice.status == InvoiceStatus.expired) {
+          status = TransactionStatus.expired;
+        } else if (invoice.expiresAt < (DateTime.now().millisecondsSinceEpoch ~/ 1000)) {
+          status = TransactionStatus.expired;
+        } else {
+          status = TransactionStatus.pending;
+        }
+        
+        final transaction = WalletTransaction(
+          transactionId: invoice.invoiceId,
+          amount: invoice.amount,
+          description: invoice.description,
+          status: status,
+          type: TransactionType.incoming, // Invoice is for receiving
+          createdAt: invoice.createdAt,
+          walletId: invoice.walletId,
+          invoice: invoice.bolt11,
+          paymentHash: invoice.paymentHash,
+          confirmedAt: invoice.paidAt,
+        );
+        all.add(transaction);
+      }
+    } catch (e) {
+      LogUtils.e(() => 'Failed to load invoices: $e');
+    }
     
     // Sort by creation time (newest first)
-    validTransactions.sort((a, b) => b.createdAt.compareTo(a.createdAt));
+    all.sort((a, b) => b.createdAt.compareTo(a.createdAt));
     
-    return validTransactions;
+    return all;
   }
 
   /// Timer for checking pending invoices
@@ -296,11 +345,10 @@ class Wallet {
       // Save invoice to database
       await _saveInvoiceToDB(invoice);
       
-      // Trigger UI update for new invoice
-      onTransactionAdded?.call();
-      
-      // Refresh transaction list to show any new transactions
-      await refreshTransactions();
+      // Don't refresh transactions here - invoice is pending, not paid yet
+      // Transactions will be created automatically when invoice is paid
+      // Only refresh invoice statuses to check for any pending payments
+      await checkPendingInvoices();
       
       LogUtils.i(() => 'Successfully created invoice: ${invoice.invoiceId}');
       return invoice;
@@ -596,6 +644,9 @@ class Wallet {
               
               // Refresh balance after successful payment
               await refreshBalance();
+              
+              // Refresh transactions to show the new paid transaction
+              await refreshTransactions();
             }
           } catch (e) {
             LogUtils.d(() => 'getPayment failed for ${invoice.invoiceId}, checking balance change: $e');

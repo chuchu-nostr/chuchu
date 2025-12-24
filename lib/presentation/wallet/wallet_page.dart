@@ -598,13 +598,13 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                 ),
               ),
 
-              // Amount - vertical layout
+              // Amount and status - vertical layout
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '${tx.isIncoming ? '+' : '-'}${formatAmount(tx.amount)}',
+                    '${tx.isIncoming ? '+' : '-'}${formatAmount(tx.amount)} sats',
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -612,12 +612,19 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                     ),
                   ),
                   SizedBox(height: 2),
-                  Text(
-                    'sats',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: theme.colorScheme.outline,
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(tx.status).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _getStatusText(tx.status),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _getStatusColor(tx.status),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -632,13 +639,13 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   Color _getStatusColor(TransactionStatus status) {
     switch (status) {
       case TransactionStatus.confirmed:
-        return Colors.green;
+        return Colors.green[700]!;
       case TransactionStatus.pending:
-        return Colors.orange;
+        return Colors.orange[700]!;
       case TransactionStatus.failed:
-        return Colors.red;
+        return Colors.red[700]!;
       case TransactionStatus.expired:
-        return Colors.deepOrange;
+        return Colors.deepOrange[700]!;
     }
   }
 
@@ -647,7 +654,7 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
       case TransactionStatus.confirmed:
         return 'Confirmed';
       case TransactionStatus.pending:
-        return 'Processing';
+        return 'Pending';
       case TransactionStatus.failed:
         return 'Failed';
       case TransactionStatus.expired:
@@ -1984,13 +1991,26 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
       pageBuilder: (context, anim1, anim2) {
         return Stack(
           children: [
+            // Background blur layer - first in Stack (bottom layer)
             Positioned.fill(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-                child: Container(color: Colors.black.withOpacity(0.2)),
+              child: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                  child: Container(color: Colors.black.withOpacity(0.2)),
+                ),
               ),
             ),
-            Center(child: SafeArea(child: child)),
+            // Dialog content - last in Stack (top layer)
+            Center(
+              child: SafeArea(
+                child: Material(
+                  type: MaterialType.card,
+                  color: Colors.transparent,
+                  elevation: 24,
+                  child: child,
+                ),
+              ),
+            ),
           ],
         );
       },

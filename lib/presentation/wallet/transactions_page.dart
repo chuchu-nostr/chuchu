@@ -297,13 +297,13 @@ class _TransactionsPageState extends State<TransactionsPage>
                 ),
               ),
 
-              // Amount - vertical layout
+              // Amount and status - vertical layout
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    '${tx.isIncoming ? '+' : '-'}${formatAmount(tx.amount)}',
+                    '${tx.isIncoming ? '+' : '-'}${formatAmount(tx.amount)} sats',
                     style: GoogleFonts.inter(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -311,12 +311,19 @@ class _TransactionsPageState extends State<TransactionsPage>
                     ),
                   ),
                   SizedBox(height: 2),
-                  Text(
-                    'sats',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      color: theme.colorScheme.outline,
-                      fontWeight: FontWeight.w600,
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: _getStatusColor(tx.status).withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                    child: Text(
+                      _getStatusText(tx.status),
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: _getStatusColor(tx.status),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
                 ],
@@ -328,6 +335,32 @@ class _TransactionsPageState extends State<TransactionsPage>
     );
   }
 
+
+  Color _getStatusColor(TransactionStatus status) {
+    switch (status) {
+      case TransactionStatus.confirmed:
+        return Colors.green[700]!;
+      case TransactionStatus.pending:
+        return Colors.orange[700]!;
+      case TransactionStatus.failed:
+        return Colors.red[700]!;
+      case TransactionStatus.expired:
+        return Colors.deepOrange[700]!;
+    }
+  }
+
+  String _getStatusText(TransactionStatus status) {
+    switch (status) {
+      case TransactionStatus.confirmed:
+        return 'Confirmed';
+      case TransactionStatus.pending:
+        return 'Pending';
+      case TransactionStatus.failed:
+        return 'Failed';
+      case TransactionStatus.expired:
+        return 'Expired';
+    }
+  }
 
   Widget _buildEmptyState() {
     final theme = Theme.of(context);

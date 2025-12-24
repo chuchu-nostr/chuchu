@@ -116,11 +116,49 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     );
   }
 
+  Color _getStatusColor(TransactionStatus status) {
+    switch (status) {
+      case TransactionStatus.confirmed:
+        return Colors.green[700]!;
+      case TransactionStatus.pending:
+        return Colors.orange[700]!;
+      case TransactionStatus.failed:
+        return Colors.red[700]!;
+      case TransactionStatus.expired:
+        return Colors.deepOrange[700]!;
+    }
+  }
+
+  String _getStatusText(TransactionStatus status) {
+    switch (status) {
+      case TransactionStatus.confirmed:
+        return 'Confirmed';
+      case TransactionStatus.pending:
+        return 'Pending';
+      case TransactionStatus.failed:
+        return 'Failed';
+      case TransactionStatus.expired:
+        return 'Expired';
+    }
+  }
+
+  IconData _getStatusIcon(TransactionStatus status) {
+    switch (status) {
+      case TransactionStatus.confirmed:
+        return Icons.check_circle;
+      case TransactionStatus.pending:
+        return Icons.access_time;
+      case TransactionStatus.failed:
+        return Icons.error;
+      case TransactionStatus.expired:
+        return Icons.schedule;
+    }
+  }
+
   Widget _buildAmountCard() {
     final amount = widget.transaction.amount;
     final formattedAmount = _formatAmount(amount);
     final isIncoming = widget.transaction.isIncoming;
-    final isConfirmed = widget.transaction.status == TransactionStatus.confirmed;
 
     return Container(
       padding: EdgeInsets.all(20),
@@ -188,33 +226,32 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
               ],
             ),
           ),
-          if (isConfirmed)
-            Container(
-              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-              decoration: BoxDecoration(
-                color: Color(0xFFD0FAE5),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(
-                    Icons.check_circle,
-                    size: 16,
-                    color: Color(0xFF007A55),
-                  ),
-                  SizedBox(width: 6),
-                  Text(
-                    'Confirmed',
-                    style: GoogleFonts.inter(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      color: Color(0xFF007A55),
-                    ),
-                  ),
-                ],
-              ),
+          Container(
+            padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            decoration: BoxDecoration(
+              color: _getStatusColor(widget.transaction.status).withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
             ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  _getStatusIcon(widget.transaction.status),
+                  size: 16,
+                  color: _getStatusColor(widget.transaction.status),
+                ),
+                SizedBox(width: 6),
+                Text(
+                  _getStatusText(widget.transaction.status),
+                  style: GoogleFonts.inter(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                    color: _getStatusColor(widget.transaction.status),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
