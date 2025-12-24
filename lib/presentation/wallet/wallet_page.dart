@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:qr_flutter/qr_flutter.dart';
+import 'package:bolt11_decoder/bolt11_decoder.dart';
 import '../../core/theme/app_theme.dart';
 import '../../core/widgets/common_image.dart';
 import '../../core/widgets/common_toast.dart';
@@ -480,6 +481,37 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
   }
 
   Widget _buildTransactionItem(WalletTransaction tx) {
+    // Check if invoice is expired by parsing BOLT11 invoice
+    bool isInvoiceExpired = false;
+    if (tx.isIncoming && tx.invoice != null && tx.invoice!.isNotEmpty) {
+      try {
+        final Bolt11PaymentRequest req = Bolt11PaymentRequest(tx.invoice!);
+        final invoiceTimestamp = req.timestamp.toInt();
+        int expiry = 0;
+        
+        // Extract expiry from tags
+        for (final tag in req.tags) {
+          if (tag.type == 'expiry') {
+            expiry = tag.data as int;
+            break;
+          }
+        }
+        
+        // Calculate actual expiry time: timestamp + expiry (in seconds)
+        // If expiry is 0, default to 1 hour (3600 seconds)
+        final invoiceExpiry = expiry > 0 ? expiry : 3600;
+        final actualExpiresAt = invoiceTimestamp + invoiceExpiry;
+        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        isInvoiceExpired = actualExpiresAt < now;
+      } catch (e) {
+        // If parsing fails, don't mark as expired
+        isInvoiceExpired = false;
+      }
+    }
+    
+    // Determine display status: if invoice is expired, show "Expired", otherwise use transaction status
+    final displayStatus = isInvoiceExpired ? TransactionStatus.expired : tx.status;
+    
     String formatTimeAgo(int timestamp) {
       final now = DateTime.now();
       final txTime = DateTime.fromMillisecondsSinceEpoch(timestamp * 1000);
@@ -616,14 +648,14 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getStatusColor(tx.status).withOpacity(0.1),
+                      color: _getStatusColor(displayStatus).withOpacity(0.1),
                       borderRadius: BorderRadius.circular(4),
                     ),
                     child: Text(
-                      _getStatusText(tx.status),
+                      isInvoiceExpired ? 'Expired' : _getStatusText(displayStatus),
                       style: TextStyle(
                         fontSize: 12,
-                        color: _getStatusColor(tx.status),
+                        color: _getStatusColor(displayStatus),
                         fontWeight: FontWeight.w600,
                       ),
                     ),
