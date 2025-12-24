@@ -32,8 +32,8 @@ android {
         applicationId "com.chuchu"
         minSdk 26
         targetSdk 36
-        versionCode 1
-        versionName "0.0.1"
+        versionCode 5
+        versionName "0.1.0"
         multiDexEnabled true
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         // Note: abiFilters removed to avoid conflict with split-per-abi builds
