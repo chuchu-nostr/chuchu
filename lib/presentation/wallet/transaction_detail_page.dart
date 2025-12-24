@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:bolt11_decoder/bolt11_decoder.dart';
 import '../../core/wallet/model/wallet_transaction.dart';
 import '../../core/wallet/model/wallet_invoice.dart';
 import '../../core/wallet/wallet.dart';
@@ -83,7 +84,7 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildAmountCard(),
+                _buildAmountCard(invoice: invoice),
                 SizedBox(height: 16),
                 if (description.isNotEmpty) ...[
                   _buildDescriptionCard(description),
@@ -188,10 +189,38 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
     }
   }
 
-  Widget _buildAmountCard() {
+  Widget _buildAmountCard({WalletInvoice? invoice}) {
     final amount = widget.transaction.amount;
     final formattedAmount = _formatAmount(amount);
     final isIncoming = widget.transaction.isIncoming;
+    
+    // Check if invoice is expired
+    bool isInvoiceExpired = false;
+    if (invoice != null && invoice.bolt11.isNotEmpty) {
+      try {
+        final Bolt11PaymentRequest req = Bolt11PaymentRequest(invoice.bolt11);
+        final invoiceTimestamp = req.timestamp.toInt();
+        int expiry = 0;
+        
+        for (final tag in req.tags) {
+          if (tag.type == 'expiry') {
+            expiry = tag.data as int;
+            break;
+          }
+        }
+        
+        final invoiceExpiry = expiry > 0 ? expiry : 3600;
+        final actualExpiresAt = invoiceTimestamp + invoiceExpiry;
+        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        isInvoiceExpired = actualExpiresAt < now;
+      } catch (e) {
+        // If parsing fails, use invoice.isExpired
+        isInvoiceExpired = invoice.isExpired;
+      }
+    }
+    
+    // Determine display status: if invoice is expired, show "Expired", otherwise use transaction status
+    final displayStatus = isInvoiceExpired ? TransactionStatus.expired : widget.transaction.status;
 
     return Container(
       padding: EdgeInsets.all(20),
@@ -262,24 +291,24 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
           Container(
             padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: _getStatusColor(widget.transaction.status).withOpacity(0.1),
+              color: _getStatusColor(displayStatus).withOpacity(0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(
-                  _getStatusIcon(widget.transaction.status),
+                  _getStatusIcon(displayStatus),
                   size: 16,
-                  color: _getStatusColor(widget.transaction.status),
+                  color: _getStatusColor(displayStatus),
                 ),
                 SizedBox(width: 6),
                 Text(
-                  _getStatusText(widget.transaction.status),
+                  isInvoiceExpired ? 'Expired' : _getStatusText(displayStatus),
                   style: GoogleFonts.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w800,
-                    color: _getStatusColor(widget.transaction.status),
+                    color: _getStatusColor(displayStatus),
                   ),
                 ),
               ],
@@ -402,6 +431,43 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
   }
 
   Widget _buildInvoiceCard(WalletInvoice invoice) {
+    // Parse BOLT11 invoice to get actual expiry time
+    int? actualExpiresAt;
+    bool isExpired = false;
+    
+    if (invoice.bolt11.isNotEmpty) {
+      try {
+        final Bolt11PaymentRequest req = Bolt11PaymentRequest(invoice.bolt11);
+        final invoiceTimestamp = req.timestamp.toInt();
+        int expiry = 0;
+        
+        // Extract expiry from tags
+        for (final tag in req.tags) {
+          if (tag.type == 'expiry') {
+            expiry = tag.data as int;
+            break;
+          }
+        }
+        
+        // Calculate actual expiry time: timestamp + expiry (in seconds)
+        // If expiry is 0, default to 1 hour (3600 seconds)
+        final invoiceExpiry = expiry > 0 ? expiry : 3600;
+        actualExpiresAt = invoiceTimestamp + invoiceExpiry;
+        
+        // Check if expired
+        final now = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+        isExpired = actualExpiresAt < now;
+      } catch (e) {
+        // If parsing fails, fall back to invoice.expiresAt
+        actualExpiresAt = invoice.expiresAt;
+        isExpired = invoice.isExpired;
+      }
+    } else {
+      // If no BOLT11, use invoice.expiresAt
+      actualExpiresAt = invoice.expiresAt;
+      isExpired = invoice.isExpired;
+    }
+    
     String _formatExpiryTime(int expiresAt) {
       final expiryDate = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
       final formattedDate = '${expiryDate.year}-${expiryDate.month.toString().padLeft(2, '0')}-${expiryDate.day.toString().padLeft(2, '0')}';
@@ -509,6 +575,29 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
             ),
             SizedBox(height: 16),
           ],
+          Row(
+            children: [
+              Text(
+                'Expires At',
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
+              ),
+              Spacer(),
+              Text(
+                _formatExpiryTime(actualExpiresAt),
+                style: GoogleFonts.inter(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: isExpired 
+                      ? Colors.red[700] 
+                      : kTitleColor,
+                ),
+              ),
+            ],
+          ),
           if (invoice.paidAt != null) ...[
             SizedBox(height: 12),
             Row(
