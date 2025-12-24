@@ -159,9 +159,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
       case TransactionStatus.pending:
         return Colors.orange[700]!;
       case TransactionStatus.failed:
-        return Colors.red[700]!;
       case TransactionStatus.expired:
-        return Colors.deepOrange[700]!;
+        return Colors.red[700]!;
     }
   }
 
@@ -172,9 +171,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
       case TransactionStatus.pending:
         return 'Pending';
       case TransactionStatus.failed:
-        return 'Failed';
       case TransactionStatus.expired:
-        return 'Expired';
+        return 'Failed';
     }
   }
 
@@ -185,9 +183,8 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
       case TransactionStatus.pending:
         return Icons.access_time;
       case TransactionStatus.failed:
-        return Icons.error;
       case TransactionStatus.expired:
-        return Icons.schedule;
+        return Icons.error;
     }
   }
 
@@ -405,32 +402,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
   }
 
   Widget _buildInvoiceCard(WalletInvoice invoice) {
-    String _formatInvoiceStatus(InvoiceStatus status) {
-      switch (status) {
-        case InvoiceStatus.pending:
-          return 'Pending';
-        case InvoiceStatus.paid:
-          return 'Paid';
-        case InvoiceStatus.expired:
-          return 'Expired';
-        case InvoiceStatus.cancelled:
-          return 'Cancelled';
-      }
-    }
-
-    Color _getInvoiceStatusColor(InvoiceStatus status) {
-      switch (status) {
-        case InvoiceStatus.pending:
-          return Colors.orange[700]!;
-        case InvoiceStatus.paid:
-          return Colors.green[700]!;
-        case InvoiceStatus.expired:
-          return Colors.deepOrange[700]!;
-        case InvoiceStatus.cancelled:
-          return Colors.red[700]!;
-      }
-    }
-
     String _formatExpiryTime(int expiresAt) {
       final expiryDate = DateTime.fromMillisecondsSinceEpoch(expiresAt * 1000);
       final formattedDate = '${expiryDate.year}-${expiryDate.month.toString().padLeft(2, '0')}-${expiryDate.day.toString().padLeft(2, '0')}';
@@ -454,33 +425,13 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Text(
-                'Invoice Information',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.outline,
-                ),
-              ),
-              Spacer(),
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: _getInvoiceStatusColor(invoice.status).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Text(
-                  _formatInvoiceStatus(invoice.status),
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: _getInvoiceStatusColor(invoice.status),
-                  ),
-                ),
-              ),
-            ],
+          Text(
+            'Invoice Information',
+            style: GoogleFonts.inter(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Theme.of(context).colorScheme.outline,
+            ),
           ),
           SizedBox(height: 16),
           if (invoice.bolt11.isNotEmpty) ...[
@@ -558,29 +509,6 @@ class _TransactionDetailPageState extends State<TransactionDetailPage> {
             ),
             SizedBox(height: 16),
           ],
-          Row(
-            children: [
-              Text(
-                'Expires At',
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w500,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-              Spacer(),
-              Text(
-                _formatExpiryTime(invoice.expiresAt),
-                style: GoogleFonts.inter(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: invoice.status == InvoiceStatus.expired 
-                      ? Colors.deepOrange[700] 
-                      : kTitleColor,
-                ),
-              ),
-            ],
-          ),
           if (invoice.paidAt != null) ...[
             SizedBox(height: 12),
             Row(
