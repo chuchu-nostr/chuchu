@@ -1677,7 +1677,13 @@ class _WalletPageState extends State<WalletPage> with ChuChuUIRefreshMixin {
     } catch (e) {
       Navigator.pop(context); // Close loading dialog
 
-      CommonToast.instance.show(context, 'Invoice creation error: $e', toastType: ToastType.failed);
+      // Check if error is rate-limited
+      final errorString = e.toString().toLowerCase();
+      if (errorString.contains('rate-limited') || errorString.contains('slow down')) {
+        CommonToast.instance.show(context, 'Rate limit reached. Please try again later.', toastType: ToastType.failed);
+      } else {
+        CommonToast.instance.show(context, 'Invoice creation error: $e', toastType: ToastType.failed);
+      }
     }
   }
 

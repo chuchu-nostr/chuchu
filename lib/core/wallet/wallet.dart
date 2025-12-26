@@ -354,7 +354,8 @@ class Wallet {
       return invoice;
     } catch (e) {
       LogUtils.e(() => 'Failed to create invoice: $e');
-      return null;
+      // Re-throw the exception so the caller can handle it
+      rethrow;
     }
   }
 
