@@ -125,9 +125,14 @@ class Wallet {
   /// Wallet connection status
   bool get isConnected => _walletInfo != null;
 
+  /// Check if wallet connection is in progress
+  bool get isConnecting => _connectionCompleter != null;
+
   /// Callbacks
   VoidCallback? onBalanceChanged;
   VoidCallback? onTransactionAdded;
+
+  Completer<bool>? _connectionCompleter;
 
   /// Initialize wallet
   Future<void> init() async {
@@ -177,6 +182,19 @@ class Wallet {
 
   /// Connect to LNbits wallet using current pubkey
   Future<bool> connectToWallet() async {
+    if (_walletInfo != null) {
+      LogUtils.d(() => 'Wallet already connected: ${_walletInfo?.walletId ?? "unknown"}');
+      return true;
+    }
+
+    if (_connectionCompleter != null) {
+      LogUtils.d(() => 'Wallet connection already in progress, waiting...');
+      return await _connectionCompleter!.future;
+    }
+
+    // Create new completer for this connection attempt
+    _connectionCompleter = Completer<bool>();
+
     try {
       LogUtils.d(() => 'Starting wallet connection process');
       // Get current pubkey and privkey from account
@@ -185,6 +203,8 @@ class Wallet {
       LogUtils.d(() => 'Current pubkey: $pubkey, privkey length: ${privkey.length}');
       if (pubkey.isEmpty || privkey.isEmpty) {
         LogUtils.e(() => 'No current pubkey or privkey available');
+        _connectionCompleter!.complete(false);
+        _connectionCompleter = null;
         return false;
       }
       
@@ -221,10 +241,19 @@ class Wallet {
       _startInvoiceCheckTimer();
       
       LogUtils.i(() => 'Successfully connected to wallet: ${walletInfo?.walletId ?? "unknown"}');
-      return true;
+      
+      final result = true;
+      _connectionCompleter!.complete(result);
+      _connectionCompleter = null;
+      return result;
     } catch (e) {
       LogUtils.e(() => 'Failed to connect to wallet: $e');
-      return false;
+      final result = false;
+      if (!_connectionCompleter!.isCompleted) {
+        _connectionCompleter!.complete(result);
+      }
+      _connectionCompleter = null;
+      return result;
     }
   }
 
@@ -234,6 +263,8 @@ class Wallet {
     _stopInvoiceCheckTimer();
     
     _walletInfo = null;
+    // Clear any pending connection completer
+    _connectionCompleter = null;
   }
 
   /// Logout and clear all wallet data
@@ -256,6 +287,9 @@ class Wallet {
     
     // Clear payment status callback (not handled by dispose)
     onPaymentStatusChanged = null;
+    
+    // Clear connection completer
+    _connectionCompleter = null;
     
     LogUtils.i(() => 'Wallet logout completed successfully');
   }
@@ -1528,6 +1562,12 @@ class Wallet {
       }
     }
     _pendingRequests.clear();
+    
+    // Complete connection completer if exists
+    if (_connectionCompleter != null && !_connectionCompleter!.isCompleted) {
+      _connectionCompleter!.complete(false);
+    }
+    _connectionCompleter = null;
     
     // Stop all polling timers
     stopAllPaymentPolling();

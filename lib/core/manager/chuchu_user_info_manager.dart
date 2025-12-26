@@ -18,6 +18,7 @@ import '../messages/messages.dart';
 import '../network/connect.dart';
 import '../network/eventCache.dart';
 import '../relayGroups/relayGroup.dart';
+import '../wallet/wallet.dart';
 import 'cache/chuchu_cache_manager.dart';
 import 'chuchu_feed_manager.dart';
 
@@ -233,6 +234,9 @@ class ChuChuUserInfoManager {
       fn();
     });
     await EventCache.sharedInstance.loadAllEventsFromDB();
+    
+    _initWallet();
+    
     Relays.sharedInstance.init().then((value) {
       Contacts.sharedInstance.initContacts(
         Contacts.sharedInstance.contactUpdatedCallBack,
@@ -246,6 +250,14 @@ class ChuChuUserInfoManager {
 
       _initMessage();
     });
+  }
+
+  Future<void> _initWallet() async {
+    try {
+      await Wallet.sharedInstance.init();
+    } catch (e) {
+      print('Failed to initialize wallet after login: $e');
+    }
   }
 
   void _initMessage() {
