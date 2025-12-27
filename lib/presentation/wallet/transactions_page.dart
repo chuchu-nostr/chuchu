@@ -419,7 +419,8 @@ class _TransactionsPageState extends State<TransactionsPage>
         centerTitle: true,
         backgroundColor: kBgLight,
         elevation: 0,
-        foregroundColor: kTitleColor,
+        foregroundColor: kBgLight,
+        surfaceTintColor: Colors.transparent,
         systemOverlayStyle: SystemUiOverlayStyle.dark,
       ),
       body:

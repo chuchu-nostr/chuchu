@@ -358,6 +358,7 @@ class _FeedInfoPageState extends State<FeedInfoPage>
           ),
           backgroundColor: kBgLight,
           foregroundColor: theme.colorScheme.onSurface,
+          surfaceTintColor: Colors.transparent,
           elevation: 0,
           centerTitle: false,
         ),
@@ -1127,8 +1128,8 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                         ),
                         ReusableInteractionButtons(
                           notedUIModel: widget.notedUIModel,
-                          iconSize: 24,
-                          fontSize: 18,
+                          iconSize: 16,
+                          fontSize: 14,
                           textColor: Theme.of(context).colorScheme.outline,
                           showComment: false,
                           showZap: false,
