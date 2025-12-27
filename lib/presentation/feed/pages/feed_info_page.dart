@@ -1107,6 +1107,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
                                 isShowAllContent: false,
                                 isShowBottomBorder: false,
                                 isShowReply: false,
+                                isShowSimpleReplyBtn: true,
                                 notedUIModel: widget.notedUIModel,
                                 isShowUserInfo: false,
                                 isShowOption: false,
@@ -1173,7 +1174,7 @@ class _MomentReplyWidgetState extends State<MomentReplyWidget> {
           FeedUtils.getUserMomentInfo(
             userDB,
             widget.notedUIModel!.createAtStr,
-          )[0],
+          )[1],
           style: GoogleFonts.inter(
             color: Theme.of(context).colorScheme.outline,
             fontSize: 12,

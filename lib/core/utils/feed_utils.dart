@@ -66,19 +66,13 @@ class FeedUtils {
     return users;
   }
 
-  // [fullName,dns]
+  // [fullName,npub]
   static List<String> getUserMomentInfo(UserDBISAR? user, String time) {
     if (user == null) return [time, ''];
-    String dns = '';
-    String? dnsStr = user.dns;
-
-    dns = dnsStr != null && dnsStr.isNotEmpty && dnsStr != 'null'
-        ? dnsStr
-        : user.encodedPubkey.substring(0, 10);
-    if (dns.length > 20) {
-      dns = dns.substring(0, 7) + '...' + dns.substring(dns.length - 7);
-    }
-    return ['$dns · $time', dns, time];
+    String npub = user.encodedPubkey;
+    // Format npub as "first6:last6" for display
+    String npubDisplay = '${npub.substring(0, 6)}:${npub.substring(npub.length - 6)}';
+    return ['$npubDisplay · $time', npubDisplay, time];
   }
 
   static List<String> momentContentSplit(String input) {

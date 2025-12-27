@@ -71,7 +71,7 @@ class _FeedReplyPageState extends State<FeedReplyPage>
       backgroundColor: theme.colorScheme.surface,
       appBar: AppBar(
         backgroundColor: theme.colorScheme.surface,
-        foregroundColor: theme.colorScheme.onSurface,
+        foregroundColor: theme.colorScheme.surface,
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         leadingWidth: 100,
